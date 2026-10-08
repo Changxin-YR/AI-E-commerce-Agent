@@ -46,7 +46,7 @@ SO-001/066/074 仅基础切片合成测试通过。四条 MVP 尚未完成，不
 - 桌面及 390×844 手机截图已用 view_image 查看；手机无水平溢出。
 - Alembic upgrade 与 check 通过，模型和数据库无漂移。
 - npm audit 0 已知漏洞；已精简 lint 辅助依赖。
-- CI 已配置，使用官方 actions 固定 SHA；远端运行状态需要读取确认。
+- GitHub Actions Verify SoloOps #1 已确认全部成功，功能提交 acbceb8；运行 URL：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37788563158 。后续仅补充测试报告文档。
 - Starlette 测试兼容层提示 httpx 将弃用，当前不影响测试，升级时处理。
 
 检查命令见 README 与 docs/testing.md。pytest 和 Playwright 会重置同一个 `_test` 数据库，不要并行运行。
