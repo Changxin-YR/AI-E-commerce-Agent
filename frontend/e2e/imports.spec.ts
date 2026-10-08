@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-async function openImports(page: Page): Promise<void> {
+async function openImports(page: Page): Promise<number> {
   await page.goto('/imports')
   await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
   await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
@@ -26,6 +26,7 @@ async function openImports(page: Page): Promise<void> {
   await page.goto('/imports')
   await page.getByLabel('所属店铺').selectOption(String(shop.id))
   await page.getByLabel('数据身份').selectOption('synthetic')
+  return shop.id
 }
 
 async function uploadCsv(page: Page, contents: string): Promise<void> {
@@ -39,7 +40,7 @@ async function uploadCsv(page: Page, contents: string): Promise<void> {
 test('seller maps unknown columns, corrects a row, imports, reloads, revokes and clears', async ({
   page,
 }) => {
-  await openImports(page)
+  const shopId = await openImports(page)
   await uploadCsv(page, 'code,label,cost,currency\n001,Synthetic cup,-3,USD\n')
   await page.getByLabel('SKU *', { exact: true }).selectOption('code')
   await page.getByLabel('商品名 *', { exact: true }).selectOption('label')
@@ -61,6 +62,8 @@ test('seller maps unknown columns, corrects a row, imports, reloads, revokes and
   await expect(page.getByRole('cell', { name: '3.2500', exact: true })).toBeVisible()
   await page.screenshot({ path: 'test-results/import-desktop.png', fullPage: true })
   await page.reload()
+  await page.getByLabel('所属店铺').selectOption(String(shopId))
+  await expect(page.getByRole('button', { name: /查看批次/ })).toHaveCount(1)
   await page.getByRole('button', { name: /查看批次/ }).click()
   await expect(page.getByText('已导入', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: '撤销此批次' }).click()

@@ -39,3 +39,19 @@
 ## 文件安全为什么不只看扩展名？
 
 `import_parser.py` 同时限制输入字节、ZIP 解压大小、实际单元格坐标、行列与字段长度，并拒绝宏、外链和公式。defusedxml 防止实体扩展；只读解析避免执行 Office 内容。报表中的指令仍是文本。源值与修正值分开留存，批次清除则移除源内容，安全和可追溯性各有明确边界。
+
+## 缺数据时为什么不能把已知收入减已知成本当成毛利？
+
+两组金额可能来自不同订单行。`profit_calculation.aggregate` 同时保存已知行数与部分合计，毛利只从收入和成本都已知的配对行求和。只要完整范围存在缺口，完整毛利即为 null。测试 `test_two_skus_partial_coverage_no_mismatched_subtraction` 证明缺成本 SKU 不会污染另一个 SKU 的可验证毛利。
+
+## 确定性问数如何与模型职责分开？
+
+受控问题经过白名单映射进入 `AnalyticsService.run`，用有类型的店铺、时间、币种、身份和阈值调用 repository。金额来自 Decimal 计算，模型未来只能解释已验证结果。当前返回 `local_rules`，未接入真实模型。`test_decimal_refunds_and_repeatable_question_with_evidence` 比较不同入口的数值与原始引用；不要求文案逐字相同。
+
+## 缓存失效和隐私清理为什么都需要？
+
+`shops.data_revision` 判断旧分析是否能作为现值；`analysis_sources` 决定删除某批数据应清掉哪些持久快照。仅增加版本号不会删除源内容，仅删源行又可能留下派生信息。`AnalyticsRepository.invalidate/purge_batch` 与导入在同一事务里执行，独立结果保留。查看保存分析时可区分 current、stale 和 cleared。
+
+## 为什么提交后读取响应也会影响并发？
+
+提交会释放锁，后续读取可能重新开启事务并持有新的锁。若先拿待办锁，再调用用例拿用户锁，就可能与另一个先拿用户锁的请求形成环。当前保存服务在提交前组装响应，遵循统一锁顺序。测试真实 MySQL 并发并预先建立旧快照，覆盖常规顺序测试无法暴露的问题。

@@ -39,6 +39,8 @@ async function signOut(): Promise<void> {
           ><span class="nav-number">02</span>经营资料</RouterLink
         ><RouterLink to="/imports" active-class="active"
           ><span class="nav-number">03</span>数据导入</RouterLink
+        ><RouterLink to="/analytics" active-class="active"
+          ><span class="nav-number">04</span>经营分析</RouterLink
         >
       </nav>
       <div class="sidebar-bottom">

@@ -84,7 +84,11 @@ onMounted(load)
       <span class="note-symbol" aria-hidden="true">i</span>
       <div>
         <h3>当前为文件分析模式</h3>
-        <p>分析以你提供的文件及其导出时间为准。前往数据导入查看已有批次；AI 巡检尚未开放。</p>
+        <p>
+          分析以你提供的文件及其导出时间为准。已有商品或订单文件可前往经营分析，查看销售、已知毛利和来源；AI
+          巡检尚未开放。
+        </p>
+        <RouterLink to="/analytics" class="button secondary small">查看经营分析</RouterLink>
       </div>
     </section>
   </template>

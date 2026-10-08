@@ -935,3 +935,80 @@ select {
     font-size: 18px;
   }
 }
+.analysis-fields {
+  border: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+  min-width: 0;
+}
+.analysis-fields label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+.analysis-fields .full-width {
+  grid-column: 1 / -1;
+}
+.button-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.analysis-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.analysis-metrics > div {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  gap: 10px;
+  overflow-wrap: anywhere;
+}
+.analysis-metrics strong {
+  font-size: 24px;
+}
+.analysis-metrics small {
+  color: var(--muted);
+}
+.analysis-answer {
+  padding: 18px;
+  background: #eef2e8;
+  border-left: 3px solid var(--green);
+}
+.analysis-line {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.analysis-line summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.analysis-evidence p,
+.source-detail p {
+  margin: 12px 0;
+}
+.source-detail {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.source-detail pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .analysis-fields,
+  .analysis-metrics {
+    grid-template-columns: 1fr;
+  }
+}
