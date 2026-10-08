@@ -40,6 +40,7 @@ Windows 沙箱内首次 Vitest 执行遇到临时文件重命名 EPERM；使用�
 | Vitest | 3 个文件、5 项通过，含源文本转义和修正事件 |
 | Playwright Chromium | 5 项通过，含完整映射纠错导入→刷新→撤销→清除、手机重复行预览 |
 | MySQL 迁移 | 新迁移在隔离库 upgrade→downgrade 至前一版本→upgrade→check 通过；开发库 upgrade/check 通过 |
+| GitHub Actions | [Verify SoloOps #3](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37794268422)：功能提交 f0ea342 在 Ubuntu / MySQL 环境全部通过 |
 
 `tests/test_imports.py` 验证：上传不提前写业务投影、Decimal/UTC 微秒保存、源行引用、未映射隐私字段清理、CSV 多行起始行号、两种模板下载、两种合成格式自动映射、文件内重复整批拒绝、跨文件相同记录不增量、重复/并发提交仅一次生效、金额修正、新旧值确认、旧预览拒绝、异常中途回滚、店铺和拥有者隔离、大小写敏感业务键、乱序撤销、最新值恢复、清除后其他批次不受影响、草稿到期、CSRF、未知成本与混合币种警示。
 
