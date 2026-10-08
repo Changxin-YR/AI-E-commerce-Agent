@@ -35,6 +35,7 @@ onMounted(load)
   </button>
   <p v-if="loading" role="status">正在读取工作空间…</p>
   <template v-else-if="status">
+    <RouterLink to="/agent" class="button secondary">运行受控任务 · 步骤、审批与恢复</RouterLink>
     <OperationsInbox />
     <details class="section-block" :open="!status.profile_complete">
       <summary>经营资料与首次使用引导</summary>

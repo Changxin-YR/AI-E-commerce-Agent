@@ -1,0 +1,243 @@
+<script setup lang="ts">
+import { computed, reactive, watch } from 'vue'
+import type { AgentAction, AgentBudget, AgentRun } from '@/types/agent'
+import { agentLabels, agentReasons, sourcesIn } from '@/types/agent'
+import { sourceLabels } from '@/types/operations'
+import type { OperationTask } from '@/types/operations'
+import type { AnalysisResult } from '@/types/analytics'
+import AnalysisEvidence from './AnalysisEvidence.vue'
+import SourceEvidence from './SupportSource.vue'
+import { supportTime } from '@/types/support'
+const props = defineProps<{ run: AgentRun; busy: boolean }>()
+const emit = defineEmits<{ action: [action: AgentAction, budget?: AgentBudget] }>()
+const budget = reactive<AgentBudget>({ max_steps: 12, max_seconds: 120, max_cost_usd: '0' })
+watch(
+  () => props.run.id,
+  () => Object.assign(budget, props.run.budget),
+  { immediate: true },
+)
+const sources = computed(() => sourcesIn(props.run.steps.map((s) => s.output)))
+const check = computed(
+  () => props.run.steps.find((s) => s.skill === 'data_check' && s.status === 'completed')?.output,
+)
+const findings = computed(
+  () => (check.value?.findings ?? []) as NonNullable<OperationTask['snapshot']>[],
+)
+const branches = computed(
+  () => (check.value?.branches ?? []) as { name: string; status: string; reason: string }[],
+)
+const analysis = computed(
+  () =>
+    props.run.steps.find((s) => s.skill === 'metrics' && s.status === 'completed')
+      ?.output as unknown as AnalysisResult | undefined,
+)
+const resumable = computed(() => ['paused', 'waiting_configuration'].includes(props.run.status))
+const stoppable = computed(() =>
+  [
+    'ready',
+    'running',
+    'paused',
+    'waiting_configuration',
+    'waiting_approval',
+    'waiting_input',
+  ].includes(props.run.status),
+)
+const recordLink = computed(
+  () =>
+    ({ operations: '/', listing: '/listings', support: '/support' })[
+      String(props.run.result?.record_type) as 'operations' | 'listing' | 'support'
+    ],
+)
+const actionLabels: Record<string, string> = {
+  started: '已启动',
+  approve: '卖家已批准',
+  reject: '卖家已拒绝',
+  pause: '卖家已暂停',
+  resume: '卖家已恢复',
+  cancel: '卖家已取消',
+}
+</script>
+
+<template>
+  <section class="agent-review section-block" aria-label="任务执行详情">
+    <div class="section-title">
+      <h2>任务 #{{ run.id }}</h2>
+      <span class="outline-label">{{ agentLabels[run.status] ?? run.status }}</span>
+    </div>
+    <p>
+      {{ sourceLabels[run.source_status] }} ·
+      {{ agentLabels[run.model_status] ?? run.model_status }} · 外部未提交
+    </p>
+    <p>当前步骤：{{ agentLabels[run.next_node] ?? run.next_node }}</p>
+    <p>
+      启动于 {{ supportTime(run.created_at, run.input?.scope.timezone ?? 'Asia/Shanghai') }} ·
+      来源版本 {{ run.source_revision }}
+    </p>
+    <p v-if="agentReasons[run.reason]" role="status">{{ agentReasons[run.reason] }}</p>
+    <p v-if="run.source_status === 'stale'">
+      来源已变化或过期。保留历史结果，需使用当前数据新建任务。
+    </p>
+    <div class="analysis-metrics">
+      <div>
+        <small>执行步数</small><strong>{{ run.steps_used }} / {{ run.budget.max_steps }}</strong>
+      </div>
+      <div>
+        <small>累计执行时间</small><strong>{{ (run.elapsed_ms / 1000).toFixed(2) }} 秒</strong
+        ><small>上限 {{ run.budget.max_seconds }} 秒</small>
+      </div>
+      <div>
+        <small>模型费用（USD，按配置费率）</small><strong>{{ run.spent_usd }}</strong
+        ><small>预算 {{ run.budget.max_cost_usd }}</small>
+      </div>
+      <div>
+        <small>在途 / 未确认费用预留（USD）</small><strong>{{ run.reserved_usd }}</strong
+        ><small>取消后在途请求仍可能产生费用</small>
+      </div>
+    </div>
+    <div v-if="branches.length" class="agent-branches">
+      <p v-for="branch in branches" :key="branch.name">
+        <strong>{{ branch.name }}：</strong>{{ branch.reason }}
+      </p>
+    </div>
+    <div v-if="run.status === 'waiting_approval'" class="data-note">
+      <h3>审批当前内部写入 · R1 · 费用 0 USD</h3>
+      <p>
+        影响店铺 #{{ run.shop_id }}。{{
+          run.next_node === 'propose_tasks'
+            ? '将下列异常保存为待审批候选，再到工作台逐项处理。'
+            : run.next_node === 'listing_draft'
+              ? '按商品名称和完整参数生成本地模板草稿，在 Listing 页面查看差异并单独审批生效。'
+              : '保存未核验订单、未选择政策的人工接管草稿，在客服页面继续核对。'
+        }}
+      </p>
+      <p>候选可忽略，草稿可拒绝或存档；已有生效版本由业务页面管理。</p>
+      <article v-for="(finding, index) in findings" :key="index" class="analysis-line">
+        <strong>{{ finding.title }} · {{ finding.object_label }}</strong>
+        <p>{{ finding.basis }}</p>
+        <p>{{ finding.advice }}</p>
+      </article>
+      <div class="button-row">
+        <button
+          class="button primary"
+          :disabled="busy || run.source_status !== 'current'"
+          @click="emit('action', 'approve')"
+        >
+          批准当前节点
+        </button>
+        <button class="button secondary" :disabled="busy" @click="emit('action', 'reject')">
+          拒绝当前节点
+        </button>
+      </div>
+    </div>
+    <div class="button-row">
+      <button
+        v-if="run.status === 'ready'"
+        class="button primary"
+        :disabled="busy"
+        @click="emit('action', 'advance')"
+      >
+        继续执行
+      </button>
+      <button
+        v-if="['ready', 'running'].includes(run.status)"
+        class="button secondary"
+        @click="emit('action', 'pause')"
+      >
+        暂停任务
+      </button>
+      <button v-if="stoppable" class="button secondary" @click="emit('action', 'cancel')">
+        取消任务
+      </button>
+      <RouterLink v-if="recordLink" :to="recordLink" class="button secondary"
+        >到业务页面复查 #{{ run.result?.record_id }}</RouterLink
+      >
+    </div>
+    <form v-if="resumable" @submit.prevent="emit('action', 'resume', { ...budget })">
+      <fieldset class="analysis-fields" :disabled="busy">
+        <label
+          >恢复后总步数上限<input
+            v-model.number="budget.max_steps"
+            type="number"
+            :min="run.budget.max_steps"
+            max="100"
+            required
+        /></label>
+        <label
+          >恢复后总秒数上限<input
+            v-model.number="budget.max_seconds"
+            type="number"
+            :min="run.budget.max_seconds"
+            max="3600"
+            required
+        /></label>
+        <label
+          >恢复后总模型预算（USD）<input
+            v-model="budget.max_cost_usd"
+            type="number"
+            :min="run.budget.max_cost_usd"
+            max="10"
+            step="0.000001"
+            required
+        /></label>
+      </fieldset>
+      <button class="button primary" :disabled="busy || run.source_status !== 'current'">
+        确认预算并恢复
+      </button>
+    </form>
+    <AnalysisEvidence v-if="analysis" :shop-id="run.shop_id" :result="analysis" />
+    <details v-if="sources.length" class="section-block">
+      <summary>查看 {{ sources.length }} 条事实来源</summary>
+      <SourceEvidence
+        v-for="source in sources"
+        :key="source.row_id"
+        :shop-id="run.shop_id"
+        :source="source"
+      />
+    </details>
+    <h3>步骤与操作记录</h3>
+    <ol class="agent-steps">
+      <li v-for="step in run.steps" :key="step.id">
+        <strong
+          >{{ agentLabels[step.node] ?? step.node }} ·
+          {{ agentLabels[step.status] ?? step.status }}</strong
+        >
+        <p v-if="step.skill">
+          技能 {{ step.skill }} v{{ step.skill_version }} · {{ step.duration_ms }} ms
+        </p>
+        <p v-if="step.reason">
+          {{ agentReasons[step.reason] ?? actionLabels[step.reason] ?? step.reason }}
+        </p>
+        <p v-if="step.next_node">下一步：{{ agentLabels[step.next_node] ?? step.next_node }}</p>
+        <details v-if="step.input || step.output">
+          <summary>查看节点输入与结果</summary>
+          <pre>{{ JSON.stringify({ input: step.input, output: step.output }, null, 2) }}</pre>
+        </details>
+      </li>
+    </ol>
+  </section>
+</template>
+
+<style scoped>
+.agent-review {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.agent-review pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+.agent-steps {
+  padding-left: 22px;
+}
+.agent-steps li {
+  border-bottom: 1px solid var(--line);
+  padding: 18px 0;
+}
+.agent-branches {
+  border-left: 3px solid var(--green);
+  padding-left: 18px;
+}
+</style>

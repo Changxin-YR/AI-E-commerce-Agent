@@ -33,6 +33,7 @@ def main() -> None:
     command.upgrade(Config("alembic.ini"), "head")
     settings = Settings(
         database_url=url,
+        model_enabled=False,
         trusted_origins=["http://127.0.0.1:5174"],
     )
     engine = create_database_engine(settings)

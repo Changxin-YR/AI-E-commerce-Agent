@@ -9,6 +9,7 @@ from app.models.imports import CustomerMessage, InventorySnapshot, OrderLine, Pr
 from app.models.operations import OperationRun, OperationTask, OperationTaskEvent
 from app.repositories.unit_of_work import UnitOfWork
 from app.schemas.operations import (
+    CheckPreview,
     Finding,
     OperationScope,
     RunInput,
@@ -20,7 +21,7 @@ from app.schemas.operations import (
     TaskPage,
     TaskQuery,
 )
-from app.services.operation_checks import check_data
+from app.services.operation_checks import CheckResult, check_data
 from app.services.profit_calculation import utc_text
 
 
@@ -122,18 +123,8 @@ class OperationsService:
             {"version": task.version, "status": task.status},
         )
 
-    def run(self, owner: int, shop_id: int, data: RunInput) -> RunOutput:
-        shop = self._shop(owner, shop_id)
-        scope = data.scope
-        now = utc_now()
-        existing = self.repo.run_by_request(owner, str(data.request_id))
-        if existing:
-            if existing.shop_id != shop_id or existing.scope != scope.model_dump(mode="json"):
-                raise ConflictError("请求标识已用于其他范围，请重新启动")
-            self.repo.expire(owner, shop_id, now)
-            output = self._run_output(existing)
-            self.uow.commit()
-            return output
+    def _check(self, owner: int, shop: Shop, scope: OperationScope, now: datetime) -> CheckResult:
+        shop_id = shop.id
         # All evidence is bounded and read under the same owner lock as imports.
         orders = self.repo.records(
             OrderLine,
@@ -160,6 +151,32 @@ class OperationsService:
             raise BusinessError(
                 "too_many_findings", "核对候选超过 500 项，请缩小数据范围；本次未保存", 422
             )
+        return result
+
+    def preview(self, owner: int, shop_id: int, scope: OperationScope) -> CheckPreview:
+        shop = self._shop(owner, shop_id)
+        result = self._check(owner, shop, scope, utc_now())
+        return CheckPreview(
+            source_revision=shop.data_revision,
+            branches=result.branches,
+            findings=result.findings,
+            sources=result.sources,
+            valid_until=utc_text(result.valid_until) if result.valid_until else None,
+        )
+
+    def run(self, owner: int, shop_id: int, data: RunInput) -> RunOutput:
+        shop = self._shop(owner, shop_id)
+        scope = data.scope
+        now = utc_now()
+        existing = self.repo.run_by_request(owner, str(data.request_id))
+        if existing:
+            if existing.shop_id != shop_id or existing.scope != scope.model_dump(mode="json"):
+                raise ConflictError("请求标识已用于其他范围，请重新启动")
+            self.repo.expire(owner, shop_id, now)
+            output = self._run_output(existing)
+            self.uow.commit()
+            return output
+        result = self._check(owner, shop, scope, now)
         self.repo.expire(owner, shop_id, now)
         ids: list[int] = []
         created = 0

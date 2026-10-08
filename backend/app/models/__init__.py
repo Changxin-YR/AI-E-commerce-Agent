@@ -1,3 +1,4 @@
+from app.models.agent import AgentExecution, AgentPolicySource, AgentSource, AgentStep
 from app.models.identity import AuditEvent, LoginSession, SellerProfile, Shop, User
 from app.models.imports import (
     CustomerMessage,
@@ -19,6 +20,10 @@ from app.models.operations import (
 from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
 
 __all__ = [
+    "AgentExecution",
+    "AgentStep",
+    "AgentSource",
+    "AgentPolicySource",
     "OperationRun",
     "OperationRunSource",
     "OperationTask",

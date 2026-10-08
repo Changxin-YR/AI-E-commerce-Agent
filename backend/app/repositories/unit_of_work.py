@@ -1,9 +1,12 @@
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.models.identity import AuditEvent
+from app.repositories.agent import AgentRepository
 from app.repositories.analytics import AnalyticsRepository
 from app.repositories.identity import IdentityRepository
 from app.repositories.imports import ImportRepository
@@ -17,7 +20,9 @@ class UnitOfWork:
     """One request owns one session; business services choose the commit boundary."""
 
     def __init__(self, session: Session) -> None:
+        self._defer_commits = 0
         self.session = session
+        self.agent = AgentRepository(session)
         self.identity = IdentityRepository(session)
         self.imports = ImportRepository(session)
         self.inventory = InventoryRepository(session)
@@ -27,7 +32,19 @@ class UnitOfWork:
         self.support = SupportRepository(session)
 
     def commit(self) -> None:
-        self.session.commit()
+        if not self._defer_commits:
+            self.session.commit()
+        else:
+            self.session.flush()
+
+    @contextmanager
+    def defer_commits(self) -> Iterator[None]:
+        """Compose controlled services and their execution record in one transaction."""
+        self._defer_commits += 1
+        try:
+            yield
+        finally:
+            self._defer_commits -= 1
 
     def record_event(
         self,

@@ -6,8 +6,8 @@
 |---|---|---|---|---|---|---|
 | SO-001 | 个人卖家初始化与经营资料 | P0 | 经营资料、店铺、模板/映射/预览/错误行/批次 | backend/app/services/profile.py、imports.py；frontend/src/views/ImportsView.vue | tests/test_identity.py、test_imports.py；frontend/e2e/imports.spec.ts | 初始化与商品/订单导入切片合成数据本地通过；其他数据组待继续 |
 | SO-002 | 跨店铺经营总览与运营日报 | P0 | 导入数据总览及来源下钻 | services/analytics.py；AnalyticsView.vue | test_analytics.py；analytics.spec.ts | 单店铺/时间窗销售摘要和来源下钻合成本地通过；跨店铺与日报待继续 |
-| SO-003 | 自然语言 AI 运营总控 | P0 | 模型受控选择至少两项技能、可追踪任务 | OperationsInbox.vue；services/operations.py | test_operations.py；operations.spec.ts | 驾驶舱本地检查摘要/证据/待审记录通过；自然语言、模型选技及取消恢复待继续 |
-| SO-004 | 一键今日运营 | P0 | 已导入数据巡检与真实内部动作 | services/operation_checks.py、operations.py；OperationsInbox.vue | 四类候选/缺数据/审批/E2E | 本地规则数据分支→候选→审批→持久待办合成本地通过；受控 Agent 技能运行层待继续 |
+| SO-003 | 自然语言 AI 运营总控 | P0 | 模型受控选择至少两项技能、可追踪任务 | services/agent.py、agent_model.py；AgentView.vue | test_agent.py；agent.spec.ts | 受控意图路由适配、步骤/预算/恢复合成本地通过；真实模型凭据与调用待验证，自由经营问答待继续 |
+| SO-004 | 一键今日运营 | P0 | 已导入数据巡检与真实内部动作 | services/agent.py、agent_skills.py、operations.py；AgentView.vue | test_agent.py、test_operations.py；agent.spec.ts | 检查→数据分支→审批→候选保存→回读核验本地通过，逐项处理复用工作台；完整 AI 解释待继续 |
 | SO-005 | 主动异常发现与运营待办 | P0 | 有证据、可处理、去重的异常待办 | services/operations.py；OperationTaskReview.vue | 重跑/并发/状态/来源失效及清除测试 | 主动运行后的四类核对候选、来源/建议/固定标签、审批/拒绝/延期/忽略/完成/重开本地通过；完整异常集与 Agent 委托待继续 |
 | SO-006 | 定时运营与经营通知 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-007 | 多平台店铺授权与同步 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
@@ -63,15 +63,15 @@
 | SO-057 | AI 自然语言经营问数和异常解释 | P0 | 只读受控意图查询、确定计算、引用和拒答 | services/analytics.py；AnalyticsView.vue | 重复问数/来源/拒答测试 | 三个本地规则问题与显式意图可用；真实模型适配及自然语言理解待继续 |
 | SO-058 | 运营变更版本、A/B 测试与效果评估 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-059 | 多币种、汇率、税费与数据完整性 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
-| SO-060 | 内置运营 Skills | P0 | 有元数据/权限/风险/去重声明的内置技能 | — | — | 未实现 |
+| SO-060 | 内置运营 Skills | P0 | 有元数据/权限/风险/去重声明的内置技能 | services/agent_skills.py；schemas/agent.py | 元数据缺失/篡改、输入/范围/硬拒绝及技能调用测试 | 七项固定技能覆盖五类 P0 能力，完整元数据和工具白名单合成本地通过；真实 AI 生成及长期技能待继续 |
 | SO-061 | 第三方 Skills 安装与生命周期管理 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
-| SO-062 | 可配置运营工作流 | P0 | 技能、分支、审批、暂停恢复和记录 | services/operations.py、operation_checks.py | test_operations.py；operations.spec.ts | 本地同步巡检分支/审批/结果记录通过；声明式技能节点、暂停恢复及可配置流程待继续 |
+| SO-062 | 可配置运营工作流 | P0 | 技能、分支、审批、暂停恢复和记录 | services/agent.py；AgentView.vue、AgentRunReview.vue | 条件分支/审批/去重/预算/暂停恢复/取消/E2E | 固定流程节点、数据分支、审批、核验与失败状态合成本地通过；定时/事件/模板启停复制条件修改等完整范围待继续 |
 | SO-063 | 跨平台连接器中心 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-064 | 浏览器扩展/页面内 AI 助手 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-065 | 软件使用助手与新手引导 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-066 | 经营规则、偏好与可验证的业务记忆 | P0 | 可查看/修改/撤销的偏好与经营约束 | backend/app/services/profile.py | tests/test_identity.py；frontend/e2e/workspace.spec.ts | 基础切片合成数据本地通过；完整模块待继续 |
 | SO-067 | 审批、操作前预览与回退边界 | P0 | 对象/差异/依据/风险预览及权限化审批 | services/listings.py、operations.py；ListingReview.vue、OperationTaskReview.vue | 并发审批、过期阻断、恢复、拒绝及 E2E | Listing 与运营候选单项 R1 审批、证据/状态预览、零外部操作本地通过；批量及 R2/R3 通用门禁待继续 |
-| SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久任务、预算、熔断、恢复与未知结果 | models/operations.py、analytics.py、listings.py、support.py | 巡检/处理状态与历史、失效/清除、并发测试 | 巡检、运营待办与处理历史已持久化；预算、熔断、步骤级暂停/取消/恢复与统一跨模块任务待继续 |
+| SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久任务、预算、熔断、恢复与未知结果 | models/agent.py；services/agent.py、agent_model.py | 事务/并发/中断租约/熔断/来源擦除/预算测试 | 持久步骤、来源、审批、预算、取消恢复及模型未知态本地通过；跨模块待办整合、真实外发回查待继续 |
 | SO-069 | 授权的开发者 OpenAPI | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-070 | 移动端轻量运营能力 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-071 | 外部经营数据与提醒渠道 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |

@@ -9,6 +9,7 @@ from app.api.dependencies import UowDependency
 from app.api.errors import register_error_handlers
 from app.api.middleware import register_request_middleware
 from app.api.routes import (
+    agent,
     analytics,
     auth,
     imports,
@@ -46,6 +47,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(support.router, prefix="/api")
     application.include_router(inventory.router, prefix="/api")
     application.include_router(operations.router, prefix="/api")
+    application.include_router(agent.router, prefix="/api")
 
     @application.get("/api/health/live", tags=["健康检查"])
     def live() -> dict[str, str]:

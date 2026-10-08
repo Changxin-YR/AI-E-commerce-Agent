@@ -36,6 +36,7 @@ def settings() -> Settings:
         command.upgrade(Config("alembic.ini"), "head")
     return Settings(
         database_url=url,
+        model_enabled=False,
         trusted_hosts=["testserver"],
         trusted_origins=["http://testserver"],
     )

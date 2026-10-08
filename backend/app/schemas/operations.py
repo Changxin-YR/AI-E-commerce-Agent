@@ -76,6 +76,14 @@ class RunSnapshot(OutputModel):
     reused_candidates: int
 
 
+class CheckPreview(OutputModel):
+    source_revision: int
+    branches: list[Branch]
+    findings: list[Finding]
+    sources: list[SourceReference]
+    valid_until: str | None
+
+
 class RunOutput(OutputModel):
     id: int
     shop_id: int

@@ -236,6 +236,7 @@ class ImportService:
         self.uow.listings.invalidate(owner_id, shop.id)
         self.uow.support.invalidate(owner_id, shop.id, batch.kind)
         self.uow.operations.invalidate(owner_id, shop.id, batch.kind)
+        self.uow.agent.invalidate(owner_id, shop.id)
         batch.applied_revision = shop.data_revision
         batch.status = "committed"
         batch.committed_at = utc_now()
@@ -286,11 +287,13 @@ class ImportService:
         self.uow.listings.invalidate(owner_id, shop.id)
         self.uow.support.invalidate(owner_id, shop.id, batch.kind)
         self.uow.operations.invalidate(owner_id, shop.id, batch.kind)
+        self.uow.agent.invalidate(owner_id, shop.id)
         if purge or not was_active and batch.committed_at is None:
             self.uow.analytics.purge_batch(owner_id, shop.id, batch.id)
             self.uow.listings.purge_batch(owner_id, shop.id, batch.id)
             self.uow.support.purge_batch(owner_id, shop.id, batch.id)
             self.uow.operations.purge_batch(owner_id, shop.id, batch.id)
+            self.uow.agent.purge_batch(owner_id, shop.id, batch.id)
             self.repo.clear_previous(owner_id, shop.id, keys)
             self.repo.replace_rows(owner_id, batch.id, [])
             batch.filename = "已清除"

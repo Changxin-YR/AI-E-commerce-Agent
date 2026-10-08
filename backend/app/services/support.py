@@ -143,6 +143,7 @@ class SupportService:
         )
         self.repo.add_policy(item)
         self.repo.invalidate(owner, shop, "policy")
+        self.uow.agent.invalidate(owner, shop)
         self.uow.record_event(
             owner, "support.policy_saved", "support_policy", item.id, {"number": item.number}
         )
@@ -155,6 +156,7 @@ class SupportService:
             raise BusinessError("not_found", "政策不存在", 404)
         if item.status != "cleared":
             self.repo.purge_policy(owner, shop, item.id)
+            self.uow.agent.purge_policy(owner, shop, item.id)
             item.payload = None
             item.status = "cleared"
             self.uow.record_event(owner, "support.policy_cleared", "support_policy", item.id)
