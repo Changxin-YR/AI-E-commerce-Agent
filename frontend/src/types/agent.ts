@@ -1,7 +1,7 @@
 import type { OperationScope } from './operations'
 import type { SourceReference } from './analytics'
 
-export type AgentTemplate = 'daily' | 'analysis' | 'listing' | 'support' | 'natural'
+export type AgentTemplate = 'daily' | 'analysis' | 'listing' | 'support' | 'natural' | 'question'
 export type AgentAction =
   'advance' | 'pause' | 'resume' | 'cancel' | 'approve' | 'reject' | 'use_authorization'
 export interface AgentBudget {
@@ -18,6 +18,7 @@ export interface AgentInput {
   product_id: number | null
   message_id: number | null
   allow_model: boolean
+  allow_analysis_data?: boolean
   budget: AgentBudget
 }
 export interface AgentStep {
@@ -80,8 +81,21 @@ export interface ModelStatus {
   provider: string
   model: string
   reason: string
+  input_usd_per_million?: string | null
+  output_usd_per_million?: string | null
+}
+export interface AnalysisExplanation {
+  observations: { fact_id: string; text: string; sku: string | null }[]
+  checks: { id: string; text: string }[]
+  next_action: 'finish' | 'offer_todo'
+  composition: string
+  sku_fact_limit: number
 }
 export const agentLabels: Record<string, string> = {
+  question: 'AI 经营问数',
+  question_plan: '理解经营问题',
+  explain_analysis: '组织事实解释',
+  analysis_todo: '保存分析和核对待办',
   ready: '待执行',
   running: '模型调用中',
   waiting_approval: '等待审批',
@@ -118,6 +132,15 @@ export const agentLabels: Record<string, string> = {
   test_double: '测试替身',
 }
 export const agentReasons: Record<string, string> = {
+  analysis_consent_required: '需要同意发送问题和匿名聚合事实；请确认数据范围后新建任务。',
+  unsupported_analysis:
+    '此问题超出当前范围或能力。支持销售汇总、购买数量前五与已知毛利筛选；请调整问题或表单范围。',
+  invalid_model_output:
+    '模型输出未通过事实与结构校验，已阻断。已知费用仍记录，原始统计可继续查看。',
+  analysis_review_suggested:
+    '模型建议核对以下事实。批准后保存分析及一个核对待办，可在经营分析页完成或重开。',
+  analysis_explained: '证据解释已保存到本次执行记录。',
+  model_input_too_large: '模型输入超过限制，请缩小统计范围。',
   use_authorization: '已绑定匹配的 R1 预授权；执行前将再次核对。',
   preauthorization_ready: '候选符合 R1 预授权，准备保存。',
   preauthorization_used: '已使用 R1 预授权保存候选并记录一次消耗。',

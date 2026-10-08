@@ -166,3 +166,12 @@
 - `WorkInbox.vue` 的请求序号和销毁标记隔离旧范围回包；失败时清除缓存，避免把上一店铺的数据当作新范围。`WorkInbox.spec.ts` 覆盖迟到成功、迟到失败和不可信文本转义。
 - `AnalyticsService.change_todo` 给人工核对进度增加期望版本、同目标回放及审计事务；`test_analysis_todo_complete_replay_reopen_and_old_version` 验证完成→重开后旧请求冲突。完成不改变经营事实，来源变更保留 completed 并另标 stale。
 - 深链定位不是授权：`deepLink.ts` 只校验输入和可选店铺，真正对象归属继续由服务器校验。R1 授权单独加载指定 ID，R2 仍打开完整外发预览，首页没有通用“全部批准”入口。
+
+## 模型业务生成：怎样在可变表述中保持事实稳定？
+
+- **为何 JSON schema 不能保证事实正确？** `analysis_explanation.py::compose` 再验证事实/建议 ID、唯一性与动作前提，强制保留覆盖与费用缺口。模型只能组合受控事实，金额与原始行始终来自 `profit_calculation.py`。
+- **模型如何影响实际业务而不获取写权限？** `AgentService._accept_generation` 将 offer_todo 转为 waiting_approval；`analysis_todo` 仍须代码白名单和单次批准，随后调用 AnalyticsService。verify 回读真实待办，模型返回不能直接创建记录。
+- **为何不把整个 AnalysisResult 发给模型？** 其中包含订单号、SKU 和导入来源。`explanation_payload` 投影匿名指标且最多 20 项 SKU，保留全部本地事实供用户核对。用户问题单独告知会原样发送。
+- **拒答是否意味着没有收费？** `GenerationReply` 分离 content 与 cost。usage 有效的拒答、incomplete 或非法引用仍记已知费用；未知 usage 则保留预留。`test_generation_protocol_and_charge_classification` 覆盖这两类状态。
+- **为什么在网络前提交、回来后又加锁？** 调用期间不能长期持有店铺锁；持久租约防重放，返回时版本/来源校验防止取消或清除后回写。`test_inflight_change_discards_text_keeps_cost_and_never_restores_erased_data` 检查暂停、取消、撤销和清除。
+- **如何证明没有把聊天当成业务执行？** `test_question_explains_then_approves_saves_verifies_and_deduplicates` 检查审批前数据库无保存记录，批准后实际 AnalysisTodo 与 SavedAnalysis 存在，重复来源只保留一份待办；审计失败时两者均回滚。

@@ -1,4 +1,4 @@
-"""One bounded classification request; no business data, tools, or credentials in output."""
+"""Bounded Responses requests for routing and identifier-only evidence composition."""
 
 import json
 from dataclasses import dataclass
@@ -23,10 +23,21 @@ class ModelReply:
     engine: str = "openai_responses"
 
 
+@dataclass(frozen=True)
+class GenerationReply:
+    content: dict[str, Any] | None
+    cost: Decimal | None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    engine: str = "openai_responses"
+
+
 class DecisionModel(Protocol):
     def status(self) -> ModelStatus: ...
     def reserve(self, goal: str) -> Decimal: ...
     def decide(self, goal: str, timeout: float) -> ModelReply: ...
+    def reserve_generation(self, request: dict[str, Any]) -> Decimal: ...
+    def generate(self, request: dict[str, Any], timeout: float) -> GenerationReply: ...
 
 
 class OpenAIResponsesModel:
@@ -47,6 +58,8 @@ class OpenAIResponsesModel:
             provider="openai_responses",
             model=self.settings.model_name,
             reason="" if ready else "需启用模型、配置凭据、模型名和经核对的美元费率",
+            input_usd_per_million=self.settings.model_input_usd_per_million,
+            output_usd_per_million=self.settings.model_output_usd_per_million,
         )
 
     def _body(self, goal: str) -> dict[str, Any]:
@@ -95,6 +108,88 @@ class OpenAIResponsesModel:
     def reserve(self, goal: str) -> Decimal:
         # A conservative UTF-8 byte envelope plus protocol headroom, not a quoted bill.
         return self._cost(len(json.dumps(self._body(goal)).encode("utf-8")) + 4096, 256)
+
+    def _generation_body(self, request: dict[str, Any]) -> dict[str, Any]:
+        body = {
+            "model": self.settings.model_name,
+            "store": False,
+            "max_output_tokens": 768,
+            "instructions": request["instructions"],
+            "input": json.dumps(request["payload"], ensure_ascii=False),
+            "text": {
+                "format": {
+                    "type": "json_schema",
+                    "name": request["name"],
+                    "strict": True,
+                    "schema": request["schema"],
+                }
+            },
+        }
+        if len(json.dumps(body).encode("utf-8")) > 60000:
+            raise BusinessError("model_input_too_large", "模型事实范围过大，请缩小时间窗", 422)
+        return body
+
+    def reserve_generation(self, request: dict[str, Any]) -> Decimal:
+        return self._cost(
+            len(json.dumps(self._generation_body(request)).encode("utf-8")) + 4096, 768
+        )
+
+    def generate(self, request: dict[str, Any], timeout: float) -> GenerationReply:
+        if self.status().status != "configured" or self.settings.model_api_key is None:
+            raise BusinessError("not_configured", "模型未配置", 422)
+        body = self._generation_body(request)
+        cost, inputs, outputs = None, None, None
+        try:
+            deadline = monotonic() + min(timeout, 30)
+            with (
+                httpx.Client(
+                    timeout=min(timeout, 30), follow_redirects=False, trust_env=False
+                ) as client,
+                client.stream(
+                    "POST",
+                    "https://api.openai.com/v1/responses",
+                    headers={
+                        "Authorization": "Bearer " + self.settings.model_api_key.get_secret_value()
+                    },
+                    json=body,
+                ) as response,
+            ):
+                if response.status_code != 200:
+                    return GenerationReply(None, None)
+                raw = bytearray()
+                for chunk in response.iter_bytes():
+                    raw.extend(chunk)
+                    if len(raw) > 200000 or monotonic() > deadline:
+                        return GenerationReply(None, None)
+            data = json.loads(raw)
+            usage = data["usage"]
+            incoming, outgoing = usage["input_tokens"], usage["output_tokens"]
+            if (
+                type(incoming) is not int
+                or type(outgoing) is not int
+                or not 0 <= incoming <= 100000000
+                or not 0 <= outgoing <= 100000000
+            ):
+                return GenerationReply(None, None)
+            inputs, outputs = incoming, outgoing
+            cost = self._cost(inputs, outputs)
+            # Invalid/refused/incomplete business output can still have a known usage charge.
+            if data.get("status") != "completed":
+                return GenerationReply(None, cost, inputs, outputs)
+            parts = [
+                part
+                for item in data["output"]
+                if item["type"] == "message"
+                for part in item["content"]
+            ]
+            if len(parts) != 1 or parts[0]["type"] != "output_text":
+                return GenerationReply(None, cost, inputs, outputs)
+            content = json.loads(parts[0]["text"])
+            if not isinstance(content, dict):
+                content = None
+            return GenerationReply(content, cost, inputs, outputs)
+        except (httpx.HTTPError, ValueError, KeyError, TypeError):
+            return GenerationReply(None, cost, inputs, outputs)
 
     def decide(self, goal: str, timeout: float) -> ModelReply:
         if self.status().status != "configured" or self.settings.model_api_key is None:

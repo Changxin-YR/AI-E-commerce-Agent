@@ -170,9 +170,14 @@ function time(value: string, timezone: string): string {
       <h1>让每笔毛利，有据可查。</h1>
       <p>单店铺、单币种与明确时间窗，从订单行核对经营判断。</p>
     </div>
-    <span class="outline-label">受控问数 · 本地规则</span>
+    <span class="outline-label">经营分析</span>
   </div>
   <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
+  <p v-if="shopId">
+    <RouterLink :to="{ path: '/agent', query: { shop: shopId, mode: 'question' } }">
+      打开 AI 经营问数，确认范围与模型预算
+    </RouterLink>
+  </p>
   <p v-if="!shops.length && !busy">
     还没有店铺，请先<RouterLink to="/settings">添加经营资料</RouterLink>，再<RouterLink
       to="/imports"
@@ -255,7 +260,7 @@ function time(value: string, timezone: string): string {
     </fieldset>
     <p>
       起止时间使用 ISO 8601 格式；Z 表示 UTC，也可填写 +08:00。最长 366 天、最多 10000
-      行。模型服务尚未配置，仅支持上方三个问题。
+      行。本页快捷计算支持上方三个问题；自由表述请使用 AI 经营问数。
     </p>
     <button class="button primary" :disabled="busy || !shopId">
       {{ busy ? '处理中…' : '计算并查看证据' }}

@@ -7,7 +7,7 @@ from pydantic import Field, StrictBool
 from app.schemas.common import InputModel, OutputModel
 from app.schemas.operations import OperationScope
 
-Template = Literal["daily", "analysis", "listing", "support", "natural"]
+Template = Literal["daily", "analysis", "listing", "support", "natural", "question"]
 Money = Annotated[Decimal, Field(ge=0, le=10, decimal_places=6)]
 
 
@@ -26,6 +26,7 @@ class StartAgent(InputModel):
     product_id: Annotated[int, Field(gt=0)] | None = None
     message_id: Annotated[int, Field(gt=0)] | None = None
     allow_model: StrictBool = False
+    allow_analysis_data: StrictBool = False
     budget: Budget = Field(default_factory=Budget)
 
 
@@ -105,3 +106,5 @@ class ModelStatus(OutputModel):
     provider: str
     model: str
     reason: str
+    input_usd_per_million: Decimal | None = None
+    output_usd_per_million: Decimal | None = None

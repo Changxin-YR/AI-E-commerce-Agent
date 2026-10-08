@@ -8,7 +8,7 @@ from pydantic import BaseModel, ValidationError
 from app.core.errors import BusinessError
 from app.repositories.unit_of_work import UnitOfWork
 from app.schemas.agent import SkillDefinition, StartAgent
-from app.schemas.analytics import AnalysisInput, AnalysisResult
+from app.schemas.analytics import AnalysisInput, AnalysisResult, SavedOutput, SaveInput
 from app.schemas.common import InputModel, OutputModel
 from app.schemas.listings import GenerateInput, ListingContent, ListingOutput, ProductFacts
 from app.schemas.operations import CheckPreview, OperationScope, RunInput, RunOutput
@@ -56,6 +56,13 @@ CONTRACTS = {
         "analytics.run",
         AnalysisInput,
         AnalysisResult,
+    ),
+    "analysis_todo": Contract(
+        "保存已核对的经营分析与一个核对待办",
+        "analytics.save_and_create_todo",
+        SaveInput,
+        SavedOutput,
+        True,
     ),
     "propose_tasks": Contract(
         "将已审阅异常保存为待审批候选", "operations.run", RunInput, RunOutput, True
@@ -152,9 +159,16 @@ class ControlledSkills:
                         if k in AnalysisInput.model_fields
                     }
                 )
-                .model_copy(update={"intent": "summary"})
+                .model_copy(
+                    update={"intent": prior["intent"] if data.template == "question" else "summary"}
+                )
                 .model_dump(mode="json")
             )
+        if name == "analysis_todo":
+            result = AnalysisResult.model_validate(prior["analysis"])
+            return SaveInput(
+                scope=result.scope, expected_revision=result.source_revision
+            ).model_dump(mode="json")
         if name == "propose_tasks":
             return RunInput(request_id=data.request_id, scope=data.scope).model_dump(mode="json")
         if name in {"product_context", "message_context"}:
@@ -193,6 +207,10 @@ class ControlledSkills:
         elif name == "metrics":
             result = AnalyticsService(self.uow).run(
                 self.owner, self.shop, AnalysisInput.model_validate(args)
+            )
+        elif name == "analysis_todo":
+            result = AnalyticsService(self.uow).save_and_create_todo(
+                self.owner, self.shop, SaveInput.model_validate(args)
             )
         elif name == "propose_tasks":
             result = OperationsService(self.uow).run(

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
@@ -50,6 +50,8 @@ const busy = ref(false)
 const controlling = ref(false)
 const driving = ref(false)
 let alive = true
+let loadEpoch = 0
+let inspectEpoch = 0
 const form = reactive<AgentInput>({
   request_id: '',
   template: 'daily',
@@ -57,6 +59,7 @@ const form = reactive<AgentInput>({
   product_id: null,
   message_id: null,
   allow_model: false,
+  allow_analysis_data: false,
   budget: { max_steps: 12, max_seconds: 120, max_cost_usd: '0' },
   scope: {
     start_at: new Date(Date.now() - 7 * 86400000).toISOString(),
@@ -71,6 +74,19 @@ const form = reactive<AgentInput>({
     max_margin_percent: '20',
   },
 })
+watch(
+  () => [
+    shopId.value,
+    form.template,
+    form.goal,
+    JSON.stringify(form.scope),
+    JSON.stringify(form.budget),
+  ],
+  () => {
+    form.allow_model = false
+    form.allow_analysis_data = false
+  },
+)
 const productOptions = computed(() =>
   products.value.filter((p) => p.source.data_identity === form.scope.data_identity),
 )
@@ -103,7 +119,11 @@ async function readOptions(): Promise<void> {
 }
 async function loadShop(): Promise<void> {
   if (!shopId.value || driving.value) return
+  const epoch = ++loadEpoch
+  inspectEpoch++
   selected.value = null
+  model.value = null
+  runs.value = []
   const shop = shops.value.find((s) => s.id === shopId.value)
   if (shop) {
     form.scope.timezone = shop.timezone
@@ -118,15 +138,20 @@ async function loadShop(): Promise<void> {
       agentApi.skills(id),
       agentApi.model(id),
     ])
+    if (!alive || epoch !== loadEpoch || id !== shopId.value) return
     runs.value = history
     skills.value = registry
     model.value = status
-    if (history[0]) selected.value = await agentApi.get(id, history[0].id)
+    if (history[0]) {
+      const run = await agentApi.get(id, history[0].id)
+      if (!alive || epoch !== loadEpoch || id !== shopId.value) return
+      selected.value = run
+    }
     await readOptions()
   } catch (cause) {
-    error.value = errorMessage(cause)
+    if (alive && epoch === loadEpoch) error.value = errorMessage(cause)
   } finally {
-    busy.value = false
+    if (alive && epoch === loadEpoch) busy.value = false
   }
 }
 async function refresh(): Promise<void> {
@@ -143,10 +168,13 @@ async function refresh(): Promise<void> {
 }
 async function inspect(id: number): Promise<void> {
   if (busy.value) return
+  const epoch = ++inspectEpoch
+  const shop = shopId.value
   try {
-    selected.value = await agentApi.get(shopId.value, id)
+    const run = await agentApi.get(shop, id)
+    if (alive && epoch === inspectEpoch && shop === shopId.value) selected.value = run
   } catch (cause) {
-    error.value = errorMessage(cause)
+    if (alive && epoch === inspectEpoch && shop === shopId.value) error.value = errorMessage(cause)
   }
 }
 async function drive(): Promise<void> {
@@ -237,6 +265,7 @@ onMounted(async () => {
     const id = linkedId(route.query.execution)
     const grantId = linkedId(route.query.authorization)
     await loadShop()
+    if (route.query.mode === 'question') form.template = 'question'
     if (id || grantId) selected.value = null
     if (id) {
       await inspect(id)
@@ -297,6 +326,7 @@ onUnmounted(() => {
             >执行流程<select v-model="form.template">
               <option value="daily">今日运营：检查 → 异常候选 → 核验</option>
               <option value="analysis">销售与已知毛利（全店所选身份）</option>
+              <option value="question">AI 经营问数：理解 → 计算 → 解释 → 核对待办</option>
               <option value="listing">商品事实 → Listing 模板草稿</option>
               <option value="support">消息 → 人工接管草稿</option>
               <option value="natural">自然语言目标（需要模型）</option>
@@ -344,7 +374,7 @@ onUnmounted(() => {
               </select></label
             >
           </template>
-          <template v-if="form.template === 'natural'">
+          <template v-if="['natural', 'question'].includes(form.template)">
             <label class="full-width"
               >运营目标<textarea
                 v-model="form.goal"
@@ -353,12 +383,29 @@ onUnmounted(() => {
                 placeholder="例如：检查已导入订单，找出需要核对的事项"
               />
             </label>
+            <p v-if="form.template === 'question'" class="full-width">
+              支持销售汇总、原购买数量前五、销量高但已知毛利低。使用下方时间、币种及阈值，
+              统计全店所选数据身份；渠道用于绑定经营规则，订单统计不按渠道过滤。
+              问题要求的范围若不同，请先修改表单。
+            </p>
             <label class="full-width"
               ><span
                 ><input v-model="form.allow_model" type="checkbox" /> 同意将本次目标文本发送至配置的
                 OpenAI 模型，并使用下方美元预算</span
               ></label
             >
+            <label v-if="form.template === 'question'" class="full-width">
+              <span
+                ><input v-model="form.allow_analysis_data" type="checkbox" />
+                同意发送本次范围、匿名聚合指标与费用缺口，用于组织证据解释</span
+              >
+            </label>
+            <p v-if="form.template === 'question'" class="full-width">
+              正常流程需要两次模型请求。事实包包含统计时间、币种、阈值、汇总及最多 20 项匿名 SKU
+              指标； 原始订单号、SKU
+              名称、文件名和买家消息留在本地。问题正文会原样发送，请核对其中内容。
+              返回内容只可选择已有事实和核对建议，内部保存仍须审批。
+            </p>
           </template>
         </fieldset>
         <details>
@@ -412,8 +459,14 @@ onUnmounted(() => {
           </fieldset>
         </details>
         <p>
-          固定流程使用本地规则或事实模板，模型费用为
-          0。自然语言仅用于选择受控流程，模型不会计算金额或改写业务事实。
+          固定流程使用本地规则或事实模板，模型费用为 0。自然语言目标用于路由；AI
+          经营问数另根据确定性结果组织证据解释。
+        </p>
+        <p v-if="model?.status === 'configured'">
+          {{ model.provider }} · {{ model.model }} · 每百万输入 / 输出 tokens 的配置费率：
+          {{ model.input_usd_per_million ?? '未知' }} /
+          {{ model.output_usd_per_million ?? '未知' }} USD。
+          每次调用前预留费用；实际用量按此费率记账，供应商账单须另核对。
         </p>
         <button class="button primary" :disabled="busy || controlling || rulesPending">
           {{ busy ? '正在执行…' : '启动并运行' }}

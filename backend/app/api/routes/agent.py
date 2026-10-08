@@ -1,26 +1,35 @@
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
 
 from app.api.dependencies import CurrentSession, SettingsDependency, UowDependency
 from app.schemas.agent import AgentAction, AgentOutput, ModelStatus, SkillDefinition, StartAgent
 from app.services.agent import AgentService
-from app.services.agent_model import OpenAIResponsesModel
+from app.services.agent_model import DecisionModel, OpenAIResponsesModel
 
 router = APIRouter(prefix="/shops/{shop_id}/agent", tags=["受控执行"])
 
 
+def configured_model(settings: SettingsDependency) -> DecisionModel:
+    return OpenAIResponsesModel(settings)
+
+
+ModelDependency = Annotated[DecisionModel, Depends(configured_model)]
+
+
 @router.get("/skills")
 def skills(
-    shop_id: int, current: CurrentSession, uow: UowDependency, settings: SettingsDependency
+    shop_id: int, current: CurrentSession, uow: UowDependency, model: ModelDependency
 ) -> list[SkillDefinition]:
-    service = AgentService(uow, OpenAIResponsesModel(settings))
+    service = AgentService(uow, model)
     return service.catalog(current.user_id, shop_id)
 
 
 @router.get("/model")
 def model_status(
-    shop_id: int, current: CurrentSession, uow: UowDependency, settings: SettingsDependency
+    shop_id: int, current: CurrentSession, uow: UowDependency, model: ModelDependency
 ) -> ModelStatus:
-    service = AgentService(uow, OpenAIResponsesModel(settings))
+    service = AgentService(uow, model)
     return service.model_status(current.user_id, shop_id)
 
 
@@ -30,16 +39,16 @@ def start(
     data: StartAgent,
     current: CurrentSession,
     uow: UowDependency,
-    settings: SettingsDependency,
+    model: ModelDependency,
 ) -> AgentOutput:
-    return AgentService(uow, OpenAIResponsesModel(settings)).start(current.user_id, shop_id, data)
+    return AgentService(uow, model).start(current.user_id, shop_id, data)
 
 
 @router.get("/runs")
 def runs(
-    shop_id: int, current: CurrentSession, uow: UowDependency, settings: SettingsDependency
+    shop_id: int, current: CurrentSession, uow: UowDependency, model: ModelDependency
 ) -> list[AgentOutput]:
-    return AgentService(uow, OpenAIResponsesModel(settings)).list(current.user_id, shop_id)
+    return AgentService(uow, model).list(current.user_id, shop_id)
 
 
 @router.get("/runs/{run_id}")
@@ -48,9 +57,9 @@ def get(
     run_id: int,
     current: CurrentSession,
     uow: UowDependency,
-    settings: SettingsDependency,
+    model: ModelDependency,
 ) -> AgentOutput:
-    return AgentService(uow, OpenAIResponsesModel(settings)).get(current.user_id, shop_id, run_id)
+    return AgentService(uow, model).get(current.user_id, shop_id, run_id)
 
 
 @router.post("/runs/{run_id}")
@@ -60,8 +69,6 @@ def act(
     data: AgentAction,
     current: CurrentSession,
     uow: UowDependency,
-    settings: SettingsDependency,
+    model: ModelDependency,
 ) -> AgentOutput:
-    return AgentService(uow, OpenAIResponsesModel(settings)).act(
-        current.user_id, shop_id, run_id, data
-    )
+    return AgentService(uow, model).act(current.user_id, shop_id, run_id, data)

@@ -22,6 +22,7 @@ from app.repositories.database import create_database_engine, create_session_fac
 from app.repositories.unit_of_work import UnitOfWork  # noqa: E402
 from app.schemas.identity import AccountInput  # noqa: E402
 from app.services.auth import AuthService  # noqa: E402
+from scripts.e2e_analysis import configure as configure_analysis  # noqa: E402
 from scripts.e2e_mail import configure as configure_mail  # noqa: E402
 
 
@@ -48,6 +49,7 @@ def main() -> None:
         )
     application = create_app(settings)
     configure_mail(application, settings, create_session_factory(engine))
+    configure_analysis(application, settings)
     engine.dispose()
     uvicorn.run(application, host="127.0.0.1", port=8001, access_log=False)
 

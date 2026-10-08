@@ -173,7 +173,7 @@ def test_request_scope_csrf_and_missing_inputs(logged_in: TestClient) -> None:
 def test_registry_denies_missing_metadata_and_risk_escalation(logged_in: TestClient) -> None:
     shop = create_shop(logged_in)
     spec = require_skill("data_check")
-    assert spec.input_schema and spec.output_schema and len(REGISTRY) == 7
+    assert spec.input_schema and spec.output_schema and len(REGISTRY) == 8
     with patch.dict(REGISTRY, {"data_check": spec.model_copy(update={"risk": "R3"})}):
         run = act(logged_in, start(logged_in, shop))
     assert run["status"] == "blocked" and run["reason"] == "skill_policy_denied"

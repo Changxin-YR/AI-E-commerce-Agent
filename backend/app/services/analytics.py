@@ -125,6 +125,13 @@ class AnalyticsService:
         self.uow.commit()
         return output
 
+    def save_and_create_todo(self, owner_id: int, shop_id: int, data: SaveInput) -> SavedOutput:
+        with self.uow.defer_commits():
+            saved = self.save(owner_id, shop_id, data)
+            result = self.create_todo(owner_id, shop_id, saved.id)
+        self.uow.commit()
+        return result
+
     def list_saved(self, owner_id: int, shop_id: int) -> list[SavedOutput]:
         self._shop(owner_id, shop_id)
         return [

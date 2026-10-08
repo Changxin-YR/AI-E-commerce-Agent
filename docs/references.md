@@ -131,3 +131,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [Vue Router 数据获取](https://router.vuejs.org/guide/advanced/data-fetching.html)、[Composition API](https://router.vuejs.org/guide/advanced/composition-api) | MIT / 官方文档 | 深链携带明确店铺与对象 ID，路由改变重新加载原始业务对象；加载和失败态清晰展示，服务端重新核验权限与来源 |
 
 沿用已确认 Firecrawl 402 限制，以官方网页检索。首页只读取本地已存在记录；所有审批、恢复和外部回查继续调用既有受控业务服务，首页读取不触发模型或发信。
+
+## 经营问数的模型证据解释（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs) | 官方协议文档，服务受供应商条款约束；不复制业务源码 | Responses 的 text.format/json_schema/strict；拒绝与 incomplete 单独处理。结构合规不等于事实正确，因此服务器另验事实和建议编号，Decimal 指标从受控服务取得 |
+| [Responses API](https://developers.openai.com/api/reference/python/resources/responses) | 官方 API 文档 | 固定官方端点、store=false、无工具、限制输入/输出与费用；记录 usage，响应失效仍保存已知费用，无 usage 保留预留且不自动重发 |
+
+沿用 Firecrawl 402 限制，经官方文档检索。模型仅接收卖家同意的问题、明确范围和匿名聚合事实，不接收原始订单号、SKU 文本、文件名或买家消息。模型选择证据顺序和下一步核对建议；事实句由已验证事实渲染，来源与费用缺口强制保留。供应商和预算仍由部署者配置，本地验证使用替身。

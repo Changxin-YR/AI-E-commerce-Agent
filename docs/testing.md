@@ -240,3 +240,17 @@ Vitest **12 文件 21 项通过**，新增组件测试覆盖切范围后的迟�
 使用仓库 Chromium Playwright，首页 `http://127.0.0.1:5174/`，桌面 1280×720、手机 390×844。最终首屏与收件箱截图在系统 Temp `soloops-workbench-{first-desktop,first-mobile,desktop,mobile}.png`，实际查看了桌面首屏与手机收件箱；合成数据、有效内容、主要交互、登录后页面错误及手机宽度检查通过，截图和诊断日志不提交。
 
 迁移 `86df84dc129a` 在隔离 `_test` 库升级→回退 `728544d1186c`→升级/check 通过；开发库只升级/check，两库无漂移。数据库测试、浏览器测试与迁移回退串行执行。上一提交 b98dad3 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37837382644) 已核实 completed/success。74 SO、32 验收行完整保留；本轮未调用真实模型或邮件通道，四条完整 AI MVP 及剩余 P0 继续开发。
+
+## 第十五迭代：模型经营问数与受控证据解释（2026-10-09）
+
+完整后端 pytest **302 项通过（91.74 秒）**；新增 `test_analysis_model.py` **28 项**，覆盖三类意图/拒答、空数据与缺成本、事实与建议 ID/额外字段阻断、重复问数的 Decimal 数值与来源一致、授权/两次费用预算、暂停与恢复、在途取消/撤销/清除、审计回滚、保存去重、租约失效及供应商响应分类。HTTP MockTransport 覆盖合法响应、拒答、incomplete、非法 JSON、无 usage、布尔 usage、超时、重定向、过大及非对象响应；没有真实模型调用。首轮定向测试的两条断言原先误取最后的暂停/取消操作记录，改为定位模型丢弃状态后全量通过。
+
+Ruff **140 文件**规则/格式、mypy **105 个 app 文件**通过。Vitest **13 文件 23 项通过**，新增解释组件的原始文本转义、缺口和未完成模型状态。Vue lint、type-check、生产构建通过；Starlette/httpx 弃用提示仍在。
+
+完整 Playwright **30 项通过（59.4 秒）**；新增桌面/手机合成模型路径：确认问题/事实授权和预算 → 显示确定性毛利与模型证据组合 → 审批保存 → 刷新回读 → 确切分析深链 → 完成核对待办 → 清除来源擦除解释。原有 28 项回归一并通过，手机无横向溢出、页面无脚本错误。浏览器替身只在隔离 launcher 和特定合成店铺生效，普通店铺仍显示模型未配置。
+
+使用仓库 Chromium，`http://127.0.0.1:5174/agent`，桌面 1280×800、手机 390×844。解释及清除截图在系统 Temp `soloops-question-{explanation,cleared}-{desktop,mobile}.png`，已实际查看解释卡片；均合成数据，截图不提交。数据库测试与 E2E 串行，本切片无数据库结构变化。
+
+上一提交 5be1ff9 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37841674665) 已核实 completed/success。74 SO 与 32 验收行保持完整。MVP-04 的模型协议与本地记录闭环已用替身验证；真实模型供应商调用、真实外发以及其他 P0 模型业务切片仍按矩阵记录。
+
+提交前将分析保存与待办创建收拢为 `AnalyticsService.save_and_create_todo`，模型步骤同时持久化本次供应商、模型名和配置费率；对应问数/Agent/分析定向复验 **70 项通过（21.01 秒）**。最终页面补充暂停后已知回包丢弃、恢复可能重新计费的说明，lint/type/build/格式通过。

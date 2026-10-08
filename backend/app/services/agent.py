@@ -5,6 +5,7 @@ from time import monotonic
 from typing import Any
 from uuid import uuid4
 
+from pydantic import ValidationError
 from sqlalchemy.exc import OperationalError
 
 from app.core.errors import BusinessError, ConflictError, NotFoundError
@@ -21,8 +22,16 @@ from app.schemas.agent import (
     StartAgent,
     StepOutput,
 )
-from app.services.agent_model import DecisionModel, ModelReply
+from app.schemas.analytics import AnalysisResult
+from app.services.agent_model import DecisionModel, GenerationReply, ModelReply
 from app.services.agent_skills import CONTRACTS, ControlledSkills, evidence, require_skill
+from app.services.analysis_explanation import (
+    QuestionDecision,
+    compose,
+    explanation_request,
+    question_request,
+)
+from app.services.analytics import AnalyticsService
 from app.services.authorizations import AuthorizationsService
 from app.services.business_rules import BusinessRulesService
 from app.services.listings import ListingService, digest
@@ -36,6 +45,7 @@ FIRST_NODE = {
     "listing": "product_context",
     "support": "message_context",
     "natural": "plan",
+    "question": "question_plan",
 }
 TERMINAL = {"succeeded", "cancelled", "rejected", "blocked", "result_unknown", "circuit_open"}
 
@@ -179,6 +189,8 @@ class AgentService:
         canonical = data.model_dump(mode="json")
         if canonical["authorization_id"] is None:
             canonical.pop("authorization_id")  # Preserve hashes for existing unbound requests.
+        if not canonical["allow_analysis_data"]:
+            canonical.pop("allow_analysis_data")  # Preserve earlier request hashes.
         key = digest([shop_id, canonical])
         prior = self.repo.by_request(owner, str(data.request_id))
         if prior:
@@ -287,6 +299,8 @@ class AgentService:
             return "step_budget"
         if run.elapsed_ms >= budget.max_seconds * 1000:
             return "time_budget"
+        if run.spent_usd > budget.max_cost_usd:
+            return "cost_budget"
         return ""
 
     def _advance(self, run: AgentExecution) -> AgentOutput:
@@ -297,6 +311,8 @@ class AgentService:
         else:
             if run.next_node == "plan":
                 return self._plan(run)
+            if run.next_node in {"question_plan", "explain_analysis"}:
+                return self._generate_analysis(run)
             return self._local(run)
         run.version += 1
         self._event(run, run.reason, run.status)
@@ -428,7 +444,9 @@ class AgentService:
                 run.status, run.reason = "waiting_input", "missing_product_facts"
         elif node == "message_context":
             run.next_node, run.status = "support_draft", "waiting_approval"
-        elif node in {"propose_tasks", "listing_draft", "support_draft"}:
+        elif node == "metrics" and run.template == "question":
+            run.next_node, run.status = "explain_analysis", "ready"
+        elif node in {"propose_tasks", "listing_draft", "support_draft", "analysis_todo"}:
             run.next_node, run.status = "verify", "ready"
             if node == "propose_tasks" and run.authorization_id:
                 run.reason = "preauthorization_used"
@@ -439,6 +457,17 @@ class AgentService:
         prior = run.result or {}
         last_skill = next(s.skill for s in reversed(self.repo.steps(run.id)) if s.skill)
         record_id = int(prior["id"])
+        if last_skill == "analysis_todo":
+            analysis = AnalyticsService(self.uow).get_saved(run.owner_id, run.shop_id, record_id)
+            if analysis.status != "current" or analysis.todo is None:
+                raise ConflictError("核验时分析来源或待办已变化")
+            return {
+                "record_type": "analysis",
+                "record_id": record_id,
+                "todo_id": analysis.todo.id,
+                "status": analysis.todo.status,
+                "external_status": "not_submitted",
+            }
         if last_skill == "propose_tasks":
             result = OperationsService(self.uow).get_run(run.owner_id, run.shop_id, record_id)
             if result.source_status != "current":
@@ -513,9 +542,12 @@ class AgentService:
         run.lease_until = utc_now() + timedelta(seconds=timeout + 15)
         step = AgentStep(
             execution_id=run.id,
-            node="plan",
+            node=run.next_node,
             status="running",
-            input={"goal": goal},
+            input={
+                "goal": goal,
+                "model_configuration": self.model.status().model_dump(mode="json"),
+            },
             output=None,
         )
         self.repo.add(step)
@@ -531,6 +563,119 @@ class AgentService:
         # Network I/O must occur with no open transaction or owner/shop lock.
         self.uow.commit()
         return lease
+
+    def _generate_analysis(self, run: AgentExecution) -> AgentOutput:
+        data = StartAgent.model_validate(run.input)
+        status = self.model.status()
+        if not data.goal:
+            run.status, run.reason = "blocked", "missing_goal"
+        elif not data.allow_model or not data.allow_analysis_data:
+            run.status, run.reason = "waiting_configuration", "analysis_consent_required"
+        elif status.status != "configured":
+            run.status, run.reason = "waiting_configuration", "not_configured"
+            run.model_status = status.status
+        else:
+            request = (
+                question_request(data.goal, data.scope.model_dump(mode="json"))
+                if run.next_node == "question_plan"
+                else explanation_request(data.goal, AnalysisResult.model_validate(run.result))
+            )
+            reserve = self.model.reserve_generation(request)
+            budget = Budget.model_validate(run.budget)
+            if reserve <= 0 or run.spent_usd + run.reserved_usd + reserve > budget.max_cost_usd:
+                run.status, run.reason = "paused", "cost_budget"
+            else:
+                timeout = min(30.0, budget.max_seconds - run.elapsed_ms / 1000)
+                lease = self._claim_model(run, data.goal, reserve, timeout)
+                started = monotonic()
+                try:
+                    reply = self.model.generate(request, timeout)
+                except BusinessError:
+                    reply = GenerationReply(None, None)
+                elapsed = max(1, int((monotonic() - started) * 1000))
+                return self._complete_generation(lease, reply, elapsed)
+        run.version += 1
+        self._event(run, run.reason, run.status)
+        return self._finish(run)
+
+    def _complete_generation(
+        self, lease: ModelLease, reply: GenerationReply, elapsed: int
+    ) -> AgentOutput:
+        run = self._load(lease.owner, lease.shop, lease.run_id)
+        step = next(s for s in self.repo.steps(run.id) if s.id == lease.step_id)
+        accepted = (
+            run.lease_token == lease.token
+            and run.version == lease.version
+            and run.status == "running"
+            and run.source_status == "current"
+        )
+        run.lease_token, run.lease_until = None, None
+        run.elapsed_ms += elapsed
+        run.version += 1
+        step.duration_ms = elapsed
+        if reply.cost is None:
+            run.model_status, step.status, step.reason = (
+                "result_unknown",
+                "result_unknown",
+                "model_result_unknown",
+            )
+            if run.status == "running":
+                run.status, run.reason = "result_unknown", "model_result_unknown"
+        else:
+            run.reserved_usd -= lease.reserve
+            run.spent_usd += reply.cost
+            run.model_status = reply.engine
+            step.status = "completed" if accepted else "discarded"
+            if run.source_status != "cleared":
+                step.output = {
+                    "cost_usd": str(reply.cost),
+                    "input_tokens": reply.input_tokens,
+                    "output_tokens": reply.output_tokens,
+                    "engine": reply.engine,
+                }
+            if accepted:
+                try:
+                    if reply.content is None:
+                        raise ValueError("no valid content")
+                    output = self._accept_generation(run, reply.content)
+                    step.output = {**(step.output or {}), **output}
+                except (BusinessError, ValidationError, ValueError, KeyError):
+                    run.status, run.reason = "blocked", "invalid_model_output"
+                    step.status, step.reason = "failed", "invalid_model_output"
+            elif run.status == "running":
+                run.status, run.reason = "blocked", "source_changed"
+        step.next_node = run.next_node
+        self.uow.record_event(
+            run.owner_id,
+            "agent.model_completed",
+            "agent_execution",
+            run.id,
+            {"node": step.node, "status": step.status, "cost_known": reply.cost is not None},
+        )
+        return self._finish(run)
+
+    def _accept_generation(self, run: AgentExecution, content: dict[str, Any]) -> dict[str, Any]:
+        if run.next_node == "question_plan":
+            decision = QuestionDecision.model_validate(content)
+            output = decision.model_dump()
+            if decision.intent == "unsupported":
+                run.status, run.reason, run.next_node = "blocked", "unsupported_analysis", "end"
+            else:
+                run.result = output
+                run.status, run.reason, run.next_node = "ready", "intent_selected", "metrics"
+            return output
+        analysis = AnalysisResult.model_validate(run.result)
+        explanation = compose(analysis, content)
+        run.result = {"analysis": analysis.model_dump(mode="json"), "explanation": explanation}
+        if explanation["next_action"] == "offer_todo":
+            run.status, run.reason, run.next_node = (
+                "waiting_approval",
+                "analysis_review_suggested",
+                "analysis_todo",
+            )
+        else:
+            run.status, run.reason, run.next_node = "succeeded", "analysis_explained", "end"
+        return {"explanation": explanation}
 
     def _complete_plan(
         self, lease: ModelLease, reply: ModelReply | None, elapsed: int
