@@ -7,7 +7,7 @@ async function prepare(page: Page): Promise<number> {
   await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
   await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
   await page.getByRole('button', { name: '进入工作台' }).click()
-  await expect(page.getByRole('heading', { name: '把经营的第一步，准备好。' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
   const session = (await (await page.request.get('/api/auth/session')).json()) as {
     csrf_token: string
   }

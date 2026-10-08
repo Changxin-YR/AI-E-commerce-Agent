@@ -8,7 +8,16 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from app.api.dependencies import UowDependency
 from app.api.errors import register_error_handlers
 from app.api.middleware import register_request_middleware
-from app.api.routes import analytics, auth, imports, inventory, listings, profile, support
+from app.api.routes import (
+    analytics,
+    auth,
+    imports,
+    inventory,
+    listings,
+    operations,
+    profile,
+    support,
+)
 from app.core.config import Settings
 from app.core.errors import BusinessError
 from app.repositories.database import create_database_engine, create_session_factory
@@ -36,6 +45,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(listings.router, prefix="/api")
     application.include_router(support.router, prefix="/api")
     application.include_router(inventory.router, prefix="/api")
+    application.include_router(operations.router, prefix="/api")
 
     @application.get("/api/health/live", tags=["健康检查"])
     def live() -> dict[str, str]:

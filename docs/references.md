@@ -59,3 +59,11 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 本次沿用已确认的 Firecrawl 402 限制，使用网页检索官方资料。平台风格别名仅为合成格式候选，不标为真实平台已验证预设。
 
 持续集成参考：[actions/setup-node](https://github.com/actions/setup-node)、[astral-sh/setup-uv](https://github.com/astral-sh/setup-uv)、[Playwright CI](https://playwright.dev/docs/ci-intro)。借鉴官方安装与测试顺序；工作流按本项目的 MySQL、pytest、Vue 测试组合编写。Actions 引用已核对的提交 SHA。
+## 今日运营与可恢复待办（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [SQLAlchemy Session API](https://docs.sqlalchemy.org/en/20/orm/session_api.html)、[维护者的并发更新说明](https://github.com/sqlalchemy/sqlalchemy/discussions/6607) | MIT / 官方文档与维护者讨论 | 用户锁内当前读，版本冲突返回 409；同一来源与规则的待办用唯一约束去重；自行实现业务状态机 |
+| [MySQL Locking Reads](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html) | Oracle 官方文档，参考事务语义 | 导入与运营统一锁序，同事务失效和擦除派生内容；响应在提交前组装 |
+
+沿用已确认的 Firecrawl 402 限制，使用官方网页检索。复用项目现有 Decimal 利润规则和库存时效判定，分别记录巡检范围、来源有效性、审批与处理状态。

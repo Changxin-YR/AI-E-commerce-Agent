@@ -9,9 +9,21 @@ from app.models.imports import (
     Product,
 )
 from app.models.listings import ListingSource, ListingVersion
+from app.models.operations import (
+    OperationRun,
+    OperationRunSource,
+    OperationTask,
+    OperationTaskEvent,
+    OperationTaskSource,
+)
 from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
 
 __all__ = [
+    "OperationRun",
+    "OperationRunSource",
+    "OperationTask",
+    "OperationTaskEvent",
+    "OperationTaskSource",
     "InventorySnapshot",
     "CustomerMessage",
     "ReplyDraft",

@@ -95,3 +95,10 @@
 ## 为什么渠道库存不直接合计？
 
 两个渠道可能引用同一实体仓库；缺少共享库存关系时相加会高估可售。当前以店铺+渠道+SKU 保存投影，按数据身份和渠道分开查询。`test_revoke_out_of_order_and_channel_isolation` 证明撤销通用渠道的版本不会删除另一个渠道同 SKU 的记录；完整仓库分配由后续业务模块承担。
+## 今日运营：幂等、审批与来源生命周期
+
+- **为什么待办键不含店铺 revision？** `services/operations.py::task_key` 根据来源集合和规则口径识别同一异常。无关商品导入可以改变店铺 revision，但不应让卖家已忽略的同一消息再次变成待处理；`test_repeated_checks_preserve_disposition_and_unrelated_revision` 验证四种处理状态。
+- **业务状态和证据状态如何分开？** `models/operations.py` 同时保存 `status` 与 `source_status`。完成是卖家动作，来源失效是事实变化；撤销导入不会抹掉曾经完成的记录，也不会据此批准过期候选。库存截止用半开区间与服务端时钟判定。
+- **如何在 REPEATABLE READ 下保证幂等？** API 认证可能已建立旧快照，因此在统一用户锁之后使用 `FOR UPDATE` 当前读；唯一约束为请求 UUID 和异常键兜底。并发回放只产生一个运行/候选，并发不同编辑一个成功、一个版本冲突。
+- **删除如何覆盖自由文本？** `repositories/operations.py::purge_batch` 沿显式依赖同时擦除快照、备注和事件详情。只清原始行会留下人工备注或旧成本的派生内容；测试验证被覆盖批次及独立事项隔离。
+- **确定性规则与模型如何衔接？** `operation_checks.py` 只用受控计算与证据，`OperationRun` 保存本次真实输出。当前 `local_rules` 不冒充模型运行；后续技能/模型层应调用业务服务并保留同样的权限、审批、幂等和擦除边界。
