@@ -7,6 +7,7 @@ from app.models.identity import AuditEvent
 from app.repositories.analytics import AnalyticsRepository
 from app.repositories.identity import IdentityRepository
 from app.repositories.imports import ImportRepository
+from app.repositories.listings import ListingRepository
 
 
 class UnitOfWork:
@@ -17,6 +18,7 @@ class UnitOfWork:
         self.identity = IdentityRepository(session)
         self.imports = ImportRepository(session)
         self.analytics = AnalyticsRepository(session)
+        self.listings = ListingRepository(session)
 
     def commit(self) -> None:
         self.session.commit()

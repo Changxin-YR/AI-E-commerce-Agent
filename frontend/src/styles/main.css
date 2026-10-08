@@ -1,4 +1,109 @@
 @import url('./tokens.css');
+.listing-review,
+.listing-review p,
+.listing-history,
+.listing-product {
+  overflow-wrap: anywhere;
+}
+.listing-diff {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.listing-diff > section {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--canvas);
+}
+.listing-diff h3 {
+  margin-bottom: 12px;
+}
+.preserve-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.listing-review > p,
+.listing-review details,
+.listing-edit > p,
+.listing-decision {
+  margin-top: 12px;
+}
+.listing-edit {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+.listing-edit textarea {
+  font: inherit;
+  width: 100%;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--canvas);
+  color: var(--ink);
+}
+.listing-edit textarea:focus-visible {
+  outline: 3px solid #a3b18a;
+  outline-offset: 3px;
+}
+.listing-search {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin-top: 16px;
+}
+.listing-search .form-field {
+  flex: 1;
+}
+.listing-products {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.listing-product,
+.listing-history {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  text-align: left;
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.listing-product span,
+.listing-history span {
+  color: var(--muted);
+}
+.listing-product.chosen {
+  border-color: #71815b;
+  background: #edf1e4;
+}
+.listing-history {
+  width: 100%;
+  margin-top: 10px;
+}
+.listing-decision .button-row {
+  margin-top: 16px;
+}
+.listing-review pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .listing-diff,
+  .listing-products {
+    grid-template-columns: 1fr;
+  }
+  .listing-search {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
 * {
   box-sizing: border-box;
 }
