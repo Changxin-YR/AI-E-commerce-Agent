@@ -12,4 +12,14 @@
 
 当前无复制的第三方业务代码。新增直接复用时需记录源文件、具体版本、许可证并保留相应声明。
 
+## 商品与订单导入（2026-10-08）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [django-import-export 工作流](https://django-import-export.readthedocs.io/en/4.3.14/import_workflow.html)、[源码](https://github.com/django-import-export/django-import-export/blob/main/import_export/resources.py) | BSD-2-Clause，已核对仓库 LICENSE | 借鉴预览→确认、逐行结果、重复对比和整批事务；自写 FastAPI 服务，不引入 Django、不复制源码 |
+| [openpyxl 官方文档](https://openpyxl.readthedocs.io/en/stable/)、[Excel reader](https://openpyxl.readthedocs.io/en/stable/_modules/openpyxl/reader/excel.html) | MIT/Expat | 使用只读解析、保留公式类型用于拒绝；安装 defusedxml，额外约束 ZIP 大小、行列数并拒绝宏和外部链接 |
+| [Python csv](https://docs.python.org/3/library/csv.html)、[zoneinfo](https://docs.python.org/3/library/zoneinfo.html) | Python 官方标准库 / PSF | CSV 只做文本解析；显式解析本地时间并拒绝 DST 重叠/缺口，UTC 入库 |
+
+本次沿用已确认的 Firecrawl 402 限制，使用网页检索官方资料。平台风格别名仅为合成格式候选，不标为真实平台已验证预设。
+
 持续集成参考：[actions/setup-node](https://github.com/actions/setup-node)、[astral-sh/setup-uv](https://github.com/astral-sh/setup-uv)、[Playwright CI](https://playwright.dev/docs/ci-intro)。借鉴官方安装与测试顺序；工作流按本项目的 MySQL、pytest、Vue 测试组合编写。Actions 引用已核对的提交 SHA。

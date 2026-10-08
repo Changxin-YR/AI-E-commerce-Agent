@@ -74,9 +74,9 @@ onMounted(load)
           <span class="step-index">03</span>
           <div>
             <h3>准备业务文件</h3>
-            <p>商品、订单行、成本和可选库存；导入向导正在开发。</p>
+            <p>商品、订单行与单位采购成本，核对映射后导入。</p>
           </div>
-          <span class="status-tag">待开放</span>
+          <RouterLink to="/imports" class="button secondary small">导入文件</RouterLink>
         </li>
       </ol>
     </section>
@@ -84,7 +84,7 @@ onMounted(load)
       <span class="note-symbol" aria-hidden="true">i</span>
       <div>
         <h3>当前为文件分析模式</h3>
-        <p>后续分析以你提供的文件及其导出时间为准。当前尚未导入业务数据，也尚未运行 AI 巡检。</p>
+        <p>分析以你提供的文件及其导出时间为准。前往数据导入查看已有批次；AI 巡检尚未开放。</p>
       </div>
     </section>
   </template>

@@ -71,10 +71,11 @@ class IdentityRepository:
             self.session.scalar(select(func.count(Shop.id)).where(Shop.owner_id == owner_id)) or 0
         )
 
-    def get_shop(self, owner_id: int, shop_id: int) -> Shop | None:
-        return self.session.scalar(
-            select(Shop).where(Shop.id == shop_id, Shop.owner_id == owner_id)
-        )
+    def get_shop(self, owner_id: int, shop_id: int, *, lock: bool = False) -> Shop | None:
+        statement = select(Shop).where(Shop.id == shop_id, Shop.owner_id == owner_id)
+        if lock:
+            statement = statement.with_for_update().execution_options(populate_existing=True)
+        return self.session.scalar(statement)
 
     def add_shop(self, shop: Shop) -> None:
         self.session.add(shop)

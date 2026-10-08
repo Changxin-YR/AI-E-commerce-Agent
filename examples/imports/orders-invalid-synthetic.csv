@@ -1,0 +1,5 @@
+order_id,line_id,sku,quantity,unit_price,currency,ordered_at,status,discount,refund
+BAD-1,1,DEMO-001,1,20,USD,2026-10-01T09:00:00Z,paid,0,0
+BAD-1,1,DEMO-001,1,20,USD,2026-10-01T09:00:00Z,paid,0,0
+BAD-2,1,,0,20,USD,01/10/2026 09:00:00,unknown,0,0
+BAD-3,1,DEMO-002,1,=1+1,USD,2026-10-01T09:00:00Z,paid,0,0

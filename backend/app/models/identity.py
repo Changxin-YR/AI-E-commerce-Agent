@@ -57,6 +57,7 @@ class Shop(Base):
     market: Mapped[str] = mapped_column(String(2))
     currency: Mapped[str] = mapped_column(String(3))
     timezone: Mapped[str] = mapped_column(String(64))
+    data_revision: Mapped[int] = mapped_column(default=0, server_default="0")
     created_at: Mapped[datetime] = mapped_column(default=utc_now)
 
 

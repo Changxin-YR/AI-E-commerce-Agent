@@ -19,16 +19,14 @@ describe('authenticated requests', () => {
   it('preserves a conflict as a failure instead of treating it as a save', async () => {
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              error: { code: 'conflict', message: '资料已更新', request_id: 'test-request' },
-            }),
-            { status: 409 },
-          ),
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: { code: 'conflict', message: '资料已更新', request_id: 'test-request' },
+          }),
+          { status: 409 },
         ),
+      ),
     )
     await expect(request('/profile', { method: 'PUT', body: '{}' })).rejects.toMatchObject({
       status: 409,

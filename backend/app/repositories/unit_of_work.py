@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.identity import AuditEvent
 from app.repositories.identity import IdentityRepository
+from app.repositories.imports import ImportRepository
 
 
 class UnitOfWork:
@@ -13,6 +14,7 @@ class UnitOfWork:
     def __init__(self, session: Session) -> None:
         self.session = session
         self.identity = IdentityRepository(session)
+        self.imports = ImportRepository(session)
 
     def commit(self) -> None:
         self.session.commit()

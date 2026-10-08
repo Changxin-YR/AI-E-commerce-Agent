@@ -1,0 +1,3 @@
+sku,name,facts,price,currency,unit_cost,cost_currency
+DEMO-001,合成钢杯,材质：不锈钢；容量：350 mL,20,USD,8,USD
+DEMO-002,合成收纳盒,尺寸：20 × 10 × 5 cm,12,USD,,

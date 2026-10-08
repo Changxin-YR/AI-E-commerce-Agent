@@ -1,0 +1,4 @@
+order-id,order-item-id,seller-sku,quantity-purchased,unit_price,currency,purchase-date,order-status,discount,refund
+DEMO-2001,ITEM-1,DEMO-001,1,20,USD,2026-10-02T01:00:00Z,paid,0,0
+DEMO-2002,ITEM-1,DEMO-002,1,12,EUR,2026-10-02T04:00:00Z,cancelled,0,0
+DEMO-2003,ITEM-1,DEMO-001,1,20,USD,2026-10-03T01:00:00Z,refunded,0,20

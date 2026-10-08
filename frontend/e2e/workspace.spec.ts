@@ -34,7 +34,12 @@ test('seller can save a profile, add a store, reload and revoke the session', as
   await expect(page.getByRole('heading', { name: '合成 E2E 店铺' })).toBeVisible()
   await page.reload()
   await expect(page.getByLabel('经营名称')).toHaveValue('合成 E2E 工作室')
-  await expect(page.getByText('文件模式', { exact: true })).toBeVisible()
+  await expect(
+    page
+      .locator('.shop-row')
+      .filter({ hasText: '合成 E2E 店铺' })
+      .getByText('文件模式', { exact: true }),
+  ).toBeVisible()
   await page.screenshot({ path: 'test-results/workspace-desktop.png', fullPage: true })
   await page.getByRole('button', { name: '退出' }).click()
   await expect(page).toHaveURL(/\/login$/)
