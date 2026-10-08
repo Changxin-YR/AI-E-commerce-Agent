@@ -13,8 +13,9 @@
 ## 当前提交与环境
 
 - 仓库：https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。GitHub connector 已核对这是当前账号有 admin/push 权限的目标仓库。
-- 当前功能提交 d3b9be1be958a47931cd897f2fb2f8258075b454，已推送 main。主题：source-aware customer support drafts and policy versions。
-- main 当前 HEAD d8351feb566395512b248025e17b62085d84b7ed（补充客服CI证据），已推送。
+- 当前功能提交 53b7d72b1b380aae3f2ced606a2b65e23b22892c，已推送 main。主题：source-aware optional inventory snapshots。
+- main 当前 HEAD 9e08505de8863680b101cf733e0b06378ff6ab69（补库存CI证据），已推送。
+- 库存 GitHub CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37811072990 ，已核实 completed/success，功能提交53b7d72在Ubuntu/MySQL全部通过。
 - 客服 GitHub CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37808536888 ，已确认 completed / success，功能提交d3b9be1在Ubuntu/MySQL全部通过。
 - 上版 Listing 8168d97/ab66412，CI 37803271282 已 completed / success。
 - 前版分析 ab83fd6/a212b88 CI 也均通过；相关实现保留。
@@ -23,10 +24,11 @@
 - 密钥与本机配置在忽略的 .env、backend/.env、.local/test.env，不打印、不提交。
 - Windows 优先 .venv/Scripts/python -m pytest/ruff/mypy/alembic；网络、MySQL/Docker、Vitest 常需 require_escalated。pytest 与 Playwright 都清理 _test，必须串行。
 - Playwright 自动启动 8001/5174；日常开发 8000/5173。.local/verify_listing_migration.py 是忽略的本机验证脚本；迁移回退也须在 pytest/Playwright 结束后进行。
-- 最新迁移 8d34d9c410a2 已应用开发和测试库；.local/verify_support_migration.py 已验证隔离库回退至262449b655ea→升级/check 和开发库升级/check。
+- 最新迁移 61cb82ef096a 已应用开发和测试库；.local/verify_inventory_migration.py 已验证隔离库回退至8d34d9c410a2→升级/check 和开发库升级/check。
 - Firecrawl 已确认 402，用官方网页检索或 GitHub connector，不反复调用计费接口。
 - 本次自动审批曾因 origin 信任关系未核实拒绝推送；经 connector 确认仓库/权限、远程旧 HEAD 与交接一致，检查提交仅代码/合成测试/文档、配置被忽略后，同一 git push 再审通过。后续推送沿用明确目标与授权事实。
 - Listing 迭代再次用 connector 确认当前账号 Changxin-YR 对目标仓库具有 admin/push 权限，main 推送成功。GitHub fetch 支持 Actions REST URL，解析 structuredContent.content 后仅输出状态；fetch_commit_workflow_runs 仅查 PR 触发，不适用于 main push。
+- 库存迭代相同的自动审批限制再次出现；独立用 github_fetch 仓库元数据和 github_get_user_login 核实：登录 Changxin-YR，仓库ID1410355242、公开、admin/push true，远程 main 与交接吻合，检查忽略凭据/本机文件后重新提交同一推送获准。不能绕过拒绝，按新证据申请重审。
 
 ## 已实现
 
@@ -41,6 +43,8 @@
 新增 /listings：仅商品即可选择SKU→本地事实模板建稿→来源与差异→编辑新版本→核对确认→批准/拒绝→刷新与历史恢复。SO-018/067基础与A-24本地通过；完整AI Listing闭环仍待模型。四条MVP均未完整完成。
 
 新增 /support：手工消息预览确认/CSV/Excel导入→同店铺/渠道/身份订单核验→政策筛选→多意图本地规则草稿→编辑/转人工/存档/重新打开→来源失效/擦除。SO-031/032/033本地基础可用，真实LLM/自动语言检测/多轮/实时运单/外发尚无，MVP-03仍非完整AI闭环。
+
+新增 /inventory：可选库存CSV/Excel→映射/纠错/确认→按店铺/渠道/身份查询→快照时效与阈值→原始行→撤销/清除。SO-041 P0快照基础合成本地通过；统一今日运营待接入。
 
 ## 关键规则
 
@@ -105,10 +109,24 @@
 继续MVP-01今日运营及其余P0，不能只计划或把规则模板当作真实Agent。
 
 1. 先读冻结稿SO-003/004/005/030/041/054/060/062/068，以及15、21、22、25—27、A-03/10/14/22/23/25—29/32，检索官方/GitHub资料记references。
-2. 实现可选库存快照的有界导入/时效/安全阈值，缺库存显示未知且不阻断其他检查。扩展既有导入不要重建。
-3. 今日运营：读取导入商品/订单/可选库存/消息/成本，根据实际数据分支执行检查，保存带来源的去重待办/标签、处理状态和审批/历史。空数据未检查，旧快照失效，批次清除继续擦除新增派生结果。
+2. 库存快照已完成，不重建。读下方关键规则，直接接入今日运营库存分支。
+3. 立即实现今日运营：读取导入商品/订单/可选库存/消息/成本，根据实际数据分支执行检查，保存带来源的去重待办/标签、处理状态和审批/历史。空数据未检查，旧快照失效，批次清除继续擦除新增派生结果。
 4. 接上受控Agent层：内置技能注册元数据/输入/店铺作用域/权限/风险/幂等，模型适配接口和实际可配置调用，至少两技能可追踪串联，步骤/时间/费用预算、R3拒绝、读重试上限、熔断、取消和恢复。凭据缺失必须显示待配置；不能以测试替身声称真实LLM成功。
 5. 继续SO-054新品利润计算器及全部P0最小模块/32验收。真实发信通道缺授权依旧阻塞，不外发。
 6. 每功能完成后测试、更新development/interview/74SO矩阵/32验收/testing/questions、提交推送；按上下文压力交接，持续P0→P1/P2。
 
+今日运营实现注意：使用记录实际可证明的状态。订单源未履约可形成核对事项，但无导出/更新时间不能声称当前履约超时，缺实时轨迹不能说物流延误；导入消息没有外部已回复状态，客服草稿存档也不代表已发送。低毛利调用既有Decimal规则。去重以来源+规则口径+异常为依据，不把无关店铺版本变化当作新增异常；忽略/延期/完成重跑不应重新创建未结任务。新增运行/待办的依赖关系必须接入导入事务清除和时间过期检查，缺模块记录未检查。默认R1自动写需显式预授权；可以先以待审批候选实现，真实模型状态独立展示待配置。
+
 用户事实、凭据、预算、测试邮箱、政策语言/物流阈值等已在questions.md；不要重复阻断已授权的本地开发。
+
+### 库存关键规则与验证（2026-10-09）
+
+- InventorySnapshot 位于 models/imports.py，inventory_snapshots 键 shop+channel+sku，source_row_id引用当前import_rows；数据身份来自批次。批次kind新增inventory，复用整个ImportService，不重建导入流程。
+- 字段sku/available/snapshot_at/safety_threshold，数量阈值整数0—1e9，未知/负数/小数/未来快照拒绝；ISO时间经批次时区转UTC。覆盖更旧快照给警示，仍需allow_updates人工确认。最新提交投影，撤销按仍有效批次恢复，乱序不复活。
+- inventory api→service→repository，owner/shop/channel/identity约束，SKU搜索转义通配符，每页50+1。assess_snapshot可复用：query max_age_hours默认24、1—720可调；[snapshot_at,valid_until)，到期unknown，严格available<threshold才low，否则above_threshold仅表示未低于阈值，不保证实时可售。
+- 未导入/过期库存未知，跨渠道可能共享不合计，不从订单/退款扣减。默认时效是可调整查询规则，真实运营频率questions#10待用户确认，不阻塞本地开发。
+- /inventory为绿色工作台；SupportSource.vue以SourceEvidence别名复用源行展示。字段允许改规则后刷新；本次结论展示实际scope与checked_at，focus重读，历史数量明确标快照。阈值更改通过重导/差异确认；没有独立人工库存写入入口。
+- sources读取复用analytics接口；InventoryService在commit前组装响应。导入增量沿用现有data_revision保守失效分析；当前库存本身是投影，没有新增持久派生表，未来今日运营需要invalidate/purge接入。
+- 完整pytest123通过（新增库存14项含参数化），Ruff74文件格式/规则、mypy58；Vue lint/type/build通过，Vitest5文件8项；完整Playwright13通过（新增库存2项）。迁移两库升级/check、隔离库往返通过。Starlette httpx弃用提示仍有。
+- 桌面1280×720/手机390×844截图已查看，系统Temp/soloops-inventory-{desktop,mobile}.png。完整Playwright测试切换店铺后须等待批次列表加载完成，避免共享账号上其他店铺短暂旧数据导致strict locator错误。Vitest沙箱temp缓存rename EPERM，require_escalated正常通过。
+- 74SO/32验收保留，SO-041和A-03库存页面更新，四条MVP均未完整完成；无真实LLM、平台API或外发验证。
