@@ -68,6 +68,15 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 本次沿用已确认的 Firecrawl 402 限制，使用网页检索官方资料。平台风格别名仅为合成格式候选，不标为真实平台已验证预设。
 
 持续集成参考：[actions/setup-node](https://github.com/actions/setup-node)、[astral-sh/setup-uv](https://github.com/astral-sh/setup-uv)、[Playwright CI](https://playwright.dev/docs/ci-intro)。借鉴官方安装与测试顺序；工作流按本项目的 MySQL、pytest、Vue 测试组合编写。Actions 引用已核对的提交 SHA。
+## 独立新品利润计算器（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [Python Decimal](https://docs.python.org/3/library/decimal.html)、[CPython 文档源](https://github.com/python/cpython/blob/main/Doc/library/decimal.rst) | PSF / 官方标准库文档 | 字符串进入 Decimal，过程保留精度；余额率展示使用 HALF_UP，保本价按币种最小单位向上取整，独立编写公式与边界测试 |
+| [SBA 盈亏平衡说明](https://legacy.sba.gov/business-guide/plan-your-business/calculate-your-startup-costs/break-even-point) | 美国政府官方业务指南，参考公式概念，不复制内容 | 从收入覆盖成本推导单件假设模型：售价 × (1 − 已填售价费率合计) − 采购成本 − 已填固定费用；不将单件保本价冒充企业盈亏平衡销量或真实净利润 |
+
+沿用 Firecrawl 402 的已知限制，通过官方网页检索。P0 使用明确单币种、不换汇；所有费用为手工假设，空值与显式零分开。规则与页面自行实现，无第三方业务代码复制。
+
 ## 今日运营与可恢复待办（2026-10-09）
 
 | 资料 | 许可证/性质 | 借鉴与适配 |

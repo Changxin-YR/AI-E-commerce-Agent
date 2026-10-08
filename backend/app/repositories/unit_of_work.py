@@ -13,6 +13,7 @@ from app.repositories.imports import ImportRepository
 from app.repositories.inventory import InventoryRepository
 from app.repositories.listings import ListingRepository
 from app.repositories.operations import OperationsRepository
+from app.repositories.profit import ProfitRepository
 from app.repositories.support import SupportRepository
 
 
@@ -30,6 +31,7 @@ class UnitOfWork:
         self.analytics = AnalyticsRepository(session)
         self.listings = ListingRepository(session)
         self.support = SupportRepository(session)
+        self.profit = ProfitRepository(session)
 
     def commit(self) -> None:
         if not self._defer_commits:

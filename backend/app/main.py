@@ -17,6 +17,7 @@ from app.api.routes import (
     listings,
     operations,
     profile,
+    profit,
     support,
 )
 from app.core.config import Settings
@@ -48,6 +49,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(inventory.router, prefix="/api")
     application.include_router(operations.router, prefix="/api")
     application.include_router(agent.router, prefix="/api")
+    application.include_router(profit.router, prefix="/api")
 
     @application.get("/api/health/live", tags=["健康检查"])
     def live() -> dict[str, str]:

@@ -57,7 +57,7 @@
 | SO-051 | 仓储与供应链优化 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-052 | 销售、订单和经营报表 | P0 | 单店铺单币种指定时间的销售统计 | services/profit_calculation.py；AnalyticsView.vue | test_analytics.py；analytics.spec.ts | 单店铺/币种/身份/时间窗销量、销售额、来源与缺口合成本地通过 |
 | SO-053 | 实际成本与商品/店铺利润 | P0 | 订单行、采购成本和缺失费用的已知毛利 | services/profit_calculation.py | Decimal、缺口、币种、退款、阈值与来源测试 | 当前采购成本估算历史已知毛利基础通过；费用归集和实际历史成本待继续 |
-| SO-054 | 独立新品利润计算器 | P0 | 单件已知毛利与假设情景 | — | — | 未实现 |
+| SO-054 | 独立新品利润计算器 | P0 | 单币种单件已知毛利、费用假设、情景对比与敏感性 | services/profit.py、profit_rules.py；ProfitView.vue | test_profit.py 18 项；profit.spec.ts 桌面/手机；ProfitScenarioEditor.spec.ts | P0 最小切片合成数据本地通过：九类未知/零费用、依据、最多五方案、条件保本价、存档与清除；多币种换算与复杂费率后续扩展 |
 | SO-055 | 渠道账单、结算与回款 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-056 | 平台费用映射、自定义费用与对账差异 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-057 | AI 自然语言经营问数和异常解释 | P0 | 只读受控意图查询、确定计算、引用和拒答 | services/analytics.py；AnalyticsView.vue | 重复问数/来源/拒答测试 | 三个本地规则问题与显式意图可用；真实模型适配及自然语言理解待继续 |
