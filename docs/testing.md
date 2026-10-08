@@ -14,12 +14,15 @@
 | 前端单元 | `npm run test:unit` | 2 文件、4 项通过 |
 | 浏览器 E2E | `npm run test:e2e` | Chromium 3 项通过 |
 | npm 依赖审计 | `npm audit` | 0 个已知漏洞（本次检查时） |
+| GitHub Actions | [Verify SoloOps #1](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37788563158) | 功能提交 acbceb8：Ubuntu / MySQL 下全部通过 |
 
 MySQL 集成验证了：匿名阻断、Cookie 属性、退出后重放旧令牌失败、CSRF/来源阻断、密码不进入错误响应、失败登录锁定、会话到期、密码恢复撤销会话、资料持久化、无效字段、版本冲突、店铺唯一性、跨账号隔离、两个并发更新仅一个成功、未提交事务回滚。
 
 浏览器验证了：错误登录反馈 → 正确登录 → 保存经营资料 → 添加店铺 → 刷新后数据仍在 → 注销后不能访问资料；390×844 手机视口没有水平溢出。桌面与手机截图已实际查看，截图为本地临时 QA 产物，不作为业务数据提交。
 
 一次手机测试因测试定位器忽略链接文字间空格而失败，改为在“主导航”内按语义匹配链接；修复后完整 3 项通过。后端测试工具提示 Starlette 的 httpx 兼容层后续弃用，当前所有测试通过，后续依赖升级时处理。
+
+Windows 沙箱内首次 Vitest 执行遇到临时文件重命名 EPERM；使用已授权的本机执行权限后 4 项通过，GitHub Actions 的 Linux 环境也通过。
 
 ## 覆盖范围
 
