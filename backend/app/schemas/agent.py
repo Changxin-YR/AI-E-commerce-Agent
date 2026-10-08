@@ -19,6 +19,7 @@ class Budget(InputModel):
 
 class StartAgent(InputModel):
     request_id: UUID
+    authorization_id: Annotated[int, Field(gt=0)] | None = None
     template: Template = "daily"
     scope: OperationScope
     goal: Annotated[str, Field(max_length=500)] = ""
@@ -30,7 +31,10 @@ class StartAgent(InputModel):
 
 class AgentAction(InputModel):
     version: Annotated[int, Field(ge=1)]
-    action: Literal["advance", "pause", "resume", "cancel", "approve", "reject"]
+    action: Literal[
+        "advance", "pause", "resume", "cancel", "approve", "reject", "use_authorization"
+    ]
+    authorization_id: Annotated[int, Field(gt=0)] | None = None
     budget: Budget | None = None
 
 
@@ -70,6 +74,7 @@ class StepOutput(OutputModel):
 
 class AgentOutput(OutputModel):
     id: int
+    authorization_id: int | None = None
     shop_id: int
     template: str
     status: str

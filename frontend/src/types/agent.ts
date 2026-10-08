@@ -2,13 +2,15 @@ import type { OperationScope } from './operations'
 import type { SourceReference } from './analytics'
 
 export type AgentTemplate = 'daily' | 'analysis' | 'listing' | 'support' | 'natural'
-export type AgentAction = 'advance' | 'pause' | 'resume' | 'cancel' | 'approve' | 'reject'
+export type AgentAction =
+  'advance' | 'pause' | 'resume' | 'cancel' | 'approve' | 'reject' | 'use_authorization'
 export interface AgentBudget {
   max_steps: number
   max_seconds: number
   max_cost_usd: string
 }
 export interface AgentInput {
+  authorization_id?: number | null
   request_id: string
   template: AgentTemplate
   scope: OperationScope
@@ -32,6 +34,7 @@ export interface AgentStep {
   created_at: string
 }
 export interface AgentRun {
+  authorization_id?: number | null
   id: number
   shop_id: number
   template: string
@@ -115,6 +118,10 @@ export const agentLabels: Record<string, string> = {
   test_double: '测试替身',
 }
 export const agentReasons: Record<string, string> = {
+  use_authorization: '已绑定匹配的 R1 预授权；执行前将再次核对。',
+  preauthorization_ready: '候选符合 R1 预授权，准备保存。',
+  preauthorization_used: '已使用 R1 预授权保存候选并记录一次消耗。',
+  authorization_unavailable: '预授权已失效或范围不符；请重新审阅，单次批准或使用新的有效授权。',
   missing_goal: '请填写运营目标后新建任务。',
   invalid_skill_output: '技能输出未通过类型校验，请人工核对。',
   no_findings: '本次检查未产生异常候选。缺数据的模块仍为未检查。',

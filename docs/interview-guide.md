@@ -128,3 +128,11 @@
 - **模型调用途中改规则如何处理？** `_load` 在模型回写前重新核对引用版本，旧意图丢弃而实际已知成本记账。`test_rule_changes_during_model_call_discard_result` 验证锁已释放、规则可修改、业务动作不会继续。
 - **自由文本记忆为什么不能表示授权？** `RuleNotes` 只有限定描述字段，`automation` 仅接受 `manual_only`，执行仍由业务服务和技能白名单决定。经营建议、预算计划和可执行授权必须具有各自可验证的生效位置。
 - **前端怎样避免跨范围串值？** `AppliedRules.vue` 在店铺/渠道/身份变更时增加请求序号；较早请求即使最后返回也不再发出 loaded 事件。组件测试覆盖慢请求和加载失败，服务端版本核对继续作为最终保障。
+
+## R1 预授权：权限如何经受等待、并发与重放？
+
+- `AuthorizationsService.create/prepare` 重新检查预览，绑定完整范围、规则与来源版本及内容摘要。店铺 ID 并不足以代表用户同意所有未来写入；对象变化要重新审阅。
+- `AgentService._local` 在同一锁和 savepoint 内完成业务写入、消耗与步骤登记。`test_two_executions_compete_for_last_use` 先建立旧 RR 快照再并发，证明最后一次额度只有一个执行成功。
+- 时钟在检查和写入期间仍前进。`consume` 在提交前重新验证时效；`test_expiry_during_business_save_rolls_back_all` 证明执行中到期不会留下候选或消耗。
+- 撤销授权停止未来使用；`revert` 检查新增候选的保存版本，把未处理候选设为已拒绝。全量校验后同事务修改，避免覆盖人工后续处理；审计保留、额度不返还。
+- 输入新增 `authorization_id: null` 会改变序列化摘要。`AgentService.start` 对空值不纳入摘要，`test_previous_unbound_request_hash_remains_replayable` 覆盖升级前 UUID 回放兼容性。

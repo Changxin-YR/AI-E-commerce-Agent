@@ -250,7 +250,10 @@ onMounted(async () => {
         <label for="rule-basis">规则与偏好依据</label
         ><textarea id="rule-basis" v-model="form.basis" maxlength="500" rows="3" required />
       </div>
-      <p>自动执行范围：逐次审批。文本偏好不会授予工具、外发或资金操作权限。</p>
+      <p>
+        默认写入须逐次审批。保存异常候选的有界 R1 预授权在 Agent
+        执行台单独管理；文本偏好只用于记录经营依据。
+      </p>
       <label class="check-label"
         ><input
           v-model="confirmed"

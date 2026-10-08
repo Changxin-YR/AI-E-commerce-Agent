@@ -69,8 +69,8 @@
 | SO-063 | 跨平台连接器中心 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-064 | 浏览器扩展/页面内 AI 助手 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-065 | 软件使用助手与新手引导 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
-| SO-066 | 经营规则、偏好与可验证的业务记忆 | P0 | 分范围经营约束、偏好依据、版本与恢复 | services/business_rules.py；RulesView.vue、AppliedRules.vue | test_business_rules.py（18项）、business-rules.spec.ts、AppliedRules.spec.ts | 阈值实际应用今日运营/Agent、历史引用、并发冲突、查看修改撤销重置恢复本地通过；文本与广告计划为人工参考，可撤销预授权待继续 |
-| SO-067 | 审批、操作前预览与回退边界 | P0 | 对象/差异/依据/风险预览及权限化审批 | services/listings.py、operations.py、business_rules.py；ListingReview.vue、OperationTaskReview.vue | 并发审批、来源/规则过期阻断、恢复、拒绝及 E2E | Listing 与运营候选单项 R1 审批、本地证据/状态预览通过；经营规则变化阻断旧待审动作，恢复旧数值不复活审批；批量及 R2/R3 通用门禁待继续 |
+| SO-066 | 经营规则、偏好与可验证的业务记忆 | P0 | 分范围经营约束、偏好依据、版本、恢复和有限授权 | services/business_rules.py、authorizations.py；RulesView.vue、InternalAuthorizations.vue | test_business_rules.py、test_authorizations.py、组件与 E2E | 阈值实际应用与版本恢复通过；保存异常候选的 R1 预授权绑定预览/来源/规则、次数和时效，撤销及消耗本地通过；文本与广告计划仍为人工参考 |
+| SO-067 | 审批、操作前预览与回退边界 | P0 | 对象/差异/依据/风险预览及权限化审批 | services/listings.py、operations.py、authorizations.py；InternalAuthorizations.vue | 并发最后一次额度、时效、回放、撤回冲突及 E2E | 单次 R1 审批与有界预授权独立；新增候选可按保存版本批量撤回为已拒绝，审计保留，后续编辑阻断整批撤回；R2 测试外发及通用审批待继续 |
 | SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久任务、预算、熔断、恢复与未知结果 | models/agent.py；services/agent.py、agent_model.py | 事务/并发/中断租约/熔断/来源擦除/预算测试 | 持久步骤、来源、审批、预算、取消恢复及模型未知态本地通过；跨模块待办整合、真实外发回查待继续 |
 | SO-069 | 授权的开发者 OpenAPI | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-070 | 移动端轻量运营能力 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |

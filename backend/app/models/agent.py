@@ -25,6 +25,7 @@ class AgentExecution(Base):
     next_node: Mapped[str] = mapped_column(String(32))
     source_status: Mapped[str] = mapped_column(String(16), default="current")
     source_revision: Mapped[int]
+    authorization_id: Mapped[int | None] = mapped_column(ForeignKey("internal_authorizations.id"))
     input: Mapped[dict[str, Any] | None] = mapped_column(JSON(none_as_null=True))
     result: Mapped[dict[str, Any] | None] = mapped_column(JSON(none_as_null=True))
     steps_used: Mapped[int] = mapped_column(default=0)

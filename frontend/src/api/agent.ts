@@ -15,9 +15,14 @@ export const agentApi = {
   get: (shop: number, id: number) => request<AgentRun>(`${root(shop)}/runs/${id}`),
   start: (shop: number, data: AgentInput) =>
     request<AgentRun>(`${root(shop)}/runs`, { method: 'POST', body: JSON.stringify(data) }),
-  act: (run: AgentRun, action: AgentAction, budget?: AgentBudget) =>
+  act: (run: AgentRun, action: AgentAction, budget?: AgentBudget, authorizationId?: number) =>
     request<AgentRun>(`${root(run.shop_id)}/runs/${run.id}`, {
       method: 'POST',
-      body: JSON.stringify({ version: run.version, action, budget }),
+      body: JSON.stringify({
+        version: run.version,
+        action,
+        budget,
+        authorization_id: authorizationId,
+      }),
     }),
 }

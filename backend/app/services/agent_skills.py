@@ -89,7 +89,11 @@ def definition(name: str, contract: Contract) -> SkillDefinition:
         write_scope="指定店铺的内部候选或草稿" if contract.writes else "无业务写入",
         risk="R1" if contract.writes else "R0",
         side_effects=contract.writes,
-        preconditions=["店铺归属校验", "输入类型与来源有效性校验", "写入须审批当前节点"],
+        preconditions=[
+            "店铺归属校验",
+            "输入类型与来源有效性校验",
+            "写入须审批当前节点；保存异常候选可使用匹配的有效 R1 预授权",
+        ],
         idempotency="执行请求 UUID + 业务服务来源/版本去重；本地变更与步骤原子提交",
         max_attempts=1 if contract.writes else 3,
         failure_policy="硬规则拒绝即停止；只读临时故障至多三次，之后熔断；写入不自动重试",

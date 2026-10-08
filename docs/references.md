@@ -68,6 +68,15 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 本次沿用已确认的 Firecrawl 402 限制，使用网页检索官方资料。平台风格别名仅为合成格式候选，不标为真实平台已验证预设。
 
 持续集成参考：[actions/setup-node](https://github.com/actions/setup-node)、[astral-sh/setup-uv](https://github.com/astral-sh/setup-uv)、[Playwright CI](https://playwright.dev/docs/ci-intro)。借鉴官方安装与测试顺序；工作流按本项目的 MySQL、pytest、Vue 测试组合编写。Actions 引用已核对的提交 SHA。
+## 有界 R1 内部预授权（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [OWASP Transaction Authorization](https://cheatsheetseries.owasp.org/cheatsheets/Transaction_Authorization_Cheat_Sheet.html) | OWASP Cheat Sheet Series，CC BY-SA 4.0；仅参考原则 | 服务端绑定可见对象、范围和有效时间，执行时再次核验；预授权仅开放内置保存候选能力，独立实现，不复制源码或正文 |
+| [SQLAlchemy SAVEPOINT](https://docs.sqlalchemy.org/en/20/orm/session_transaction.html) | MIT / 官方文档 | 授权消耗、内部候选和步骤使用同一事务，失败一起回滚；延用用户→店铺锁序和当前读，防止并发超用 |
+
+沿用已确认的 Firecrawl 402 限制，通过官方网页检索。授权绑定实际检查预览及规则/来源版本；每次成功保存消耗一次，重放不重复扣减，撤回候选不返还额度。
+
 ## 经营规则与版本记忆（2026-10-09）
 
 | 资料 | 许可证/性质 | 借鉴与适配 |

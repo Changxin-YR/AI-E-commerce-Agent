@@ -70,6 +70,9 @@ const actionLabels: Record<string, string> = {
       {{ agentLabels[run.model_status] ?? run.model_status }} · 外部未提交
     </p>
     <p>当前步骤：{{ agentLabels[run.next_node] ?? run.next_node }}</p>
+    <p v-if="run.authorization_id">
+      绑定 R1 预授权 #{{ run.authorization_id }} · 消耗与撤回见下方授权记录
+    </p>
     <p>
       启动于 {{ supportTime(run.created_at, run.input?.scope.timezone ?? 'Asia/Shanghai') }} ·
       来源版本 {{ run.source_revision }}
@@ -143,6 +146,14 @@ const actionLabels: Record<string, string> = {
         </button>
       </div>
     </div>
+    <details v-if="run.status !== 'waiting_approval' && findings.length" class="section-block">
+      <summary>查看检查时的 {{ findings.length }} 项候选</summary>
+      <article v-for="(finding, index) in findings" :key="index" class="analysis-line">
+        <strong>{{ finding.title }} · {{ finding.object_label }}</strong>
+        <p>{{ finding.basis }}</p>
+        <p>{{ finding.advice }}</p>
+      </article>
+    </details>
     <div class="button-row">
       <button
         v-if="run.status === 'ready'"

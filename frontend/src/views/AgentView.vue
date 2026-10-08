@@ -19,6 +19,8 @@ import type { ProductFacts } from '@/types/listings'
 import type { MessageFacts } from '@/types/support'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import AgentRunReview from '@/components/AgentRunReview.vue'
+import InternalAuthorizations from '@/components/InternalAuthorizations.vue'
+import type { InternalAuthorization } from '@/api/authorizations'
 import AppliedRules from '@/components/AppliedRules.vue'
 import { applyRule, type BusinessRule } from '@/api/businessRules'
 
@@ -168,7 +170,11 @@ async function start(): Promise<void> {
     busy.value = false
   }
 }
-async function act(action: AgentAction, budget?: AgentBudget): Promise<void> {
+async function act(
+  action: AgentAction,
+  budget?: AgentBudget,
+  authorizationId?: number,
+): Promise<void> {
   if (!selected.value || controlling.value) return
   if (busy.value && !['pause', 'cancel'].includes(action)) return
   driving.value = false
@@ -177,8 +183,8 @@ async function act(action: AgentAction, budget?: AgentBudget): Promise<void> {
   const current = selected.value
   try {
     const latest = await agentApi.get(current.shop_id, current.id)
-    accept(await agentApi.act(latest, action, budget))
-    if (['approve', 'resume', 'advance'].includes(action)) {
+    accept(await agentApi.act(latest, action, budget, authorizationId))
+    if (['approve', 'resume', 'advance', 'use_authorization'].includes(action)) {
       busy.value = true
       await drive()
     }
@@ -188,6 +194,32 @@ async function act(action: AgentAction, budget?: AgentBudget): Promise<void> {
   } finally {
     controlling.value = false
     if (!driving.value) busy.value = false
+    await refresh()
+  }
+}
+async function startAuthorized(grant: InternalAuthorization): Promise<void> {
+  if (busy.value || controlling.value || grant.shop_id !== shopId.value) return
+  busy.value = true
+  error.value = ''
+  selected.value = null
+  try {
+    selected.value = await agentApi.start(grant.shop_id, {
+      ...form,
+      request_id: crypto.randomUUID(),
+      template: 'daily',
+      scope: grant.scope,
+      authorization_id: grant.id,
+      allow_model: false,
+      goal: '',
+      product_id: null,
+      message_id: null,
+    })
+    await drive()
+  } catch (cause) {
+    error.value = errorMessage(cause)
+    driving.value = false
+  } finally {
+    busy.value = false
     await refresh()
   }
 }
@@ -385,6 +417,14 @@ onUnmounted(() => {
     </div>
     <p v-if="!runs.length">尚未运行任务。启动后，实际结果会保存在这里。</p>
     <AgentRunReview v-if="selected" :run="selected" :busy="busy || controlling" @action="act" />
+    <InternalAuthorizations
+      :shop="shopId"
+      :run="selected"
+      :busy="busy || controlling"
+      @use="act('use_authorization', undefined, $event)"
+      @start="startAuthorized"
+      @inspect="inspect"
+    />
     <details class="section-block">
       <summary>内置技能与权限（{{ skills.length }} 项）</summary>
       <article v-for="skill in skills" :key="skill.name" class="analysis-line">

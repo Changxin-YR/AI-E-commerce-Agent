@@ -130,3 +130,77 @@ test('mobile empty checks and unconfigured model show real states', async ({ pag
   await page.screenshot({ path: path.join(tmpdir(), 'soloops-agent-mobile.png'), fullPage: true })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy()
 })
+
+for (const mobile of [false, true]) {
+  test(`bounded authorization saves, reuses, withdraws and revokes ${mobile ? 'mobile' : 'desktop'}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1280, height: 720 })
+    const { shop, headers } = await setup(page)
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(message.text())
+    })
+    await inventory(page, shop, headers)
+    await page.getByRole('button', { name: '启动并运行', exact: true }).click()
+    const review = page.getByRole('region', { name: '任务执行详情' })
+    const panel = page.getByRole('region', { name: 'R1 内部预授权' })
+    await expect(review).toContainText('等待审批')
+    await panel.getByLabel('最多保存次数').fill('2')
+    await panel.getByLabel('有效小时数').fill('2')
+    await panel.getByLabel('我已核对候选和恢复边界，同意此有限范围预授权').check()
+    await panel.screenshot({
+      path: path.join(
+        tmpdir(),
+        `soloops-authorizations-create-${mobile ? 'mobile' : 'desktop'}.png`,
+      ),
+    })
+    await panel.getByRole('button', { name: '保存预授权', exact: true }).click()
+    await expect(panel).toContainText('授权已保存')
+    await panel.locator('summary').click()
+    await panel.getByRole('button', { name: '为当前候选使用此授权' }).click()
+    await expect(review).toContainText('已完成')
+    await expect(panel).toContainText('已用 1 / 2 次')
+    await panel.locator('summary').click()
+    await panel.getByRole('button', { name: '按授权范围运行' }).click()
+    await expect(panel).toContainText('已用 2 / 2 次')
+    await expect(review).toContainText('已完成')
+    await panel.locator('summary').click()
+    await expect(panel).toContainText('新增 0 项，复用 1 项')
+    await panel.getByLabel('将本次未处理的新增候选设为已拒绝；额度不返还').check()
+    await panel.getByRole('button', { name: '撤回新增候选', exact: true }).click()
+    await expect(panel).toContainText('本次新增候选已拒绝')
+    await panel.locator('summary').click()
+    await expect(panel).toContainText('已撤回新增候选')
+    await panel.getByRole('button', { name: '撤销授权', exact: true }).click()
+    await expect(panel).toContainText('已撤销')
+    await page.reload()
+    await page.getByLabel('任务店铺').selectOption(String(shop))
+    await expect(panel).toContainText('已用 2 / 2 次')
+    await panel.locator('summary').click()
+    await expect(panel).toContainText('已撤回新增候选')
+    const taskPage = (await (
+      await page.request.get(`/api/shops/${shop}/operations/tasks?data_identity=synthetic`)
+    ).json()) as { items: { status: string }[] }
+    expect(taskPage.items.map((task) => task.status)).toEqual(['rejected'])
+    // Final visual capture waits for the completed page's requests to settle.
+    // eslint-disable-next-line playwright/no-networkidle
+    await page.waitForLoadState('networkidle')
+    await panel.scrollIntoViewIfNeeded()
+    await page.screenshot({
+      path: path.join(tmpdir(), `soloops-authorizations-${mobile ? 'mobile' : 'desktop'}.png`),
+      fullPage: true,
+    })
+    await panel.screenshot({
+      path: path.join(
+        tmpdir(),
+        `soloops-authorizations-panel-${mobile ? 'mobile' : 'desktop'}.png`,
+      ),
+    })
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    ).toBeTruthy()
+    expect(errors).toEqual([])
+  })
+}

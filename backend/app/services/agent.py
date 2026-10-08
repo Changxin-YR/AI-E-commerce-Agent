@@ -23,6 +23,7 @@ from app.schemas.agent import (
 )
 from app.services.agent_model import DecisionModel, ModelReply
 from app.services.agent_skills import CONTRACTS, ControlledSkills, evidence, require_skill
+from app.services.authorizations import AuthorizationsService
 from app.services.business_rules import BusinessRulesService
 from app.services.listings import ListingService, digest
 from app.services.operations import OperationsService
@@ -83,6 +84,20 @@ class AgentService:
                 run.source_status = "stale"
                 run.version += 1
                 self._event(run, "business_rules_changed", run.status)
+        if (
+            run.authorization_id
+            and run.next_node == "propose_tasks"
+            and run.status == "ready"
+            and run.input
+        ):
+            try:
+                AuthorizationsService(self.uow).validate(
+                    run, run.authorization_id, check_content=True
+                )
+            except BusinessError:
+                run.status, run.reason = "waiting_approval", "authorization_unavailable"
+                run.version += 1
+                self._event(run, run.reason, run.status)
         if run.lease_token and run.lease_until and run.lease_until <= utc_now():
             run.lease_token = None
             if run.status == "running":
@@ -94,6 +109,7 @@ class AgentService:
     def _output(self, run: AgentExecution, detail: bool = True) -> AgentOutput:
         return AgentOutput(
             id=run.id,
+            authorization_id=run.authorization_id,
             shop_id=run.shop_id,
             template=run.template,
             status=run.status,
@@ -161,6 +177,8 @@ class AgentService:
     def start(self, owner: int, shop_id: int, data: StartAgent) -> AgentOutput:
         shop = self._shop(owner, shop_id)
         canonical = data.model_dump(mode="json")
+        if canonical["authorization_id"] is None:
+            canonical.pop("authorization_id")  # Preserve hashes for existing unbound requests.
         key = digest([shop_id, canonical])
         prior = self.repo.by_request(owner, str(data.request_id))
         if prior:
@@ -176,11 +194,16 @@ class AgentService:
             template=data.template,
             next_node=FIRST_NODE[data.template],
             source_revision=shop.data_revision,
+            authorization_id=data.authorization_id,
             input=canonical,
             result=None,
             budget=data.budget.model_dump(mode="json"),
         )
         self.repo.add(run)
+        if data.authorization_id:
+            AuthorizationsService(self.uow).validate(
+                run, data.authorization_id, check_content=False
+            )
         self._event(run, "started", "ready")
         return self._finish(run)
 
@@ -213,12 +236,20 @@ class AgentService:
             return self._advance(run)
         if run.status in TERMINAL:
             raise ConflictError("任务已结束或被阻断，请核对原因后新建任务")
-        if data.action in {"approve", "reject"}:
+        if data.action == "use_authorization":
+            if run.status != "waiting_approval" or not data.authorization_id:
+                raise ConflictError("请从待审批候选选择有效预授权")
+            AuthorizationsService(self.uow).validate(run, data.authorization_id, check_content=True)
+            run.authorization_id = data.authorization_id
+            run.status = "ready"
+        elif data.action in {"approve", "reject"}:
             if run.status != "waiting_approval":
                 raise ConflictError("当前没有待审批节点")
             if data.action == "approve" and run.source_status != "current":
                 raise ConflictError("来源已变化，不能批准旧预览")
             run.status = "ready" if data.action == "approve" else "rejected"
+            # Explicit single-node approval is independent of any earlier grant.
+            run.authorization_id = None
         elif data.action == "pause":
             if run.status not in {"ready", "running"}:
                 raise ConflictError("当前状态不能暂停")
@@ -292,8 +323,15 @@ class AgentService:
                     data = StartAgent.model_validate(run.input)
                     skills = ControlledSkills(self.uow, owner, shop)
                     inputs = skills.inputs(node, data, run.result or {})
-                    result = skills.call(node, inputs, approved=self._approved(run))
+                    prepared = None
+                    if node == "propose_tasks" and run.authorization_id:
+                        prepared = AuthorizationsService(self.uow).prepare(run)
+                    result = skills.call(
+                        node, inputs, approved=prepared is not None or self._approved(run)
+                    )
                     self._check_scope(node, data, result)
+                    if prepared is not None:
+                        AuthorizationsService(self.uow).consume(run, *prepared, result)
                 self._dependencies(run, node, result)
                 self._choose_next(run, node, result)
         except BusinessError as error:
@@ -373,6 +411,14 @@ class AgentService:
                     "waiting_approval",
                     "findings_found",
                 )
+                if run.authorization_id:
+                    try:
+                        AuthorizationsService(self.uow).validate(
+                            run, run.authorization_id, check_content=True
+                        )
+                        run.status, run.reason = "ready", "preauthorization_ready"
+                    except BusinessError:
+                        run.reason = "authorization_unavailable"
             else:
                 run.next_node, run.status, run.reason = "end", "succeeded", "no_findings"
         elif node == "product_context":
@@ -384,6 +430,8 @@ class AgentService:
             run.next_node, run.status = "support_draft", "waiting_approval"
         elif node in {"propose_tasks", "listing_draft", "support_draft"}:
             run.next_node, run.status = "verify", "ready"
+            if node == "propose_tasks" and run.authorization_id:
+                run.reason = "preauthorization_used"
         else:
             run.next_node, run.status = "end", "succeeded"
 

@@ -185,3 +185,15 @@ Browser plugin not available，使用仓库 Playwright（Chromium，http://127.0
 迁移 `944381607c1c` 在隔离 `_test` 库升级→回退 `a0188d77d6c6`→升级/check 通过；开发库只升级/check，两库无漂移。pytest、Playwright、迁移回退串行执行。Starlette/httpx 兼容层弃用提示仍存在。
 
 上一功能提交 `abb9f79` 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37823550243) 已核实 completed/success。74 SO、32 验收行完整保留；SO-066 的可撤销自动执行授权、剩余 P0 和真实外部验证继续实施。
+
+## 第十一迭代：有界 R1 内部预授权（2026-10-09）
+
+最终完整后端 pytest **214 项通过**，本功能 `test_authorizations.py` **17 项**。覆盖真实 MySQL 中的授权创建/回放、严格次数与时效字段、白名单、拥有者/店铺/身份/渠道隔离、CSRF、两个执行争用最后一次额度、来源清除与规则变化、执行中到期、业务与消耗一起回滚、旧 UUID 兼容、复用、撤回冲突和撤销后的单次审批。Ruff **112 文件**规则/格式检查通过，mypy **87 个 app 文件**通过。
+
+Vue 类型、lint、生产构建通过，Vitest **9 文件 15 项通过**。最终完整 Playwright **23 项通过（40.6 秒）**；新增桌面/手机真实页面操作覆盖创建授权→自动保存→复用消耗→撤回新增候选→撤销授权→刷新回读，页面与控制台无错误，手机无横向溢出。截图 `soloops-authorizations-{create-desktop,create-mobile,panel-desktop,panel-mobile,desktop,mobile}.png` 位于系统临时目录，仅含合成数据并已实际查看，不提交。
+
+截图发现通用 `.data-note` 的 flex 横排使授权表单挤成窄列，改为表单局部纵向排版并复验。全量浏览器测试曾遇本机服务中途退出 `ERR_CONNECTION_REFUSED`，另一次审批请求的 trace 为 `ERR_NO_BUFFER_SPACE`；停止并行构建、重启测试服务后最终 23 项全部通过。后端 Starlette/httpx 弃用提示仍存在。
+
+迁移 `3b35be067576` 在隔离 `_test` 库回退 `944381607c1c` 后升级/check，通过；开发库只升级/check，两库无漂移。迁移、pytest、E2E 按顺序执行。74 SO、32 验收行完整保留。前版 `c1dac61` 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37826653771) 已核实 completed/success。
+
+本功能没有模型调用或外发；R2 测试发送、真实通道回执与收件证据及剩余 P0 继续实现。

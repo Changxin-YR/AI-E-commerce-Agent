@@ -1,4 +1,5 @@
 from app.models.agent import AgentExecution, AgentPolicySource, AgentSource, AgentStep
+from app.models.authorizations import AuthorizationUse, InternalAuthorization
 from app.models.business_rules import BusinessRuleRevision
 from app.models.identity import AuditEvent, LoginSession, SellerProfile, Shop, User
 from app.models.imports import (
@@ -22,6 +23,8 @@ from app.models.profit import ProfitFee, ProfitScenario, ProfitStudy
 from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
 
 __all__ = [
+    "AuthorizationUse",
+    "InternalAuthorization",
     "BusinessRuleRevision",
     "ProfitFee",
     "ProfitScenario",
