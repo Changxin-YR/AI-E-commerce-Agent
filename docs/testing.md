@@ -56,12 +56,13 @@ Windows 沙箱内首次 Vitest 执行遇到临时文件重命名 EPERM；使用�
 
 | 检查 | 实际结果 |
 |---|---|
-| pytest / MySQL | 完整回归 78 项通过；新增 19 项分析测试，历史摘要调整后对应 19 项再次通过 |
+| pytest / MySQL | 最终完整回归 78 项通过；其中新增 19 项分析测试 |
 | Ruff / mypy | 格式与规则通过；42 个 app 源文件通过 |
 | Vue lint / build / 类型 | 通过 |
 | Vitest | 原 3 个文件、5 项通过 |
 | Playwright Chromium | 完整 7 项通过，含新增两条分析流程 |
 | MySQL 迁移 | a32132cebd28：隔离库 upgrade→downgrade 到 0776318e56e3→upgrade/check；开发库 upgrade/check 通过 |
+| GitHub Actions | [Verify SoloOps](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37798933063)：功能提交 ab83fd6 在 Ubuntu / MySQL 下 completed / success |
 
 `test_analytics.py` 覆盖精确十进制、同单两 SKU、六类状态、退款不恢复成本、成本缺失/异币种/不同数据身份、缺折扣/退款、时间窗边界、相同口径重复计算及来源、未舍入阈值比较、保存与待办并发去重、版本失效、旧成本源撤销后清除、活动订单批次清除、独立快照保留、权限隔离、任意指令拒答、无时区/过大范围拒绝及空数据。
 
