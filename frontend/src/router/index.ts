@@ -19,6 +19,7 @@ const router = createRouter({
         { path: 'inventory', component: () => import('@/views/InventoryView.vue') },
         { path: 'agent', component: () => import('@/views/AgentView.vue') },
         { path: 'profit', component: () => import('@/views/ProfitView.vue') },
+        { path: 'rules', component: () => import('@/views/RulesView.vue') },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },

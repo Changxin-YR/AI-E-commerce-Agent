@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.models.identity import AuditEvent
 from app.repositories.agent import AgentRepository
 from app.repositories.analytics import AnalyticsRepository
+from app.repositories.business_rules import BusinessRulesRepository
 from app.repositories.identity import IdentityRepository
 from app.repositories.imports import ImportRepository
 from app.repositories.inventory import InventoryRepository
@@ -24,6 +25,7 @@ class UnitOfWork:
         self._defer_commits = 0
         self.session = session
         self.agent = AgentRepository(session)
+        self.business_rules = BusinessRulesRepository(session)
         self.identity = IdentityRepository(session)
         self.imports = ImportRepository(session)
         self.inventory = InventoryRepository(session)

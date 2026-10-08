@@ -21,12 +21,15 @@ from app.schemas.operations import (
     TaskPage,
     TaskQuery,
 )
+from app.services.business_rules import BusinessRulesService
 from app.services.operation_checks import CheckResult, check_data
 from app.services.profit_calculation import utc_text
 
 
 def task_key(shop: int, finding: Finding, scope: OperationScope) -> str:
     rule: dict[str, str | int] = {"version": 1}
+    if scope.rule_revision_id:
+        rule["business_rule_revision"] = scope.rule_revision_id
     if finding.kind == "low_inventory":
         rule["max_age_hours"] = scope.max_age_hours
     if finding.kind == "low_margin":
@@ -61,25 +64,34 @@ class OperationsService:
         return shop
 
     def _run_output(self, run: OperationRun, detail: bool = True) -> RunOutput:
+        scope = OperationScope.model_validate(run.scope)
+        rule_current = BusinessRulesService(self.uow).is_current(
+            run.owner_id, run.shop_id, scope.channel, scope.data_identity, scope.rule_revision_id
+        )
         return RunOutput(
             id=run.id,
             shop_id=run.shop_id,
             scope=OperationScope.model_validate(run.scope),
             source_revision=run.source_revision,
-            source_status=run.source_status,
+            source_status="stale"
+            if run.source_status == "current" and not rule_current
+            else run.source_status,
             created_at=utc_text(run.created_at),
             valid_until=utc_text(run.valid_until) if run.valid_until else None,
             snapshot=RunSnapshot.model_validate(run.snapshot) if detail and run.snapshot else None,
         )
 
     def _task_output(self, task: OperationTask, detail: bool = True) -> TaskOutput:
+        rule_current = self._task_rule_current(task)
         return TaskOutput(
             id=task.id,
             shop_id=task.shop_id,
             owner_id=task.owner_id,
             kind=task.kind,
             status=task.status,
-            source_status=task.source_status,
+            source_status="stale"
+            if task.source_status == "current" and not rule_current
+            else task.source_status,
             version=task.version,
             snapshot=Finding.model_validate(task.snapshot) if task.snapshot else None,
             note=task.note,
@@ -99,6 +111,15 @@ class OperationsService:
             ]
             if detail
             else [],
+        )
+
+    def _task_rule_current(self, task: OperationTask) -> bool:
+        return BusinessRulesService(self.uow).is_current(
+            task.owner_id,
+            task.shop_id,
+            task.channel,
+            task.data_identity,
+            int((task.snapshot or {}).get("rule_revision_id", 0)),
         )
 
     def _event(self, task: OperationTask, action: str, previous: str) -> None:
@@ -124,6 +145,7 @@ class OperationsService:
         )
 
     def _check(self, owner: int, shop: Shop, scope: OperationScope, now: datetime) -> CheckResult:
+        BusinessRulesService(self.uow).validate_scope(owner, shop.id, scope)
         shop_id = shop.id
         # All evidence is bounded and read under the same owner lock as imports.
         orders = self.repo.records(
@@ -147,6 +169,8 @@ class OperationsService:
                 "range_too_large", "单项检查超过 10000 行，请缩小范围；本次未保存", 422
             )
         result = check_data(orders, products, inventory, messages, scope, shop.data_revision, now)
+        for finding in result.findings:
+            finding.rule_revision_id = scope.rule_revision_id
         if len(result.findings) > 500:
             raise BusinessError(
                 "too_many_findings", "核对候选超过 500 项，请缩小数据范围；本次未保存", 422
@@ -170,7 +194,10 @@ class OperationsService:
         now = utc_now()
         existing = self.repo.run_by_request(owner, str(data.request_id))
         if existing:
-            if existing.shop_id != shop_id or existing.scope != scope.model_dump(mode="json"):
+            if (
+                existing.shop_id != shop_id
+                or OperationScope.model_validate(existing.scope) != scope
+            ):
                 raise ConflictError("请求标识已用于其他范围，请重新启动")
             self.repo.expire(owner, shop_id, now)
             output = self._run_output(existing)
@@ -299,6 +326,8 @@ class OperationsService:
         task = self.repo.task(owner, shop, task_id)
         if task is None:
             raise NotFoundError()
+        if data.action not in {"reject", "ignore"} and not self._task_rule_current(task):
+            raise ConflictError("经营规则已变化，请重新检查后处理")
         if task.source_status == "cleared" or (
             task.source_status != "current" and data.action not in {"reject", "ignore"}
         ):

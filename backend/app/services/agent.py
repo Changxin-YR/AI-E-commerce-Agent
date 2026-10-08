@@ -23,6 +23,7 @@ from app.schemas.agent import (
 )
 from app.services.agent_model import DecisionModel, ModelReply
 from app.services.agent_skills import CONTRACTS, ControlledSkills, evidence, require_skill
+from app.services.business_rules import BusinessRulesService
 from app.services.listings import ListingService, digest
 from app.services.operations import OperationsService
 from app.services.profit_calculation import utc_text
@@ -74,6 +75,14 @@ class AgentService:
         run = self.repo.get(owner, shop, run_id)
         if run is None:
             raise NotFoundError()
+        if run.input and run.source_status == "current":
+            scope = StartAgent.model_validate(run.input).scope
+            if not BusinessRulesService(self.uow).is_current(
+                owner, shop, scope.channel, scope.data_identity, scope.rule_revision_id
+            ):
+                run.source_status = "stale"
+                run.version += 1
+                self._event(run, "business_rules_changed", run.status)
         if run.lease_token and run.lease_until and run.lease_until <= utc_now():
             run.lease_token = None
             if run.status == "running":
@@ -158,6 +167,7 @@ class AgentService:
             if prior.request_hash != key:
                 raise ConflictError("请求标识已用于其他任务，请使用新标识")
             return self._finish(self._load(owner, shop_id, prior.id))
+        BusinessRulesService(self.uow).validate_scope(owner, shop_id, data.scope)
         run = AgentExecution(
             owner_id=owner,
             shop_id=shop_id,

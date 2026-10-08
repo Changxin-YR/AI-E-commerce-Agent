@@ -68,6 +68,15 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 本次沿用已确认的 Firecrawl 402 限制，使用网页检索官方资料。平台风格别名仅为合成格式候选，不标为真实平台已验证预设。
 
 持续集成参考：[actions/setup-node](https://github.com/actions/setup-node)、[astral-sh/setup-uv](https://github.com/astral-sh/setup-uv)、[Playwright CI](https://playwright.dev/docs/ci-intro)。借鉴官方安装与测试顺序；工作流按本项目的 MySQL、pytest、Vue 测试组合编写。Actions 引用已核对的提交 SHA。
+## 经营规则与版本记忆（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [SQLAlchemy 版本计数](https://docs.sqlalchemy.org/en/20/orm/versioning.html)、[官方维护者讨论](https://github.com/sqlalchemy/sqlalchemy/discussions/6607) | MIT / 官方文档与仓库 | 显式期望版本防止覆盖，独立追加历史版本；沿用用户锁与当前读，自行实现业务逻辑 |
+| [MySQL Locking Reads](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html) | Oracle 官方文档 | 规则修改与业务执行遵守同一用户→店铺锁序，防止检查后改规则的并发窗口 |
+
+沿用已确认 Firecrawl 402 限制检索官方网页。规则按店铺/渠道/数据身份生效；文本偏好只作卖家提供的参考，权限由代码契约控制。无第三方业务源码复制。
+
 ## 独立新品利润计算器（2026-10-09）
 
 | 资料 | 许可证/性质 | 借鉴与适配 |

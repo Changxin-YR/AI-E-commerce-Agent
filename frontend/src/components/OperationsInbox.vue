@@ -9,6 +9,8 @@ import { sourceLabels, taskLabels } from '@/types/operations'
 import { supportTime } from '@/types/support'
 import FeedbackBanner from './FeedbackBanner.vue'
 import OperationTaskReview from './OperationTaskReview.vue'
+import AppliedRules from './AppliedRules.vue'
+import { applyRule, type BusinessRule } from '@/api/businessRules'
 import SourceEvidence from './SupportSource.vue'
 
 const shops = ref<Shop[]>([])
@@ -35,6 +37,12 @@ const busy = ref(false)
 const dirty = ref(false)
 const error = ref('')
 const info = ref('')
+const rulesPending = ref(true)
+const activeRule = ref(false)
+function rulesLoaded(rule: BusinessRule): void {
+  applyRule(scope, rule)
+  activeRule.value = rule.active
+}
 const timezone = computed(
   () => shops.value.find((s) => s.id === shopId.value)?.timezone ?? 'Asia/Shanghai',
 )
@@ -85,7 +93,7 @@ function changeShop(): void {
   void refresh(true)
 }
 async function start(): Promise<void> {
-  if (busy.value || dirty.value) return
+  if (busy.value || dirty.value || rulesPending.value) return
   busy.value = true
   error.value = ''
   info.value = ''
@@ -160,6 +168,12 @@ onUnmounted(() => window.removeEventListener('focus', focus))
       </div>
     </aside>
     <form v-if="shops.length" class="form-panel" @submit.prevent="start">
+      <AppliedRules
+        :shop="shopId"
+        :scope="scope"
+        @loaded="rulesLoaded"
+        @pending="rulesPending = $event"
+      />
       <fieldset :disabled="busy || dirty">
         <legend>本次检查范围</legend>
         <div class="form-grid">
@@ -215,6 +229,7 @@ onUnmounted(() => window.removeEventListener('focus', focus))
               ><input
                 id="ops-age"
                 v-model.number="scope.max_age_hours"
+                :disabled="activeRule || rulesPending"
                 type="number"
                 min="1"
                 max="720"
@@ -226,6 +241,7 @@ onUnmounted(() => window.removeEventListener('focus', focus))
               ><input
                 id="ops-qty"
                 v-model.number="scope.min_quantity"
+                :disabled="activeRule || rulesPending"
                 type="number"
                 min="1"
                 max="1000000"
@@ -237,6 +253,7 @@ onUnmounted(() => window.removeEventListener('focus', focus))
               ><input
                 id="ops-margin"
                 v-model="scope.max_margin_percent"
+                :disabled="activeRule || rulesPending"
                 type="number"
                 min="-1000"
                 max="100"
@@ -257,7 +274,7 @@ onUnmounted(() => window.removeEventListener('focus', focus))
         </p>
         <div class="form-actions">
           <button type="button" class="button secondary" @click="refresh()">刷新记录</button
-          ><button class="button primary">运行今日运营</button>
+          ><button class="button primary" :disabled="rulesPending">运行今日运营</button>
         </div>
       </fieldset>
     </form>
@@ -275,13 +292,26 @@ onUnmounted(() => window.removeEventListener('focus', focus))
         <span>来源版本 {{ run.source_revision }}</span>
       </div>
       <p>分析完成 {{ supportTime(run.created_at, timezone) }}</p>
+      <RouterLink
+        v-if="run.scope.rule_revision_id"
+        :to="{
+          path: '/rules',
+          query: {
+            shop: run.shop_id,
+            channel: run.scope.channel,
+            identity: run.scope.data_identity,
+            version: run.scope.rule_revision_id,
+          },
+        }"
+        >查看使用的经营规则 #{{ run.scope.rule_revision_id }}</RouterLink
+      >
       <p>
         订单时间窗 {{ supportTime(run.scope.start_at, timezone) }} 至
         {{ supportTime(run.scope.end_at, timezone) }} · {{ run.scope.currency }} · 库存时效
         {{ run.scope.max_age_hours }} 小时
       </p>
       <p v-if="run.source_status === 'stale'" role="status">
-        数据已变化或快照时效已到，需更新数据并重新检查。以下为历史结果。
+        数据、经营规则已变化或快照时效已到，需重新检查。以下为历史结果。
       </p>
       <template v-if="run.snapshot">
         <p>数据截至：{{ run.snapshot.data_as_of }}</p>

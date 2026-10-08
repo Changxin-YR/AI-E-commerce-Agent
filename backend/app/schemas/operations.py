@@ -10,6 +10,7 @@ from app.schemas.imports import DataIdentity, SourceChannel
 
 
 class OperationScope(AnalysisInput):
+    rule_revision_id: Annotated[int, Field(ge=0)] = 0
     intent: Literal["low_margin"] = "low_margin"
     channel: SourceChannel = "generic"
     max_age_hours: Annotated[int, Field(ge=1, le=720)] = 24
@@ -46,6 +47,7 @@ class TaskInput(InputModel):
 
 
 class Finding(OutputModel):
+    rule_revision_id: int = 0
     kind: str
     object_label: str
     title: str

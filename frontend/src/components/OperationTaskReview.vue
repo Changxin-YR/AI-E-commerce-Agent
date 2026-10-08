@@ -86,7 +86,7 @@ async function act(action: TaskAction): Promise<void> {
         证据有效至 {{ supportTime(task.snapshot.valid_until, timezone) }}
       </p>
       <p v-if="!available" role="status">
-        来源已变化或过期，请重新运行今日运营后核对。历史处理状态保留。
+        来源、经营规则已变化或过期，请重新运行今日运营后核对。历史处理状态保留。
       </p>
       <details>
         <summary>查看依据（{{ task.snapshot.sources.length }} 行）</summary>

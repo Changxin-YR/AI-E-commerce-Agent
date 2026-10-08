@@ -1,6 +1,7 @@
 import type { AnalysisScope, SourceReference } from './analytics'
 
 export interface OperationScope extends AnalysisScope {
+  rule_revision_id?: number
   intent: 'low_margin'
   channel: string
   max_age_hours: number

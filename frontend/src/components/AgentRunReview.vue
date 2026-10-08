@@ -49,6 +49,7 @@ const recordLink = computed(
     ],
 )
 const actionLabels: Record<string, string> = {
+  business_rules_changed: '经营规则已变化',
   started: '已启动',
   approve: '卖家已批准',
   reject: '卖家已拒绝',
@@ -75,8 +76,21 @@ const actionLabels: Record<string, string> = {
     </p>
     <p v-if="agentReasons[run.reason]" role="status">{{ agentReasons[run.reason] }}</p>
     <p v-if="run.source_status === 'stale'">
-      来源已变化或过期。保留历史结果，需使用当前数据新建任务。
+      来源、经营规则已变化或过期。保留历史结果，需使用当前数据和规则新建任务。
     </p>
+    <RouterLink
+      v-if="run.input?.scope.rule_revision_id"
+      :to="{
+        path: '/rules',
+        query: {
+          shop: run.shop_id,
+          channel: run.input.scope.channel,
+          identity: run.input.scope.data_identity,
+          version: run.input.scope.rule_revision_id,
+        },
+      }"
+      >查看使用的经营规则 #{{ run.input.scope.rule_revision_id }}</RouterLink
+    >
     <div class="analysis-metrics">
       <div>
         <small>执行步数</small><strong>{{ run.steps_used }} / {{ run.budget.max_steps }}</strong>

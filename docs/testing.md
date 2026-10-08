@@ -173,3 +173,15 @@ Ruff 规则/格式与 mypy 71 个 app 文件通过。迁移 `e84b5e7e8dd1` 在�
 Vitest **7 文件 12 项通过**；金额文本精度与未知/零依据门禁各有组件测试。最终 Vue lint、type-check、生产构建通过；Ruff **99 文件**规则/格式通过，mypy **77 个 app 文件**通过。金额输出保持定点十进制字符串，避免极小费用显示为科学计数。
 
 迁移 `a0188d77d6c6` 已在隔离测试库升级→回退至 `e84b5e7e8dd1`→升级/check；开发库只升级/check，均无漂移。所有数据库测试、E2E、迁移回退按顺序运行。Starlette/httpx 兼容层弃用提示仍存在。该切片不调用模型或外发通道，四条完整 AI MVP 与其余 P0 仍按矩阵继续开发。
+
+## 第十迭代：经营规则与版本记忆（2026-10-09）
+
+完整 pytest **197 项通过**（52.45 秒）；本功能 `test_business_rules.py` **18 项**，覆盖阈值实际改变低库存/低毛利结果、历史查看/撤销/重置/恢复、店铺/渠道/身份与跨账号隔离、CSRF、输入边界/权限扩张拒绝、旧版本冲突、当前读并发一成一冲突、旧审批失效、幂等回放、模型在途改规则后丢弃结果并记已知费用。真实模型调用仍为 test_double，无外发调用。
+
+Vitest **8 文件 13 项通过**，新增慢请求跨店铺返回和加载失败阻断测试。Vue lint、type-check、生产构建通过；后端 Ruff **106 文件**格式/规则通过，mypy **82 个 app 文件**通过。全量 Playwright **21 项通过**（34.3 秒），覆盖规则保存→刷新→原值回看→今日运营/Agent 实际应用→恢复→重置→渠道隔离，以及手机保存→撤销→历史依据；既有 19 项回归同时通过。
+
+Browser plugin not available，使用仓库 Playwright（Chromium，http://127.0.0.1:5174）。最终桌面 1280×720、手机 390×844 的首屏及完整截图保存在系统 Temp `soloops-rules-{desktop,mobile,first-desktop,first-mobile}.png`，实际查看，手机无页面横向溢出。检查了有效页面、主要控件、无框架错误层、登录后的控制台错误和脚本文字转义。首次会话探测的登录前 401 为预期；一次回归测试服务中途停止导致 connection refused，重启后全量通过。复选框尺寸问题由截图发现并修正。
+
+迁移 `944381607c1c` 在隔离 `_test` 库升级→回退 `a0188d77d6c6`→升级/check 通过；开发库只升级/check，两库无漂移。pytest、Playwright、迁移回退串行执行。Starlette/httpx 兼容层弃用提示仍存在。
+
+上一功能提交 `abb9f79` 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37823550243) 已核实 completed/success。74 SO、32 验收行完整保留；SO-066 的可撤销自动执行授权、剩余 P0 和真实外部验证继续实施。

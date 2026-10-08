@@ -19,6 +19,8 @@ import type { ProductFacts } from '@/types/listings'
 import type { MessageFacts } from '@/types/support'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import AgentRunReview from '@/components/AgentRunReview.vue'
+import AppliedRules from '@/components/AppliedRules.vue'
+import { applyRule, type BusinessRule } from '@/api/businessRules'
 
 const shops = ref<Shop[]>([])
 const shopId = ref(0)
@@ -29,6 +31,12 @@ const model = ref<ModelStatus | null>(null)
 const products = ref<ProductFacts[]>([])
 const messages = ref<MessageFacts[]>([])
 const query = ref('')
+const rulesPending = ref(true)
+const activeRule = ref(false)
+function rulesLoaded(rule: BusinessRule): void {
+  applyRule(form.scope, rule)
+  activeRule.value = rule.active
+}
 const error = ref('')
 const busy = ref(false)
 const controlling = ref(false)
@@ -142,7 +150,7 @@ async function drive(): Promise<void> {
   driving.value = false
 }
 async function start(): Promise<void> {
-  if (busy.value || !shopId.value) return
+  if (busy.value || !shopId.value || rulesPending.value) return
   busy.value = true
   error.value = ''
   selected.value = null
@@ -226,6 +234,12 @@ onUnmounted(() => {
         }}</span>
       </div>
       <form @submit.prevent="start">
+        <AppliedRules
+          :shop="shopId"
+          :scope="form.scope"
+          @loaded="rulesLoaded"
+          @pending="rulesPending = $event"
+        />
         <fieldset class="analysis-fields" :disabled="busy || controlling">
           <label
             >执行流程<select v-model="form.template">
@@ -303,6 +317,7 @@ onUnmounted(() => {
             <label
               >库存时效（小时）<input
                 v-model.number="form.scope.max_age_hours"
+                :disabled="activeRule || rulesPending"
                 type="number"
                 min="1"
                 max="720"
@@ -311,6 +326,7 @@ onUnmounted(() => {
             <label
               >低毛利率上限（%）<input
                 v-model="form.scope.max_margin_percent"
+                :disabled="activeRule || rulesPending"
                 type="number"
                 min="-1000"
                 max="100"
@@ -347,7 +363,7 @@ onUnmounted(() => {
           固定流程使用本地规则或事实模板，模型费用为
           0。自然语言仅用于选择受控流程，模型不会计算金额或改写业务事实。
         </p>
-        <button class="button primary" :disabled="busy || controlling">
+        <button class="button primary" :disabled="busy || controlling || rulesPending">
           {{ busy ? '正在执行…' : '启动并运行' }}
         </button>
       </form>
