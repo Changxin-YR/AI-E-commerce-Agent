@@ -13,17 +13,31 @@
 ## 当前提交与环境
 
 - origin：https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。本轮 GitHub connector 核实登录 Changxin-YR，仓库 ID 1410355242，公开，admin/push true；正常 push 已成功。
-- main HEAD/当前功能提交：`d43d29bd9a3c6e4d8a2d650a69a9e6d2a4fe7366`，已推送；主题 add controlled R2 test mail delivery。
-- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37833883370 ，最后观测 in_progress，接续先核对并修复失败。前版 R1 1edd7db 的 CI37830128990 已 completed/success，规则 c1dac61 CI37826653771、利润 abb9f79 CI37823550243 也 success。
+- main HEAD/当前功能提交：`b98dad3c9ea77b3b1ccdd342362f39fecca57251`，已推送；主题 add source-backed cross-shop overview reports。
+- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37837382644 ，最后观测 in_progress，接续先核对并修复失败。前版 R2 d43d29b 的 CI37833883370 已 completed/success；R1 1edd7db CI37830128990、规则 c1dac61 CI37826653771、利润 abb9f79 CI37823550243 也 success。
 - 前版受控 Agent `d1eda91` CI 37820719900 已 completed/success。
 - 前版补充提交 `10fa1df` 的 CI `37816007090` 已 completed/success；运营 `3531ce7` 的 CI `37815482720`、库存 `53b7d72` 的 `37811072990`、客服 `d3b9be1` 的 `37808536888` 均已 success。
 - backend/.venv Python 3.11、frontend/node_modules、Docker MySQL 8.4 开发3307/测试3308。日常服务8000/5173；Playwright自动启动8001/5174。
 - .env、backend/.env、.local/test.env 是忽略的密钥/本机配置，不打印、不提交。Windows 用 .venv/Scripts/python -m；MySQL、Node子进程、Git写常需 require_escalated。
 - pytest 与 Playwright 会清理隔离 _test 库，必须串行；迁移回退也等测试结束。测试与 E2E 入口强制 model_enabled=False。
-- 当前迁移 `f219af0a01cf` 已应用两库；`.local/verify_outbound_migration.py` 已验证 _test 回退 3b35be067576→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
+- 当前迁移 `728544d1186c` 已应用两库；`.local/verify_overview_migration.py` 已验证 _test 回退 f219af0a01cf→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
 - Firecrawl 已确认402，使用官方网页/GitHub connector，不反复调用计费端点，不临时写抓取脚本。GitHub Actions用 github_fetch REST，解析 structuredContent.content，只输出摘要；fetch_commit_workflow_runs不适用于main push。
 
-## 最新完成：R2 测试邮箱与一次性提交
+## 最新完成：SO-002 跨店总览与日周月摘要
+
+- 详见 development 第十八节。api/routes/overview → services/overview.py + overview_calculation.py → repositories/overview.py；迁移728544d1186c三表 overview_reports/overview_shops/overview_sources；UI `/overview` 的 OverviewView/OverviewShopCard，沿用绿系设计。
+- 最多20店，按登记平台/市场过滤后明确传shop IDs，数据身份隔离；统计日期按选定IANA时区当地零点转UTC，本期/对比均半开区间。前日/近7完整日/近30完整日/自选；默认前一同日历天数，也可自选对比。跨DST一天可23小时，日历与UTC换算后窗口均限366天；不存在的当地零点或超长UTC窗可读422。
+- 复用Decimal40位profit_calculation，按店铺+币种独立算，再只合并相同币种。完整净销售/已知子集、订单去重、退款、当前采购成本估算商品毛利、热销和低毛利筛选。订单在每店每币种内去重，跨币种订单不能再总计；退款归原订单日；费用未归集，净利润和营销未知。差额需两期完整，变化率另须对比基数>0。
+- 库存为当时当前投影，按本页独立时效核验（默认24h，不套经营规则）；渠道数量不合计，全部未知则低库存数未知。消息按本期sent_at筛选，回复状态未知。最近50条未结运营任务只存ID/kind/status，pending_approval/open/deferred且来源未清除；这是保存时状态，打开工作台重新核验。
+- 来源读取合计最多10000行，超限整体拒绝。当前库存和消息读取复用OperationsRepository有界当前投影，再筛消息时间。所有两期订单/引用成本/库存/区间消息的来源可回已有Analytics source原始行API。逐来源导出截至+导入时间；未知不替代。
+- 用户锁→店铺ID顺序锁→FOR UPDATE + populate_existing当前读。保存只接范围、各店expected_revision和UUID，重算后校验，正文+依赖+audit同事务。UUID绑定规范化内容、重放回读、换范围409；清除不能复活。
+- 导入提交/撤销保守stale，库存过期或未来快照生效点使已存摘要stale；历史不重算。有效期用DATETIME(6)，避免MySQL默认精度舍入延迟到期。清批次先overview.purge_batch，擦整份snapshot/依赖；独立报告保留。用户可严格bool显式确认清除；范围/ID/审计留存。派生JSON金额为Decimal定点字符串，原始源金额Numeric。
+- UI修改输入隐藏旧结果；表单算完折叠，分币种卡片、逐店公式/原始来源/空状态、日周月摘要保存、20条游标历史与清除。窗口focus刷新，未保存预览来源变更后隐藏；来源组件丢弃旧报告迟到数据/错误。未增加邮件或Agent技能权限。
+- 全量pytest260通过76.95s后，补充长DST窗与实际open任务状态测试；本功能最终20通过6.15s，当前总数262（本提交CI需核对）。Ruff131文件/mypy100app通过；Vitest11文件19项、Vue lint/type/build通过；最终完整Playwright26通过45.3s。
+- 全量E2E初次枚举异步店铺列表太早，等待目标控件enabled后取消其他选项，最后26全部通过。Array.at不在当前TS lib，改常规索引构建通过。默认DATETIME边界已改DATETIME(6)。截图Temp soloops-overview-{form-desktop,first-desktop,first-mobile,desktop,mobile}.png均合成数据已查看，手机无横溢。Starlette/httpx弃用仍在。
+- README、development/interview/74SO/32验收/testing/questions/references已更新；无真实模型/外发。统一驾驶舱和四MVP模型内容仍待继续，全部P0未完成。
+
+## 前版完成：R2 测试邮箱与一次性提交
 
 - development 第十七节；三层 outbound、outbound_channels 和固定 ResendMailProvider。migration f219af0a01cf 三表 test_mail_channels/outbound_messages/outbound_approvals。UI `/outbound` 的 OutboundView/OutboundMailReview，现有绿系设计。
 - 默认关闭。`SOLOOPS_OUTBOUND_` 前缀的 ENABLED/API_KEY/OWNER_ID/SHOP_ID/SENDER/TEST_RECIPIENT/DOMAIN_ID 在本机配置，绑定一个 owner/shop/本人发送地址/本人测试邮箱。浏览器不能覆盖地址或提交密钥；API key 必须支持域读、发送及记录回读。配置/密钥变化旧连接失效。当前没有真实账号或真实调用。
@@ -115,8 +129,8 @@
 
 ## 下一步立即开发
 
-1. 核对 CI37833883370，失败修复；当前 main d43d29bd9a3c6e4d8a2d650a69a9e6d2a4fe7366。读取 AGENTS、本文、development 十三—十七节与冻结需求/矩阵。
-2. 立即开发 SO-002 跨店铺经营总览与运营日报 P0 切片：按店铺/平台/市场/时间与币种分组；前日/近7/近30/自选对比；库存/客服/营销等缺口明确未知；金额Decimal，不把多个币种合计，不冒称全渠道实时。总览/日报事实可下钻已有来源行与批次，持久摘要须处理来源变化/清除。
-3. 随后统一任务/草稿/审批驾驶舱，四条MVP可配置模型生成与解释等剩余P0，再P1/P2。OpenAIResponses目前仅意图路由，不是四条MVP完整AI能力；无模型预算/外发账号时完成适配和替身，真实验收单列待授权。R2此轮已经有本地受控发送/未知回查路径，别重复从零实现。
-4. 每功能先查官方/GitHub并更新references/许可证/适配，完成前后端/迁移/测试/development/interview/74SO/32验收/testing/questions，再正常提交推送main和context-memory，不强推。不重复询问questions已有外部条件。
-5. 上下文压力时落盘推送后按授权创建新聊天独占接续；原聊天停止修改，不让两个聊天同时改工作区。
+1. 核对CI37837382644，失败修复；main b98dad3c9ea77b3b1ccdd342362f39fecca57251。读取AGENTS、本文、development十三—十八节与冻结需求/74SO/32验收矩阵。
+2. 开发统一任务/草稿/审批驾驶舱P0：整合已有真实OperationRun/Task、AgentExecution/Step、Listing、客服草稿、AnalysisTodo、R1/R2授权和报告入口，优先展示最近已运行的可核验摘要、待处理/待审/失败/未知/需更新来源，缺数据不造记录。深链能落到确切店铺/对象/审批预览，处理动作复用现有受控服务；保持身份/渠道隔离、来源/规则/时效失效及清除，不让新的聚合绕过R2门禁。界面以用户任务为主，逐步减少分散模块来回找记录。
+3. 随后按冻结稿四MVP继续可配置模型生成/解释：MVP04经营问数→MVP02 Listing→MVP03客服→MVP01运营。当前OpenAI Responses仅意图路由；业务事实仍确定性计算，模型费用/授权/敏感事实/注入防护/输出校验/来源失效保持门禁。缺模型预算/邮箱不阻断本地适配与测试，真实证据单列待授权。
+4. 完成23个P0最小模块、四条MVP和32本地适用验收，再P1/P2；74SO、32行均保留。每功能先官方/GitHub检索更新references/许可证/适配，完成前后端/迁移/测试/各开发文档，再正常提交推送main和context-memory，不强推。不重复询问questions外部条件。
+5. 上下文压力时落盘推送后按授权创建新聊天独占接续；新聊天创建后原聊天停止修改共享工作区。
