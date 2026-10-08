@@ -13,17 +13,30 @@
 ## 当前提交与环境
 
 - origin：https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。本轮 GitHub connector 核实登录 Changxin-YR，仓库 ID 1410355242，公开，admin/push true；正常 push 已成功。
-- main HEAD/当前功能提交：`c1dac6177e50b4b86f640a8f99b5279e3cb8d967`，已推送；主题 enforce versioned seller business rules。
-- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37826653771 ，最后观测 in_progress，接续先核对并修复失败。前版利润 abb9f79 的 CI37823550243 已 completed/success。
+- main HEAD/当前功能提交：`1edd7db44e617f30735470e17d4e7ba92561d02a`，已推送；主题 add bounded internal execution authorizations。
+- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37830128990 ，最后观测 in_progress，接续先核对并修复失败。前版规则 c1dac61 的 CI37826653771、利润 abb9f79 的 CI37823550243 已 completed/success。
 - 前版受控 Agent `d1eda91` CI 37820719900 已 completed/success。
 - 前版补充提交 `10fa1df` 的 CI `37816007090` 已 completed/success；运营 `3531ce7` 的 CI `37815482720`、库存 `53b7d72` 的 `37811072990`、客服 `d3b9be1` 的 `37808536888` 均已 success。
 - backend/.venv Python 3.11、frontend/node_modules、Docker MySQL 8.4 开发3307/测试3308。日常服务8000/5173；Playwright自动启动8001/5174。
 - .env、backend/.env、.local/test.env 是忽略的密钥/本机配置，不打印、不提交。Windows 用 .venv/Scripts/python -m；MySQL、Node子进程、Git写常需 require_escalated。
 - pytest 与 Playwright 会清理隔离 _test 库，必须串行；迁移回退也等测试结束。测试与 E2E 入口强制 model_enabled=False。
-- 当前迁移 `944381607c1c` 已应用两库；`.local/verify_rules_migration.py` 已验证 _test 回退 a0188d77d6c6→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
+- 当前迁移 `3b35be067576` 已应用两库；`.local/verify_authorization_migration.py` 已验证 _test 回退 944381607c1c→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
 - Firecrawl 已确认402，使用官方网页/GitHub connector，不反复调用计费端点，不临时写抓取脚本。GitHub Actions用 github_fetch REST，解析 structuredContent.content，只输出摘要；fetch_commit_workflow_runs不适用于main push。
 
-## 最新完成：SO-066 经营规则与版本记忆切片
+## 最新完成：有界 R1 内部预授权切片
+
+- 详见 development 第十六节。api/routes/authorizations.py → services/authorizations.py → repositories/authorizations.py，迁移3b35be067576两表 internal_authorizations/authorization_uses，AgentExecution.authorization_id FK。origin_execution_id为经service校验的溯源ID，避免循环FK。UI在/agent下方InternalAuthorizations.vue。
+- 仅今日运营固定daily流程的propose_tasks：从当前waiting_approval预览创建，服务端重算一致；绑定owner/shop、渠道/身份、完整OperationScope(日期/币种/阈值/规则版本)、shop.data_revision、预览hash和candidate_count。模板natural/listing/support不能借此授权。严格确认bool、max_uses1—20、valid_hours1—168；来源valid_until更短则提前失效。
+- 查看/游标分页/撤销/消耗回读/原预览/按完整授权范围运行；次数期限不可扩大修改，重建须新的当前预览。规则/数据变化即失效，恢复旧值不复活授权。规则页manual_only是默认策略，独立R1记录提供具体例外。
+- 当前waiting候选可use_authorization，或StartAgent.authorization_id从绑定范围新建；检查通过→ready→保存→核验。_load/prepare/consume三处核对，撤销/过期/用尽/范围不符转待审，单次approve清除本节点绑定且不扣预授权。暂停恢复仍经下次校验。模型与外发无额外权限。
+- 用户→店铺锁+FOR UPDATE当前读；保存候选/消耗/依赖/节点同事务savepoint，后续失败全部回滚，执行途中到期也回滚。两个已建立旧RR快照的执行争抢最后一次额度一成一409。每次成功保存计1次，复用候选也计次；HTTP/UUID回放不重复扣。
+- 新可选authorization_id为None时从canonical hash去掉，兼容旧无授权UUID。单次审批与预授权语义独立。AuthorizationUse每execution唯一，记录operation_run、新增task ID/原状态none/新pending_approval/version、reused_count，无业务正文。
+- 撤销只停止以后使用。另行revert仅将本次新增且仍为保存时版本的pending候选置rejected，历史留存，不返还额度；任一已编辑/处理/来源导致版本变化则整批拒绝，复用的既有任务不动。清批次沿原Agent/Operations擦除正文，授权保留范围hash和无正文审计且失效。
+- 完整pytest214通过，本功能17项；Ruff112文件，mypy87app；Vitest9文件15项，Vue lint/type/build通过；最终完整Playwright23通过40.6s。仅合成数据，无外发/模型调用。
+- 截图C:/Users/27363/AppData/Local/Temp/soloops-authorizations-{create-desktop,create-mobile,panel-desktop,panel-mobile,desktop,mobile}.png已实际查看。创建form继承.data-note flex导致挤列，已局部display:block修复并截图复验；手机无横溢。首次全量E2E遇Vite中途退出connection refused，再一次审批网络ERR_NO_BUFFER_SPACE；停止并行构建重启测试后最终23全部通过。不要给安全写入加自动重试以掩盖本机网络问题。
+- 文档/README/74SO/32验收矩阵已提交。SO066文本偏好实际模型应用及R2测试外发仍待后续，全部P0尚未完成。
+
+## 前版完成：SO-066 经营规则与版本记忆切片
 
 - 详见 development 第十五节。`services/business_rules.py` 三层、`RulesView.vue`，入口 `/rules`；migration944381607c1c 单表 business_rule_revisions。按拥有者/店铺/渠道/数据身份严格隔离。
 - 库存有效小时1—720、最低销量1—1000000、低毛利率上限−1000%—100%（两位）实际应用今日运营与 Agent 检查；低毛利为未舍入值不高于阈值。库存安全数量仍来自每条快照。独立库存/问数/利润试算页面保持各自显式口径，页面说明生效范围。
@@ -86,8 +99,8 @@
 
 ## 下一步立即开发
 
-1. 先核对本功能CI37826653771；失败则修复。main当前c1dac6177e50b4b86f640a8f99b5279e3cb8d967。读取AGENTS、此文、development十三—十五节和冻结稿SO066/067、安全、22外发、23验收章节。
-2. SO066阈值/版本切片已完成，继续 **可撤销且有边界的R1预授权**：先查官方/GitHub记录references，再前后端/迁移/测试/文档/矩阵/提交推送。建议先允许受控Agent保存本地异常候选等代码白名单能力；店铺/渠道/身份、次数/时效、撤销与消耗审计明确，同事务核对执行，重放不重复扣次数。审批与预授权语义区分，任何自由文本不能提高权限。不要只存没有生效位置的授权设置。
-3. R2测试外发授权必须独立：自有已验证通道与收件人、全文/地址/关联任务/次数预览、不可撤销、回执/未知回查；邮件始终R2，不能因金额小降级。不启用真实买家自动发送。
+1. 先核对本功能CI37830128990；失败则修复。main当前1edd7db44e617f30735470e17d4e7ba92561d02a。读取AGENTS、此文、development十三—十六节和冻结稿SO066/067、安全、22外发、23验收章节。
+2. R1预授权本地切片已完成，继续 **R2受控测试外发与独立授权**：先查官方/GitHub记录references，再前后端/迁移/测试/文档/矩阵/提交推送。用户通道账号/测试收件箱仍在questions，缺外部凭据不阻断可配置适配、测试替身和本地状态机，不重复询问。
+3. R2测试外发须自有已验证通道与测试收件人；全文/地址/关联任务/次数预览、不可撤销提示、单次审批或明示可撤销且有范围/次数/时效的独立测试授权；确定性前提/回执/未知回查，网络超时不自动重发。邮件始终R2，金额小不降级；R1授权绝不适用。真实调用与送达证据单列待授权，不启用真实买家自动发送。
 4. 然后继续剩余P0（跨店总览/日报、统一任务、可配置模型对四MVP的生成/解释、受控测试发信通道与未知结果回查等），依冻结稿逐项推进，再P1/P2。无真实模型预算/通道账号时完成可配置适配与测试替身，真实验收单列待授权，不重复询问questions现有问题。
 5. 每功能验证/文档/矩阵并正常提交推送。上下文压力时落盘推送后按授权创建新聊天独占接续，禁止两个聊天同时修改工作区。当前聊天交接后停止修改。
