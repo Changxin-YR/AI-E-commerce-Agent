@@ -13,8 +13,9 @@
 ## 当前提交与环境
 
 - 仓库：https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。GitHub connector 已核对这是当前账号有 admin/push 权限的目标仓库。
-- 当前功能提交 53b7d72b1b380aae3f2ced606a2b65e23b22892c，已推送 main。主题：source-aware optional inventory snapshots。
-- main 当前 HEAD 9e08505de8863680b101cf733e0b06378ff6ab69（补库存CI证据），已推送。
+- 当前功能提交 3531ce7173c3175c4e61590142ba3d305b2a0d4c，已推送 main。主题：source-aware operations inbox and approval tasks。
+- main 当前 HEAD 10fa1dfdfb05f585416caeb9277bdb7c01dc415c，已推送（补充可见优先级/标签和CI证据）；对应界面lint/type/build与运营2项E2E通过。此最新小补充的CI可在接续时核对。
+- 今日运营 GitHub CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37815482720 ，已核实 completed/success，功能提交3531ce7在Ubuntu/MySQL全通过。
 - 库存 GitHub CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37811072990 ，已核实 completed/success，功能提交53b7d72在Ubuntu/MySQL全部通过。
 - 客服 GitHub CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37808536888 ，已确认 completed / success，功能提交d3b9be1在Ubuntu/MySQL全部通过。
 - 上版 Listing 8168d97/ab66412，CI 37803271282 已 completed / success。
@@ -24,13 +25,15 @@
 - 密钥与本机配置在忽略的 .env、backend/.env、.local/test.env，不打印、不提交。
 - Windows 优先 .venv/Scripts/python -m pytest/ruff/mypy/alembic；网络、MySQL/Docker、Vitest 常需 require_escalated。pytest 与 Playwright 都清理 _test，必须串行。
 - Playwright 自动启动 8001/5174；日常开发 8000/5173。.local/verify_listing_migration.py 是忽略的本机验证脚本；迁移回退也须在 pytest/Playwright 结束后进行。
-- 最新迁移 61cb82ef096a 已应用开发和测试库；.local/verify_inventory_migration.py 已验证隔离库回退至8d34d9c410a2→升级/check 和开发库升级/check。
+- 最新迁移 c37d9218a640 已应用开发和测试库；.local/verify_operations_migration.py 已验证隔离库回退至61cb82ef096a→升级/check 和开发库升级/check。
 - Firecrawl 已确认 402，用官方网页检索或 GitHub connector，不反复调用计费接口。
 - 本次自动审批曾因 origin 信任关系未核实拒绝推送；经 connector 确认仓库/权限、远程旧 HEAD 与交接一致，检查提交仅代码/合成测试/文档、配置被忽略后，同一 git push 再审通过。后续推送沿用明确目标与授权事实。
 - Listing 迭代再次用 connector 确认当前账号 Changxin-YR 对目标仓库具有 admin/push 权限，main 推送成功。GitHub fetch 支持 Actions REST URL，解析 structuredContent.content 后仅输出状态；fetch_commit_workflow_runs 仅查 PR 触发，不适用于 main push。
 - 库存迭代相同的自动审批限制再次出现；独立用 github_fetch 仓库元数据和 github_get_user_login 核实：登录 Changxin-YR，仓库ID1410355242、公开、admin/push true，远程 main 与交接吻合，检查忽略凭据/本机文件后重新提交同一推送获准。不能绕过拒绝，按新证据申请重审。
 
 ## 已实现
+
+首页今日运营已实现本地规则检查→四类带来源候选→显式R1审批→待办处理/历史/重跑去重。完整规则见末尾“今日运营关键规则”，真实模型与受控技能执行层仍待继续，不能标完整AI闭环。
 
 账号 CLI 创建/恢复、登录/退出、Cookie/CSRF、过期与锁定，资料 version 并发控制，拥有者/店铺隔离与审计。
 
@@ -109,9 +112,9 @@
 继续MVP-01今日运营及其余P0，不能只计划或把规则模板当作真实Agent。
 
 1. 先读冻结稿SO-003/004/005/030/041/054/060/062/068，以及15、21、22、25—27、A-03/10/14/22/23/25—29/32，检索官方/GitHub资料记references。
-2. 库存快照已完成，不重建。读下方关键规则，直接接入今日运营库存分支。
-3. 立即实现今日运营：读取导入商品/订单/可选库存/消息/成本，根据实际数据分支执行检查，保存带来源的去重待办/标签、处理状态和审批/历史。空数据未检查，旧快照失效，批次清除继续擦除新增派生结果。
-4. 接上受控Agent层：内置技能注册元数据/输入/店铺作用域/权限/风险/幂等，模型适配接口和实际可配置调用，至少两技能可追踪串联，步骤/时间/费用预算、R3拒绝、读重试上限、熔断、取消和恢复。凭据缺失必须显示待配置；不能以测试替身声称真实LLM成功。
+2. 库存快照及今日运营本地基础已完成，不重建。先读 services/operations.py、operation_checks.py、repository 及末尾规则。
+3. 立即接上受控 Agent 层：内置技能注册元数据/输入/店铺作用域/权限/风险/幂等，模型适配接口和实际可配置调用，至少两技能可追踪串联，步骤/时间/费用预算、R3拒绝、读重试上限、熔断、取消和恢复。凭据缺失必须显示待配置；不能以测试替身声称真实LLM成功。
+4. 技能调用现有业务服务。当前 OperationRun 是同步规则检查结果，不能直接当作可取消/恢复的 Agent 执行记录；新增节点/模型记录也必须接入来源失效/清除。网络调用放在数据库持锁事务之外，写回重新核对范围、输入/来源版本与审批。分析 analysis_todos 仍是单独基础记录，统一任务整合待继续。
 5. 继续SO-054新品利润计算器及全部P0最小模块/32验收。真实发信通道缺授权依旧阻塞，不外发。
 6. 每功能完成后测试、更新development/interview/74SO矩阵/32验收/testing/questions、提交推送；按上下文压力交接，持续P0→P1/P2。
 
@@ -130,3 +133,19 @@
 - 完整pytest123通过（新增库存14项含参数化），Ruff74文件格式/规则、mypy58；Vue lint/type/build通过，Vitest5文件8项；完整Playwright13通过（新增库存2项）。迁移两库升级/check、隔离库往返通过。Starlette httpx弃用提示仍有。
 - 桌面1280×720/手机390×844截图已查看，系统Temp/soloops-inventory-{desktop,mobile}.png。完整Playwright测试切换店铺后须等待批次列表加载完成，避免共享账号上其他店铺短暂旧数据导致strict locator错误。Vitest沙箱temp缓存rename EPERM，require_escalated正常通过。
 - 74SO/32验收保留，SO-041和A-03库存页面更新，四条MVP均未完整完成；无真实LLM、平台API或外发验证。
+
+### 今日运营关键规则与验证（2026-10-09）
+
+- `api/routes/operations.py → services/operations.py → repositories/operations.py` 三层。`operation_checks.py` 拆成商品、订单、库存、消息、毛利检查函数；复用 assess_snapshot 与 Decimal calculate，没有新依赖。Migration c37d9218a640。
+- 表 operation_runs / operation_run_sources / operation_tasks / operation_task_sources / operation_task_events。运行按来源批次依赖；任务按源行+批次依赖；历史事件可擦除详情。来源状态 current/stale/cleared 与处理状态独立。
+- 范围 owner/shop/data_identity/channel。订单按指定订单时间 [start,end)，库存/消息取当前渠道投影；商品成本取同身份店铺主档（不按渠道，因为 Product 键是 shop+SKU）。单项最多10000行、最多500候选，超限整次拒绝；任务页50+1、运行/事件历史最近50。
+- 四类候选 order_review（paid/refunded/partially_refunded 且源未履约/部分履约）、low_inventory（有效快照严格小于阈值）、message_review（外部是否已回复未知，仅核对）、low_margin（既有完整性/异币种/未舍入阈值规则）。商品只统计已读取和缺参数；实时物流/平台同步/广告/跨期销售变化未检查。
+- OperationRun 的 request UUID 同owner唯一，相同范围重放返回已有记录，不同范围409。Task 的去重键 = shop+channel+identity+kind+rule_version+相关规则口径+排序源行集合；不含data_revision。库存口径含max_age，毛利含窗口/币种/数量/毛利上限。订单/消息不因无关窗口改变重复候选。
+- 初始 pending_approval，显式批准才 open。支持 reject/ignore/defer/complete/reopen/edit；延期须未来带时区截止，数据库UTC，默认负责人卖家、R1、0费用、not_submitted。没有自动R1预授权。状态版本校验，相同操作幂等，不同并发编辑一成一409。已忽略/拒绝/完成/延期重跑不会重置。
+- 导入提交/撤销同事务：运行摘要保守失效；订单/消息/库存task按源行是否仍是当前投影失效；low_margin遇商品/订单变化保守失效。旧源行恢复不自动恢复task，实际重检同键再current且version+1、事件revalidated，保留原处理状态。
+- 库存候选/运行按有效快照截止到期stale，读取/审批前server utc_now核对。过期禁止批准，历史可忽略。库存旧值只做历史证据，不判当前缺货。
+- purge_batch擦除依赖的运行snapshot、task snapshot/note/due/valid_until、event.details、来源关系；无正文状态/ID/kind/version/时间/审计保留。旧成本批次清除也覆盖历史毛利任务；独立事项保留。新增任何派生必须沿用此边界。
+- 首页 DashboardView + OperationsInbox（上次摘要优先，规则参数可展开）+ OperationTaskReview。SourceEvidence复用SupportSource.vue原始行。详情展示公式/金额/作用域/风险/状态预览/固定规则标签、备注截止和最近历史；focus/刷新核对，有未保存备注或请求进行中阻止切换。消息草稿/Listing入口保留。engine local_rules，model not_configured。
+- 完整pytest138通过（新增15项），check_data拆函数后15项复验通过；Ruff82文件格式/规则、mypy64通过；Vue lint/type/build，Vitest5文件8项通过；完整Playwright15项通过，最终运营2项多次按界面变更复验通过。桌面1280×720/手机390×844最终截图已实际查看（系统Temp/soloops-operations-*.png），无横向溢出。
+- 两库迁移upgrade/check与隔离库回退61cb82ef096a→升级/check均通过；Starlette httpx弃用提示仍有。74SO/32验收行保留，A03/10/22/23/30等增补；四条MVP仍未完整完成，下一步是受控Agent层和剩余P0。
+- 本轮提交前用GitHub connector核实登录Changxin-YR、origin仓库ID1410355242/public/admin+push；检查.env等忽略，正常push main成功。
