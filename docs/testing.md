@@ -82,6 +82,7 @@ Windows 沙箱内首次 Vitest 执行遇到临时文件重命名 EPERM；使用�
 | Vitest | 4 文件、7 项通过；编辑后确认重置、旧版本审批禁用、清除后移除内容 |
 | Playwright Chromium | 完整 9 项通过，新增 Listing 桌面与手机两条流程 |
 | MySQL 迁移 | 262449b655ea：隔离库 downgrade 到 a32132cebd28→upgrade/check；开发库 upgrade/check 通过 |
+| GitHub Actions | [Verify SoloOps](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37803271282)：功能提交 8168d97 在 Ubuntu / MySQL 下 completed / success |
 
 `test_listings.py` 验证：商品独立建稿、缺参数保留空值、编辑产生版本、批准前无生效、商品事实保持原值、拒绝与历史文案恢复、同请求去重、并发生成/审批一次副作用、竞争候选拒绝过期基线、未覆盖声明即使人工确认也阻断、生成器异常没有成功记录或错误正文泄露、店铺/用户隔离、CSRF、额外字段拒绝、来源变化/撤销失效、恢复源行后另建草稿、旧比较值的跨版本清除与独立 SKU 保留。
 
