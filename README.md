@@ -13,8 +13,8 @@
 ## 当前提交与环境
 
 - origin：https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。本轮 GitHub connector 核实登录 Changxin-YR，仓库 ID 1410355242，公开，admin/push true；正常 push 已成功。
-- main HEAD/当前功能提交：`5be1ff91d18df028d4dbf1c6ac11412cdb3abe7c`，已推送；主题 feat: add unified task and approval workbench。
-- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37841674665 ，最后观测 in_progress，接续先核对并修复失败。前版跨店 b98dad3 的 CI37837382644 已 completed/success；R2 d43d29b CI37833883370、R1 1edd7db CI37830128990、规则 c1dac61 CI37826653771、利润 abb9f79 CI37823550243 也 success。
+- main HEAD/当前功能提交：`41c15fe3667cf80e8b6e88cfef017881adf50498`，已推送；主题 feat: add grounded model analytics and review tasks。
+- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37844263020 ，最后观测 in_progress，接续先核对并修复失败。前版工作台 5be1ff9 的 CI37841674665 已 completed/success；跨店 b98dad3 CI37837382644、R2 d43d29b CI37833883370、R1 1edd7db CI37830128990、规则 c1dac61 CI37826653771、利润 abb9f79 CI37823550243 也 success。
 - 前版受控 Agent `d1eda91` CI 37820719900 已 completed/success。
 - 前版补充提交 `10fa1df` 的 CI `37816007090` 已 completed/success；运营 `3531ce7` 的 CI `37815482720`、库存 `53b7d72` 的 `37811072990`、客服 `d3b9be1` 的 `37808536888` 均已 success。
 - backend/.venv Python 3.11、frontend/node_modules、Docker MySQL 8.4 开发3307/测试3308。日常服务8000/5173；Playwright自动启动8001/5174。
@@ -23,7 +23,19 @@
 - 当前迁移 `86df84dc129a` 已应用两库；`.local/verify_workbench_migration.py` 已验证 _test 回退 728544d1186c→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
 - Firecrawl 已确认402，使用官方网页/GitHub connector，不反复调用计费端点，不临时写抓取脚本。GitHub Actions用 github_fetch REST，解析 structuredContent.content，只输出摘要；fetch_commit_workflow_runs不适用于main push。
 
-## 最新完成：统一任务、草稿与审批驾驶舱
+## 最新完成：模型经营问数与受控证据解释
+
+- development 第二十节、testing 第十五迭代；复用 Agent 三层持久执行与现有表，无新迁移。新增 template=question，question_plan→metrics→explain_analysis→analysis_todo（offer_todo 则待审批）→verify。summary/sales/low_margin/unsupported 四种受控意图，scope 固定；全店所选身份统计不按渠道，渠道绑定经营规则。
+- 新 services/analysis_explanation.py：从确定性 AnalysisResult 生成 coverage/totals/fees 和最多20条匿名 item_* 事实，供应商只见范围/匿名数字/费用缺口/用户问题，原始订单号、SKU、文件名、客户消息不发送。输出仅 fact_ids/check_ids/next_action；ID越界/重复/额外字段/无建议建待办阻断。模型组织证据与建议，事实句/金额本地渲染，coverage和fees强制保留；因果只作为待核对建议。全部原始行留本地并可展开引用。
+- 新 OpenAIResponsesModel.generate/reserve_generation、GenerationReply，固定 Responses/store=false/text.format strict/no tools、禁代理重定向、60000bytes请求/768tokens输出/200000bytes响应。正常两次模型请求，UTF8包络保守预留。有效usage即便拒答/incomplete/非法输出仍记已知费；无usage/超时等保留预留且不自动重发。回写锁/租约/版本/来源/规则门禁复用，取消/暂停/撤销后丢弃结果但费用保留；清除中返回不恢复正文。暂停的已知回包丢弃后可显式恢复重新请求/计费；未知预留不可恢复。
+- StartAgent.allow_analysis_data 默认false，新false字段从canonical删除兼容旧UUID摘要；allow_model 与 allow_analysis_data 两项同意。模型/费率公开状态展示，并在 _claim_model 的 step.input.model_configuration 保存当次配置，无凭据。model_status endpoint通过可覆盖 configured_model 依赖构建provider，默认仍关闭；不要在测试启用真实网络。
+- 内置技能现8项，新增analysis_todo，实际调用AnalyticsService.save_and_create_todo；嵌套defer_commits与外层savepoint使分析/依赖/todo/审计/步骤同事务，旧来源拒绝、重复口径复用且保留已完成状态。verify回读实际分析/todo ID。解释保存在完成步骤，写入后也能回看；AgentSource沿metrics来源清除整份正文。
+- AgentView有question选项，AnalyticsView入口/agent?shop=&mode=question；显示匿名事实范围、模型配置费率、双授权及预算，改变问题/范围/预算清空授权。AnalysisNarrative绿系卡片展示事实/缺口/建议/本地完整候选/公式；AgentRunReview审批与费用、暂停恢复计费说明，准确深链analysis/listing/draft。loadShop/inspect有序号丢弃迟到响应。
+- 完整pytest302通过91.74s，新test_analysis_model.py28项；最终收拢组合业务服务并保存模型配置后问数+Agent+分析70项通过21.01s。Ruff140文件、mypy105 app通过。Vitest13文件23项；Vue lint/type/build与最终格式通过。完整Playwright30项通过59.4s（新增桌面手机2项）。仅test_double/MockTransport，无真实模型/邮件花费。Starlette/httpx弃用仍在。
+- scripts/e2e_analysis.py只由强制_test的serve_e2e注册，限定question-e2e-合成店铺，其他店铺模型关闭；替身无真实网络路径。浏览器覆盖解释/确切数字/审批/刷新/分析深链/完成todo/源清除；无JS错误/手机横溢。Temp soloops-question-{explanation,cleared}-{desktop,mobile}.png合成数据已查看，截图不提交。
+- README、development/interview/testing/questions/references与74SO/32验收已更新。MVP04模型协议和本地持久闭环已用替身验证，真实模型质量仍待用户供应商/凭据/预算。其余模型业务切片与完整P0继续。
+
+## 前版完成：统一任务、草稿与审批驾驶舱
 
 - 详见 development 第十九节。api/routes/workbench → services/workbench.py → repositories/workbench.py；GET /api/workbench，首页 WorkInbox.vue。只读 SQL UNION ALL 聚合十种既有对象：OperationTask、AgentExecution、ListingVersion、ReplyDraft、AnalysisTodo、OperationRun、SavedAnalysis、OverviewReport、InternalAuthorization、OutboundMessage。无新任务表或正文缓存，GET不写审计/状态、不推进节点/请求供应商。
 - 每分支 owner约束，店铺先校验归属；身份/渠道/类型/状态筛选。跨店报告用OverviewShop EXISTS，不重复计数；跨渠道分析/报告只在全部渠道，清除后身份不可追溯只在全部身份。列表20条，created_at+kind+id倒序keyset；游标绑定筛选摘要但不是权限。counts为全范围不受bucket/当前页限制；recent3真实Agent/OperationRun遵循店铺/身份/渠道，不受type/bucket影响。
@@ -141,8 +153,8 @@
 
 ## 下一步立即开发
 
-1. 核对main 5be1ff91d18df028d4dbf1c6ac11412cdb3abe7c的CI37841674665，失败修复；读取AGENTS、本文、development十三—十九节与冻结需求/74SO/32验收矩阵。前版CI37837382644已成功。
-2. 开发下一P0切片：按冻结稿四MVP继续可配置模型生成/解释，顺序MVP04经营问数→MVP02 Listing→MVP03客服→MVP01运营。先检索官方资料/更新references，再把真实协议、明确授权/预算/数据范围、持久结果与UI接起来。当前OpenAI Responses仅意图路由，不能当作模型业务内容已实现。
+1. 核对main 41c15fe3667cf80e8b6e88cfef017881adf50498的CI37844263020，失败修复；读取AGENTS、本文、development十三—二十节与冻结需求/74SO/32验收矩阵。前版工作台CI37841674665已成功。
+2. 开发下一P0切片：MVP02 Listing 模型候选→MVP03客服→MVP01运营；MVP04的受控模型问数协议/持久闭环已本地验证，真实供应商验证另列。先检索官方资料/更新references，复用新增generate费用和执行门禁，提供真实协议、用户可理解的授权/数据范围/预算、持久候选与页面完整交互。Listing现有只能完整原文事实行，不要绕过审批事实核验或虚构商品属性；可由模型选择经核实事实、组织候选并明确能力边界，品牌/客服偏好仍是人工参考，应用时须限定用途和版本。
 3. 业务事实仍确定性计算；模型费用/同意/敏感事实/注入防护/输出校验/来源时效与规则失效、租约暂停取消/清除期间回写、未知费用不重发均保持门禁。模型解释可引用受控事实但不能自创金额/订单事实或扩大工具权限；缺模型预算/邮箱不阻断本地协议适配与test double/MockTransport验证，真实证据单列待授权。不重复询问已有questions外部条件。
 4. 完成23个P0最小模块、四条MVP和32本地适用验收，再P1/P2；74SO、32行均保留。每功能先官方/GitHub检索更新references/许可证/适配，完成前后端/迁移/测试/各开发文档，再正常提交推送main和context-memory，不强推。不重复询问questions外部条件。
 5. 上下文压力时落盘推送后按授权创建新聊天独占接续；新聊天创建后原聊天停止修改共享工作区。
