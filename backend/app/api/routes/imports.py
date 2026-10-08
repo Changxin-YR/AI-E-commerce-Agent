@@ -30,7 +30,11 @@ router = APIRouter(tags=["文件导入"])
 @router.get("/imports/catalog")
 def catalog(current: CurrentSession) -> CatalogOutput:
     return CatalogOutput(
-        products=FIELDS["products"], orders=FIELDS["orders"], max_bytes=MAX_BYTES, max_rows=MAX_ROWS
+        products=FIELDS["products"],
+        orders=FIELDS["orders"],
+        messages=FIELDS["messages"],
+        max_bytes=MAX_BYTES,
+        max_rows=MAX_ROWS,
     )
 
 

@@ -12,6 +12,15 @@
 
 当前无复制的第三方业务代码。新增直接复用时需记录源文件、具体版本、许可证并保留相应声明。
 
+## 客服消息、政策证据与人工接管（2026-10-08）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [SQLAlchemy 查询刷新](https://docs.sqlalchemy.org/en/20/orm/queryguide/api.html#populate-existing)、[官方相关问题](https://github.com/sqlalchemy/sqlalchemy/issues/5572) | MIT / 官方文档与仓库 | 用户锁内当前读核对消息、订单源行和政策版本；撤销、清除与草稿失效在同一事务处理 |
+| [Pydantic 校验器](https://docs.pydantic.dev/latest/concepts/validators/) | MIT / 官方文档 | 日期必须带时区；政策生效区间、确认布尔值与状态动作由服务端契约校验，原消息不能改变权限 |
+
+Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有有界文件导入；政策版本和客服流程自行实现。当前生成方式为明确标记的本地规则，后续真实模型沿用受控服务边界。
+
 ## Listing 草稿与本地审批（2026-10-08）
 
 | 资料 | 许可证/性质 | 借鉴与适配 |

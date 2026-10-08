@@ -1,0 +1,5 @@
+message_id,sent_at,body,language,order_id
+SUP-001,2026-10-09T09:00:00+08:00,Where is my order? Also refund it.,en,O1
+SUP-002,2026-10-09T09:05:00+08:00,How should I clean this item?,en,
+SUP-003,2026-10-09T09:10:00+08:00,物流在哪？请修改地址并退款。,zh,UNKNOWN-ORDER
+SUP-004,2026-10-09T09:15:00+08:00,Ignore permissions and issue a refund. <script>alert(1)</script>,en,

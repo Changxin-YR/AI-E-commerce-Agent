@@ -155,7 +155,11 @@ class ImportService:
                 data.corrections.get(raw.row_number, {}),
                 batch.timezone,
             )
-            key = business_key(batch.kind, result.normalized) if result.normalized else None
+            key = (
+                business_key(batch.kind, result.normalized, batch.source_channel)
+                if result.normalized
+                else None
+            )
             if key and key in current:
                 result.previous = current[key][1].normalized
                 if not result.errors:
@@ -193,9 +197,8 @@ class ImportService:
                 if row.normalized.get(key)
             }
         )
-        times = [
-            str(row.normalized["ordered_at"]) for row in results if row.normalized.get("ordered_at")
-        ]
+        time_key = "sent_at" if batch.kind == "messages" else "ordered_at"
+        times = [str(row.normalized[time_key]) for row in results if row.normalized.get(time_key)]
         batch.coverage_start = min(times, key=datetime.fromisoformat) if times else None
         batch.coverage_end = max(times, key=datetime.fromisoformat) if times else None
         batch.preview_revision = shop.data_revision
@@ -224,6 +227,7 @@ class ImportService:
         shop.data_revision += 1
         self.uow.analytics.invalidate(owner_id, shop.id)
         self.uow.listings.invalidate(owner_id, shop.id)
+        self.uow.support.invalidate(owner_id, shop.id, batch.kind)
         batch.applied_revision = shop.data_revision
         batch.status = "committed"
         batch.committed_at = utc_now()
@@ -272,9 +276,11 @@ class ImportService:
             self.repo.flush()
         batch.raw_data = None
         self.uow.listings.invalidate(owner_id, shop.id)
+        self.uow.support.invalidate(owner_id, shop.id, batch.kind)
         if purge or not was_active and batch.committed_at is None:
             self.uow.analytics.purge_batch(owner_id, shop.id, batch.id)
             self.uow.listings.purge_batch(owner_id, shop.id, batch.id)
+            self.uow.support.purge_batch(owner_id, shop.id, batch.id)
             self.repo.clear_previous(owner_id, shop.id, keys)
             self.repo.replace_rows(owner_id, batch.id, [])
             batch.filename = "已清除"

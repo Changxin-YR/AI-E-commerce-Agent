@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from pydantic import ValidationError
 
-from app.schemas.imports import OrderData, ParsedRow, ProductData, RowIssue, RowOutput
+from app.schemas.imports import MessageData, OrderData, ParsedRow, ProductData, RowIssue, RowOutput
 from app.services.import_catalog import FIELDS
 
 DECIMAL_PATTERN = re.compile(r"^-?\d+(?:\.\d{1,4})?$")
@@ -47,12 +47,13 @@ def unsafe_text(value: str) -> bool:
     )
 
 
-def business_key(kind: str, normalized: dict[str, Any]) -> str:
-    parts = (
-        [normalized["sku"]]
-        if kind == "products"
-        else [normalized["order_id"], normalized["line_id"]]
-    )
+def business_key(kind: str, normalized: dict[str, Any], channel: str = "generic") -> str:
+    if kind == "messages":
+        parts = [channel, normalized["message_id"]]
+    elif kind == "products":
+        parts = [normalized["sku"]]
+    else:
+        parts = [normalized["order_id"], normalized["line_id"]]
     return hashlib.sha256(json.dumps(parts, ensure_ascii=False).encode()).hexdigest()
 
 
@@ -87,6 +88,13 @@ def normalize_row(
     money_fields = (
         {"price", "unit_cost"} if kind == "products" else {"unit_price", "discount", "refund"}
     )
+    if kind == "messages":
+        money_fields = set()
+        values["language"] = values.get("language", "").lower() or "und"
+        try:
+            values["sent_at"] = parse_time(values.get("sent_at", ""), timezone)
+        except ValueError as error:
+            issue("sent_at", str(error))
     for key in money_fields:
         value = values.get(key, "")
         if not value:
@@ -111,11 +119,13 @@ def normalize_row(
     normalized: dict[str, Any] = {}
     if not errors:
         try:
-            model = (
-                ProductData.model_validate(values)
-                if kind == "products"
-                else OrderData.model_validate(values)
-            )
+            schemas: dict[str, type[ProductData] | type[OrderData] | type[MessageData]] = {
+                "products": ProductData,
+                "orders": OrderData,
+                "messages": MessageData,
+            }
+            schema = schemas[kind]
+            model = schema.model_validate(values)
             normalized = model.model_dump(mode="json")
             for key in money_fields:
                 if normalized.get(key) is not None:
@@ -139,7 +149,7 @@ def normalize_row(
                 warnings.append("缺销售币种，毛利分析须核对订单币种与成本币种")
             elif normalized["currency"] != normalized["cost_currency"]:
                 warnings.append("销售与成本币种不一致，不能直接计算毛利")
-        else:
+        elif kind == "orders":
             gross = Decimal(normalized["unit_price"]) * normalized["quantity"]
             discount = (
                 Decimal(normalized["discount"]) if normalized["discount"] is not None else None
@@ -157,6 +167,8 @@ def normalize_row(
                 warnings.append("折扣或退款金额未知，后续净销售额/毛利分析须说明缺口")
             if normalized["status"] in {"pending", "cancelled", "test"}:
                 warnings.append("该状态不计入已支付销售")
+        else:
+            warnings.append("消息及订单号仅为来源记录；客户与订单关联需人工核验，未取得外发权限")
     return RowOutput(
         row_number=row.row_number,
         raw=raw,

@@ -109,3 +109,19 @@ class MappingTemplate(Base):
     kind: Mapped[str] = mapped_column(String(16))
     source_channel: Mapped[str] = mapped_column(String(20))
     mapping: Mapped[dict[str, str]] = mapped_column(JSON)
+
+
+class CustomerMessage(Base):
+    __tablename__ = "customer_messages"
+    __table_args__ = (
+        UniqueConstraint("shop_id", "channel", "message_id", name="uq_message_shop_channel_id"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    shop_id: Mapped[int] = mapped_column(ForeignKey("shops.id"), index=True)
+    channel: Mapped[str] = mapped_column(String(20))
+    message_id: Mapped[str] = mapped_column(String(120, collation="utf8mb4_bin"))
+    sent_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6))
+    body: Mapped[str] = mapped_column(Text)
+    language: Mapped[str] = mapped_column(String(16))
+    order_id: Mapped[str] = mapped_column(String(120, collation="utf8mb4_bin"))
+    source_row_id: Mapped[int] = mapped_column(ForeignKey("import_rows.id"))

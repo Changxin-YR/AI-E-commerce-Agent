@@ -33,7 +33,14 @@ watch([() => props.rows, errorsOnly], () => {
     :open="row.errors.length > 0 || undefined"
   >
     <summary>
-      源行 {{ row.row_number }} · {{ row.normalized.sku || row.raw.sku || 'SKU 待补充' }}
+      源行 {{ row.row_number }} ·
+      {{
+        row.normalized.message_id ||
+        row.raw.message_id ||
+        row.normalized.sku ||
+        row.raw.sku ||
+        '标识待补充'
+      }}
       <span class="status-tag" :class="{ 'row-error': row.errors.length }">{{
         actions[row.action]
       }}</span>

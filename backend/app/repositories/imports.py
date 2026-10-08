@@ -5,8 +5,17 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from app.models.identity import Shop
-from app.models.imports import ImportBatch, ImportRow, MappingTemplate, OrderLine, Product
-from app.schemas.imports import OrderData, ProductData
+from app.models.imports import (
+    CustomerMessage,
+    ImportBatch,
+    ImportRow,
+    MappingTemplate,
+    OrderLine,
+    Product,
+)
+from app.schemas.imports import MessageData, OrderData, ProductData
+
+ImportedRecord = Product | OrderLine | CustomerMessage
 
 
 class ImportRepository:
@@ -68,8 +77,13 @@ class ImportRepository:
         owner_id: int,
         shop_id: int,
         kind: str,
-    ) -> dict[str, tuple[Product | OrderLine, ImportRow]]:
-        model = Product if kind == "products" else OrderLine
+    ) -> dict[str, tuple[ImportedRecord, ImportRow]]:
+        models: dict[str, type[Product] | type[OrderLine] | type[CustomerMessage]] = {
+            "products": Product,
+            "orders": OrderLine,
+            "messages": CustomerMessage,
+        }
+        model = models[kind]
         entries = self.session.execute(
             select(model, ImportRow)
             .join(
@@ -88,16 +102,23 @@ class ImportRepository:
         shop_id: int,
         kind: str,
         row: ImportRow,
-        existing: Product | OrderLine | None,
+        existing: ImportedRecord | None,
     ) -> None:
         values: dict[str, Any]
         if kind == "products":
             values = ProductData.model_validate(row.normalized).model_dump()
-            model: type[Product] | type[OrderLine] = Product
-        else:
+            model: type[Product] | type[OrderLine] | type[CustomerMessage] = Product
+        elif kind == "orders":
             values = OrderData.model_validate(row.normalized).model_dump()
             values["ordered_at"] = values["ordered_at"].astimezone(UTC).replace(tzinfo=None)
             model = OrderLine
+        else:
+            values = MessageData.model_validate(row.normalized).model_dump()
+            values["sent_at"] = values["sent_at"].astimezone(UTC).replace(tzinfo=None)
+            batch = self.session.get(ImportBatch, row.batch_id)
+            assert batch is not None
+            values["channel"] = batch.source_channel
+            model = CustomerMessage
         if existing is None:
             self.session.add(model(shop_id=shop_id, source_row_id=row.id, **values))
         else:
@@ -131,7 +152,7 @@ class ImportRepository:
                 winners.setdefault(row.business_key, row)
         return winners
 
-    def delete_record(self, record: Product | OrderLine) -> None:
+    def delete_record(self, record: ImportedRecord) -> None:
         self.session.delete(record)
 
     def flush(self) -> None:
