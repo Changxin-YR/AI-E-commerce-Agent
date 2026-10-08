@@ -122,6 +122,7 @@ Starlette 的 httpx 弃用提示仍存在。尚无真实 LLM、真实消息样�
 | Vitest | 5 文件、8 项通过；沙箱临时缓存重命名 EPERM 后使用本机权限验证 |
 | Playwright Chromium | 完整 13 项通过，新增库存桌面/手机两条流程 |
 | MySQL 迁移 | 61cb82ef096a：隔离库回退至 8d34d9c410a2→升级/check，开发库升级/check 均通过 |
+| GitHub Actions | [Verify SoloOps](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37811072990)：功能提交 53b7d72 在 Ubuntu / MySQL 下 completed / success |
 
 `test_inventory.py` 覆盖无库存、快照原始行、身份/渠道/店铺/拥有者隔离、零阈值、恰好过期和截止前一微秒、调整查询时效、非法/缺失数量和阈值、未来时间、覆盖旧快照警示、重复确认、撤销恢复、乱序撤销、清除、Excel 纠错与时区、文件内重复键、分页与搜索转义。
 
