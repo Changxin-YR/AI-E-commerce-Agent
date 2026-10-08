@@ -1,0 +1,10 @@
+:root {
+  --canvas: #f7f8f4;
+  --sidebar: #283329;
+  --ink: #2d352b;
+  --muted: #737c6b;
+  --green: #4d6544;
+  --line: #e3e7dc;
+  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --font-display: 'Trebuchet MS', 'PingFang SC', sans-serif;
+}

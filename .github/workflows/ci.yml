@@ -1,0 +1,61 @@
+name: Verify SoloOps
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: soloops_test
+          MYSQL_USER: soloops
+          MYSQL_PASSWORD: synthetic-ci-password
+          MYSQL_ROOT_PASSWORD: synthetic-ci-root-password
+        ports: ["3308:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+    env:
+      SOLOOPS_TEST_DATABASE_URL: mysql+pymysql://soloops:synthetic-ci-password@127.0.0.1:3308/soloops_test?charset=utf8mb4
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+        with:
+          version: "0.12.18"
+          enable-cache: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install backend
+        working-directory: backend
+        run: uv sync --frozen --python 3.11
+      - name: Check backend
+        working-directory: backend
+        run: |
+          uv run ruff check app tests migrations scripts
+          uv run ruff format --check app tests migrations scripts
+          uv run mypy app
+          uv run pytest -q
+      - name: Install frontend
+        working-directory: frontend
+        run: npm ci
+      - name: Check frontend
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build
+          npm run test:unit
+          npx playwright install --with-deps chromium
+          npm run test:e2e

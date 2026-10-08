@@ -1,0 +1,28 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import AppShell from '@/components/AppShell.vue'
+import { useSession } from '@/composables/useSession'
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue') },
+    {
+      path: '/',
+      component: AppShell,
+      children: [
+        { path: '', component: () => import('@/views/DashboardView.vue') },
+        { path: 'settings', component: () => import('@/views/SettingsView.vue') },
+      ],
+    },
+    { path: '/:pathMatch(.*)*', redirect: '/' },
+  ],
+})
+
+router.beforeEach(async (to) => {
+  const { session, initialize } = useSession()
+  await initialize()
+  if (!session.value && to.name !== 'login') return { name: 'login' }
+  if (session.value && to.name === 'login') return '/'
+})
+
+export default router
