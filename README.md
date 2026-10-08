@@ -13,17 +13,33 @@
 ## 当前提交与环境
 
 - origin：https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。本轮 GitHub connector 核实登录 Changxin-YR，仓库 ID 1410355242，公开，admin/push true；正常 push 已成功。
-- main HEAD/当前功能提交：`1edd7db44e617f30735470e17d4e7ba92561d02a`，已推送；主题 add bounded internal execution authorizations。
-- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37830128990 ，最后观测 in_progress，接续先核对并修复失败。前版规则 c1dac61 的 CI37826653771、利润 abb9f79 的 CI37823550243 已 completed/success。
+- main HEAD/当前功能提交：`d43d29bd9a3c6e4d8a2d650a69a9e6d2a4fe7366`，已推送；主题 add controlled R2 test mail delivery。
+- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37833883370 ，最后观测 in_progress，接续先核对并修复失败。前版 R1 1edd7db 的 CI37830128990 已 completed/success，规则 c1dac61 CI37826653771、利润 abb9f79 CI37823550243 也 success。
 - 前版受控 Agent `d1eda91` CI 37820719900 已 completed/success。
 - 前版补充提交 `10fa1df` 的 CI `37816007090` 已 completed/success；运营 `3531ce7` 的 CI `37815482720`、库存 `53b7d72` 的 `37811072990`、客服 `d3b9be1` 的 `37808536888` 均已 success。
 - backend/.venv Python 3.11、frontend/node_modules、Docker MySQL 8.4 开发3307/测试3308。日常服务8000/5173；Playwright自动启动8001/5174。
 - .env、backend/.env、.local/test.env 是忽略的密钥/本机配置，不打印、不提交。Windows 用 .venv/Scripts/python -m；MySQL、Node子进程、Git写常需 require_escalated。
 - pytest 与 Playwright 会清理隔离 _test 库，必须串行；迁移回退也等测试结束。测试与 E2E 入口强制 model_enabled=False。
-- 当前迁移 `3b35be067576` 已应用两库；`.local/verify_authorization_migration.py` 已验证 _test 回退 944381607c1c→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
+- 当前迁移 `f219af0a01cf` 已应用两库；`.local/verify_outbound_migration.py` 已验证 _test 回退 3b35be067576→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
 - Firecrawl 已确认402，使用官方网页/GitHub connector，不反复调用计费端点，不临时写抓取脚本。GitHub Actions用 github_fetch REST，解析 structuredContent.content，只输出摘要；fetch_commit_workflow_runs不适用于main push。
 
-## 最新完成：有界 R1 内部预授权切片
+## 最新完成：R2 测试邮箱与一次性提交
+
+- development 第十七节；三层 outbound、outbound_channels 和固定 ResendMailProvider。migration f219af0a01cf 三表 test_mail_channels/outbound_messages/outbound_approvals。UI `/outbound` 的 OutboundView/OutboundMailReview，现有绿系设计。
+- 默认关闭。`SOLOOPS_OUTBOUND_` 前缀的 ENABLED/API_KEY/OWNER_ID/SHOP_ID/SENDER/TEST_RECIPIENT/DOMAIN_ID 在本机配置，绑定一个 owner/shop/本人发送地址/本人测试邮箱。浏览器不能覆盖地址或提交密钥；API key 必须支持域读、发送及记录回读。配置/密钥变化旧连接失效。当前没有真实账号或真实调用。
+- 用户显式确认固定验证邮件后，GET 域 verified/name/sending，向部署名单邮箱 POST 一封不含业务数据的验证码邮件。8 位随机码只存 SHA256，15 分钟/5 次错误上限，不 API 回显。重复连接读原记录；间隔60秒，每店24h最多10次验证申请。可撤销连接，未知状态可凭实际邮箱验证码激活。
+- 从当前已保存 OperationRun（含 Agent 保存结果）生成纯文本检查摘要，标识店铺/检查/身份/渠道/UTC窗口/币种/规则/截至/分支/前50候选，缺数据照标。支持修改主题/正文使审批失效。不是跨店完整日报，也没有给现有 Agent 七技能增加外发权限。
+- R2 审批独立绑定邮件版本、完整地址/主题/正文摘要，来源/规则/时间门禁复用 OperationsService。单次审批10分钟；预授权1—24h、固定1次。每份摘要最多提交一次；拒绝保留取消，撤销只阻止未开始动作。R1 ID不适用。
+- 用户→店铺锁+当前读→释放锁 GET 域状态→取锁再核对版本/来源/时效/频率→同事务写 dispatch_at/sending/used_at/audit并commit→唯一POST。账号24h最多10份摘要/最少60秒间隔；未知/清除仍计数。审计失败不发，提交后进程中断不返额度，sending超过60s读时转unknown。重复POST API回读，不触发供应商第二次发送。
+- HTTP固定 api.resend.com、无代理/重定向，响应300000bytes/超时/耗时限制；UUID幂等键+soloops_dispatch标签。供应商24h键是额外保护，本地dispatch标记长期保留。明确拒绝也占用本次；网络/5xx/429/无回执unknown。
+- 只读回查：有回执按ID；无回执查最近100封/最多5候选，或用户提供通道后台UUID。精确匹配地址/全文/标签/无ccbcc后采用回执与事件；未匹配保持状态，10秒回查间隔，不重发。accepted/delivered不能当收件证据；另存明确标注的人工收件声明与证据位置，系统未独立读取真实邮箱。
+- 清批次先outbound.purge_batch再Operations删依赖：擦除主题/正文/收件说明，保留ID/摘要/状态。发送中清除，回调只记回执、不恢复正文。真实邮件不能撤回。A11/A28本地替身已过；A13/P0-External仍待本人通道/邮箱/真实提交及收件证据授权。
+- 最终完整pytest242通过(69.04s)，本功能28项。Ruff123文件/mypy94app通过；Vitest10文件17项、Vue lint/type/build通过；完整Playwright24通过(42.8s)。迁移往返及两库无漂移。74SO/32验收均保留更新。
+- E2E scripts/e2e_mail.py 只由强制_test的serve_e2e注册合成店铺/假provider/合成inbox；生产create_app无测试入口。pytest/E2E默认model_enabled=False，outbound测试只注入替身。不要让测试继承真实发信设置。
+- 新页面截图系统Temp `soloops-outbound-{first-desktop,first-mobile,preview-desktop,preview-mobile,desktop,mobile}.png` 已查看，手机无横溢。Vue多语句点击模板改小函数解决生产构建解析错误，收件确认label排除grid解决布局；Vitest沙箱EPERM改require_escalated正常测试环境。Starlette/httpx弃用提示仍在。
+- 文档/README/74SO/32验收已随main推送，全部P0尚未完成。缺外部条件继续沿用questions，勿重复询问。
+
+## 前版完成：有界 R1 内部预授权切片
 
 - 详见 development 第十六节。api/routes/authorizations.py → services/authorizations.py → repositories/authorizations.py，迁移3b35be067576两表 internal_authorizations/authorization_uses，AgentExecution.authorization_id FK。origin_execution_id为经service校验的溯源ID，避免循环FK。UI在/agent下方InternalAuthorizations.vue。
 - 仅今日运营固定daily流程的propose_tasks：从当前waiting_approval预览创建，服务端重算一致；绑定owner/shop、渠道/身份、完整OperationScope(日期/币种/阈值/规则版本)、shop.data_revision、预览hash和candidate_count。模板natural/listing/support不能借此授权。严格确认bool、max_uses1—20、valid_hours1—168；来源valid_until更短则提前失效。
@@ -99,8 +115,8 @@
 
 ## 下一步立即开发
 
-1. 先核对本功能CI37830128990；失败则修复。main当前1edd7db44e617f30735470e17d4e7ba92561d02a。读取AGENTS、此文、development十三—十六节和冻结稿SO066/067、安全、22外发、23验收章节。
-2. R1预授权本地切片已完成，继续 **R2受控测试外发与独立授权**：先查官方/GitHub记录references，再前后端/迁移/测试/文档/矩阵/提交推送。用户通道账号/测试收件箱仍在questions，缺外部凭据不阻断可配置适配、测试替身和本地状态机，不重复询问。
-3. R2测试外发须自有已验证通道与测试收件人；全文/地址/关联任务/次数预览、不可撤销提示、单次审批或明示可撤销且有范围/次数/时效的独立测试授权；确定性前提/回执/未知回查，网络超时不自动重发。邮件始终R2，金额小不降级；R1授权绝不适用。真实调用与送达证据单列待授权，不启用真实买家自动发送。
-4. 然后继续剩余P0（跨店总览/日报、统一任务、可配置模型对四MVP的生成/解释、受控测试发信通道与未知结果回查等），依冻结稿逐项推进，再P1/P2。无真实模型预算/通道账号时完成可配置适配与测试替身，真实验收单列待授权，不重复询问questions现有问题。
-5. 每功能验证/文档/矩阵并正常提交推送。上下文压力时落盘推送后按授权创建新聊天独占接续，禁止两个聊天同时修改工作区。当前聊天交接后停止修改。
+1. 核对 CI37833883370，失败修复；当前 main d43d29bd9a3c6e4d8a2d650a69a9e6d2a4fe7366。读取 AGENTS、本文、development 十三—十七节与冻结需求/矩阵。
+2. 立即开发 SO-002 跨店铺经营总览与运营日报 P0 切片：按店铺/平台/市场/时间与币种分组；前日/近7/近30/自选对比；库存/客服/营销等缺口明确未知；金额Decimal，不把多个币种合计，不冒称全渠道实时。总览/日报事实可下钻已有来源行与批次，持久摘要须处理来源变化/清除。
+3. 随后统一任务/草稿/审批驾驶舱，四条MVP可配置模型生成与解释等剩余P0，再P1/P2。OpenAIResponses目前仅意图路由，不是四条MVP完整AI能力；无模型预算/外发账号时完成适配和替身，真实验收单列待授权。R2此轮已经有本地受控发送/未知回查路径，别重复从零实现。
+4. 每功能先查官方/GitHub并更新references/许可证/适配，完成前后端/迁移/测试/development/interview/74SO/32验收/testing/questions，再正常提交推送main和context-memory，不强推。不重复询问questions已有外部条件。
+5. 上下文压力时落盘推送后按授权创建新聊天独占接续；原聊天停止修改，不让两个聊天同时改工作区。
