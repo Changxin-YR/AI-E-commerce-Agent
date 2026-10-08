@@ -81,6 +81,7 @@ test('operations source, approval, defer, completion, replay and source clearing
   await expect(result).toContainText('导出时间未知')
   await page.locator('.task-row').click()
   const detail = page.getByRole('region', { name: '待办审批详情' })
+  await expect(detail).toContainText('优先级：关注 · 内部标签：库存阈值')
   await detail.getByText('查看依据（1 行）').click()
   await detail.getByText(/来源：ops-stock.csv/).click()
   await detail.getByRole('button', { name: '查看来源原始行' }).click()

@@ -135,9 +135,12 @@ Starlette 的 httpx 弃用提示仍存在。本轮补齐 SO-041 的 P0 快照基
 先完成 README 安装步骤；在项目根运行 `docker compose --profile test up -d --wait`。后端进入 `backend` 后运行上表后端命令，前端进入 `frontend` 后运行上表前端命令。`scripts/setup_local.py` 已生成 `.local/test.env`；CI 通过环境变量提供 `SOLOOPS_TEST_DATABASE_URL`。
 
 Playwright 自动启动隔离 API（8001）和前端（5174），清理测试库并创建合成账号。不要同时手动占用这两个端口。日常开发使用 8000/5173，与测试服务分开。
+
 ## 第七迭代：今日运营检查与待办（2026-10-09）
 
-数据身份均为合成数据。新增 15 项 `test_operations.py`，完整 pytest 138 项通过；拆分各检查函数后新增 15 项复验通过。Ruff 规则/格式、mypy 64 个 app 文件通过；Vue lint/type/build 通过；Vitest 5 文件 8 项通过。完整 Playwright 15 项通过；收起高级口径后，新增 2 项运营 E2E 复验通过。
+数据身份均为合成数据。新增 15 项 `test_operations.py`，完整 pytest 138 项通过；拆分各检查函数后新增 15 项复验通过。Ruff 82 文件规则/格式、mypy 64 个 app 文件通过；Vue lint/type/build 通过；Vitest 5 文件 8 项通过。完整 Playwright 15 项通过；首页摘要/高级口径和可见优先级/内部标签完善后，新增 2 项运营 E2E 复验通过。
+
+功能提交 `3531ce7` 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37815482720) 已核实 `completed / success`：Ubuntu / MySQL 后端、前端与浏览器全部通过。之后的优先级与标签显示补充已完成对应本地 E2E、lint/type/build 验证。
 
 验证重点：空数据未检查、四类候选及原始行、审批前待审批、重复相同操作无新历史、忽略/拒绝/完成/延期重跑保留、无关版本变化去重、库存到期拒绝批准、来源覆盖/撤销/恢复、旧成本清除、备注与历史详情擦除、独立任务保留、输入白名单/CSRF/用户店铺渠道身份隔离、分页与 500 候选上限原子拒绝、预先建立旧快照的并发请求与竞争编辑。
 

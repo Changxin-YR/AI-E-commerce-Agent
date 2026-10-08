@@ -14,6 +14,12 @@ const note = ref('')
 const due = ref('')
 const error = ref('')
 const busy = ref(false)
+const kindLabels: Record<string, string> = {
+  order_review: '订单履约核对',
+  low_inventory: '库存阈值',
+  message_review: '消息回复核对',
+  low_margin: '已知低毛利',
+}
 watch(
   () => props.task,
   (t) => {
@@ -61,6 +67,11 @@ async function act(action: TaskAction): Promise<void> {
     </div>
     <p>负责人：当前卖家 · {{ task.risk }} 内部操作 · 外部未提交</p>
     <template v-if="task.snapshot">
+      <p>
+        优先级：{{ task.snapshot.severity === 'attention' ? '关注' : '待核对' }} · 内部标签：{{
+          kindLabels[task.kind]
+        }}
+      </p>
       <h3>{{ task.snapshot.title }} · {{ task.snapshot.object_label }}</h3>
       <p>{{ task.snapshot.basis }}</p>
       <p>{{ task.snapshot.impact }}</p>
