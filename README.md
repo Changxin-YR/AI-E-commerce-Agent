@@ -13,16 +13,29 @@
 ## 当前提交与环境
 
 - origin：https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。本轮 GitHub connector 核实登录 Changxin-YR，仓库 ID 1410355242，公开，admin/push true；正常 push 已成功。
-- main HEAD/当前功能提交：`d1eda9181d8ee5694aaa800a5bf2a8920f4bdb61`，已推送；主题 controlled skills and resumable agent executions。
-- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37820719900 ，交接前最后观测 in_progress，接续先核对并修复失败。
+- main HEAD/当前功能提交：`abb9f798ee156dc40b28f67b34bea2131868e86a`，已推送；主题 independent product profit scenarios。
+- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37823550243 ，最后观测 in_progress，接续先核对并修复失败。
+- 前版受控 Agent `d1eda91` CI 37820719900 已 completed/success。
 - 前版补充提交 `10fa1df` 的 CI `37816007090` 已 completed/success；运营 `3531ce7` 的 CI `37815482720`、库存 `53b7d72` 的 `37811072990`、客服 `d3b9be1` 的 `37808536888` 均已 success。
 - backend/.venv Python 3.11、frontend/node_modules、Docker MySQL 8.4 开发3307/测试3308。日常服务8000/5173；Playwright自动启动8001/5174。
 - .env、backend/.env、.local/test.env 是忽略的密钥/本机配置，不打印、不提交。Windows 用 .venv/Scripts/python -m；MySQL、Node子进程、Git写常需 require_escalated。
 - pytest 与 Playwright 会清理隔离 _test 库，必须串行；迁移回退也等测试结束。测试与 E2E 入口强制 model_enabled=False。
-- 当前迁移 `e84b5e7e8dd1` 已应用两库；`.local/verify_agent_migration.py` 已验证 _test 回退 c37d9218a640→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
+- 当前迁移 `a0188d77d6c6` 已应用两库；`.local/verify_profit_migration.py` 已验证 _test 回退 e84b5e7e8dd1→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
 - Firecrawl 已确认402，使用官方网页/GitHub connector，不反复调用计费端点，不临时写抓取脚本。GitHub Actions用 github_fetch REST，解析 structuredContent.content，只输出摘要；fetch_commit_workflow_runs不适用于main push。
 
-## 本轮完成：受控执行层
+## 最新完成：SO-054 独立新品利润计算器
+
+- 详见 development 第十四节，`services/profit.py / profit_rules.py`、`ProfitView.vue`。入口 `/profit`，三层服务与三表 profit_studies/scenarios/fees；金额/费率 Numeric(13,4)，UTC 时间。
+- 不需订单，单币种 1—5 方案，候选售价/采购成本及依据；九类费用（头程/尾程/平台/仓储/包装/广告/退款损失/税费/其他分摊）每类固定单件金额或售价比例。空值未知，显式零须依据，最多四位小数/1亿元，单项比例≤100%。不换汇/不自动推税制和退款概率。
+- Decimal40位局部精度；采购毛利、已填费用、已知费用后余额分别输出，余额率HALF_UP四位，零售价未知。金额JSON定点字符串，前端不转Number。四组敏感性：售价−10%/原值/+10%、采购成本+10%，不改变未知项。
+- 九类齐全且总售价比例<100%才给 `(采购+固定费)/(1−比例)` 保本价，JPY向上取整1，其他支持币种0.01；只是已填假设覆盖价，不保证真实不亏。复杂阶梯费率/换汇待扩展。
+- 保存UUID+规范化内容hash绑定拥有者/店铺，数字尾零和费用顺序规范化；并发用户锁与当前读同一记录。存档输入/依据/规则版本，不接收前端计算结果。未知规则版本不静默改算。
+- 清除物理删除费用/方案，擦除标题，留无正文tombstone/审计，旧UUID不能复活；独立手填方案不依赖导入批次，清批次不清它。
+- 页面编辑立即隐藏旧结果，计算后折叠输入，可复制、对比、展开公式/依据/敏感性、保存/刷新回读/清除；手机可横向滚表，卡片直接给主金额与缺口。新增导航仍保留矮桌面侧栏滚动。
+- 完整pytest178通过后新增极小金额/最大边界和Decimal定点序列化，本功能最终18通过（总量179，完整179待CI）；Ruff99文件、mypy77 app文件，Vue lint/type/build，Vitest7文件12项，完整Playwright19项通过。最终截图在系统Temp `soloops-profit-{input-desktop,input-mobile,desktop,mobile}.png`，均已实际查看，合成数据无页面横溢。
+- 文档、README、74SO/32验收行已更新并推送。无真实模型/外发调用。
+
+## 前版完成：受控执行层
 
 先读 `docs/development.md` 第十三节及 `services/agent.py / agent_skills.py / agent_model.py`。原始业务服务保持可用。
 
@@ -60,8 +73,8 @@
 
 ## 下一步立即开发
 
-1. 先核对本功能CI 37820719900；失败则修复。读取AGENTS、此文、development第十三节、冻结稿SO-054与相关财务/安全/验收章节。
-2. 立即做 **SO-054 独立新品利润计算器**：不依赖订单，自填售价/采购成本/明确费用，Decimal确定性单件已知毛利、可追溯假设、情景比较/敏感性、可确定时保本价；缺物流/平台/广告/税费醒目提示，不输出真实净利润承诺。先查官方/GitHub记录references，再完整前后端及测试文档提交推送。
+1. 先核对本功能CI 37823550243；失败则修复。读取AGENTS、此文、development第十三/十四节和冻结稿下一功能相关章节。
+2. SO-054 P0最小切片已完成。下一步做 **SO-066 经营规则/偏好及明确生效条件**，随后可撤销预授权；先查官方/GitHub记录references，再完整前后端及测试文档提交推送。不要仅存一些没有实际生效位置的设置并宣称全部完成。
 3. 然后继续全部剩余P0（经营偏好/可撤销预授权、跨店总览/日报、统一任务、可配置模型对四MVP的生成/解释、受控测试发信通道与未知结果回查等），依冻结稿逐项推进，再P1/P2。不要停在阶段性计划，不把路由模型当完整AI内容生成。
 4. 无真实模型预算/账号授权时完成可配置适配及测试替身证据，真实验收单列待授权；不重复询问questions已有问题，不外发。
 5. 每功能验证与文档/矩阵更新、正常提交推送。上下文压力时落盘并按授权创建新聊天接续，禁止两个聊天同时修改工作区。
