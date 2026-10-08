@@ -125,3 +125,18 @@ class CustomerMessage(Base):
     language: Mapped[str] = mapped_column(String(16))
     order_id: Mapped[str] = mapped_column(String(120, collation="utf8mb4_bin"))
     source_row_id: Mapped[int] = mapped_column(ForeignKey("import_rows.id"))
+
+
+class InventorySnapshot(Base):
+    __tablename__ = "inventory_snapshots"
+    __table_args__ = (
+        UniqueConstraint("shop_id", "channel", "sku", name="uq_inventory_shop_channel_sku"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    shop_id: Mapped[int] = mapped_column(ForeignKey("shops.id"), index=True)
+    channel: Mapped[str] = mapped_column(String(20))
+    sku: Mapped[str] = mapped_column(String(120, collation="utf8mb4_bin"))
+    available: Mapped[int]
+    snapshot_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6))
+    safety_threshold: Mapped[int]
+    source_row_id: Mapped[int] = mapped_column(ForeignKey("import_rows.id"))

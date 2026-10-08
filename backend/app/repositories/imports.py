@@ -9,13 +9,15 @@ from app.models.imports import (
     CustomerMessage,
     ImportBatch,
     ImportRow,
+    InventorySnapshot,
     MappingTemplate,
     OrderLine,
     Product,
 )
-from app.schemas.imports import MessageData, OrderData, ProductData
+from app.schemas.imports import InventoryData, MessageData, OrderData, ProductData
 
-ImportedRecord = Product | OrderLine | CustomerMessage
+ImportedRecord = Product | OrderLine | CustomerMessage | InventorySnapshot
+ImportedModel = type[Product] | type[OrderLine] | type[CustomerMessage] | type[InventorySnapshot]
 
 
 class ImportRepository:
@@ -78,10 +80,11 @@ class ImportRepository:
         shop_id: int,
         kind: str,
     ) -> dict[str, tuple[ImportedRecord, ImportRow]]:
-        models: dict[str, type[Product] | type[OrderLine] | type[CustomerMessage]] = {
+        models: dict[str, ImportedModel] = {
             "products": Product,
             "orders": OrderLine,
             "messages": CustomerMessage,
+            "inventory": InventorySnapshot,
         }
         model = models[kind]
         entries = self.session.execute(
@@ -107,11 +110,18 @@ class ImportRepository:
         values: dict[str, Any]
         if kind == "products":
             values = ProductData.model_validate(row.normalized).model_dump()
-            model: type[Product] | type[OrderLine] | type[CustomerMessage] = Product
+            model: ImportedModel = Product
         elif kind == "orders":
             values = OrderData.model_validate(row.normalized).model_dump()
             values["ordered_at"] = values["ordered_at"].astimezone(UTC).replace(tzinfo=None)
             model = OrderLine
+        elif kind == "inventory":
+            values = InventoryData.model_validate(row.normalized).model_dump()
+            values["snapshot_at"] = values["snapshot_at"].astimezone(UTC).replace(tzinfo=None)
+            batch = self.session.get(ImportBatch, row.batch_id)
+            assert batch is not None
+            values["channel"] = batch.source_channel
+            model = InventorySnapshot
         else:
             values = MessageData.model_validate(row.normalized).model_dump()
             values["sent_at"] = values["sent_at"].astimezone(UTC).replace(tzinfo=None)

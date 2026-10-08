@@ -8,7 +8,16 @@ from zoneinfo import ZoneInfo
 
 from pydantic import ValidationError
 
-from app.schemas.imports import MessageData, OrderData, ParsedRow, ProductData, RowIssue, RowOutput
+from app.core.time import utc_now
+from app.schemas.imports import (
+    InventoryData,
+    MessageData,
+    OrderData,
+    ParsedRow,
+    ProductData,
+    RowIssue,
+    RowOutput,
+)
 from app.services.import_catalog import FIELDS
 
 DECIMAL_PATTERN = re.compile(r"^-?\d+(?:\.\d{1,4})?$")
@@ -50,6 +59,8 @@ def unsafe_text(value: str) -> bool:
 def business_key(kind: str, normalized: dict[str, Any], channel: str = "generic") -> str:
     if kind == "messages":
         parts = [channel, normalized["message_id"]]
+    elif kind == "inventory":
+        parts = ["inventory", channel, normalized["sku"]]
     elif kind == "products":
         parts = [normalized["sku"]]
     else:
@@ -88,6 +99,17 @@ def normalize_row(
     money_fields = (
         {"price", "unit_cost"} if kind == "products" else {"unit_price", "discount", "refund"}
     )
+    if kind == "inventory":
+        money_fields = set()
+        for key in ("available", "safety_threshold"):
+            if not re.fullmatch(r"\d+", values.get(key, "")):
+                issue(key, "数量和阈值须为非负整数；未知请补充来源，不要填零")
+        try:
+            values["snapshot_at"] = parse_time(values.get("snapshot_at", ""), timezone)
+            if values["snapshot_at"].replace(tzinfo=None) > utc_now():
+                issue("snapshot_at", "快照时间不能晚于当前时间，请核对时区和源文件")
+        except ValueError as error:
+            issue("snapshot_at", str(error))
     if kind == "messages":
         money_fields = set()
         values["language"] = values.get("language", "").lower() or "und"
@@ -119,10 +141,13 @@ def normalize_row(
     normalized: dict[str, Any] = {}
     if not errors:
         try:
-            schemas: dict[str, type[ProductData] | type[OrderData] | type[MessageData]] = {
+            schemas: dict[
+                str, type[ProductData] | type[OrderData] | type[MessageData] | type[InventoryData]
+            ] = {
                 "products": ProductData,
                 "orders": OrderData,
                 "messages": MessageData,
+                "inventory": InventoryData,
             }
             schema = schemas[kind]
             model = schema.model_validate(values)
@@ -167,6 +192,8 @@ def normalize_row(
                 warnings.append("折扣或退款金额未知，后续净销售额/毛利分析须说明缺口")
             if normalized["status"] in {"pending", "cancelled", "test"}:
                 warnings.append("该状态不计入已支付销售")
+        elif kind == "inventory":
+            warnings.append("仅表示该渠道在快照时刻的可售数量；跨渠道不合计，不代表实时库存")
         else:
             warnings.append("消息及订单号仅为来源记录；客户与订单关联需人工核验，未取得外发权限")
     return RowOutput(

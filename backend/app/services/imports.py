@@ -162,6 +162,13 @@ class ImportService:
             )
             if key and key in current:
                 result.previous = current[key][1].normalized
+                if batch.kind == "inventory" and not result.errors:
+                    incoming_time = datetime.fromisoformat(str(result.normalized["snapshot_at"]))
+                    previous_time = datetime.fromisoformat(str(result.previous["snapshot_at"]))
+                    if incoming_time < previous_time:
+                        result.warnings.append(
+                            "新文件快照时间早于现有快照；确认覆盖会使用更旧的库存依据"
+                        )
                 if not result.errors:
                     result.action = (
                         "unchanged" if result.normalized == result.previous else "update"
@@ -197,7 +204,7 @@ class ImportService:
                 if row.normalized.get(key)
             }
         )
-        time_key = "sent_at" if batch.kind == "messages" else "ordered_at"
+        time_key = {"messages": "sent_at", "inventory": "snapshot_at"}.get(batch.kind, "ordered_at")
         times = [str(row.normalized[time_key]) for row in results if row.normalized.get(time_key)]
         batch.coverage_start = min(times, key=datetime.fromisoformat) if times else None
         batch.coverage_end = max(times, key=datetime.fromisoformat) if times else None

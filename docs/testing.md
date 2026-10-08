@@ -112,6 +112,23 @@ Browser plugin not available；使用仓库既有 Playwright 工作流，测试 
 
 Starlette 的 httpx 弃用提示仍存在。尚无真实 LLM、真实消息样本、实时运单或测试邮箱外发证据，四条 MVP 不标完整完成。
 
+## 第六迭代：可选库存快照（2026-10-09）
+
+| 检查 | 实际结果 |
+|---|---|
+| pytest / MySQL | 完整 123 项通过，新增库存 14 项（含参数化） |
+| Ruff / mypy | 74 文件格式与规则通过；58 个 app 文件类型检查通过 |
+| Vue lint / 类型 / build | 通过 |
+| Vitest | 5 文件、8 项通过；沙箱临时缓存重命名 EPERM 后使用本机权限验证 |
+| Playwright Chromium | 完整 13 项通过，新增库存桌面/手机两条流程 |
+| MySQL 迁移 | 61cb82ef096a：隔离库回退至 8d34d9c410a2→升级/check，开发库升级/check 均通过 |
+
+`test_inventory.py` 覆盖无库存、快照原始行、身份/渠道/店铺/拥有者隔离、零阈值、恰好过期和截止前一微秒、调整查询时效、非法/缺失数量和阈值、未来时间、覆盖旧快照警示、重复确认、撤销恢复、乱序撤销、清除、Excel 纠错与时区、文件内重复键、分页与搜索转义。
+
+桌面验证 CSV 映射预览→确认→快照低库存→来源原始值→刷新持久化→撤销/清除→未知；手机验证 30 小时前快照过期，改为 48 小时时效后重新核对。1280×720 与 390×844 截图已实际查看，手机无横向溢出，页面无应用错误与 Vite 遮罩。截图在系统临时目录 `soloops-inventory-{desktop,mobile}.png`，仅含合成数据。
+
+Starlette 的 httpx 弃用提示仍存在。本轮补齐 SO-041 的 P0 快照基础；A-03 的查询页面通过，今日运营中的库存分支待接入。真实库存源与 Agent/模型未验证，四条 MVP 仍未完整完成。
+
 ## 复现命令
 
 先完成 README 安装步骤；在项目根运行 `docker compose --profile test up -d --wait`。后端进入 `backend` 后运行上表后端命令，前端进入 `frontend` 后运行上表前端命令。`scripts/setup_local.py` 已生成 `.local/test.env`；CI 通过环境变量提供 `SOLOOPS_TEST_DATABASE_URL`。

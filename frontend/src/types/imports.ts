@@ -1,4 +1,4 @@
-export type ImportKind = 'products' | 'orders' | 'messages'
+export type ImportKind = 'products' | 'orders' | 'messages' | 'inventory'
 export type SourceChannel = 'generic' | 'shopify' | 'amazon' | 'other'
 export interface FieldDefinition {
   key: string
@@ -11,6 +11,7 @@ export interface ImportCatalog {
   products: FieldDefinition[]
   orders: FieldDefinition[]
   messages: FieldDefinition[]
+  inventory: FieldDefinition[]
   max_bytes: number
   max_rows: number
 }

@@ -16,6 +16,7 @@ const router = createRouter({
         { path: 'analytics', component: () => import('@/views/AnalyticsView.vue') },
         { path: 'listings', component: () => import('@/views/ListingsView.vue') },
         { path: 'support', component: () => import('@/views/SupportView.vue') },
+        { path: 'inventory', component: () => import('@/views/InventoryView.vue') },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },

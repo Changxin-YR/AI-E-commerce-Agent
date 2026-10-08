@@ -33,6 +33,7 @@ def catalog(current: CurrentSession) -> CatalogOutput:
         products=FIELDS["products"],
         orders=FIELDS["orders"],
         messages=FIELDS["messages"],
+        inventory=FIELDS["inventory"],
         max_bytes=MAX_BYTES,
         max_rows=MAX_ROWS,
     )

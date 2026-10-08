@@ -12,6 +12,15 @@
 
 当前无复制的第三方业务代码。新增直接复用时需记录源文件、具体版本、许可证并保留相应声明。
 
+## 库存快照与今日运营基础（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [SQLAlchemy 当前读与刷新](https://docs.sqlalchemy.org/en/20/orm/queryguide/api.html#populate-existing)、[官方讨论 #5572](https://github.com/sqlalchemy/sqlalchemy/issues/5572) | MIT / 官方文档与仓库 | 沿用用户锁、当前投影与批次版本；同一事务处理撤销、来源失效及派生清除 |
+| [Pydantic 日期类型](https://docs.pydantic.dev/latest/api/standard_library_types/#datetimes)、[官方校验错误说明](https://github.com/pydantic/pydantic/blob/main/docs/errors/validation_errors.md) | MIT / 官方文档与仓库 | 快照时间先按明确时区解析为 UTC，数量和阈值严格校验；时效由查询时的服务端时间与卖家选定窗口判断 |
+
+已检索官方网页与 GitHub 资料。沿用已知 Firecrawl 402 限制使用网页工具；自行编写业务规则，不复制第三方业务代码。库存按店铺、渠道、SKU 分开，不合计可能共享的跨渠道库存，不从订单扣减或推算库存。
+
 ## 客服消息、政策证据与人工接管（2026-10-08）
 
 | 资料 | 许可证/性质 | 借鉴与适配 |

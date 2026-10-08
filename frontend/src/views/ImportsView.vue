@@ -219,7 +219,7 @@ onMounted(initialize)
       <h1>把业务数据，整理成依据。</h1>
       <p>上传、核对、确认。每一行都能追溯到原始批次。</p>
     </div>
-    <span class="outline-label">商品与订单导入</span>
+    <span class="outline-label">业务文件导入</span>
   </div>
   <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
   <button v-if="error && !catalog" class="button secondary" @click="initialize">重新加载</button>
@@ -260,6 +260,10 @@ onMounted(initialize)
             class="button secondary small"
             :href="`/api/imports/templates/messages?format=${templateFormat}`"
             >客服消息模板</a
+          ><a
+            class="button secondary small"
+            :href="`/api/imports/templates/inventory?format=${templateFormat}`"
+            >库存快照模板</a
           >
         </div>
       </div>
@@ -279,6 +283,7 @@ onMounted(initialize)
               <option value="products">通用商品文件</option>
               <option value="orders">通用订单行文件</option>
               <option value="messages">通用客服消息文件</option>
+              <option value="inventory">通用库存快照文件</option>
             </select>
           </div>
           <div class="form-field">
@@ -348,21 +353,27 @@ onMounted(initialize)
       <p class="muted">
         {{ batch.data_identity === 'synthetic' ? '合成测试数据' : '用户导入文件' }} ·
         {{ batch.source_channel }} · {{ batch.sheet_name }} ·
-        {{ { products: '商品', orders: '订单行', messages: '客服消息' }[batch.kind] }}
+        {{
+          { products: '商品', orders: '订单行', messages: '客服消息', inventory: '库存快照' }[
+            batch.kind
+          ]
+        }}
       </p>
       <p class="muted">
         导入时间 {{ displayTime(batch.created_at, batch.timezone) }} · 导出时间
         {{ displayTime(batch.exported_at, batch.timezone) }}
       </p>
       <p class="muted" v-if="batch.coverage_start">
-        订单覆盖 {{ displayTime(batch.coverage_start, batch.timezone) }} 至
+        数据时间范围 {{ displayTime(batch.coverage_start, batch.timezone) }} 至
         {{ displayTime(batch.coverage_end, batch.timezone) }}
       </p>
       <template v-if="editable">
         <h3 class="section-block">02 / 核对字段映射</h3>
         <p class="muted">
           识别候选：{{
-            { products: '商品', orders: '订单行', messages: '客服消息' }[batch.suggested_kind]
+            { products: '商品', orders: '订单行', messages: '客服消息', inventory: '库存快照' }[
+              batch.suggested_kind
+            ]
           }}。请核对已选报表类型；若不符，可重新上传并选择类型。
         </p>
         <div class="template-controls">

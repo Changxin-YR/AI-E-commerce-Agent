@@ -6,7 +6,7 @@ from pydantic import Field, field_validator
 
 from app.schemas.common import Currency, InputModel, OutputModel, Timezone
 
-ImportKind = Literal["products", "orders", "messages"]
+ImportKind = Literal["products", "orders", "messages", "inventory"]
 DataIdentity = Literal["user_import", "synthetic"]
 SourceChannel = Literal["generic", "shopify", "amazon", "other"]
 Money = Annotated[Decimal, Field(ge=0, max_digits=18, decimal_places=4)]
@@ -44,6 +44,13 @@ class MessageData(InputModel):
     body: Annotated[str, Field(min_length=1, max_length=2000)]
     language: Literal["en", "zh", "und"] = "und"
     order_id: Annotated[str, Field(max_length=120)] = ""
+
+
+class InventoryData(InputModel):
+    sku: Identifier
+    available: Annotated[int, Field(ge=0, le=1000000000)]
+    snapshot_at: datetime
+    safety_threshold: Annotated[int, Field(ge=0, le=1000000000)]
 
 
 class UploadOptions(InputModel):
@@ -164,5 +171,6 @@ class CatalogOutput(OutputModel):
     products: list[FieldDefinition]
     orders: list[FieldDefinition]
     messages: list[FieldDefinition]
+    inventory: list[FieldDefinition]
     max_bytes: int
     max_rows: int

@@ -15,6 +15,12 @@ def field(
 
 
 FIELDS: dict[str, list[FieldDefinition]] = {
+    "inventory": [
+        field("sku", "SKU", "文本", True, "店铺、渠道内唯一；跨渠道不合计", "seller-sku"),
+        field("available", "已知可售数量", "非负整数", True, "0—1000000000；未知不能填零"),
+        field("snapshot_at", "库存快照时间", "日期时间", True, "ISO 日期时间；无偏移使用批次时区"),
+        field("safety_threshold", "安全库存阈值", "非负整数", True, "卖家自设；严格低于阈值才预警"),
+    ],
     "messages": [
         field("message_id", "消息标识", "文本", True, "来源渠道内稳定标识，用于重复对比"),
         field("sent_at", "消息时间", "日期时间", True, "ISO 日期时间；无偏移使用批次时区"),
@@ -134,6 +140,10 @@ def suggest_mapping(kind: str, headers: list[str]) -> list[MappingSuggestion]:
 
 
 def guess_kind(headers: list[str]) -> ImportKind:
+    if {"sku", "available", "snapshot_at"} <= {
+        item.field for item in suggest_mapping("inventory", headers)
+    }:
+        return "inventory"
     if {"message_id", "body"} <= {item.field for item in suggest_mapping("messages", headers)}:
         return "messages"
     order_keys = {item.field for item in suggest_mapping("orders", headers)}
