@@ -19,6 +19,7 @@ from app.repositories.outbound import OutboundRepository
 from app.repositories.overview import OverviewRepository
 from app.repositories.profit import ProfitRepository
 from app.repositories.support import SupportRepository
+from app.repositories.workbench import WorkbenchRepository
 
 
 class UnitOfWork:
@@ -40,6 +41,7 @@ class UnitOfWork:
         self.listings = ListingRepository(session)
         self.support = SupportRepository(session)
         self.profit = ProfitRepository(session)
+        self.workbench = WorkbenchRepository(session)
 
     def commit(self) -> None:
         if not self._defer_commits:

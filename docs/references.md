@@ -122,3 +122,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [Python datetime](https://docs.python.org/3.11/library/datetime.html) | PSF / 标准库官方文档 | 以 IANA 时区的日历日期确定起止点，分别转换 UTC；跨夏令时的日对比保持日历天数，而非假定每天 24 小时 |
 
 沿用 Firecrawl 402 的已知限制，通过官方网页检索。金额复用现有 Decimal 订单计算，分币种聚合，不换汇。摘要为本地确定性结果，缺失、导出时间未知和当前快照的边界逐项展示；无第三方业务源码复制。
+
+## 统一任务、草稿与审批驾驶舱（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [SQLAlchemy SELECT / UNION ALL](https://docs.sqlalchemy.org/en/20/core/selectable.html)、[官方教程](https://docs.sqlalchemy.org/en/20/tutorial/data_select.html) | MIT / 官方文档 | 使用已有业务表的有界联合查询，按创建时间、类型及 ID 稳定翻页；只投影事项元数据，不复制业务正文或建立第二套任务状态 |
+| [Vue Router 数据获取](https://router.vuejs.org/guide/advanced/data-fetching.html)、[Composition API](https://router.vuejs.org/guide/advanced/composition-api) | MIT / 官方文档 | 深链携带明确店铺与对象 ID，路由改变重新加载原始业务对象；加载和失败态清晰展示，服务端重新核验权限与来源 |
+
+沿用已确认 Firecrawl 402 限制，以官方网页检索。首页只读取本地已存在记录；所有审批、恢复和外部回查继续调用既有受控业务服务，首页读取不触发模型或发信。

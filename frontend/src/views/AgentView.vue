@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { agentApi } from '@/api/agent'
 import { listingsApi } from '@/api/listings'
@@ -20,7 +22,11 @@ import type { MessageFacts } from '@/types/support'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import AgentRunReview from '@/components/AgentRunReview.vue'
 import InternalAuthorizations from '@/components/InternalAuthorizations.vue'
-import type { InternalAuthorization } from '@/api/authorizations'
+import { authorizationsApi, type InternalAuthorization } from '@/api/authorizations'
+
+const route = useRoute()
+const focusGrant = ref<number | undefined>()
+const focusShop = ref(0)
 import AppliedRules from '@/components/AppliedRules.vue'
 import { applyRule, type BusinessRule } from '@/api/businessRules'
 
@@ -227,9 +233,23 @@ onMounted(async () => {
   window.addEventListener('focus', refresh)
   try {
     shops.value = await identityApi.shops()
-    shopId.value = shops.value[0]?.id ?? 0
+    shopId.value = linkedShop(shops.value, route.query.shop)
+    const id = linkedId(route.query.execution)
+    const grantId = linkedId(route.query.authorization)
     await loadShop()
+    if (id || grantId) selected.value = null
+    if (id) {
+      await inspect(id)
+      await revealRecord('linked-agent')
+    }
+    if (grantId) {
+      const grant = await authorizationsApi.get(shopId.value, grantId)
+      focusShop.value = shopId.value
+      focusGrant.value = grant.id
+      await inspect(grant.origin_execution_id)
+    }
   } catch (cause) {
+    selected.value = null
     error.value = errorMessage(cause)
   }
 })
@@ -416,8 +436,15 @@ onUnmounted(() => {
       </button>
     </div>
     <p v-if="!runs.length">尚未运行任务。启动后，实际结果会保存在这里。</p>
-    <AgentRunReview v-if="selected" :run="selected" :busy="busy || controlling" @action="act" />
+    <AgentRunReview
+      id="linked-agent"
+      v-if="selected"
+      :run="selected"
+      :busy="busy || controlling"
+      @action="act"
+    />
     <InternalAuthorizations
+      :focus-id="focusShop === shopId ? focusGrant : undefined"
       :shop="shopId"
       :run="selected"
       :busy="busy || controlling"

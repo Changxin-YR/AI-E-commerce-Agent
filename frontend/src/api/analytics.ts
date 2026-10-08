@@ -23,5 +23,10 @@ export const analyticsApi = {
   saved: (shop: number) => request<SavedAnalysis[]>(`${base(shop)}/saved`),
   todo: (shop: number, id: number) =>
     request<SavedAnalysis>(`${base(shop)}/saved/${id}/todo`, { method: 'POST' }),
+  changeTodo: (shop: number, item: SavedAnalysis, action: 'complete' | 'reopen') =>
+    request<SavedAnalysis>(`${base(shop)}/saved/${item.id}/todo/action`, {
+      method: 'POST',
+      body: JSON.stringify({ expected_version: item.todo!.version, action }),
+    }),
   source: (shop: number, row: number) => request<SourceDetail>(`${base(shop)}/sources/${row}`),
 }

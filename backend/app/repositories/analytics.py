@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import case, delete, select, update
 from sqlalchemy.orm import Session, defer
 
 from app.models.analytics import AnalysisSource, AnalysisTodo, SavedAnalysis
@@ -131,7 +131,10 @@ class AnalyticsRepository:
         self.session.execute(
             update(AnalysisTodo)
             .where(AnalysisTodo.analysis_id.in_(analyses))
-            .values(status="stale")
+            .values(
+                status=case((AnalysisTodo.status == "completed", "completed"), else_="stale"),
+                version=AnalysisTodo.version + 1,
+            )
         )
         self.session.execute(
             update(SavedAnalysis)
@@ -162,7 +165,7 @@ class AnalyticsRepository:
         self.session.execute(
             update(AnalysisTodo)
             .where(AnalysisTodo.analysis_id.in_(ids))
-            .values(status="cleared", title="来源已清除")
+            .values(status="cleared", title="来源已清除", version=AnalysisTodo.version + 1)
         )
         self.session.execute(
             update(SavedAnalysis)

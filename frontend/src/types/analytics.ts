@@ -76,7 +76,7 @@ export interface SavedAnalysis {
   created_at: string
   scope: AnalysisScope
   snapshot: AnalysisResult | null
-  todo: { id: number; title: string; status: string } | null
+  todo: { id: number; title: string; status: string; version: number } | null
 }
 export interface SourceDetail {
   reference: SourceReference

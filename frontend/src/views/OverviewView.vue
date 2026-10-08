@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { linkedId, revealRecord } from '@/composables/deepLink'
 import { overviewApi } from '@/api/overview'
 import { identityApi } from '@/api/identity'
 import { analyticsApi } from '@/api/analytics'
@@ -10,6 +12,7 @@ import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import OverviewShopCard from '@/components/OverviewShopCard.vue'
 
 const shops = ref<Shop[]>([])
+const route = useRoute()
 const busy = ref(false)
 const error = ref('')
 const success = ref('')
@@ -194,6 +197,15 @@ onMounted(async () => {
     scope.shop_ids = shops.value.map((s) => s.id).slice(0, 20)
     await loadHistory()
   })
+  try {
+    const id = linkedId(route.query.report)
+    if (id) {
+      await show(id)
+      await revealRecord('overview-result')
+    }
+  } catch (cause) {
+    error.value = errorMessage(cause)
+  }
 })
 onUnmounted(() => {
   alive = false
@@ -343,7 +355,7 @@ onUnmounted(() => {
     <h2>摘要 #{{ saved.id }} · {{ names[saved.status] }}</h2>
     <p>保存于 {{ time(saved.created_at, saved.scope.timezone) }}</p>
   </section>
-  <section v-if="result" aria-label="经营总览结果">
+  <section v-if="result" id="overview-result" aria-label="经营总览结果">
     <p v-if="stale" role="alert" class="analysis-answer">
       历史来源或库存时效已变化，以下为保存时的结果；请重新生成后判断当前经营。
     </p>

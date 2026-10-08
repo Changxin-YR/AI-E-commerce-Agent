@@ -23,6 +23,7 @@ from app.api.routes import (
     profile,
     profit,
     support,
+    workbench,
 )
 from app.core.config import Settings
 from app.core.errors import BusinessError
@@ -58,6 +59,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(authorizations.router, prefix="/api")
     application.include_router(profit.router, prefix="/api")
     application.include_router(business_rules.router, prefix="/api")
+    application.include_router(workbench.router, prefix="/api")
 
     @application.get("/api/health/live", tags=["健康检查"])
     def live() -> dict[str, str]:

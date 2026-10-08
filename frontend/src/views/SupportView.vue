@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
 import { supportApi } from '@/api/support'
 import { identityApi } from '@/api/identity'
 import { errorMessage } from '@/api/client'
@@ -19,6 +21,7 @@ import SupportReply from '@/components/SupportReply.vue'
 import SupportSource from '@/components/SupportSource.vue'
 
 const shops = ref<Shop[]>([])
+const route = useRoute()
 const shopId = ref(0)
 const timezone = computed(
   () => shops.value.find((s) => s.id === shopId.value)?.timezone ?? 'Asia/Shanghai',
@@ -134,9 +137,16 @@ onMounted(async () => {
   await perform(async () => {
     shops.value = await identityApi.shops()
   })
-  if (shops.value[0]) {
-    shopId.value = shops.value[0].id
+  try {
+    shopId.value = linkedShop(shops.value, route.query.shop)
     await changeShop()
+    const id = linkedId(route.query.draft)
+    if (id) {
+      await show(id)
+      await revealRecord('linked-reply')
+    }
+  } catch (cause) {
+    error.value = errorMessage(cause)
   }
 })
 onUnmounted(() => window.removeEventListener('focus', onFocus))
@@ -286,6 +296,7 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
       </section>
     </div>
     <SupportReply
+      id="linked-reply"
       v-if="selected"
       :item="selected"
       :shop-id="shopId"

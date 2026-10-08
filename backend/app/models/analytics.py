@@ -35,4 +35,5 @@ class AnalysisTodo(Base):
     analysis_id: Mapped[int] = mapped_column(ForeignKey("saved_analyses.id"), unique=True)
     title: Mapped[str] = mapped_column(String(120))
     status: Mapped[str] = mapped_column(String(16), default="open")
+    version: Mapped[int] = mapped_column(default=1, server_default="1")
     created_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6), default=utc_now)

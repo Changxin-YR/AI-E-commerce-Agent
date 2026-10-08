@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { operationsApi } from '@/api/operations'
 import { outboundApi } from '@/api/outbound'
@@ -109,10 +110,20 @@ async function more(): Promise<void> {
 onMounted(async () => {
   try {
     shops.value = await identityApi.shops()
-    shop.value =
-      shops.value.find((s) => s.id === Number(route.query.shop))?.id ?? shops.value[0]?.id ?? 0
+    shop.value = linkedShop(shops.value, route.query.shop)
+    const id = linkedId(route.query.mail)
+    if (['synthetic', 'user_import'].includes(String(route.query.identity)))
+      identity.value = String(route.query.identity)
+    if (['generic', 'shopify', 'amazon', 'other'].includes(String(route.query.channel)))
+      sourceChannel.value = String(route.query.channel)
     await load()
+    if (id) {
+      selected.value = null
+      selected.value = await outboundApi.get(shop.value, id)
+      await revealRecord('linked-mail')
+    }
   } catch (cause) {
+    selected.value = null
     error.value = errorMessage(cause)
   }
 })
@@ -262,6 +273,7 @@ onMounted(async () => {
       </div>
     </section>
     <OutboundMailReview
+      id="linked-mail"
       v-if="selected"
       :key="`${shop}-${selected.id}`"
       :mail="selected"

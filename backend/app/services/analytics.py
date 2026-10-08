@@ -14,6 +14,7 @@ from app.schemas.analytics import (
     SavedOutput,
     SaveInput,
     SourceOutput,
+    TodoAction,
     TodoOutput,
 )
 from app.services.profit_calculation import calculate, reference, utc_text
@@ -161,6 +162,43 @@ class AnalyticsService:
             self.uow.commit()
             return output
         return self._output(analysis)
+
+    def change_todo(
+        self, owner: int, shop_id: int, analysis_id: int, data: TodoAction
+    ) -> SavedOutput:
+        shop = self._shop(owner, shop_id)
+        analysis = self.repo.find_saved(owner, shop_id, analysis_id)
+        item = self.repo.todo(owner, analysis_id) if analysis else None
+        if analysis is None or item is None:
+            raise BusinessError("not_found", "核对待办不存在", 404)
+        if analysis.status != "current" or analysis.source_revision != shop.data_revision:
+            raise ConflictError("来源已变化或清除，请重新分析后处理核对待办")
+        target = "completed" if data.action == "complete" else "open"
+        # Same-target replay is harmless; a later opposite transition increments the version.
+        if item.status == target:
+            output = self._output(analysis)
+            self.uow.commit()
+            return output
+        if item.version != data.expected_version or item.status not in {"open", "completed"}:
+            raise ConflictError("待办状态已变化，请刷新后重试")
+        previous = item.status
+        item.status = target
+        item.version += 1
+        self.uow.record_event(
+            owner,
+            "analysis.todo_changed",
+            "analysis_todo",
+            item.id,
+            {
+                "from": previous,
+                "to": target,
+                "version": item.version,
+                "analysis_id": analysis_id,
+            },
+        )
+        output = self._output(analysis)
+        self.uow.commit()
+        return output
 
     def source(self, owner_id: int, shop_id: int, row_id: int) -> SourceOutput:
         self._shop(owner_id, shop_id)

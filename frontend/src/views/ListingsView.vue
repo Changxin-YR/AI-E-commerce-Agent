@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { listingsApi } from '@/api/listings'
 import { errorMessage } from '@/api/client'
@@ -16,6 +18,7 @@ import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import ListingReview from '@/components/ListingReview.vue'
 
 const shops = ref<Shop[]>([])
+const route = useRoute()
 const shopId = ref(0)
 const products = ref<ProductFacts[]>([])
 const history = ref<ListingVersion[]>([])
@@ -69,7 +72,7 @@ async function choose(product: ProductFacts): Promise<void> {
     selected.value = null
   })
 }
-async function show(item: ListingVersion): Promise<void> {
+async function show(item: Pick<ListingVersion, 'id'>): Promise<void> {
   await action(async () => {
     selected.value = await listingsApi.get(shopId.value, item.id)
     workspace.value = null
@@ -134,9 +137,16 @@ onMounted(async () => {
   await action(async () => {
     shops.value = await identityApi.shops()
   })
-  if (shops.value[0]) {
-    shopId.value = shops.value[0].id
+  try {
+    shopId.value = linkedShop(shops.value, route.query.shop)
     await selectShop()
+    const id = linkedId(route.query.listing)
+    if (id) {
+      await show({ id })
+      await revealRecord('linked-listing')
+    }
+  } catch (cause) {
+    error.value = errorMessage(cause)
   }
 })
 onUnmounted(() => window.removeEventListener('focus', onFocus))
@@ -230,6 +240,7 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
     <button class="button primary" :disabled="busy" @click="generate">从商品事实生成草稿</button>
   </section>
   <ListingReview
+    id="linked-listing"
     v-if="selected"
     :item="selected"
     :busy="busy"

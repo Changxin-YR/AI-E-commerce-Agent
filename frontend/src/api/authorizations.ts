@@ -34,6 +34,7 @@ interface AuthorizationPage {
 }
 const root = (shop: number) => `/shops/${shop}/authorizations`
 export const authorizationsApi = {
+  get: (shop: number, id: number) => request<InternalAuthorization>(`${root(shop)}/${id}`),
   list: (shop: number, before?: number) =>
     request<AuthorizationPage>(`${root(shop)}${before ? `?before_id=${before}` : ''}`),
   create: (run: AgentRun, count: number, hours: number, requestId: string) =>

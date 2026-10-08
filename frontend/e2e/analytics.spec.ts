@@ -88,7 +88,7 @@ test('profit calculation, sources, saved todo, invalidation and purge', async ({
   )
   await page.getByRole('button', { name: '保存分析', exact: true }).click()
   await page.getByRole('button', { name: '创建核对待办' }).click()
-  await expect(page.getByText(/待办 #/)).toContainText('待核对')
+  await expect(page.getByRole('region', { name: '分析核对待办' })).toContainText('待核对')
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({ path: 'test-results/analytics-desktop.png', fullPage: true })
   await page.reload()

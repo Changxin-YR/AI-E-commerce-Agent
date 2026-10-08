@@ -73,7 +73,9 @@ async function signOut(): Promise<void> {
       <header class="topbar">
         <span>个人卖家工作空间</span><span class="local-label">本地数据 · 由你掌控</span>
       </header>
-      <main id="main-content" tabindex="-1"><FeedbackBanner :message="error" /><RouterView /></main>
+      <main id="main-content" tabindex="-1">
+        <FeedbackBanner :message="error" /><RouterView :key="$route.fullPath" />
+      </main>
     </div>
   </div>
 </template>

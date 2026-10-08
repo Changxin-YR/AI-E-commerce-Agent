@@ -9,8 +9,9 @@ import type { AgentRun } from '@/types/agent'
 import { errorMessage } from '@/api/client'
 import { supportTime } from '@/types/support'
 import FeedbackBanner from './FeedbackBanner.vue'
+import { revealRecord } from '@/composables/deepLink'
 
-const props = defineProps<{ shop: number; run: AgentRun | null; busy: boolean }>()
+const props = defineProps<{ shop: number; run: AgentRun | null; busy: boolean; focusId?: number }>()
 const emit = defineEmits<{
   use: [id: number]
   start: [grant: InternalAuthorization]
@@ -42,7 +43,7 @@ watch([() => props.shop, () => props.run?.id, () => props.run?.version, count, h
   createRequest = crypto.randomUUID()
 })
 watch(
-  [() => props.shop, () => props.run?.version],
+  [() => props.shop, () => props.run?.version, () => props.focusId],
   () => {
     void load()
   },
@@ -61,9 +62,12 @@ async function load(more = false): Promise<void> {
   error.value = ''
   try {
     const page = await authorizationsApi.list(shop, more ? (next.value ?? undefined) : undefined)
+    const focused = !more && props.focusId ? await authorizationsApi.get(shop, props.focusId) : null
     if (seq !== sequence || props.shop !== shop) return
     grants.value = more ? [...grants.value, ...page.items] : page.items
+    if (focused) grants.value = [focused, ...grants.value.filter((g) => g.id !== focused.id)]
     next.value = page.next_before_id
+    if (focused) await revealRecord(`authorization-${focused.id}`)
   } catch (cause) {
     if (seq === sequence) error.value = errorMessage(cause)
   } finally {
@@ -170,7 +174,13 @@ async function change(grant: InternalAuthorization, useId?: number): Promise<voi
       <button class="button primary" :disabled="busy || loading || !confirmed">保存预授权</button>
     </form>
     <p v-if="!grants.length && !loading">尚无授权。先运行今日运营检查，在待审批候选下创建。</p>
-    <details v-for="grant in grants" :key="grant.id" class="authorization-item">
+    <details
+      v-for="grant in grants"
+      :key="grant.id"
+      :id="`authorization-${grant.id}`"
+      :open="grant.id === focusId"
+      class="authorization-item"
+    >
       <summary>
         授权 #{{ grant.id }} · {{ authorizationLabels[grant.status] }} · 已用
         {{ grant.used_count }} / {{ grant.max_uses }} 次

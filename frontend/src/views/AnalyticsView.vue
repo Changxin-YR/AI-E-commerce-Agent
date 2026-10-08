@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { analyticsApi } from '@/api/analytics'
 import { errorMessage } from '@/api/client'
@@ -9,6 +11,7 @@ import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import AnalysisEvidence from '@/components/AnalysisEvidence.vue'
 
 const shops = ref<Shop[]>([])
+const route = useRoute()
 const shopId = ref(0)
 const busy = ref(false)
 const error = ref('')
@@ -33,10 +36,11 @@ const stateNames: Record<string, string> = {
   stale: '需重新计算',
   cleared: '来源已清除',
   open: '待核对',
+  completed: '已核对完成',
 }
 const outdated = ref(false)
 const stale = computed(
-  () => outdated.value || (selectedSaved.value && selectedSaved.value.status !== 'current'),
+  () => outdated.value || (!!selectedSaved.value && selectedSaved.value.status !== 'current'),
 )
 function resetResult(): void {
   outdated.value = false
@@ -74,9 +78,16 @@ onMounted(async () => {
   await action(async () => {
     shops.value = await identityApi.shops()
   })
-  if (shops.value[0]) {
-    shopId.value = shops.value[0].id
+  try {
+    shopId.value = linkedShop(shops.value, route.query.shop)
     await selectShop()
+    const id = linkedId(route.query.analysis)
+    if (id) {
+      await show({ id })
+      await revealRecord('linked-analysis')
+    }
+  } catch (cause) {
+    error.value = errorMessage(cause)
   }
 })
 onUnmounted(() => window.removeEventListener('focus', checkFreshness))
@@ -116,7 +127,19 @@ async function refreshHistory(): Promise<void> {
       outdated.value = (await analyticsApi.revision(shopId.value)) !== result.value.source_revision
   })
 }
-async function show(item: SavedAnalysis): Promise<void> {
+async function changeTodo(actionName: 'complete' | 'reopen'): Promise<void> {
+  if (!selectedSaved.value?.todo || busy.value) return
+  await action(async () => {
+    selectedSaved.value = await analyticsApi.changeTodo(
+      shopId.value,
+      selectedSaved.value!,
+      actionName,
+    )
+    history.value = await analyticsApi.saved(shopId.value)
+    success.value = '核对待办状态已保存。'
+  })
+}
+async function show(item: Pick<SavedAnalysis, 'id'>): Promise<void> {
   await action(async () => {
     selectedSaved.value = await analyticsApi.getSaved(shopId.value, item.id)
     result.value = selectedSaved.value.snapshot
@@ -327,6 +350,33 @@ function time(value: string, timezone: string): string {
             </tr>
           </tbody>
         </table>
+      </div>
+    </section>
+    <section v-if="selectedSaved" id="linked-analysis" class="data-note" aria-label="分析核对待办">
+      <div>
+        <h3>分析 #{{ selectedSaved.id }}</h3>
+        <p v-if="selectedSaved.todo">
+          待办 #{{ selectedSaved.todo.id }} · {{ stateNames[selectedSaved.todo.status] }} · 版本
+          {{ selectedSaved.todo.version }}
+        </p>
+        <div v-if="selectedSaved.todo && selectedSaved.status === 'current'" class="button-row">
+          <button
+            v-if="selectedSaved.todo.status === 'open'"
+            class="button secondary"
+            :disabled="busy || stale"
+            @click="changeTodo('complete')"
+          >
+            标记核对完成
+          </button>
+          <button
+            v-if="selectedSaved.todo.status === 'completed'"
+            class="button secondary"
+            :disabled="busy || stale"
+            @click="changeTodo('reopen')"
+          >
+            重新打开核对待办
+          </button>
+        </div>
       </div>
     </section>
     <AnalysisEvidence :result="result" :shop-id="shopId" />

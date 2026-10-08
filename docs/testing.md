@@ -226,3 +226,17 @@ Ruff **131 文件**格式/规则通过，mypy **100 个 app 文件**通过。Vit
 迁移 `728544d1186c` 在隔离 `_test` 库回退 f219af0a01cf→升级/check，开发库仅升级/check，两库无漂移。时间精度边界验证发现默认 DATETIME 的小数秒舍入，有效期改为 DATETIME(6) 后通过；回退按依赖直接删表，避免删 FK 支撑索引。pytest、Playwright 和迁移回退均串行执行。
 
 上一提交 d43d29b 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37833883370) 已确认 completed/success。本轮没有真实模型或外发调用；74 SO 与 32 验收行完整保留。统一驾驶舱、四 MVP 模型内容生成及真实外部验证继续实施。
+
+## 第十四迭代：统一任务、草稿与审批驾驶舱（2026-10-09）
+
+最终完整后端 pytest **274 项通过（83.45 秒）**；新增 `test_workbench.py` **12 项**，覆盖十类实际业务记录、拥有者/店铺/身份/渠道隔离、相同时间戳的游标分页、全范围计数、规则/政策/库存时效失效、未知优先、只读请求无执行或审计副作用、清除后无正文、R1 状态与原服务一致、分析待办完成/重开/旧版本/CSRF和审计失败回滚。Ruff **137 文件**格式/规则、mypy **104 个 app 文件**通过；Starlette/httpx 兼容层弃用提示仍存在。
+
+Vitest **12 文件 21 项通过**，新增组件测试覆盖切范围后的迟到响应和错误、窗口聚焦刷新失败后清空旧卡片、原草稿状态与确切链接、导入文字转义。Vue lint、type-check 和生产构建通过。
+
+完整 Playwright **28 项通过（54.3 秒）**。新用例覆盖桌面首页到 Listing/客服/分析待办/跨店报告/Agent/R1/运营待办/检查的确切对象、原 Listing 审批、分析完成→刷新→重开、R2 未知邮件入口→原只读回查；手机覆盖筛选、链接刷新回读、无权店铺与无横向溢出。随后收紧运营链接 ID 校验顺序，补充无效 ID 不显示检查详情；工作台两项定向复验通过（11.2 秒）。
+
+新增分析详情使旧测试的“待办 #”匹配到两处，已将断言限定在对应详情区域。两次全量测试还分别遇到本机前端连接中断（ECONNRESET/ERR_CONNECTION_REFUSED），停止位置不同；捕获 webServer 启停日志后重新运行，28 项全部通过且服务在测试结束后正常停止。未定位中断根因；没有为业务写入添加自动重试。手机链接测试等待目标 URL 后再 reload，保证测到目标记录回读。
+
+使用仓库 Chromium Playwright，首页 `http://127.0.0.1:5174/`，桌面 1280×720、手机 390×844。最终首屏与收件箱截图在系统 Temp `soloops-workbench-{first-desktop,first-mobile,desktop,mobile}.png`，实际查看了桌面首屏与手机收件箱；合成数据、有效内容、主要交互、登录后页面错误及手机宽度检查通过，截图和诊断日志不提交。
+
+迁移 `86df84dc129a` 在隔离 `_test` 库升级→回退 `728544d1186c`→升级/check 通过；开发库只升级/check，两库无漂移。数据库测试、浏览器测试与迁移回退串行执行。上一提交 b98dad3 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37837382644) 已核实 completed/success。74 SO、32 验收行完整保留；本轮未调用真实模型或邮件通道，四条完整 AI MVP 及剩余 P0 继续开发。

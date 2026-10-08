@@ -8,6 +8,7 @@ from app.schemas.analytics import (
     SavedOutput,
     SaveInput,
     SourceOutput,
+    TodoAction,
 )
 from app.services.analytics import AnalyticsService
 
@@ -60,3 +61,10 @@ def todo(
 @router.get("/sources/{row_id}")
 def source(shop_id: int, row_id: int, current: CurrentSession, uow: UowDependency) -> SourceOutput:
     return AnalyticsService(uow).source(current.user_id, shop_id, row_id)
+
+
+@router.post("/saved/{analysis_id}/todo/action")
+def change_todo(
+    shop_id: int, analysis_id: int, data: TodoAction, current: CurrentSession, uow: UowDependency
+) -> SavedOutput:
+    return AnalyticsService(uow).change_todo(current.user_id, shop_id, analysis_id, data)

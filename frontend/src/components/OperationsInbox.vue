@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { operationsApi } from '@/api/operations'
 import { errorMessage } from '@/api/client'
@@ -14,6 +16,7 @@ import { applyRule, type BusinessRule } from '@/api/businessRules'
 import SourceEvidence from './SupportSource.vue'
 
 const shops = ref<Shop[]>([])
+const route = useRoute()
 const shopId = ref(0)
 const scope = reactive<OperationScope>({
   start_at: new Date(Date.now() - 7 * 86400000).toISOString(),
@@ -138,9 +141,31 @@ onMounted(async () => {
   window.addEventListener('focus', focus)
   try {
     shops.value = await identityApi.shops()
-    shopId.value = shops.value[0]?.id ?? 0
-    changeShop()
+    shopId.value = linkedShop(shops.value, route.query.shop)
+    const taskId = linkedId(route.query.task)
+    const runId = linkedId(route.query.run)
+    const identity = route.query.identity
+    if (identity === 'synthetic' || identity === 'user_import') scope.data_identity = identity
+    if (['generic', 'shopify', 'amazon', 'other'].includes(String(route.query.channel)))
+      scope.channel = String(route.query.channel)
+    const currentShop = shops.value.find((s) => s.id === shopId.value)
+    if (currentShop) {
+      scope.currency = currentShop.currency
+      scope.timezone = currentShop.timezone
+    }
+    await refresh(true)
+    if (taskId) {
+      await inspect(taskId, 'task')
+      await revealRecord('linked-task')
+    }
+    if (runId) {
+      run.value = null
+      await inspect(runId, 'run')
+      await revealRecord('operations')
+    }
   } catch (cause) {
+    run.value = null
+    selected.value = null
     error.value = errorMessage(cause)
   }
 })
@@ -388,6 +413,7 @@ onUnmounted(() => window.removeEventListener('focus', focus))
       </div>
     </section>
     <OperationTaskReview
+      id="linked-task"
       v-if="selected"
       :task="selected"
       :timezone="timezone"

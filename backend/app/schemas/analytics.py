@@ -112,6 +112,12 @@ class TodoOutput(OutputModel):
     id: int
     title: str
     status: str
+    version: int
+
+
+class TodoAction(InputModel):
+    expected_version: Annotated[int, Field(ge=1)]
+    action: Literal["complete", "reopen"]
 
 
 class SavedOutput(OutputModel):

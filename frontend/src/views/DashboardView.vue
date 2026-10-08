@@ -5,6 +5,7 @@ import { errorMessage } from '@/api/client'
 import type { Onboarding } from '@/types/identity'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import OperationsInbox from '@/components/OperationsInbox.vue'
+import WorkInbox from '@/components/WorkInbox.vue'
 
 const status = ref<Onboarding | null>(null)
 const error = ref('')
@@ -26,7 +27,7 @@ onMounted(load)
   <div class="page-heading">
     <div>
       <h1>今日经营，从事实出发。</h1>
-      <p>查看已导入数据的检查结果，核对证据，处理本地待办。</p>
+      <p>查看实际运行、审阅草稿与审批，接着处理你的经营事项。</p>
     </div>
     <span class="outline-label">SoloOps 工作台</span>
   </div>
@@ -35,8 +36,8 @@ onMounted(load)
   </button>
   <p v-if="loading" role="status">正在读取工作空间…</p>
   <template v-else-if="status">
-    <RouterLink to="/agent" class="button secondary">运行受控任务 · 步骤、审批与恢复</RouterLink>
-    <OperationsInbox />
+    <WorkInbox />
+    <div id="operations"><OperationsInbox /></div>
     <details class="section-block" :open="!status.profile_complete">
       <summary>经营资料与首次使用引导</summary>
       <section class="welcome-panel">
