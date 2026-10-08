@@ -211,3 +211,18 @@ Browser plugin not available，使用仓库 Playwright，地址 `http://127.0.0.
 迁移 `f219af0a01cf` 在隔离 `_test` 库回退 `3b35be067576` 后升级/check 通过，开发库仅 upgrade/check，两库无漂移。pytest、Playwright、迁移回退串行。74 SO、32 验收行完整保留。上一提交 `1edd7db` 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37830128990) 已核实 completed/success。
 
 A-11/A-28 的本地状态机已验证；A-13/P0-External 仍待本人通道/邮箱授权、实际供应商提交回执及收件证据。模型生成解释、跨店总览/日报、统一任务等剩余 P0 继续实施。
+
+
+## 第十三迭代：跨店总览与经营摘要（2026-10-09）
+
+完整后端 pytest **260 项通过（76.95 秒）**，随后补充跨夏令时超长 UTC 窗口的 422 边界和已批准任务的 open 状态回顾，本功能最终 **20 项通过（6.15 秒）**，当前测试总数 262。覆盖两店相同订单号去重、分币种 Decimal/退款/对比、状态排除、未知折扣/退款/成本/库存/回复状态、23 小时日历日、日期下界回读、拥有者/店铺/身份与 CSRF、UUID 内容绑定、旧 RR 快照并发同一保存、审计失败回滚、来源版本冲突、库存微秒到期、来源清除与独立摘要隔离、读取上限及游标历史。
+
+Ruff **131 文件**格式/规则通过，mypy **100 个 app 文件**通过。Vitest **11 文件 19 项通过**，新增旧报告迟到来源/错误丢弃与未知覆盖显示；Vue lint、type-check、生产构建通过。当前 TypeScript 标准库不支持 Array.at，来源截止范围改用常规索引并完成构建复验。后端 Starlette/httpx 兼容弃用提示仍存在。
+
+最终全量 Playwright **26 项通过（45.3 秒）**。新增桌面两店不同市场、两币种汇总与本期/对比、订单原始行、保存/刷新、来源撤销后 stale、清除正文；手机日报空数据、市场筛选、主动清除及页面无横溢通过。首次全量新增用例在异步店铺列表完成前枚举了控件，补充等待目标控件可用后再取消其他选择，最终全部通过。
+
+使用仓库 Chromium Playwright，地址 `http://127.0.0.1:5174/overview`，桌面 1280×720、手机 390×844。首屏、表单及完整结果截图位于系统 Temp `soloops-overview-{form-desktop,first-desktop,first-mobile,desktop,mobile}.png`，均为合成数据，已实际查看；有效内容、主要交互、页面脚本错误检查和手机宽度检查通过。截图不提交。
+
+迁移 `728544d1186c` 在隔离 `_test` 库回退 f219af0a01cf→升级/check，开发库仅升级/check，两库无漂移。时间精度边界验证发现默认 DATETIME 的小数秒舍入，有效期改为 DATETIME(6) 后通过；回退按依赖直接删表，避免删 FK 支撑索引。pytest、Playwright 和迁移回退均串行执行。
+
+上一提交 d43d29b 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37833883370) 已确认 completed/success。本轮没有真实模型或外发调用；74 SO 与 32 验收行完整保留。统一驾驶舱、四 MVP 模型内容生成及真实外部验证继续实施。

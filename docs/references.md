@@ -113,3 +113,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [读取域验证](https://resend.com/docs/api-reference/domains/get-domain) | 官方 API 文档 | 检查域名、verified 状态、sending 能力；使用卖家显式同意的固定验证码邮件验证部署名单内测试邮箱的持有权；验证码仅哈希保存 |
 
 沿用已确认的 Firecrawl 402 限制，以官方网页核对协议。部署绑定一个 owner/shop/发送地址/测试收件地址；凭据轮换失效旧连接。经营摘要从当前检查记录生成；R2 独立授权固定全文、目标和关联检查，单份最多提交一次，可在提交前撤销。真实通道与邮箱证据仍沿用 questions 第 4 项。
+
+## 跨店总览与经营摘要（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [SQLAlchemy Session API](https://docs.sqlalchemy.org/en/20/orm/session_api.html)、[官方问题 #5572](https://github.com/sqlalchemy/sqlalchemy/issues/5572) | MIT / 官方文档与维护者讨论 | 沿用用户锁后当前读及 populate_existing，按店铺 ID 顺序锁定多店来源，保存不可变摘要及来源关系；自行实现业务汇总 |
+| [Python datetime](https://docs.python.org/3.11/library/datetime.html) | PSF / 标准库官方文档 | 以 IANA 时区的日历日期确定起止点，分别转换 UTC；跨夏令时的日对比保持日历天数，而非假定每天 24 小时 |
+
+沿用 Firecrawl 402 的已知限制，通过官方网页检索。金额复用现有 Decimal 订单计算，分币种聚合，不换汇。摘要为本地确定性结果，缺失、导出时间未知和当前快照的边界逐项展示；无第三方业务源码复制。

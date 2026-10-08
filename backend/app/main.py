@@ -19,6 +19,7 @@ from app.api.routes import (
     listings,
     operations,
     outbound,
+    overview,
     profile,
     profit,
     support,
@@ -52,6 +53,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(inventory.router, prefix="/api")
     application.include_router(operations.router, prefix="/api")
     application.include_router(outbound.router, prefix="/api")
+    application.include_router(overview.router, prefix="/api")
     application.include_router(agent.router, prefix="/api")
     application.include_router(authorizations.router, prefix="/api")
     application.include_router(profit.router, prefix="/api")

@@ -16,6 +16,7 @@ from app.repositories.inventory import InventoryRepository
 from app.repositories.listings import ListingRepository
 from app.repositories.operations import OperationsRepository
 from app.repositories.outbound import OutboundRepository
+from app.repositories.overview import OverviewRepository
 from app.repositories.profit import ProfitRepository
 from app.repositories.support import SupportRepository
 
@@ -34,6 +35,7 @@ class UnitOfWork:
         self.inventory = InventoryRepository(session)
         self.operations = OperationsRepository(session)
         self.outbound = OutboundRepository(session)
+        self.overview = OverviewRepository(session)
         self.analytics = AnalyticsRepository(session)
         self.listings = ListingRepository(session)
         self.support = SupportRepository(session)

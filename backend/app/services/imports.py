@@ -233,6 +233,7 @@ class ImportService:
             self.repo.apply_row(shop.id, batch.kind, row, existing[0] if existing else None)
         shop.data_revision += 1
         self.uow.analytics.invalidate(owner_id, shop.id)
+        self.uow.overview.invalidate(owner_id, shop.id)
         self.uow.listings.invalidate(owner_id, shop.id)
         self.uow.support.invalidate(owner_id, shop.id, batch.kind)
         self.uow.operations.invalidate(owner_id, shop.id, batch.kind)
@@ -284,11 +285,13 @@ class ImportService:
             self.uow.analytics.invalidate(owner_id, shop.id)
             self.repo.flush()
         batch.raw_data = None
+        self.uow.overview.invalidate(owner_id, shop.id)
         self.uow.listings.invalidate(owner_id, shop.id)
         self.uow.support.invalidate(owner_id, shop.id, batch.kind)
         self.uow.operations.invalidate(owner_id, shop.id, batch.kind)
         self.uow.agent.invalidate(owner_id, shop.id)
         if purge or not was_active and batch.committed_at is None:
+            self.uow.overview.purge_batch(owner_id, shop.id, batch.id)
             self.uow.analytics.purge_batch(owner_id, shop.id, batch.id)
             self.uow.listings.purge_batch(owner_id, shop.id, batch.id)
             self.uow.support.purge_batch(owner_id, shop.id, batch.id)
