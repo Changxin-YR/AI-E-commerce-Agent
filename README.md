@@ -13,17 +13,30 @@
 ## 当前提交与环境
 
 - origin：https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。本轮 GitHub connector 核实登录 Changxin-YR，仓库 ID 1410355242，公开，admin/push true；正常 push 已成功。
-- main HEAD/当前功能提交：`abb9f798ee156dc40b28f67b34bea2131868e86a`，已推送；主题 independent product profit scenarios。
-- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37823550243 ，最后观测 in_progress，接续先核对并修复失败。
+- main HEAD/当前功能提交：`c1dac6177e50b4b86f640a8f99b5279e3cb8d967`，已推送；主题 enforce versioned seller business rules。
+- 本功能 CI：https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37826653771 ，最后观测 in_progress，接续先核对并修复失败。前版利润 abb9f79 的 CI37823550243 已 completed/success。
 - 前版受控 Agent `d1eda91` CI 37820719900 已 completed/success。
 - 前版补充提交 `10fa1df` 的 CI `37816007090` 已 completed/success；运营 `3531ce7` 的 CI `37815482720`、库存 `53b7d72` 的 `37811072990`、客服 `d3b9be1` 的 `37808536888` 均已 success。
 - backend/.venv Python 3.11、frontend/node_modules、Docker MySQL 8.4 开发3307/测试3308。日常服务8000/5173；Playwright自动启动8001/5174。
 - .env、backend/.env、.local/test.env 是忽略的密钥/本机配置，不打印、不提交。Windows 用 .venv/Scripts/python -m；MySQL、Node子进程、Git写常需 require_escalated。
 - pytest 与 Playwright 会清理隔离 _test 库，必须串行；迁移回退也等测试结束。测试与 E2E 入口强制 model_enabled=False。
-- 当前迁移 `a0188d77d6c6` 已应用两库；`.local/verify_profit_migration.py` 已验证 _test 回退 e84b5e7e8dd1→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
+- 当前迁移 `944381607c1c` 已应用两库；`.local/verify_rules_migration.py` 已验证 _test 回退 a0188d77d6c6→升级/check；开发库只升级/check，两库无漂移。MySQL回退不要先删FK支撑索引，直接按依赖删除表。
 - Firecrawl 已确认402，使用官方网页/GitHub connector，不反复调用计费端点，不临时写抓取脚本。GitHub Actions用 github_fetch REST，解析 structuredContent.content，只输出摘要；fetch_commit_workflow_runs不适用于main push。
 
-## 最新完成：SO-054 独立新品利润计算器
+## 最新完成：SO-066 经营规则与版本记忆切片
+
+- 详见 development 第十五节。`services/business_rules.py` 三层、`RulesView.vue`，入口 `/rules`；migration944381607c1c 单表 business_rule_revisions。按拥有者/店铺/渠道/数据身份严格隔离。
+- 库存有效小时1—720、最低销量1—1000000、低毛利率上限−1000%—100%（两位）实际应用今日运营与 Agent 检查；低毛利为未舍入值不高于阈值。库存安全数量仍来自每条快照。独立库存/问数/利润试算页面保持各自显式口径，页面说明生效范围。
+- 站点、仓库、物流、品牌语言、客服话术为有界手填参考；广告每日计划Decimal/Numeric(13,4)，空值未知，保存币种和依据。尚未用于模型生成/物流/广告执行，不发送给模型；不冒称全部记忆自动应用。automation仅manual_only，未知工具/自动发送值schema拒绝。
+- 查看/保存/修改/撤销/重置/恢复；每次追加版本，previous_id/restored_from_id留血缘。expected_version+用户锁→店铺锁→当前读，并发一成一409。恢复创建新版本，不能复活旧审批。撤销/重置当前值清空回24小时/1件/20%，停止约束，历史留存明确告知。历史50条游标分页，单版读取。
+- OperationScope.rule_revision_id随检查与Agent输入保存，无规则旧记录0。新执行必须当前版本且启用规则时阈值一致，拒绝旧预览和改参数绕过。重复运行UUID先回读既有记录，不因规则变化重写。Finding存rule_revision_id；task_key按规则版本区分新候选，旧处理记录保留标stale。
+- task动作除reject/ignore均核对当前规则；Agent _load在读取/推进/审批/恢复/网络回写核对，标stale且version+1和步骤business_rules_changed。模型在途修改规则可成功，返回意图丢弃，已知费用照记；不创建待办。历史结果不重算。
+- AppliedRules.vue用于工作台/Agent，加载当前版本并锁定生效阈值，加载失败禁止启动，切店/渠道/身份用请求序号丢弃迟到结果。历史规则有链接。页面沿用设计系统，确认框check-label、手机无横溢。
+- 完整pytest197通过（本功能18项）；Ruff106文件、mypy82app文件；Vitest8文件13项；Vue lint/type/build通过；完整Playwright21通过(34.3s)。测试为合成数据，模型test_double，未外发/未付费调用。
+- 最终首屏/全页截图C:/Users/27363/AppData/Local/Temp/soloops-rules-{desktop,mobile,first-desktop,first-mobile}.png均已实际查看，不提交。Browser plugin absent，使用repo Playwright。一次全量测试服务中途退出，重启后21全部通过；登录前session401为预期，控制台检查在登录后。Starlette/httpx弃用提示仍在。
+- 文档、README、74SO/32验收矩阵已提交推送。SO066仍待可撤销预授权和后续业务对文本偏好的明确应用；不要标全部P0完成。
+
+## 前版完成：SO-054 独立新品利润计算器
 
 - 详见 development 第十四节，`services/profit.py / profit_rules.py`、`ProfitView.vue`。入口 `/profit`，三层服务与三表 profit_studies/scenarios/fees；金额/费率 Numeric(13,4)，UTC 时间。
 - 不需订单，单币种 1—5 方案，候选售价/采购成本及依据；九类费用（头程/尾程/平台/仓储/包装/广告/退款损失/税费/其他分摊）每类固定单件金额或售价比例。空值未知，显式零须依据，最多四位小数/1亿元，单项比例≤100%。不换汇/不自动推税制和退款概率。
@@ -32,7 +45,7 @@
 - 保存UUID+规范化内容hash绑定拥有者/店铺，数字尾零和费用顺序规范化；并发用户锁与当前读同一记录。存档输入/依据/规则版本，不接收前端计算结果。未知规则版本不静默改算。
 - 清除物理删除费用/方案，擦除标题，留无正文tombstone/审计，旧UUID不能复活；独立手填方案不依赖导入批次，清批次不清它。
 - 页面编辑立即隐藏旧结果，计算后折叠输入，可复制、对比、展开公式/依据/敏感性、保存/刷新回读/清除；手机可横向滚表，卡片直接给主金额与缺口。新增导航仍保留矮桌面侧栏滚动。
-- 完整pytest178通过后新增极小金额/最大边界和Decimal定点序列化，本功能最终18通过（总量179，完整179待CI）；Ruff99文件、mypy77 app文件，Vue lint/type/build，Vitest7文件12项，完整Playwright19项通过。最终截图在系统Temp `soloops-profit-{input-desktop,input-mobile,desktop,mobile}.png`，均已实际查看，合成数据无页面横溢。
+- 完整pytest178通过后新增极小金额/最大边界和Decimal定点序列化，本功能最终18通过（总量179，CI已通过）；Ruff99文件、mypy77 app文件，Vue lint/type/build，Vitest7文件12项，完整Playwright19项通过。最终截图在系统Temp `soloops-profit-{input-desktop,input-mobile,desktop,mobile}.png`，均已实际查看，合成数据无页面横溢。
 - 文档、README、74SO/32验收行已更新并推送。无真实模型/外发调用。
 
 ## 前版完成：受控执行层
@@ -53,7 +66,7 @@
 - 当前真实LLM解释、Listing创作、多语言客服仍待接入；模型验证仅test_double/MockTransport，无真实供应商调用证据。四条完整AI MVP及全部P0未完成。
 - 新导航导致矮桌面侧栏退出按钮越界，已增加纵向滚动及短窗口间距，完整E2E通过。不要移除该修复。
 
-## 当前验证
+## 前版 Agent 验证
 
 - 完整 pytest 161 项通过（新增23）；Ruff91文件规则/格式通过，mypy71个app文件通过。
 - Vue lint/type/production build通过；Vitest6文件10项；最终完整Playwright17项通过。Agent桌面/手机来源→审批→预算暂停→提高预算恢复→核验→刷新→清除，以及手机空数据→模型待配置→取消实际通过。
@@ -73,8 +86,8 @@
 
 ## 下一步立即开发
 
-1. 先核对本功能CI 37823550243；失败则修复。读取AGENTS、此文、development第十三/十四节和冻结稿下一功能相关章节。
-2. SO-054 P0最小切片已完成。下一步做 **SO-066 经营规则/偏好及明确生效条件**，随后可撤销预授权；先查官方/GitHub记录references，再完整前后端及测试文档提交推送。不要仅存一些没有实际生效位置的设置并宣称全部完成。
-3. 然后继续全部剩余P0（经营偏好/可撤销预授权、跨店总览/日报、统一任务、可配置模型对四MVP的生成/解释、受控测试发信通道与未知结果回查等），依冻结稿逐项推进，再P1/P2。不要停在阶段性计划，不把路由模型当完整AI内容生成。
-4. 无真实模型预算/账号授权时完成可配置适配及测试替身证据，真实验收单列待授权；不重复询问questions已有问题，不外发。
-5. 每功能验证与文档/矩阵更新、正常提交推送。上下文压力时落盘并按授权创建新聊天接续，禁止两个聊天同时修改工作区。
+1. 先核对本功能CI37826653771；失败则修复。main当前c1dac6177e50b4b86f640a8f99b5279e3cb8d967。读取AGENTS、此文、development十三—十五节和冻结稿SO066/067、安全、22外发、23验收章节。
+2. SO066阈值/版本切片已完成，继续 **可撤销且有边界的R1预授权**：先查官方/GitHub记录references，再前后端/迁移/测试/文档/矩阵/提交推送。建议先允许受控Agent保存本地异常候选等代码白名单能力；店铺/渠道/身份、次数/时效、撤销与消耗审计明确，同事务核对执行，重放不重复扣次数。审批与预授权语义区分，任何自由文本不能提高权限。不要只存没有生效位置的授权设置。
+3. R2测试外发授权必须独立：自有已验证通道与收件人、全文/地址/关联任务/次数预览、不可撤销、回执/未知回查；邮件始终R2，不能因金额小降级。不启用真实买家自动发送。
+4. 然后继续剩余P0（跨店总览/日报、统一任务、可配置模型对四MVP的生成/解释、受控测试发信通道与未知结果回查等），依冻结稿逐项推进，再P1/P2。无真实模型预算/通道账号时完成可配置适配与测试替身，真实验收单列待授权，不重复询问questions现有问题。
+5. 每功能验证/文档/矩阵并正常提交推送。上下文压力时落盘推送后按授权创建新聊天独占接续，禁止两个聊天同时修改工作区。当前聊天交接后停止修改。
