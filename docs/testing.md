@@ -102,6 +102,7 @@ Windows 沙箱内首次 Vitest 执行遇到临时文件重命名 EPERM；使用�
 | Vitest | 5 文件、8 项通过 |
 | Playwright Chromium | 完整 11 项通过；手机标签修复、增加核验订单后，客服 2 项再次通过 |
 | MySQL 迁移 | 8d34d9c410a2：隔离库回退至 262449b655ea→升级/check，开发库升级/check 均通过 |
+| GitHub Actions | [Verify SoloOps](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37808536888)：功能提交 d3b9be1 在 Ubuntu / MySQL 下 completed / success |
 
 `test_support.py` 验证消息去重、公式/非法日期拒绝、注入样式正文保留为数据、物流+退款并存、未知订单/语言拒绝承诺、人工核验全部订单源行、政策范围/版本/过期/冲突/清除/重新录入、编辑与状态幂等、并发建稿/编辑、跨账号/店铺/渠道隔离、来源恢复不复活旧稿、订单清除与独立草稿保留。HTTP 没有发信路由，`auto_send` 等额外字段拒绝。
 
