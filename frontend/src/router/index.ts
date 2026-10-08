@@ -20,6 +20,7 @@ const router = createRouter({
         { path: 'agent', component: () => import('@/views/AgentView.vue') },
         { path: 'profit', component: () => import('@/views/ProfitView.vue') },
         { path: 'rules', component: () => import('@/views/RulesView.vue') },
+        { path: 'outbound', component: () => import('@/views/OutboundView.vue') },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },

@@ -1,4 +1,5 @@
 from decimal import Decimal
+from uuid import UUID
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -8,6 +9,13 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="SOLOOPS_", env_file=".env", extra="ignore")
 
     database_url: SecretStr
+    outbound_enabled: bool = False
+    outbound_api_key: SecretStr | None = None
+    outbound_owner_id: int | None = None
+    outbound_shop_id: int | None = None
+    outbound_sender: str = ""
+    outbound_test_recipient: str = ""
+    outbound_domain_id: UUID | None = None
     model_enabled: bool = False
     model_api_key: SecretStr | None = None
     model_name: str = ""

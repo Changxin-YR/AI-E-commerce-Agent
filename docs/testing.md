@@ -197,3 +197,17 @@ Vue 类型、lint、生产构建通过，Vitest **9 文件 15 项通过**。最�
 迁移 `3b35be067576` 在隔离 `_test` 库回退 `944381607c1c` 后升级/check，通过；开发库只升级/check，两库无漂移。迁移、pytest、E2E 按顺序执行。74 SO、32 验收行完整保留。前版 `c1dac61` 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37826653771) 已核实 completed/success。
 
 本功能没有模型调用或外发；R2 测试发送、真实通道回执与收件证据及剩余 P0 继续实现。
+
+## 第十二迭代：R2 测试邮件与回查（2026-10-09）
+
+最终完整 pytest **242 项通过（69.04 秒）**，本功能 `test_outbound.py` **28 项**。覆盖验证码不回显/哈希存储/重复连接/错误上限/过期/域门禁；严格确认、固定测试名单、店铺隔离和 CSRF；全文修改失效、R1 字段拒绝、独立授权撤销/过期/配置轮换；来源与规则变化；旧 RR 快照并发只 POST 一次；发送前审计失败全回滚；发送中清批次保留回执不恢复正文；超时、进程中断、限频、只读回查和错误回执/标签/地址/全文拒绝。HTTP MockTransport 验证固定域、幂等键、一次发送和有界发现。所有邮件均为测试替身，无真实调用。
+
+Ruff **123 文件**规则和格式检查、mypy **94 个 app 文件**通过。Vue lint、type-check、生产构建通过，Vitest **10 文件 17 项通过**。初次 Vitest 在沙箱缓存重命名时报 EPERM，正常本机环境复验通过；生产构建发现 Vue 多语句事件表达式问题，改为显式函数后通过。Starlette/httpx 弃用提示仍存在。
+
+完整 Playwright **24 项通过（42.8 秒）**。新流程：测试连接确认→从合成收件箱取得验证码→选择检查与全文预览→限一次预授权→撤销→单次审批提交→未知→只读回查→人工收件声明→刷新持久回读；收件箱仅一封验证码与一封摘要。既有业务和新增导航全部回归通过。
+
+Browser plugin not available，使用仓库 Playwright，地址 `http://127.0.0.1:5174/outbound`，1280×720 与 390×844。页面身份/有效内容、无 Vite 错误层、登录后控制台、主要交互均通过；手机无页面横溢。首屏、预览和结果截图在系统 Temp `soloops-outbound-{first-desktop,first-mobile,preview-desktop,preview-mobile,desktop,mobile}.png`，均已实际查看，只含合成数据。收件确认框布局已由截图发现并修复。
+
+迁移 `f219af0a01cf` 在隔离 `_test` 库回退 `3b35be067576` 后升级/check 通过，开发库仅 upgrade/check，两库无漂移。pytest、Playwright、迁移回退串行。74 SO、32 验收行完整保留。上一提交 `1edd7db` 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37830128990) 已核实 completed/success。
+
+A-11/A-28 的本地状态机已验证；A-13/P0-External 仍待本人通道/邮箱授权、实际供应商提交回执及收件证据。模型生成解释、跨店总览/日报、统一任务等剩余 P0 继续实施。

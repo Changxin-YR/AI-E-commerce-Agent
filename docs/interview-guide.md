@@ -136,3 +136,13 @@
 - 时钟在检查和写入期间仍前进。`consume` 在提交前重新验证时效；`test_expiry_during_business_save_rolls_back_all` 证明执行中到期不会留下候选或消耗。
 - 撤销授权停止未来使用；`revert` 检查新增候选的保存版本，把未处理候选设为已拒绝。全量校验后同事务修改，避免覆盖人工后续处理；审计保留、额度不返还。
 - 输入新增 `authorization_id: null` 会改变序列化摘要。`AgentService.start` 对空值不纳入摘要，`test_previous_unbound_request_hash_remains_replayable` 覆盖升级前 UUID 回放兼容性。
+
+## R2 外发：数据库事务为何不能保证邮件恰好送达一次？
+
+- `OutboundService.send` 在网络前提交发送占用、审批消耗和审计。数据库与邮件服务没有共同事务，本系统保证同一记录至多发起一次 POST；进程中断会保留未知，用只读回查恢复证据。没有响应不表示没有发送。
+- `test_two_old_snapshots_only_one_external_post` 先建立两个 RR 快照，验证用户锁与当前读使后一个请求看到已占用状态。`test_dispatch_audit_failure_rolls_back_consent_before_network` 证明数据库提交前失败不会调用邮件供应商。
+- 域核验期间用户可撤销、来源可变化、时间可推进。`_grant` 在发送占用前重新核对；到期和撤销测试证明释放锁联网不会放行旧授权。
+- Resend 幂等键只保留 24 小时，本地 dispatch_at 长期保留。不能在保留期后使用相同键重新提交未知操作。
+- `_match` 要求回执 UUID、双方地址、全文、标签和空抄送/密送全部一致，伪造/错误邮件 ID 不能证明本次成功；查不到也不能证明未发送。
+- 通道 delivered 与收件箱可见邮件属于不同证据，人工收件声明明确由用户提供；MockTransport 与合成邮箱只验证状态机，不是实际送达证明。
+- 来源清除与网络回调并发时，保留外部结果且不恢复正文；对应 `test_source_clear_during_send_erases_body_but_preserves_external_result`。撤销授权和撤回邮件有不同边界。

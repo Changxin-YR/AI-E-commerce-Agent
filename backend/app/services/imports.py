@@ -292,6 +292,7 @@ class ImportService:
             self.uow.analytics.purge_batch(owner_id, shop.id, batch.id)
             self.uow.listings.purge_batch(owner_id, shop.id, batch.id)
             self.uow.support.purge_batch(owner_id, shop.id, batch.id)
+            self.uow.outbound.purge_batch(owner_id, shop.id, batch.id)
             self.uow.operations.purge_batch(owner_id, shop.id, batch.id)
             self.uow.agent.purge_batch(owner_id, shop.id, batch.id)
             self.repo.clear_previous(owner_id, shop.id, keys)

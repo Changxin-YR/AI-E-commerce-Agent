@@ -5,7 +5,7 @@
 | SO | 模块 | 优先级 | P0 切片 / 后续范围 | 实现位置 | 测试证据 | 当前状态 |
 |---|---|---|---|---|---|---|
 | SO-001 | 个人卖家初始化与经营资料 | P0 | 经营资料、店铺、模板/映射/预览/错误行/批次 | backend/app/services/profile.py、imports.py；frontend/src/views/ImportsView.vue | tests/test_identity.py、test_imports.py；frontend/e2e/imports.spec.ts | 初始化与商品/订单导入切片合成数据本地通过；其他数据组待继续 |
-| SO-002 | 跨店铺经营总览与运营日报 | P0 | 导入数据总览及来源下钻 | services/analytics.py；AnalyticsView.vue | test_analytics.py；analytics.spec.ts | 单店铺/时间窗销售摘要和来源下钻合成本地通过；跨店铺与日报待继续 |
+| SO-002 | 跨店铺经营总览与运营日报 | P0 | 导入数据总览及来源下钻 | services/analytics.py、outbound.py；AnalyticsView.vue、OutboundView.vue | test_analytics.py、test_outbound.py；outbound.spec.ts | 单店销售摘要与来源下钻、已保存运营检查的测试邮件摘要本地通过；跨店总览与完整日报待继续 |
 | SO-003 | 自然语言 AI 运营总控 | P0 | 模型受控选择至少两项技能、可追踪任务 | services/agent.py、agent_model.py；AgentView.vue | test_agent.py；agent.spec.ts | 受控意图路由适配、步骤/预算/恢复合成本地通过；真实模型凭据与调用待验证，自由经营问答待继续 |
 | SO-004 | 一键今日运营 | P0 | 已导入数据巡检与真实内部动作 | services/agent.py、agent_skills.py、operations.py；AgentView.vue | test_agent.py、test_operations.py；agent.spec.ts | 检查→数据分支→审批→候选保存→回读核验本地通过，逐项处理复用工作台；完整 AI 解释待继续 |
 | SO-005 | 主动异常发现与运营待办 | P0 | 有证据、可处理、去重的异常待办 | services/operations.py；OperationTaskReview.vue | 重跑/并发/状态/来源失效及清除测试 | 主动运行后的四类核对候选、来源/建议/固定标签、审批/拒绝/延期/忽略/完成/重开本地通过；完整异常集与 Agent 委托待继续 |
@@ -69,9 +69,9 @@
 | SO-063 | 跨平台连接器中心 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-064 | 浏览器扩展/页面内 AI 助手 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-065 | 软件使用助手与新手引导 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
-| SO-066 | 经营规则、偏好与可验证的业务记忆 | P0 | 分范围经营约束、偏好依据、版本、恢复和有限授权 | services/business_rules.py、authorizations.py；RulesView.vue、InternalAuthorizations.vue | test_business_rules.py、test_authorizations.py、组件与 E2E | 阈值实际应用与版本恢复通过；保存异常候选的 R1 预授权绑定预览/来源/规则、次数和时效，撤销及消耗本地通过；文本与广告计划仍为人工参考 |
-| SO-067 | 审批、操作前预览与回退边界 | P0 | 对象/差异/依据/风险预览及权限化审批 | services/listings.py、operations.py、authorizations.py；InternalAuthorizations.vue | 并发最后一次额度、时效、回放、撤回冲突及 E2E | 单次 R1 审批与有界预授权独立；新增候选可按保存版本批量撤回为已拒绝，审计保留，后续编辑阻断整批撤回；R2 测试外发及通用审批待继续 |
-| SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久任务、预算、熔断、恢复与未知结果 | models/agent.py；services/agent.py、agent_model.py | 事务/并发/中断租约/熔断/来源擦除/预算测试 | 持久步骤、来源、审批、预算、取消恢复及模型未知态本地通过；跨模块待办整合、真实外发回查待继续 |
+| SO-066 | 经营规则、偏好与可验证的业务记忆 | P0 | 分范围经营约束、偏好依据、版本、恢复和有限授权 | services/business_rules.py、authorizations.py、outbound.py；RulesView.vue、InternalAuthorizations.vue、OutboundView.vue | 规则/R1/R2 服务、组件与 E2E 测试 | 阈值版本与 R1 有界预授权本地通过；R2 按全文/地址/检查绑定限一次、1—24 小时预授权，可撤销并回读消耗；文本偏好仍为人工参考 |
+| SO-067 | 审批、操作前预览与回退边界 | P0 | 对象/差异/依据/风险预览及权限化审批 | services/listings.py、operations.py、authorizations.py、outbound.py；OutboundMailReview.vue | test_authorizations.py、test_outbound.py；outbound.spec.ts | R1 审批/候选撤回及 R2 全文预览、修改失效、单次/预授权、提交门禁本地通过；邮件不可撤回，真实外发凭据与送达待验证，通用审批待继续 |
+| SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久任务、预算、熔断、恢复与未知结果 | services/agent.py、agent_model.py、outbound.py、outbound_provider.py | 事务/并发/超时/回查/中断/清除及 E2E 测试 | 持久 Agent 步骤/预算/恢复与模型未知态本地通过；R2 邮件持久占用、至多一次 POST、只读回查和人工证据记录替身验证通过；真实通道和跨模块统一待办待继续 |
 | SO-069 | 授权的开发者 OpenAPI | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-070 | 移动端轻量运营能力 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-071 | 外部经营数据与提醒渠道 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |

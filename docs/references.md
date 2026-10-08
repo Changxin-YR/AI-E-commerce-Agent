@@ -103,3 +103,13 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [MySQL Locking Reads](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html) | Oracle 官方文档，参考事务语义 | 导入与运营统一锁序，同事务失效和擦除派生内容；响应在提交前组装 |
 
 沿用已确认的 Firecrawl 402 限制，使用官方网页检索。复用项目现有 Decimal 利润规则和库存时效判定，分别记录巡检范围、来源有效性、审批与处理状态。
+
+## R2 测试邮件与回查（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [Resend 发送 API](https://resend.com/docs/api-reference/emails/send-email)、[幂等键](https://resend.com/docs/dashboard/emails/idempotency-keys) | 官方 API 文档，服务使用受供应商条款约束；仅参考协议，不复制源码 | 复用现有 httpx 编写默认关闭的纯文本适配器；固定 HTTPS 地址、独立测试名单、业务持久去重。供应商键仅保留 24 小时，本地发送标记长期保留，未知态不重新 POST |
+| [读取发送记录](https://resend.com/docs/api-reference/emails/retrieve-email)、[列举已发送邮件](https://resend.com/docs/api-reference/emails/list-emails) | 官方 API 文档 | 只读回查：按回执或有界列表发现候选，再匹配标签、地址及全文摘要；查无记录仍未知。通道 delivered 只表示通道结果，收件证据另记 |
+| [读取域验证](https://resend.com/docs/api-reference/domains/get-domain) | 官方 API 文档 | 检查域名、verified 状态、sending 能力；使用卖家显式同意的固定验证码邮件验证部署名单内测试邮箱的持有权；验证码仅哈希保存 |
+
+沿用已确认的 Firecrawl 402 限制，以官方网页核对协议。部署绑定一个 owner/shop/发送地址/测试收件地址；凭据轮换失效旧连接。经营摘要从当前检查记录生成；R2 独立授权固定全文、目标和关联检查，单份最多提交一次，可在提交前撤销。真实通道与邮箱证据仍沿用 questions 第 4 项。

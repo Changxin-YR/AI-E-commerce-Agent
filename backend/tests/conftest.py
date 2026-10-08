@@ -37,6 +37,7 @@ def settings() -> Settings:
     return Settings(
         database_url=url,
         model_enabled=False,
+        outbound_enabled=False,
         trusted_hosts=["testserver"],
         trusted_origins=["http://testserver"],
     )

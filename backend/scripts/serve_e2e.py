@@ -22,6 +22,7 @@ from app.repositories.database import create_database_engine, create_session_fac
 from app.repositories.unit_of_work import UnitOfWork  # noqa: E402
 from app.schemas.identity import AccountInput  # noqa: E402
 from app.services.auth import AuthService  # noqa: E402
+from scripts.e2e_mail import configure as configure_mail  # noqa: E402
 
 
 def main() -> None:
@@ -34,6 +35,7 @@ def main() -> None:
     settings = Settings(
         database_url=url,
         model_enabled=False,
+        outbound_enabled=False,
         trusted_origins=["http://127.0.0.1:5174"],
     )
     engine = create_database_engine(settings)
@@ -44,8 +46,10 @@ def main() -> None:
         AuthService(UnitOfWork(session), settings).create_account(
             AccountInput(username="e2e_seller", password="Synthetic-E2E-Password-2026!")
         )
+    application = create_app(settings)
+    configure_mail(application, settings, create_session_factory(engine))
     engine.dispose()
-    uvicorn.run(create_app(settings), host="127.0.0.1", port=8001, access_log=False)
+    uvicorn.run(application, host="127.0.0.1", port=8001, access_log=False)
 
 
 if __name__ == "__main__":

@@ -19,10 +19,14 @@ from app.models.operations import (
     OperationTaskEvent,
     OperationTaskSource,
 )
+from app.models.outbound import OutboundApproval, OutboundMessage, TestMailChannel
 from app.models.profit import ProfitFee, ProfitScenario, ProfitStudy
 from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
 
 __all__ = [
+    "OutboundApproval",
+    "OutboundMessage",
+    "TestMailChannel",
     "AuthorizationUse",
     "InternalAuthorization",
     "BusinessRuleRevision",
