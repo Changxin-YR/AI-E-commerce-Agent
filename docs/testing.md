@@ -254,3 +254,15 @@ Ruff **140 文件**规则/格式、mypy **105 个 app 文件**通过。Vitest **
 上一提交 5be1ff9 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37841674665) 已核实 completed/success。74 SO 与 32 验收行保持完整。MVP-04 的模型协议与本地记录闭环已用替身验证；真实模型供应商调用、真实外发以及其他 P0 模型业务切片仍按矩阵记录。
 
 提交前将分析保存与待办创建收拢为 `AnalyticsService.save_and_create_todo`，模型步骤同时持久化本次供应商、模型名和配置费率；对应问数/Agent/分析定向复验 **70 项通过（21.01 秒）**。最终页面补充暂停后已知回包丢弃、恢复可能重新计费的说明，lint/type/build/格式通过。
+
+## 第十六迭代：模型 Listing 候选与审批（2026-10-09）
+
+完整后端 pytest **323 项通过（114.87 秒）**。新增 `test_listing_model.py` **21 项**：只导入商品的候选/差异/两道审批与真实回读；目标和原文双授权及来源版本绑定；未知/重复/遗漏事实和额外字段阻断；缺参数与 needs_review 分支；预算、未知费用与重放；在途暂停/取消/撤销/清除/生效基线变化；暂停后显式恢复重新计费；保存基线冲突、去重及审计失败原子回滚；跨店/身份范围与 Responses HTTP MockTransport。无真实模型费用或外发。
+
+Ruff **142 文件**规则/格式、mypy **106 个 app 文件**通过。Vitest **14 文件 24 项通过**；新增候选的完整限制、基线及文本转义组件测试。Vue lint、type-check、生产构建通过。前版 CI [37844263020](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37844263020) 的后端通过、前端组件失败，原因是模型解释显示时隐藏了本地 answer；本轮恢复常显本地结论，相关组件及完整前端回归均通过。Starlette/httpx 弃用提示仍在。
+
+新增 Listing 桌面/手机 Playwright 定向 **2 项通过（12.3 秒）**，随后完整 **32 项通过（1.2 分钟）**。验证从具体商品进入 AI 流程、展示发送事实、修改目标清空同意、审批前零草稿、候选刷新持久、保存后精确深链、事实确认后本地生效、再次刷新及来源清除擦除；无页面脚本错误，手机无横向溢出。使用现有 Chromium，桌面 1280×800、手机 390×844；系统 Temp `soloops-listing-{candidate,approved}-{desktop,mobile}.png` 仅合成数据，已实际查看桌面候选及手机审批结果，截图不提交。
+
+模型浏览器替身沿用 `scripts/e2e_analysis.py`，新增 `listing-model-e2e-` 合成店铺范围；仅由强制 `_test` 库的 launcher 注册，普通店铺默认模型关闭。完整 pytest 与 Playwright 串行，无新增迁移，head 仍为 `86df84dc129a`。
+
+初轮定向测试有两处合成店铺标识冲突，修正测试准备后进入全量。期间项目 Docker MySQL 容器退出，3308 连接被拒绝；重启原有开发/测试容器并确认 healthy 后重新执行，全量通过。开发数据未清理，本地配置和日志未提交。74 SO、32 验收行完整保留；MVP-02 的模型协议与本地版本流程用替身验证，真实模型质量仍待配置/授权，MVP-03 和 MVP-01 模型切片继续。

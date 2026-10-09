@@ -10,7 +10,13 @@ from app.repositories.unit_of_work import UnitOfWork
 from app.schemas.agent import SkillDefinition, StartAgent
 from app.schemas.analytics import AnalysisInput, AnalysisResult, SavedOutput, SaveInput
 from app.schemas.common import InputModel, OutputModel
-from app.schemas.listings import GenerateInput, ListingContent, ListingOutput, ProductFacts
+from app.schemas.listings import (
+    CandidateInput,
+    GenerateInput,
+    ListingContent,
+    ListingOutput,
+    ProductFacts,
+)
 from app.schemas.operations import CheckPreview, OperationScope, RunInput, RunOutput
 from app.schemas.support import GenerateReply, MessageFacts, ReplyOutput
 from app.services.analytics import AnalyticsService
@@ -72,6 +78,9 @@ CONTRACTS = {
     ),
     "listing_draft": Contract(
         "保存本地事实模板草稿", "listings.generate", GenerateInput, ListingOutput, True
+    ),
+    "listing_candidate": Contract(
+        "保存已审阅的模型事实候选", "listings.save_candidate", CandidateInput, ListingOutput, True
     ),
     "message_context": Contract(
         "读取待回复消息", "support.workspace", ObjectInput, SupportPreparation
@@ -183,6 +192,15 @@ class ControlledSkills:
                 expected_source_row_id=prepared.product.source.row_id,
                 expected_active_id=prepared.active_id,
             ).model_dump(mode="json")
+        if name == "listing_candidate":
+            prepared = ListingPreparation.model_validate(prior["preparation"])
+            return CandidateInput(
+                product_id=prepared.product.product_id,
+                expected_source_row_id=prepared.product.source.row_id,
+                expected_active_id=prepared.active_id,
+                content=ListingContent.model_validate(prior["candidate"]),
+                engine=prior["engine"],
+            ).model_dump(mode="json")
         prepared_message = SupportPreparation.model_validate(prior)
         return SupportInput(
             message_id=prepared_message.message.id,
@@ -230,6 +248,10 @@ class ControlledSkills:
         elif name == "listing_draft":
             result = ListingService(self.uow).generate(
                 self.owner, self.shop, GenerateInput.model_validate(args), FactTemplateGenerator()
+            )
+        elif name == "listing_candidate":
+            result = ListingService(self.uow).save_candidate(
+                self.owner, self.shop, CandidateInput.model_validate(args)
             )
         elif name == "message_context":
             message = (

@@ -28,6 +28,19 @@ class BrowserAnalysis(OpenAIResponsesModel):
         return Decimal("0.01")
 
     def generate(self, request: dict[str, Any], timeout: float) -> GenerationReply:
+        if request["name"] == "listing_composition":
+            keys = list(request["payload"]["facts"])
+            return GenerationReply(
+                {
+                    "title_fact_ids": keys[:1],
+                    "description_fact_ids": keys[::-1],
+                    "next_action": "offer_draft",
+                },
+                Decimal("0.001"),
+                100,
+                30,
+                "test_double",
+            )
         value = (
             {"intent": "low_margin"}
             if request["name"] == "analysis_question"
@@ -48,7 +61,7 @@ def configure(app: FastAPI, settings: Settings) -> None:
 
     def model(shop_id: int, current: CurrentSession, uow: UowDependency) -> OpenAIResponsesModel:
         shop = uow.identity.get_shop(current.user_id, shop_id)
-        if shop and shop.code.startswith("question-e2e-"):
+        if shop and shop.code.startswith(("question-e2e-", "listing-model-e2e-")):
             return BrowserAnalysis(disabled)
         return OpenAIResponsesModel(disabled)
 

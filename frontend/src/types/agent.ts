@@ -1,7 +1,9 @@
 import type { OperationScope } from './operations'
 import type { SourceReference } from './analytics'
+import type { ListingContent, ProductFacts } from './listings'
 
-export type AgentTemplate = 'daily' | 'analysis' | 'listing' | 'support' | 'natural' | 'question'
+export type AgentTemplate =
+  'daily' | 'analysis' | 'listing' | 'support' | 'natural' | 'question' | 'listing_model'
 export type AgentAction =
   'advance' | 'pause' | 'resume' | 'cancel' | 'approve' | 'reject' | 'use_authorization'
 export interface AgentBudget {
@@ -19,6 +21,8 @@ export interface AgentInput {
   message_id: number | null
   allow_model: boolean
   allow_analysis_data?: boolean
+  allow_listing_data?: boolean
+  expected_product_source_row_id?: number | null
   budget: AgentBudget
 }
 export interface AgentStep {
@@ -91,7 +95,15 @@ export interface AnalysisExplanation {
   composition: string
   sku_fact_limit: number
 }
+export interface ListingCandidate {
+  preparation: { product: ProductFacts; active_id: number | null; before: ListingContent | null }
+  candidate: ListingContent
+  engine: string
+}
 export const agentLabels: Record<string, string> = {
+  listing_model: 'AI Listing 候选',
+  compose_listing: '组织商品事实文案',
+  listing_candidate: '保存模型 Listing 候选',
   question: 'AI 经营问数',
   question_plan: '理解经营问题',
   explain_analysis: '组织事实解释',
@@ -132,6 +144,10 @@ export const agentLabels: Record<string, string> = {
   test_double: '测试替身',
 }
 export const agentReasons: Record<string, string> = {
+  listing_consent_required: '请核对目标商品与参数并同意发送到模型，然后新建任务。',
+  listing_needs_review: '模型建议先人工核对目标或商品事实。补充来源后可新建任务。',
+  listing_candidate_ready: '已生成事实候选，请核对前后差异后批准保存草稿。',
+  invalid_product_facts: '商品参数须包含 1—100 行完整事实，请整理来源后重新导入。',
   analysis_consent_required: '需要同意发送问题和匿名聚合事实；请确认数据范围后新建任务。',
   unsupported_analysis:
     '此问题超出当前范围或能力。支持销售汇总、购买数量前五与已知毛利筛选；请调整问题或表单范围。',

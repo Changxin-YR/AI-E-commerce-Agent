@@ -175,3 +175,11 @@
 - **拒答是否意味着没有收费？** `GenerationReply` 分离 content 与 cost。usage 有效的拒答、incomplete 或非法引用仍记已知费用；未知 usage 则保留预留。`test_generation_protocol_and_charge_classification` 覆盖这两类状态。
 - **为什么在网络前提交、回来后又加锁？** 调用期间不能长期持有店铺锁；持久租约防重放，返回时版本/来源校验防止取消或清除后回写。`test_inflight_change_discards_text_keeps_cost_and_never_restores_erased_data` 检查暂停、取消、撤销和清除。
 - **如何证明没有把聊天当成业务执行？** `test_question_explains_then_approves_saves_verifies_and_deduplicates` 检查审批前数据库无保存记录，批准后实际 AnalysisTodo 与 SavedAnalysis 存在，重复来源只保留一份待办；审计失败时两者均回滚。
+
+## Listing 模型候选：从文字选择到受控业务版本
+
+- `listing_composition.py` 用 ID 排列完整参数行，服务端构造标题与描述。描述校验集合相等、长度相等，既防重复/伪造，也防遗漏限制；结构化 JSON 只是第一层约束。
+- `expected_product_source_row_id` 绑定用户同意发送的具体原文。只保存一个布尔同意无法阻止预览后商品被更新，服务端须在网络前检查来源版本。
+- 资料来源和本地生效版本是两个独立并发条件。商品文件未变时另一候选仍可被批准，所以 `AgentService._current_listing` 在调用前和回包后检查 active_id，`ListingService.save_candidate` 保存时再检查。
+- Agent 中的候选、Listing 待审草稿、本地生效版本各有真实状态；模型回包不能直接批准生效。`test_model_candidate_diff_approval_readback_dedupe_and_clear` 检查两道审批、回读、去重及清除。
+- `test_save_revalidates_active_base_and_rolls_back_on_audit_failure` 验证草稿写入与审计同事务失败回滚；在途暂停/取消/清除用例验证网络请求已产生的费用和正文采纳分别处理。

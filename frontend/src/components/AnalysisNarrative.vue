@@ -43,7 +43,7 @@ defineProps<{ analysis: AnalysisResult; explanation?: AnalysisExplanation }>()
       </p>
     </template>
     <p v-else>本地统计已完成，模型解释尚未完成。</p>
-    <p v-if="!explanation">{{ analysis.answer }}</p>
+    <p>{{ analysis.answer }}</p>
     <p v-if="analysis.candidates.length">符合当前问题：{{ analysis.candidates.join('、') }}</p>
     <p>{{ analysis.formula }}</p>
     <p>{{ analysis.cost_basis }}</p>

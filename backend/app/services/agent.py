@@ -24,7 +24,13 @@ from app.schemas.agent import (
 )
 from app.schemas.analytics import AnalysisResult
 from app.services.agent_model import DecisionModel, GenerationReply, ModelReply
-from app.services.agent_skills import CONTRACTS, ControlledSkills, evidence, require_skill
+from app.services.agent_skills import (
+    CONTRACTS,
+    ControlledSkills,
+    ListingPreparation,
+    evidence,
+    require_skill,
+)
 from app.services.analysis_explanation import (
     QuestionDecision,
     compose,
@@ -34,6 +40,7 @@ from app.services.analysis_explanation import (
 from app.services.analytics import AnalyticsService
 from app.services.authorizations import AuthorizationsService
 from app.services.business_rules import BusinessRulesService
+from app.services.listing_composition import compose_listing, listing_request
 from app.services.listings import ListingService, digest
 from app.services.operations import OperationsService
 from app.services.profit_calculation import utc_text
@@ -46,6 +53,7 @@ FIRST_NODE = {
     "support": "message_context",
     "natural": "plan",
     "question": "question_plan",
+    "listing_model": "product_context",
 }
 TERMINAL = {"succeeded", "cancelled", "rejected", "blocked", "result_unknown", "circuit_open"}
 
@@ -191,6 +199,10 @@ class AgentService:
             canonical.pop("authorization_id")  # Preserve hashes for existing unbound requests.
         if not canonical["allow_analysis_data"]:
             canonical.pop("allow_analysis_data")  # Preserve earlier request hashes.
+        if not canonical["allow_listing_data"]:
+            canonical.pop("allow_listing_data")
+        if canonical["expected_product_source_row_id"] is None:
+            canonical.pop("expected_product_source_row_id")
         key = digest([shop_id, canonical])
         prior = self.repo.by_request(owner, str(data.request_id))
         if prior:
@@ -311,8 +323,8 @@ class AgentService:
         else:
             if run.next_node == "plan":
                 return self._plan(run)
-            if run.next_node in {"question_plan", "explain_analysis"}:
-                return self._generate_analysis(run)
+            if run.next_node in {"question_plan", "explain_analysis", "compose_listing"}:
+                return self._generate_content(run)
             return self._local(run)
         run.version += 1
         self._event(run, run.reason, run.status)
@@ -402,6 +414,12 @@ class AgentService:
             and result["product"]["source"]["data_identity"] != data.scope.data_identity
         ):
             raise BusinessError("scope_mismatch", "商品不属于所选数据身份", 403)
+        if (
+            node == "product_context"
+            and data.template == "listing_model"
+            and result["product"]["source"]["row_id"] != data.expected_product_source_row_id
+        ):
+            raise ConflictError("商品事实与本次同意发送的版本不同，请刷新后重新确认")
         if node == "message_context" and (
             result["message"]["source"]["data_identity"] != data.scope.data_identity
             or result["message"]["channel"] != data.scope.channel
@@ -411,8 +429,8 @@ class AgentService:
     def _dependencies(self, run: AgentExecution, node: str, result: dict[str, Any]) -> None:
         batches, policies = evidence(result)
         self.repo.sources(run.id, batches, policies)
-        if node in {"listing_draft", "product_context"}:
-            listing_id = result.get("id") if node == "listing_draft" else result.get("active_id")
+        if node in {"listing_draft", "listing_candidate", "product_context"}:
+            listing_id = result.get("active_id") if node == "product_context" else result.get("id")
             if listing_id:
                 self.repo.listing_sources(run.id, int(listing_id), run.owner_id, run.shop_id)
         if result.get("valid_until"):
@@ -439,14 +457,24 @@ class AgentService:
                 run.next_node, run.status, run.reason = "end", "succeeded", "no_findings"
         elif node == "product_context":
             if result["product"]["facts"].strip():
-                run.next_node, run.status = "listing_draft", "waiting_approval"
+                run.next_node, run.status = (
+                    ("compose_listing", "ready")
+                    if run.template == "listing_model"
+                    else ("listing_draft", "waiting_approval")
+                )
             else:
                 run.status, run.reason = "waiting_input", "missing_product_facts"
         elif node == "message_context":
             run.next_node, run.status = "support_draft", "waiting_approval"
         elif node == "metrics" and run.template == "question":
             run.next_node, run.status = "explain_analysis", "ready"
-        elif node in {"propose_tasks", "listing_draft", "support_draft", "analysis_todo"}:
+        elif node in {
+            "propose_tasks",
+            "listing_draft",
+            "listing_candidate",
+            "support_draft",
+            "analysis_todo",
+        }:
             run.next_node, run.status = "verify", "ready"
             if node == "propose_tasks" and run.authorization_id:
                 run.reason = "preauthorization_used"
@@ -479,7 +507,7 @@ class AgentService:
                 "status": "pending_individual_review",
                 "external_status": "not_submitted",
             }
-        if last_skill == "listing_draft":
+        if last_skill in {"listing_draft", "listing_candidate"}:
             listing = ListingService(self.uow).get(run.owner_id, run.shop_id, record_id)
             if listing.source_status != "current":
                 raise ConflictError("核验时草稿来源已变化")
@@ -564,23 +592,50 @@ class AgentService:
         self.uow.commit()
         return lease
 
-    def _generate_analysis(self, run: AgentExecution) -> AgentOutput:
+    def _generation_request(self, run: AgentExecution, data: StartAgent) -> dict[str, Any]:
+        if run.next_node == "compose_listing":
+            prepared = ListingPreparation.model_validate(run.result)
+            self._current_listing(run, prepared)
+            return listing_request(data.goal, prepared.product)
+        if run.next_node == "question_plan":
+            return question_request(data.goal, data.scope.model_dump(mode="json"))
+        return explanation_request(data.goal, AnalysisResult.model_validate(run.result))
+
+    def _current_listing(self, run: AgentExecution, prepared: ListingPreparation) -> None:
+        current = ListingService(self.uow).workspace(
+            run.owner_id, run.shop_id, prepared.product.product_id
+        )
+        if (
+            current.product.source.row_id != prepared.product.source.row_id
+            or current.active_id != prepared.active_id
+        ):
+            raise ConflictError("商品来源或本地生效版本已变化，请重新生成候选")
+
+    def _generate_content(self, run: AgentExecution) -> AgentOutput:
         data = StartAgent.model_validate(run.input)
         status = self.model.status()
+        listing = run.next_node == "compose_listing"
+        consent = data.allow_listing_data if listing else data.allow_analysis_data
         if not data.goal:
             run.status, run.reason = "blocked", "missing_goal"
-        elif not data.allow_model or not data.allow_analysis_data:
-            run.status, run.reason = "waiting_configuration", "analysis_consent_required"
+        elif not data.allow_model or not consent:
+            run.status = "waiting_configuration"
+            run.reason = "listing_consent_required" if listing else "analysis_consent_required"
         elif status.status != "configured":
             run.status, run.reason = "waiting_configuration", "not_configured"
             run.model_status = status.status
         else:
-            request = (
-                question_request(data.goal, data.scope.model_dump(mode="json"))
-                if run.next_node == "question_plan"
-                else explanation_request(data.goal, AnalysisResult.model_validate(run.result))
-            )
-            reserve = self.model.reserve_generation(request)
+            try:
+                request = self._generation_request(run, data)
+                reserve = self.model.reserve_generation(request)
+            except (BusinessError, ValueError) as error:
+                run.status = "blocked"
+                run.reason = (
+                    error.code if isinstance(error, BusinessError) else "invalid_product_facts"
+                )
+                run.version += 1
+                self._event(run, run.reason, run.status)
+                return self._finish(run)
             budget = Budget.model_validate(run.budget)
             if reserve <= 0 or run.spent_usd + run.reserved_usd + reserve > budget.max_cost_usd:
                 run.status, run.reason = "paused", "cost_budget"
@@ -637,9 +692,12 @@ class AgentService:
                 try:
                     if reply.content is None:
                         raise ValueError("no valid content")
-                    output = self._accept_generation(run, reply.content)
+                    output = self._accept_generation(run, reply.content, reply.engine)
                     step.output = {**(step.output or {}), **output}
-                except (BusinessError, ValidationError, ValueError, KeyError):
+                except BusinessError as error:
+                    run.status, run.reason = "blocked", error.code
+                    step.status, step.reason = "failed", error.code
+                except (ValidationError, ValueError, KeyError):
                     run.status, run.reason = "blocked", "invalid_model_output"
                     step.status, step.reason = "failed", "invalid_model_output"
             elif run.status == "running":
@@ -654,7 +712,31 @@ class AgentService:
         )
         return self._finish(run)
 
-    def _accept_generation(self, run: AgentExecution, content: dict[str, Any]) -> dict[str, Any]:
+    def _accept_generation(
+        self, run: AgentExecution, content: dict[str, Any], engine: str
+    ) -> dict[str, Any]:
+        if run.next_node == "compose_listing":
+            prepared = ListingPreparation.model_validate(run.result)
+            self._current_listing(run, prepared)
+            candidate = compose_listing(prepared.product, content)
+            if candidate is None:
+                run.status, run.reason = "waiting_input", "listing_needs_review"
+                return {"next_action": "needs_review"}
+            if engine not in {"openai_responses", "test_double"}:
+                raise ValueError("Unknown composition engine")
+            output = {
+                "preparation": prepared.model_dump(mode="json"),
+                "candidate": candidate.model_dump(),
+                "selection": content,
+                "engine": engine,
+            }
+            run.result = output
+            run.status, run.reason, run.next_node = (
+                "waiting_approval",
+                "listing_candidate_ready",
+                "listing_candidate",
+            )
+            return output
         if run.next_node == "question_plan":
             decision = QuestionDecision.model_validate(content)
             output = decision.model_dump()

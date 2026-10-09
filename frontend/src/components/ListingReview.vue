@@ -48,9 +48,12 @@ const dirty = computed(
 const live = computed(() => props.item.source_status === 'current')
 const engine = computed(
   () =>
-    ({ local_template: '本地事实模板', manual: '人工编辑', test_double: '测试替身' })[
-      props.item.engine
-    ] ?? props.item.engine,
+    ({
+      local_template: '本地事实模板',
+      manual: '人工编辑',
+      test_double: '测试替身',
+      openai_responses: 'OpenAI · 事实文案候选',
+    })[props.item.engine] ?? props.item.engine,
 )
 const time = (value: string) =>
   new Intl.DateTimeFormat('zh-CN', {

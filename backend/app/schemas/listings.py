@@ -27,6 +27,11 @@ class GenerateInput(InputModel):
     expected_active_id: PositiveId | None
 
 
+class CandidateInput(GenerateInput):
+    content: ListingContent
+    engine: Literal["openai_responses", "test_double"]
+
+
 class ReviseInput(InputModel):
     expected_version: PositiveId
     expected_active_id: PositiveId | None

@@ -60,6 +60,7 @@ const form = reactive<AgentInput>({
   message_id: null,
   allow_model: false,
   allow_analysis_data: false,
+  allow_listing_data: false,
   budget: { max_steps: 12, max_seconds: 120, max_cost_usd: '0' },
   scope: {
     start_at: new Date(Date.now() - 7 * 86400000).toISOString(),
@@ -79,16 +80,22 @@ watch(
     shopId.value,
     form.template,
     form.goal,
+    form.product_id,
+    JSON.stringify(products.value),
     JSON.stringify(form.scope),
     JSON.stringify(form.budget),
   ],
   () => {
     form.allow_model = false
     form.allow_analysis_data = false
+    form.allow_listing_data = false
   },
 )
 const productOptions = computed(() =>
   products.value.filter((p) => p.source.data_identity === form.scope.data_identity),
+)
+const selectedProduct = computed(() =>
+  productOptions.value.find((p) => p.product_id === form.product_id),
 )
 const messageOptions = computed(() =>
   messages.value.filter(
@@ -193,6 +200,8 @@ async function start(): Promise<void> {
   try {
     selected.value = await agentApi.start(shopId.value, {
       ...form,
+      expected_product_source_row_id:
+        form.template === 'listing_model' ? selectedProduct.value?.source.row_id : undefined,
       request_id: crypto.randomUUID(),
     })
     await drive()
@@ -266,6 +275,18 @@ onMounted(async () => {
     const grantId = linkedId(route.query.authorization)
     await loadShop()
     if (route.query.mode === 'question') form.template = 'question'
+    if (route.query.mode === 'listing_model') {
+      form.template = 'listing_model'
+      const productId = linkedId(route.query.product)
+      if (productId) {
+        const workspace = await listingsApi.workspace(shopId.value, productId)
+        if (!products.value.some((p) => p.product_id === productId))
+          products.value.push(workspace.product)
+        form.scope.data_identity =
+          workspace.product.source.data_identity === 'synthetic' ? 'synthetic' : 'user_import'
+        form.product_id = workspace.product.product_id
+      }
+    }
     if (id || grantId) selected.value = null
     if (id) {
       await inspect(id)
@@ -328,6 +349,7 @@ onUnmounted(() => {
               <option value="analysis">销售与已知毛利（全店所选身份）</option>
               <option value="question">AI 经营问数：理解 → 计算 → 解释 → 核对待办</option>
               <option value="listing">商品事实 → Listing 模板草稿</option>
+              <option value="listing_model">AI Listing：事实 → 模型候选 → 审批保存</option>
               <option value="support">消息 → 人工接管草稿</option>
               <option value="natural">自然语言目标（需要模型）</option>
             </select></label
@@ -346,7 +368,9 @@ onUnmounted(() => {
             </select></label
           >
           <label>币种<input v-model="form.scope.currency" required maxlength="3" /></label>
-          <template v-if="['listing', 'support', 'natural'].includes(form.template)">
+          <template
+            v-if="['listing', 'listing_model', 'support', 'natural'].includes(form.template)"
+          >
             <label
               >查找商品或消息<input
                 v-model="query"
@@ -365,7 +389,7 @@ onUnmounted(() => {
                 </option>
               </select></label
             >
-            <label v-if="form.template !== 'listing'"
+            <label v-if="!['listing', 'listing_model'].includes(form.template)"
               >目标消息<select v-model="form.message_id">
                 <option :value="null">未选择</option>
                 <option v-for="message in messageOptions" :key="message.id" :value="message.id">
@@ -374,7 +398,7 @@ onUnmounted(() => {
               </select></label
             >
           </template>
-          <template v-if="['natural', 'question'].includes(form.template)">
+          <template v-if="['natural', 'question', 'listing_model'].includes(form.template)">
             <label class="full-width"
               >运营目标<textarea
                 v-model="form.goal"
@@ -406,6 +430,34 @@ onUnmounted(() => {
               名称、文件名和买家消息留在本地。问题正文会原样发送，请核对其中内容。
               返回内容只可选择已有事实和核对建议，内部保存仍须审批。
             </p>
+            <div
+              v-if="form.template === 'listing_model'"
+              class="full-width data-note"
+              aria-label="将发送的商品事实"
+            >
+              <h3>核对本次商品事实</h3>
+              <template v-if="selectedProduct">
+                <p>商品名：{{ selectedProduct.name }}</p>
+                <p class="preserve-text">
+                  {{ selectedProduct.facts || '缺少参数，请先补充商品来源。' }}
+                </p>
+                <p>
+                  本地来源：批次 {{ selectedProduct.source.batch_id }} · 行
+                  {{ selectedProduct.source.row_number }}
+                </p>
+              </template>
+              <p v-else>请先选择目标商品。</p>
+              <p>
+                一次模型请求会发送上方商品名、完整参数与目标文本。SKU、成本、文件名和订单留在本地。模型选择标题参数并调整描述顺序，描述保留全部参数。品牌偏好仅供人工参考。
+              </p>
+              <label
+                ><input
+                  v-model="form.allow_listing_data"
+                  type="checkbox"
+                  :disabled="!selectedProduct?.facts.trim()"
+                />我已核对上述商品事实，同意发送这些原文用于 Listing 候选</label
+              >
+            </div>
           </template>
         </fieldset>
         <details>
@@ -460,7 +512,7 @@ onUnmounted(() => {
         </details>
         <p>
           固定流程使用本地规则或事实模板，模型费用为 0。自然语言目标用于路由；AI
-          经营问数另根据确定性结果组织证据解释。
+          经营问数根据确定性结果组织证据解释，AI Listing 根据商品原文组织候选。
         </p>
         <p v-if="model?.status === 'configured'">
           {{ model.provider }} · {{ model.model }} · 每百万输入 / 输出 tokens 的配置费率：
@@ -468,7 +520,16 @@ onUnmounted(() => {
           {{ model.output_usd_per_million ?? '未知' }} USD。
           每次调用前预留费用；实际用量按此费率记账，供应商账单须另核对。
         </p>
-        <button class="button primary" :disabled="busy || controlling || rulesPending">
+        <button
+          class="button primary"
+          :disabled="
+            busy ||
+            controlling ||
+            rulesPending ||
+            (form.template === 'listing_model' &&
+              (!selectedProduct || !form.allow_model || !form.allow_listing_data))
+          "
+        >
           {{ busy ? '正在执行…' : '启动并运行' }}
         </button>
       </form>

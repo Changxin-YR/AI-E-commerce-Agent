@@ -160,7 +160,7 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
     <span class="outline-label">Listing · 本地审批</span>
   </div>
   <FeedbackBanner
-    message="生成方式：本地事实模板。当前使用商品原文，AI 模型尚未接入；平台发布未接入。"
+    message="可使用本地事实模板，或进入 AI Listing 流程按商品原文生成模型候选。核对差异并审批后本地生效；平台发布未接入。"
     kind="info"
   />
   <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
@@ -238,6 +238,14 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
     </p>
     <p class="preserve-text">商品参数：{{ workspace.product.facts || '未提供；仅商品名可核对' }}</p>
     <button class="button primary" :disabled="busy" @click="generate">从商品事实生成草稿</button>
+    <RouterLink
+      class="button secondary"
+      :to="{
+        path: '/agent',
+        query: { shop: shopId, mode: 'listing_model', product: workspace.product.product_id },
+      }"
+      >生成 AI Listing 候选</RouterLink
+    >
   </section>
   <ListingReview
     id="linked-listing"

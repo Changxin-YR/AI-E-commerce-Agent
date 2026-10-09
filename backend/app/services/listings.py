@@ -8,6 +8,7 @@ from app.models.listings import ListingVersion
 from app.repositories.analytics import ProductEvidence
 from app.repositories.unit_of_work import UnitOfWork
 from app.schemas.listings import (
+    CandidateInput,
     DecisionInput,
     GenerateInput,
     ListingContent,
@@ -212,6 +213,42 @@ class ListingService:
         if product.source.row_id != item.source_row_id:
             raise ConflictError("商品来源已变化，请重新生成草稿")
         return product
+
+    def save_candidate(self, owner: int, shop: int, data: CandidateInput) -> ListingOutput:
+        self._shop(owner, shop)
+        product = self._product(owner, shop, data.product_id)
+        if product.source.row_id != data.expected_source_row_id:
+            raise ConflictError("商品来源已变化，请重新生成候选")
+        key = digest([shop, product.sku])
+        active = self._active(owner, shop, key, data.expected_active_id)
+        facts = {line.strip() for line in product.facts.splitlines() if line.strip()}
+        descriptions = [
+            line.strip() for line in data.content.description.splitlines() if line.strip()
+        ]
+        if (
+            check_content(product.name, product.facts, data.content)
+            or not facts
+            or set(descriptions) != facts
+            or len(descriptions) != len(facts)
+        ):
+            raise BusinessError("fact_check_required", "候选须完整保留已核对参数", 422)
+        request_key = digest(
+            [
+                "model_candidate",
+                shop,
+                product.source.row_id,
+                data.expected_active_id,
+                data.content.model_dump(),
+                data.engine,
+                self.repo.invalidation_epoch(owner, shop, key),
+            ]
+        )
+        existing = self.repo.by_key(owner, request_key)
+        if existing:
+            return output(existing)
+        return self._finish(
+            self._save(owner, shop, product, data.content, active, request_key, data.engine)
+        )
 
     def revise(self, owner: int, shop: int, listing_id: int, data: ReviseInput) -> ListingOutput:
         self._shop(owner, shop)
