@@ -1,6 +1,6 @@
 # SoloOps 接续上下文
 
-更新：2026-10-09。本轮基础版本第一阶段已提交推送。交接后由新聊天独占主工作区，旧聊天停止写入；不要启动子代理或其他并行写入聊天。
+更新：2026-10-09 23:47（Asia/Shanghai）。基础G-01至G-04已完成并提交推送。交接后由新聊天独占主工作区，旧聊天停止写入；不要启动子代理或其他并行写入聊天。
 
 ## 用户当前要求
 
@@ -11,13 +11,14 @@
 
 ## 当前提交与验证
 
-- main **8f6956fb15944015abe798b497a8657923dd6653** 已正常推送 origin/main，63 文件；主工作区干净。提交内容包括接手的订单/账单只读待核清单、基础跨页闭环、统一样本和隔离恢复。
-- 本提交 GitHub CI 尚未核实，接续先查看；[基线1763c40 CI37941439350](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37941439350) 已核实 Success，verify 8分47秒。
-- 完整后端 **685 passed / 301.69秒**。Ruff规则与格式 **222文件**、mypy **158 app文件**通过；CI已包含根 scripts 检查。
+- main **d5fe67feeecde74cd9927d10cc822651fc76155f** 已正常推送origin/main，13文件；主工作区干净。本次G-04新增首次安装/实际进程恢复证据，初始化脚本保护已有.local/test.env，并以独占模式创建三份配置。业务API/前端/迁移仍与8f6956f一致。
+- 新提交[CI37954208866](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37954208866)在23:47核实时In progress，接续先查最终结果。基线[8f6956f CI37950996694](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37950996694)已核实Success，verify9分14秒/总9分18秒。
+- 新增`test_local_setup.py` **4 passed / 1.01秒**；Ruff规则及格式 **223文件**、mypy **158 app文件**通过。沙箱默认Temp失败后用`--basetemp=../.local/pytest-setup-g04`通过，测试要求不变。
+- 业务基线完整后端 **685 passed / 301.69秒**。Ruff规则与格式 **222文件**、mypy **158 app文件**通过；CI已包含根 scripts 检查。
 - Vue lint/type-check/生产构建通过，Vitest **26文件97项 / 4.28秒**。
 - 浏览器 58 项完整运行 **54通过/4断言失败，3.0分钟**；只修改费用规则旧URL断言和基础场景Z/+00:00时间点比较后，桌面/手机定向 **4项全部通过 / 46.8秒**。业务代码未在完整运行后改变。58项均有最终代码通过覆盖，不能写成单次58项全绿。
 - `foundation.spec.ts` 覆盖同组资料四流程、完整范围/对象、返回原事项、审批/完成/重开、来源变化、刷新、退出再登录、经营摘要保存回读。Node24.16.0，Chromium1440×1000/390×844；实际查看Temp中的task-mobile和support-desktop截图，无横溢。日志/trace/截图不提交。
-- 无新迁移，head仍 **7e7851694067**。原74 SO、32验收、7长期E2E完整保留，后续47 SO登记。开发文档三十四/三十五、测试二十九/三十、README、矩阵及foundation四文档已同步。
+- 无新迁移，head仍 **7e7851694067**。原74 SO、32验收、7长期E2E完整保留，后续47 SO登记。开发文档三十六、测试三十一、README、矩阵及foundation规格/验收/维护/运行证据已同步。B-01/B-10/B-12已通过；B-06/B-07继续必验。
 
 ## 已实现基础缺口
 
@@ -32,13 +33,22 @@
 - 64表、head、行数和CHECKSUM一致；只读回查2主店、6完成事项、2失效但已完成低毛利事项、2历史批准Listing、2历史毛利13分析及完成待办、2客服存档、2经营摘要，临时恢复账号0。再次同目标恢复被拒绝。
 - 备份在忽略目录 `.local/backups/foundation-20261009-2304`；只读回查脚本 `.local/foundation_restore_readback.py`。源soloops_test之后被全套测试重置；恢复副本仍在mysql-test容器，tmpfs随容器停止丢失，文件备份保留。不能把该副本当作首次安装证据。
 
+## G-04实际运行证据及保留环境
+
+- 完整报告`docs/foundation-runtime-evidence.md`；从Git源码导出的`.local/foundation-g04`独立副本，初始化补丁与main一致。新venv锁定安装47包，前端npm ci293包审计0漏洞，Node24.16.0生产构建/type-check通过。数据库0→64表/head7e7851694067，账号CLI密码标准输入。
+- Compose项目`soloops-foundation-g04`、独立持久卷`soloops-foundation-g04_mysql-data`，MySQL3309、库`soloops_foundation_g04_test`、API8002/前端5175。验收结束这三个服务均已停止，卷保留。开发mysql3307、测试mysql3308及旧API8000未被操作；原三份配置SHA256一致。
+- 实际HTTP经营资料/店铺/5文件预览确认，3商品/5订单/3库存/2消息、2有效政策；Amazon/USD销量4、销售75/成本62/毛利13。保存完成事项、批准Listing、人工客服存档、分析和摘要。原会话及14份响应快照在多次API进程重启后精确一致。
+- 用真实时间15:36UTC/北京时间23:36创建计划、暂停→恢复，然后停API跨过到期；scheduler=false启动时历史0并保留到期，true重启仅恢复1期waiting_approval。受控批准推进succeeded后再次重启，1周期/1执行/6任务编号均不变。第二次检查窗口不同，低毛利新范围候选使任务从5变6，不能把它写成重复任务。调度历史保存触发状态waiting_approval，当前执行另从Agent回读succeeded。
+- 新副本Chromium桌面1440×1000/手机390×844登录/选店/刷新/持久会话通过，错误0/横溢0；手机截图已查看。
+- 忽略目录保留`.local/g04_prepare.py`（只能新建，勿重复）、g04_bootstrap.py（要求空库，勿重跑）、g04_http.py（seed只能一次；read/schedule-read可回读）、g04_control.ps1、g04_browser.mjs、g04_audit.py。副本`.local`内有initial/bootstrap/http-state/final-audit、samples.json和截图；account.json及http-state含账号/会话，禁止打印或提交。
+- 可按完整前缀`docker compose -p soloops-foundation-g04 --env-file .env -f compose.yaml -f compose.g04.yaml up -d --wait mysql`（在副本根）重启3309保留数据。G-05可复用同组数据或另建合成店铺；先核对政策时效、当前源与样本scope。不要用setup或pytest重置该证据库。复制的backend/.env默认模型/邮件关闭、调度true；G-05如果复用应关闭调度并仅从主backend忽略配置安全加载既有模型字段。
+
 ## 接续立即执行
 
-1. 先读 AGENTS.md、foundation-release/acceptance/backlog/user-guide，核实8f6956f的CI；失败先修。不要从旧财务扩展建议另开范围。
-2. **G-04/B-01/B-10**：隔离全新配置与数据库，实际完成迁移、账号、店铺、导入和金额回读；实际API进程重启后核实持久记录，并验证调度启停/最近一期恢复及不重复。`scripts/setup_local.py` 目前固定ROOT、拒绝覆盖已有配置，可按实际需要实现安全隔离入口。保留已有.env与开发库，不用重置既有库来伪装首次运行。源_test共享测试串行；新库有明确_test后缀及隔离权限。当前开发API8000仍为本阶段前的旧进程，新路由尚未重启部署；先查端口/CIM命令行再操作，不能沿用历史PID。后台Start-Process使用WindowStyle Hidden。
-3. **G-05/B-06**：真实四流程验收，¥1累计上限且本轮0调用。读取现有配置时只输出安全模型/费率字段，不打印.env/密钥。已知provider dashscope_chat、模型qwen3.7-flash、北京endpoint，须核实当前官方费率及现有USD预算换算，再预留每次费用上界。通过项目受控服务/adapter运行，同样本今日运营、问数（可能规划+解释两次）、Listing、FAQ及混合敏感客服；未知响应先查记录，不盲目重试。逐次token/时间/结果和已知估算费用留可审查证据，费用未知立即暂停付费部分。模型实现在app/services/agent_model.py；正常pytest/E2E保持真实调用关闭。官方资料见references与testing历史27节，费率必须重新核实。
-4. **G-06/B-07**：等待本人通道/验证收件箱/本次单次发送许可后，沿现有R2发送本人运营检查摘要，保存真实回执和实际收件佐证。R2目前支持operation_run摘要，不能假设overview_report可发。不要把替身或“审批通过”等同实际送达。尚未取得这些外部条件，继续独立工作。
-5. 对应改动测试、静态检查、开发/测试/知识点/矩阵/问题记录同步后正常提交推送main与context-memory。基础版本全部验收前不得标记完成。已通过检查不无故重复扩大测试。
+1. 先读AGENTS.md、foundation-release/acceptance/backlog/user-guide及foundation-runtime-evidence，核实d5fe67f的CI37954208866，失败先修；G-04已完成，不要重做或扩大长期功能。
+2. **立即推进G-05/B-06**：真实四流程验收，¥1累计上限且本轮仍0调用/已知0元。读取现有配置只输出安全模型/费率字段，不打印.env/密钥。历史已知provider dashscope_chat、qwen3.7-flash、北京endpoint；先核实当前官方费率、现有USD预算换算及每次包络费用上界。通过项目Agent受控服务/adapter、同组合成资料执行今日运营、问数（可能规划+解释2次）、Listing、FAQ和混合敏感客服；保存后核验事实、审批、来源变化/缺证据边界。未知响应先查持久记录，不盲目重试；费用未知暂停付费部分。逐次token/时间/脱敏结果、已知估算费用和人民币累计记证据。模型实现在app/services/agent_model.py，历史费率/协议见references和testing27，必须重新核实。常规pytest/E2E真实模型/邮件关闭。
+3. **G-06/B-07**仍等待本人通道配置、验证本人收件箱及本次单次发送许可；模型额度不包含邮件。条件到位后沿R2发送已审阅且有来源的operation_run经营摘要，保留真实回执及实际收件佐证。R2不支持overview_report，不可混淆。缺条件时继续独立收尾，基础版本不能标全部完成。
+4. 对应改动测试、静态检查、开发/测试/知识点/矩阵/问题同步后正常提交推送main与context-memory，不强推。通过的检查不无故重复扩大；上下文接近上限同样先保存推送再新建接续聊天，旧聊天立即停止工作区写入。
 
 ## 环境与操作约束
 
@@ -46,6 +56,6 @@
 - 每功能先查官方/GitHub并更新references许可证/借鉴/适配；Firecrawl已确认402，用官方web工具fallback，不反复尝试计费接口，不编HTTP抓取脚本。
 - backend/.venv、frontend/node_modules已存在。MySQL开发3307、测试3308；容器soloops-mysql-1和soloops-mysql-test-1。pytest/迁移/E2E/测试库恢复必须串行。真实模型、邮件、常规定时在常规测试中关闭。
 - E2E在frontend目录使用 `npm run test:e2e`（先生产构建，测试器管理API8001/preview5174，CI=true）。临时将 `.local/runtimes/node-v24.16.0-win-x64` 加入PATH，不能用全局24.15.0；后者曾Windows TCP原生崩溃，详见testing二十八。全局安装未改。
-- 沙箱MySQL socket10013、Vitest EPERM、Git索引只读时使用已授权允许环境；不重复请求用户确认普通开发/检查/正常推送。没有自动审批拒绝遗留。gh未安装，GitHubconnector不可用时可用IAB公开页面看CI。Browser插件不可用，浏览器测试沿项目Playwright。
+- 沙箱MySQL socket10013、Vitest EPERM、Git索引只读时使用已授权允许环境；不重复请求用户确认普通开发/检查/正常推送。没有自动审批拒绝遗留。本轮新增4项测试用工作区basetemp避免沙箱Temp创建失败。gh未安装，GitHubconnector不可用时可用IAB公开页面看CI。Browser插件不可用，浏览器测试沿项目Playwright。
 - 真实客户、密钥、本机配置、日志、截图/trace不提交；`.local`和`.context-memory`在main忽略。context-memory独立分支只存本文重点，不合并main、不保存整段聊天。禁止强推。
 - 项目ID `1c274a7b-2f1e-45ca-bf1b-10475766545b`（电商智能体）。切新聊天用local同项目，先落盘推送、传明确起点，交接后旧聊天停止修改。当前没有需要创建的定时自动化；用户要求的是上下文接近上限时主动换聊天。
