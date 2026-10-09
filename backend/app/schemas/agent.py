@@ -112,3 +112,4 @@ class ModelStatus(OutputModel):
     reason: str
     input_usd_per_million: Decimal | None = None
     output_usd_per_million: Decimal | None = None
+    cost_note: str = "按部署费率估算，以供应商账单为准"

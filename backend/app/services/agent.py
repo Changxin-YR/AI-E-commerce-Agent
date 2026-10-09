@@ -722,7 +722,7 @@ class AgentService:
             if candidate is None:
                 run.status, run.reason = "waiting_input", "listing_needs_review"
                 return {"next_action": "needs_review"}
-            if engine not in {"openai_responses", "test_double"}:
+            if engine not in {"openai_responses", "dashscope_chat", "test_double"}:
                 raise ValueError("Unknown composition engine")
             output = {
                 "preparation": prepared.model_dump(mode="json"),

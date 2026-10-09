@@ -415,7 +415,8 @@ onUnmounted(() => {
             <label class="full-width"
               ><span
                 ><input v-model="form.allow_model" type="checkbox" /> 同意将本次目标文本发送至配置的
-                OpenAI 模型，并使用下方美元预算</span
+                {{ agentLabels[model?.provider ?? ''] ?? '供应商' }}
+                模型，并使用下方美元预算</span
               ></label
             >
             <label v-if="form.template === 'question'" class="full-width">
@@ -515,10 +516,11 @@ onUnmounted(() => {
           经营问数根据确定性结果组织证据解释，AI Listing 根据商品原文组织候选。
         </p>
         <p v-if="model?.status === 'configured'">
-          {{ model.provider }} · {{ model.model }} · 每百万输入 / 输出 tokens 的配置费率：
-          {{ model.input_usd_per_million ?? '未知' }} /
+          {{ agentLabels[model.provider] ?? model.provider }} · {{ model.model }} · 每百万输入 /
+          输出 tokens 的配置费率： {{ model.input_usd_per_million ?? '未知' }} /
           {{ model.output_usd_per_million ?? '未知' }} USD。
           每次调用前预留费用；实际用量按此费率记账，供应商账单须另核对。
+          {{ model.cost_note }}
         </p>
         <button
           class="button primary"

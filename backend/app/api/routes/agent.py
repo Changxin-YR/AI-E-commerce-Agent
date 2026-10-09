@@ -5,12 +5,14 @@ from fastapi import APIRouter, Depends
 from app.api.dependencies import CurrentSession, SettingsDependency, UowDependency
 from app.schemas.agent import AgentAction, AgentOutput, ModelStatus, SkillDefinition, StartAgent
 from app.services.agent import AgentService
-from app.services.agent_model import DecisionModel, OpenAIResponsesModel
+from app.services.agent_model import DashScopeChatModel, DecisionModel, OpenAIResponsesModel
 
 router = APIRouter(prefix="/shops/{shop_id}/agent", tags=["受控执行"])
 
 
 def configured_model(settings: SettingsDependency) -> DecisionModel:
+    if settings.model_provider == "dashscope_chat":
+        return DashScopeChatModel(settings)
     return OpenAIResponsesModel(settings)
 
 

@@ -141,6 +141,15 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 
 沿用 Firecrawl 402 限制，经官方文档检索。模型仅接收卖家同意的问题、明确范围和匿名聚合事实，不接收原始订单号、SKU 文本、文件名或买家消息。模型选择证据顺序和下一步核对建议；事实句由已验证事实渲染，来源与费用缺口强制保留。供应商和预算仍由部署者配置，本地验证使用替身。
 
+## 阿里云百炼模型接入（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [百炼 Chat Completions](https://help.aliyun.com/zh/model-studio/qwen-api-via-openai-chat-completions)、[结构化输出](https://www.alibabacloud.com/help/en/model-studio/qwen-structured-output) | 官方协议文档，服务受供应商条款约束 | qwen3.7-flash 支持 strict JSON schema；关闭思考，限制完整输出 tokens，预留文档声明的 10-token 误差。保留服务端业务校验；使用自编适配器，不复制第三方业务源码 |
+| [地域与域名](https://help.aliyun.com/zh/model-studio/regions)、[模型价格](https://help.aliyun.com/zh/model-studio/model-pricing) | 官方运维与定价文档 | 固定北京官方兼容端点；人民币目录价与应用 USD 预算分开，部署时显式填写保守折算说明，实际账单另核对 |
+
+沿用 Firecrawl 402 限制，经官方网页检索。默认仍关闭外部模型；用户明确授权后的本机凭据只写入忽略文件。连通验证只用合成数据、累计人民币预算，禁止自动重试与重定向。
+
 ## Listing 模型候选（2026-10-09）
 
 | 资料 | 许可证/性质 | 借鉴与适配 |

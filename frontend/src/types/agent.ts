@@ -87,6 +87,7 @@ export interface ModelStatus {
   reason: string
   input_usd_per_million?: string | null
   output_usd_per_million?: string | null
+  cost_note?: string
 }
 export interface AnalysisExplanation {
   observations: { fact_id: string; text: string; sku: string | null }[]
@@ -141,6 +142,7 @@ export const agentLabels: Record<string, string> = {
   not_used: '本地确定性流程',
   not_configured: '模型待配置',
   openai_responses: 'OpenAI Responses',
+  dashscope_chat: '阿里云百炼（北京）',
   test_double: '测试替身',
 }
 export const agentReasons: Record<string, string> = {

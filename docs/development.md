@@ -483,3 +483,15 @@ verify 回读真实草稿 ID，深链到确切 Listing。最终生效继续使�
 `ListingsView` 提供目标商品深链，`AgentView` 加载确切商品及数据身份，`ListingCandidatePreview` 沿用现有绿系双栏对比和手机单栏布局。审批持久化后可刷新回读；保存与本地生效为两次清晰动作。模型费率和使用费用继续在任务中展示。
 
 接续核对发现上一提交 CI 的 AnalysisNarrative 组件断言失败：带模型解释时隐藏了本地结论。已使本地 answer 常显，保留缺数据时的完整排名限制。新测试初次有两处合成店铺标识重复，修正测试准备；后续本机 Docker 停止导致 3308 连接被拒绝，恢复项目既有 MySQL 容器并确认健康后继续验证。具体证据见 testing 的本次迭代记录。
+
+## 二十二、阿里云百炼与真实合成验证（2026-10-09）
+
+`configured_model` 根据服务端枚举配置构建 OpenAI Responses 或 `DashScopeChatModel`。百炼固定请求北京官方 `https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions`；当前只启用已核对 strict JSON schema 的 qwen3.7-flash 及其日期版本，未知模型配置显示不可用。用户凭据只保存在忽略的 backend/.env，默认示例仍关闭。页面同意文案、公开配置、Listing 候选和历史版本展示实际供应商。
+
+百炼适配器复用原有受控请求、费用和业务契约，映射为 messages、response_format.json_schema.strict，关闭思考、无工具。路由输出限制 256、生成限制 768，使用 max_completion_tokens；费用预留额外计入官方说明的 10-token 误差。请求 60 KB、响应 200 KB、最长 30 秒、禁重定向/环境代理和未知费用不重发沿用原逻辑。Chat 的 prompt_tokens/completion_tokens 映射到共享用量；只接收唯一 assistant 文本和 finish_reason=stop，拒答/截断/工具调用/畸形候选拒收，但有效 usage 仍计入生成费用。服务端继续验证事实 ID、完整参数和审批，适配器没有业务写权限。Chat 文档未定义 store 开关，因此不声称供应商完全不保留内容。
+
+应用预算及持久账本保持 USD，按明确配置的费率估算。本机采用官方 qwen3.7-flash 全输入档位最高目录价：输入 ¥1.2、输出 ¥4.8 / 百万 tokens，再用 **1 CNY = 0.20 USD 的保守预算换算约定** 得到 0.24 / 0.96 USD。此约定不是实时汇率或供应商美元报价；实际用量依配置记账并保存 cost_note 快照，人民币账单须另核对。目录折扣、免费额度和缓存优惠不预先扣除。
+
+用户明确允许官方北京地址及累计 ¥0.01 合成测试后，先只读鉴权，再通过实际应用适配器执行目标路由与 Listing 事实组合。一次性脚本执行前校验总预留 ¥0.0030100，锁存本机回执以拒绝重复调用；仅构造合成商品与来源，不读取业务数据库。两次生成分别使用 103/11 与 203/51 输入/输出 tokens，按 <=32K 输入档位 ¥0.2/¥0.8 估算合计 ¥0.0001108；路由为 daily，Listing 通过本地事实覆盖校验。证明凭据、端点、结构化协议及这两个合成样本可用，不代表完整质量评估。
+
+pytest 和浏览器 launcher 显式排除本机 .env 并覆盖 provider/key/name/rates，确保本机启用供应商后自动回归仍不调用真实模型。前端首轮组件测试被 Windows 沙箱缓存 rename 的 EPERM 阻断，允许的普通执行环境中复验；业务代码无需适配该环境错误。当前无新数据库迁移。

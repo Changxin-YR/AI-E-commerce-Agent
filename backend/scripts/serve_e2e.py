@@ -34,8 +34,14 @@ def main() -> None:
     os.environ["SOLOOPS_DATABASE_URL"] = url
     command.upgrade(Config("alembic.ini"), "head")
     settings = Settings(
+        _env_file=None,
         database_url=url,
         model_enabled=False,
+        model_provider="openai_responses",
+        model_api_key=None,
+        model_name="",
+        model_input_usd_per_million=None,
+        model_output_usd_per_million=None,
         outbound_enabled=False,
         trusted_origins=["http://127.0.0.1:5174"],
     )

@@ -183,3 +183,11 @@
 - 资料来源和本地生效版本是两个独立并发条件。商品文件未变时另一候选仍可被批准，所以 `AgentService._current_listing` 在调用前和回包后检查 active_id，`ListingService.save_candidate` 保存时再检查。
 - Agent 中的候选、Listing 待审草稿、本地生效版本各有真实状态；模型回包不能直接批准生效。`test_model_candidate_diff_approval_readback_dedupe_and_clear` 检查两道审批、回读、去重及清除。
 - `test_save_revalidates_active_base_and_rolls_back_on_audit_failure` 验证草稿写入与审计同事务失败回滚；在途暂停/取消/清除用例验证网络请求已产生的费用和正文采纳分别处理。
+
+## 多供应商模型：协议转换与业务权限
+
+- `configured_model` 在服务端选择固定官方端点；客户端不能自填 URL，以免密钥被发送到任意主机。`_request` 明确禁重定向和环境代理，错误不包含远端正文或异常字符串。
+- `DashScopeChatModel` 仅转换协议与 usage；下游仍校验同一事实编号契约并经过审批。严格 JSON 输出控制结构，事实正确性属于本地业务校验。
+- `GenerationReply` 将内容可用性和费用可知性分开。截断或拒答有有效 usage 时仍需记费；超时无 usage 时保留预留，自动重发可能造成双倍费用。
+- `reserve_generation` 对供应商声明的最大输出误差增加 10-token 余量；配置费率和 cost_note 随步骤保存。USD 预算折算是审计口径，不能冒充人民币实际账单。
+- `test_dashscope_candidate_runs_through_approval_and_readback` 使用 MockTransport 贯通真实业务存储与审批；独立受预算限制的合成联网测试验证凭据和协议。两者证据用途不同。

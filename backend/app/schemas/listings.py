@@ -29,7 +29,7 @@ class GenerateInput(InputModel):
 
 class CandidateInput(GenerateInput):
     content: ListingContent
-    engine: Literal["openai_responses", "test_double"]
+    engine: Literal["openai_responses", "dashscope_chat", "test_double"]
 
 
 class ReviseInput(InputModel):

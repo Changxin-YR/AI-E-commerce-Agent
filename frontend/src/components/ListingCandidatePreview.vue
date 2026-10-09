@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ListingCandidate } from '@/types/agent'
+import { agentLabels, type ListingCandidate } from '@/types/agent'
 const props = defineProps<{ value: ListingCandidate }>()
 const before = computed(
   () =>
@@ -24,7 +24,7 @@ const changed = computed(
       {{
         value.preparation.active_id ? `本地版本 #${value.preparation.active_id}` : '导入商品原文'
       }}
-      · {{ value.engine === 'test_double' ? '合成模型替身' : 'OpenAI Responses' }}
+      · {{ agentLabels[value.engine] ?? value.engine }}
     </p>
     <div class="listing-diff">
       <section>

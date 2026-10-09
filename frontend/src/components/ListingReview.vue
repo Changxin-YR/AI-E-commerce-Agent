@@ -53,6 +53,7 @@ const engine = computed(
       manual: '人工编辑',
       test_double: '测试替身',
       openai_responses: 'OpenAI · 事实文案候选',
+      dashscope_chat: '阿里云百炼 · 事实文案候选',
     })[props.item.engine] ?? props.item.engine,
 )
 const time = (value: string) =>
