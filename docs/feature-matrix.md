@@ -9,7 +9,7 @@
 | SO-003 | 自然语言 AI 运营总控 | P0 | 受控目标理解、事实生成与审批任务 | services/agent.py、agent_model.py、analysis_explanation.py、listing_composition.py、support_composition.py；AgentView.vue | test_agent.py、test_analysis_model.py、test_listing_model.py、test_support_model.py；模型业务 E2E | 路由、问数、Listing 和客服模型协议与审批回读已用替身通过；客服发送绑定消息/政策版本与人工订单核验，强制敏感接管；百炼真实合成路由与 Listing 已通过；运营聚合概览与审批回读已用替身通过；四条 MVP 真实模型质量仍待独立验证 |
 | SO-004 | 一键今日运营 | P0 | 已导入数据巡检与真实内部动作 | services/agent.py、agent_skills.py、operations.py、operation_explanation.py；AgentView.vue | test_agent.py、test_operations.py、test_operations_model.py；agent.spec.ts、operations-model.spec.ts | 检查→数据分支→审批→候选保存→回读核验本地通过，逐项处理复用工作台；聚合事实模型概览、全部分支/缺失保留、快照授权与审批回读经 test_operations_model.py、operations-model.spec.ts 合成替身通过 |
 | SO-005 | 主动异常发现与运营待办 | P0 | 有证据、可处理、去重的异常待办 | services/operations.py、workbench.py；OperationTaskReview.vue、WorkInbox.vue | 重跑/并发/状态/来源失效及清除测试 | 主动运行后的四类核对候选、来源/建议/固定标签、审批/拒绝/延期/忽略/完成/重开本地通过；统一清单筛选、计数及精确对象深链本地通过；完整异常集与 Agent 委托待继续 |
-| SO-006 | 定时运营与经营通知 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
+| SO-006 | 定时运营与经营通知 | P1 | 本地日/周/月周期巡检、启停修改、通知和恢复 | services/schedules.py、scheduler.py、schedule_clock.py；SchedulesView.vue | test_schedules.py；schedules.spec.ts 桌面/手机 | 合成数据本地通过：UTC/IANA 日历、唯一周期、多 worker、24 小时有界恢复、逐次审批、免打扰/已读/历史；专用日报周报月报、业务事件/紧急提醒、评论/营销监测和外部通知待继续 |
 | SO-007 | 多平台店铺授权与同步 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-008 | 统一商品主档与 SKU 映射 | P0 | 店铺+SKU 商品事实与已知成本 | backend/app/models/imports.py、services/imports.py | tests/test_imports.py | 导入/版本/撤销切片合成数据本地通过；完整商品运营待继续 |
 | SO-009 | 商品批量采集与在线素材采集 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
@@ -65,13 +65,13 @@
 | SO-059 | 多币种、汇率、税费与数据完整性 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-060 | 内置运营 Skills | P0 | 有元数据/权限/风险/去重声明的内置技能 | services/agent_skills.py；schemas/agent.py | 元数据篡改、范围拒绝、问数/Listing/客服审批去重与审计回滚测试 | 十一项固定技能覆盖既有 P0 能力，新增客服依据读取与模型候选保存；完整元数据、工具白名单和审批回读本地通过；运营模型复用检查与保存候选技能，全部分支、权限与审批回读合成通过 |
 | SO-061 | 第三方 Skills 安装与生命周期管理 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
-| SO-062 | 可配置运营工作流 | P0 | 技能、分支、审批、暂停恢复和记录 | services/agent.py；AgentView.vue、AgentRunReview.vue | 条件分支/审批/去重/预算/暂停恢复/取消/E2E | 固定流程节点、数据分支、审批、核验与失败状态合成本地通过；定时/事件/模板启停复制条件修改等完整范围待继续 |
+| SO-062 | 可配置运营工作流 | P0 | 技能、分支、审批、暂停恢复和记录 | services/agent.py；AgentView.vue、AgentRunReview.vue | 条件分支/审批/去重/预算/暂停恢复/取消/E2E | 固定流程节点、数据分支、审批、核验与失败状态合成本地通过；固定 daily 流程持久定时触发、计划启停修改及原审批回读合成本地通过；业务事件/通用模板复制条件修改等完整范围待继续 |
 | SO-063 | 跨平台连接器中心 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-064 | 浏览器扩展/页面内 AI 助手 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-065 | 软件使用助手与新手引导 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-066 | 经营规则、偏好与可验证的业务记忆 | P0 | 分范围经营约束、偏好依据、版本、恢复和有限授权 | services/business_rules.py、authorizations.py、outbound.py；RulesView.vue、InternalAuthorizations.vue、OutboundView.vue | 规则/R1/R2 服务、组件与 E2E 测试 | 阈值版本与 R1 有界预授权本地通过；R2 按全文/地址/检查绑定限一次、1—24 小时预授权，可撤销并回读消耗；文本偏好仍为人工参考 |
 | SO-067 | 审批、操作前预览与回退边界 | P0 | 对象/差异/依据/风险预览及权限化审批 | services/listings.py、operations.py、authorizations.py、outbound.py；OutboundMailReview.vue | test_authorizations.py、test_outbound.py；outbound.spec.ts | R1 审批/候选撤回及 R2 全文预览、修改失效、单次/预授权、提交门禁本地通过；邮件不可撤回，真实外发凭据与送达待验证，统一清单可定位原审批全文与指定 R1 授权；更多长期动作继续 |
-| SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久执行、统一清单、恢复与未知结果 | services/agent.py、workbench.py、analytics.py、support.py、outbound.py；AgentRunReview.vue | test_support_model.py、test_analysis_model.py、test_listing_model.py、test_workbench.py；模型业务/外发 E2E | 十类统一记录与原入口、问数/Listing/客服的费用预留、未知不重发、在途取消清除及持久回读合成替身通过；客服政策到期和当前来源门禁通过；真实邮件通道仍待授权 |
+| SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久执行、统一清单、恢复与未知结果 | services/agent.py、workbench.py、analytics.py、support.py、outbound.py；AgentRunReview.vue | test_support_model.py、test_analysis_model.py、test_listing_model.py、test_workbench.py；模型业务/外发 E2E | 十类统一记录与原入口、问数/Listing/客服的费用预留、未知不重发、在途取消清除及持久回读合成替身通过；客服政策到期和当前来源门禁通过；新增定时周期、未读通知、回滚恢复/故障暂停回读经 test_schedules.py 与 schedules.spec.ts 通过；真实邮件通道仍待授权 |
 | SO-069 | 授权的开发者 OpenAPI | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-070 | 移动端轻量运营能力 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-071 | 外部经营数据与提醒渠道 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |

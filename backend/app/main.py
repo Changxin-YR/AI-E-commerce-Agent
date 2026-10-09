@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -22,12 +23,14 @@ from app.api.routes import (
     overview,
     profile,
     profit,
+    schedules,
     support,
     workbench,
 )
 from app.core.config import Settings
 from app.core.errors import BusinessError
 from app.repositories.database import create_database_engine, create_session_factory
+from app.services.scheduler import serve
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -36,8 +39,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
-        yield
-        engine.dispose()
+        stop = asyncio.Event()
+        worker = (
+            asyncio.create_task(serve(application.state.session_factory, stop))
+            if resolved_settings.scheduler_enabled
+            else None
+        )
+        try:
+            yield
+        finally:
+            stop.set()
+            if worker:
+                await worker
+            engine.dispose()
 
     application = FastAPI(title="SoloOps API", version="0.1.0", lifespan=lifespan)
     application.state.settings = resolved_settings
@@ -60,6 +74,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(profit.router, prefix="/api")
     application.include_router(business_rules.router, prefix="/api")
     application.include_router(workbench.router, prefix="/api")
+    application.include_router(schedules.router, prefix="/api")
 
     @application.get("/api/health/live", tags=["健康检查"])
     def live() -> dict[str, str]:

@@ -417,6 +417,9 @@ class AgentService:
             failure = error.code
             run.status, run.reason = "blocked", error.code
         except OperationalError as error:
+            if self.uow.commits_deferred:
+                # The composing service owns rollback and the whole local cycle.
+                raise
             # Roll back a failed DB transaction before recording the attempt; don't retry writes.
             self.uow.session.rollback()
             run = self._load(owner, shop, run_id)

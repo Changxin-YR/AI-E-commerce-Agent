@@ -22,6 +22,7 @@ const router = createRouter({
         { path: 'rules', component: () => import('@/views/RulesView.vue') },
         { path: 'outbound', component: () => import('@/views/OutboundView.vue') },
         { path: 'overview', component: () => import('@/views/OverviewView.vue') },
+        { path: 'schedules', component: () => import('@/views/SchedulesView.vue') },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },

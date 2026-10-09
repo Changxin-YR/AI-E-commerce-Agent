@@ -37,6 +37,7 @@ def main() -> None:
         _env_file=None,
         database_url=url,
         model_enabled=False,
+        scheduler_enabled=False,
         model_provider="openai_responses",
         model_api_key=None,
         model_name="",

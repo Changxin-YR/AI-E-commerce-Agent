@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="SOLOOPS_", env_file=".env", extra="ignore")
 
     database_url: SecretStr
+    scheduler_enabled: bool = True
     outbound_enabled: bool = False
     outbound_api_key: SecretStr | None = None
     outbound_owner_id: int | None = None

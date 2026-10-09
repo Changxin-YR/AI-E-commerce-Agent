@@ -208,3 +208,12 @@
 - `AgentService._current_operations` 与 `RunInput.expected_preview_hash`：网络释放锁后重验当前证据；保存前再次在同一事务中校验，避免批准的是旧候选、写入的是新候选。服务层保留权限，Agent 复用受控接口。
 - `test_operations_model.py`：在途取消/清除只影响内容采用，已知费用仍要记账；未知费用保留预留。审计失败回滚业务记录，重跑保留已完成事项，证明幂等不等于重置业务状态。
 - `OperationFindingPreview.vue` 与 `AgentRunReview.vue`：候选提供逐行依据；业务深链带身份/渠道，确保从 Agent 回读真实记录后仍能在原业务页面处理。
+
+## 定时调度与事务恢复
+
+- 为什么不用进程内时间表保存任务？`models/schedules.py` 将计划、下一周期、执行与已读状态落在 MySQL；`services/scheduler.py` 只负责有界扫描，进程恢复可以从持久状态继续。
+- 多 worker 如何避免重复？`SchedulesService.run_due` 先用户/店铺/计划当前读，再判断到期，周期唯一键保护相同计划时刻。`test_concurrent_workers_commit_one_cycle` 用两个 MySQL 会话验证只留下一个 Agent 执行与一个通知。
+- 如何避免重试造成半个业务结果？`UnitOfWork.defer_commits` 把固定检查和通知纳入外层事务；Agent 数据库异常在组合模式下向外抛，原独立请求仍保留既有有界重试。`test_atomic_rollback_then_restart` 和 lifespan 测试分别验证事务与真实后台启动。
+- 时区为何不能每天简单加 24 小时？运行时间是当地日历，DST 会跳过或重复时刻。`schedule_clock.occurrence` 用 IANA 时区、fold=0 和 UTC 往返核验；检查数据窗口则明确采用 N×24 小时，两种语义各自固定。
+- 调度授权与审批的区别？计划确认仅允许固定本地检查和站内记录；`LocalOnlyModel` 无网络，新的来源仍停在原 Agent 审批。旧 R1 授权绑定快照，不能授权未来周期。
+- 通知为何不复制正文？`ScheduleOccurrence.execution_id` 链回原服务，来源清除只需既有 AgentSource 依赖链，通知不保留另一个客户内容副本；不可把周期结束状态当成当前业务审批状态。

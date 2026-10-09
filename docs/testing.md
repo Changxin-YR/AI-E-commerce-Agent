@@ -296,3 +296,15 @@ Ruff **147 文件**规则/格式与 mypy **108 app 文件**通过；Vue type-che
 运营模型桌面/手机定向 Playwright **2 项 / 12.8 秒**；完整 **36 项 / 1.4 分钟**。验证范围与快照授权、刷新清同意、完整缺数据概览、审批刷新回读、身份/渠道准确深链、原工作台批准/完成和清除。全站首轮发现逐项来源增加后旧测试的全文本定位重复，已将该用例限定到来源汇总容器；同轮临时 Vite 服务连接中断，后续用例未能运行，重启后的完整回归全部通过。已查看桌面概览和 390px 手机截图；非聚焦跳转链接不在视口内、手机无横向溢出。截图为系统 Temp 的 `soloops-operations-model-{desktop,mobile}.png`，不提交。
 
 pytest 和 Playwright 串行使用隔离 `_test` 库；新浏览器模型只对 `operations-model-e2e-` 合成店铺启用。无需迁移，head 仍为 `86df84dc129a`。交接提交 517d497 的 [CI](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37878451567) 已核实 success。74 SO、32 验收和 23 P0 最小模块复核表均完整。`p0-local-review.md` 记录 31 项本地适用行为的证据，A-13 真实外发送达仍待账号和授权；真实模型全面质量另验。
+
+## 第二十迭代：定时运营与站内通知（2026-10-09）
+
+完整后端 **427 passed / 146.96 秒**；`test_schedules.py` 新增 **29 项**。覆盖日/周/月与 DST 缺失/重复时刻、明确 UTC 窗口、周期合并、24 小时补跑边界、免打扰及已读、创建/手动幂等、跨店/账号/CSRF、规则变更自动暂停、原审批回读和来源清除。两 MySQL 会话竞争只保留一个执行/通知；普通异常和数据库异常整体回滚后可重跑，后台故障保存无正文失败状态并暂停。专门 lifespan 测试开启真实 worker，验证服务启动后扫描并正常停止。调度+原 Agent 定向 **51 项 / 15.16 秒**（随后补充 lifespan 用例已纳入完整回归）。
+
+Ruff 规则/格式 **156 文件**、mypy **115 app 文件**通过。Vue type-check/lint/生产构建通过，Vitest **16 文件 30 项 / 2.96 秒**。新增桌面/手机 Playwright 定向 **2 项 / 11.2 秒**，完整 **38 项 / 1.6 分钟**；覆盖确认变更重置、修改周/月周期、暂停/恢复/撤销、手动检查、原任务审批、通知已读、刷新回读、免打扰历史与来源清除。手机 390px 无横溢，已查看普通视口截图；全页截图的 fixed 元素位置不作为产品缺陷判断。截图存系统 Temp `soloops-schedules-{desktop,mobile}.png`。
+
+完整浏览器回归前两次在测试 Vite 服务连接中断后失败（ERR_CONNECTION_REFUSED / ECONNRESET），第二次 5 项成功后停止；使用持久终端重新启动隔离服务后，38 项全通过。该现象没有被记作业务用例通过，标准输入生命周期只是待确认的环境因素。初次新回滚测试因测试桩方法名写错失败，修正为 ControlledSkills.call 后通过。Starlette/httpx 既有弃用提示保留。
+
+迁移 `a364d8b4b6bf`：隔离 `_test` 库 **downgrade 86df84dc129a → upgrade head → alembic check** 已通过，开发库升级至新 head。首次自动生成的 downgrade 先删除外键支撑索引，被 MySQL 1553 阻止；改为先删除从表再删除主表，随表释放索引后复验通过。pytest、Playwright 和迁移回退严格串行；测试入口关闭真实模型、邮件和常规后台扫描，仅专门测试显式开启本地 worker。
+
+交接基线 8fdd985 的 [CI](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37880173315) 已核实 success。74 个 SO、32 个验收项均保留；SO-006 当前仅标记持久本地巡检/站内通知首片通过，专用经营报表、业务事件、紧急分级、评论/营销监测与外部通道继续保留后续范围。

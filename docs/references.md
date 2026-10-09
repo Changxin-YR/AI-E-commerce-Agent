@@ -176,3 +176,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [Pydantic validators](https://docs.pydantic.dev/latest/concepts/validators/) | 官方文档；Pydantic 源码 MIT，未复制实现 | 结构校验之后核对编号集合、重复及来源版本，业务权限独立于模型结构 |
 
 沿用已确认的 Firecrawl 402 限制，经官方网页检索。发送数据限定为用户目标、范围、分支状态/行数和候选类型计数；不传分支原始解释、SKU、订单号、消息正文和文件名。全部具体证据保留在本地审阅，内部保存复用 OperationsService；合成替身验证两种供应商协议。
+
+## 定时运营与站内通知（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [Python zoneinfo](https://docs.python.org/3/library/zoneinfo.html)、[datetime](https://docs.python.org/3.11/library/datetime.html) | 官方标准库文档，PSF；未复制源码 | IANA 时区、UTC 转换和 fold；重复时刻取第一次，跳过不存在的时刻，日历周期独立于服务器时区 |
+| [MySQL 8.4 locking reads](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html) | 官方数据库文档；仅参考事务语义 | 用户→店铺→计划当前锁定读，周期唯一键与原子事务避免多进程重复；本地检查无网络，崩溃回滚后可安全重跑 |
+
+沿用 Firecrawl 已确认的 402 限制，通过官方网页检索。使用已有 SQLAlchemy 与标准库实现有界调度；每周期只启动固定 daily 检查，候选仍逐次审批，站内通知仅保存执行索引与状态。

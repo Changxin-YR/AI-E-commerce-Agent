@@ -18,6 +18,7 @@ from app.repositories.operations import OperationsRepository
 from app.repositories.outbound import OutboundRepository
 from app.repositories.overview import OverviewRepository
 from app.repositories.profit import ProfitRepository
+from app.repositories.schedules import SchedulesRepository
 from app.repositories.support import SupportRepository
 from app.repositories.workbench import WorkbenchRepository
 
@@ -41,6 +42,7 @@ class UnitOfWork:
         self.listings = ListingRepository(session)
         self.support = SupportRepository(session)
         self.profit = ProfitRepository(session)
+        self.schedules = SchedulesRepository(session)
         self.workbench = WorkbenchRepository(session)
 
     def commit(self) -> None:
@@ -48,6 +50,10 @@ class UnitOfWork:
             self.session.commit()
         else:
             self.session.flush()
+
+    @property
+    def commits_deferred(self) -> bool:
+        return self._defer_commits > 0
 
     @contextmanager
     def defer_commits(self) -> Iterator[None]:
