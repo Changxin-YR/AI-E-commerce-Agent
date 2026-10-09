@@ -17,6 +17,7 @@ from app.repositories.listings import ListingRepository
 from app.repositories.operations import OperationsRepository
 from app.repositories.outbound import OutboundRepository
 from app.repositories.overview import OverviewRepository
+from app.repositories.product_quality import ProductQualityRepository
 from app.repositories.profit import ProfitRepository
 from app.repositories.schedules import SchedulesRepository
 from app.repositories.support import SupportRepository
@@ -42,6 +43,7 @@ class UnitOfWork:
         self.listings = ListingRepository(session)
         self.support = SupportRepository(session)
         self.profit = ProfitRepository(session)
+        self.product_quality = ProductQualityRepository(session)
         self.schedules = SchedulesRepository(session)
         self.workbench = WorkbenchRepository(session)
 

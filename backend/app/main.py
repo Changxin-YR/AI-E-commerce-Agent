@@ -21,6 +21,7 @@ from app.api.routes import (
     operations,
     outbound,
     overview,
+    product_quality,
     profile,
     profit,
     schedules,
@@ -75,6 +76,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(business_rules.router, prefix="/api")
     application.include_router(workbench.router, prefix="/api")
     application.include_router(schedules.router, prefix="/api")
+    application.include_router(product_quality.router, prefix="/api")
 
     @application.get("/api/health/live", tags=["健康检查"])
     def live() -> dict[str, str]:

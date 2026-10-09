@@ -196,3 +196,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [Vite 构建预览](https://vite.dev/guide/static-deploy)、[Playwright webServer](https://playwright.dev/docs/test-webserver) | 官方文档；Vite MIT，Playwright Apache-2.0，未复制源码 | E2E 先构建页面再启动本机 preview，API 代理沿用独立测试端口；两个服务由测试运行器启动并回收 |
 
 沿用 Firecrawl 已确认的 402 限制，经官方网页检索。报表保存复用 OverviewService；计划确认授权仅覆盖本地报表保存，通知仅引用报告 ID，来源清除沿用原依赖链。
+
+## 商品信息质量检查（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [Google 商品数据规范](https://support.google.com/google-ads/answer/7052112?hl=en) | 官方产品文档，按网站条款使用；仅参考字段分类，未复制正文或实现 | 名称、描述、价格与标识分别核对；本地规则仅检查当前已导入字段，平台必填与合规规则不能直接当作跨平台结论 |
+| [SQLAlchemy Session API](https://docs.sqlalchemy.org/en/20/orm/session_api.html) | 官方文档，源码 MIT；未复制实现 | 用户→店铺锁后当前读，预览摘要复验，报告、来源依赖和审计在同一事务保存；清除来源时同步擦除派生正文 |
+
+沿用已确认的 Firecrawl 402 限制，通过官方检索获得资料。商品主档当前不包含品牌、GTIN/MPN、图片或类目属性模板，明确列为未检查。相似 SKU、参数冲突与描述关键词只提供人工核对线索；本地质量报告不调用模型、不修改商品或外发。
