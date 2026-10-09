@@ -201,7 +201,13 @@ class ControlledSkills:
                 scope=result.scope, expected_revision=result.source_revision
             ).model_dump(mode="json")
         if name == "propose_tasks":
-            return RunInput(request_id=data.request_id, scope=data.scope).model_dump(mode="json")
+            return RunInput(
+                request_id=data.request_id,
+                scope=data.scope,
+                expected_preview_hash=digest(prior["check"])
+                if data.template == "daily_model"
+                else None,
+            ).model_dump(mode="json")
         if name in {"product_context", "message_context"}:
             target = data.product_id if name == "product_context" else data.message_id
             if target is None:

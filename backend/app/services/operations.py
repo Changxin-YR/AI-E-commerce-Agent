@@ -11,6 +11,7 @@ from app.repositories.unit_of_work import UnitOfWork
 from app.schemas.operations import (
     CheckPreview,
     Finding,
+    OperationContext,
     OperationScope,
     RunInput,
     RunOutput,
@@ -22,6 +23,7 @@ from app.schemas.operations import (
     TaskQuery,
 )
 from app.services.business_rules import BusinessRulesService
+from app.services.listings import digest
 from app.services.operation_checks import CheckResult, check_data
 from app.services.profit_calculation import utc_text
 
@@ -188,6 +190,12 @@ class OperationsService:
             valid_until=utc_text(result.valid_until) if result.valid_until else None,
         )
 
+    def model_context(self, owner: int, shop_id: int, scope: OperationScope) -> OperationContext:
+        preview = self.preview(owner, shop_id, scope)
+        return OperationContext(
+            preview=preview, preview_hash=digest(preview.model_dump(mode="json"))
+        )
+
     def run(self, owner: int, shop_id: int, data: RunInput) -> RunOutput:
         shop = self._shop(owner, shop_id)
         scope = data.scope
@@ -204,6 +212,16 @@ class OperationsService:
             self.uow.commit()
             return output
         result = self._check(owner, shop, scope, now)
+        if data.expected_preview_hash:
+            current = CheckPreview(
+                source_revision=shop.data_revision,
+                branches=result.branches,
+                findings=result.findings,
+                sources=result.sources,
+                valid_until=utc_text(result.valid_until) if result.valid_until else None,
+            )
+            if digest(current.model_dump(mode="json")) != data.expected_preview_hash:
+                raise ConflictError("运营检查与已审阅候选不同，请重新运行")
         self.repo.expire(owner, shop_id, now)
         ids: list[int] = []
         created = 0

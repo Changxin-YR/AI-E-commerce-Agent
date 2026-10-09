@@ -6,6 +6,14 @@ export interface OperationScope extends AnalysisScope {
   channel: string
   max_age_hours: number
 }
+export interface OperationContext {
+  preview_hash: string
+  preview: {
+    source_revision: number
+    branches: { name: string; status: string; count: number; reason: string }[]
+    findings: { kind: string }[]
+  }
+}
 export interface OperationRun {
   id: number
   shop_id: number

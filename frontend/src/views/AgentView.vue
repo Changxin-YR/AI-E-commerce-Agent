@@ -22,6 +22,7 @@ import type { MessageFacts } from '@/types/support'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import AgentRunReview from '@/components/AgentRunReview.vue'
 import SupportModelContext from '@/components/SupportModelContext.vue'
+import OperationModelContext from '@/components/OperationModelContext.vue'
 import InternalAuthorizations from '@/components/InternalAuthorizations.vue'
 import { authorizationsApi, type InternalAuthorization } from '@/api/authorizations'
 
@@ -63,6 +64,8 @@ const form = reactive<AgentInput>({
   allow_analysis_data: false,
   allow_listing_data: false,
   allow_support_data: false,
+  allow_operation_data: false,
+  expected_operation_hash: null,
   support_context: null,
   budget: { max_steps: 12, max_seconds: 120, max_cost_usd: '0' },
   scope: {
@@ -85,6 +88,7 @@ watch(
     form.goal,
     form.product_id,
     form.message_id,
+    form.expected_operation_hash,
     JSON.stringify(form.support_context),
     JSON.stringify(products.value),
     JSON.stringify(form.scope),
@@ -95,6 +99,7 @@ watch(
     form.allow_analysis_data = false
     form.allow_listing_data = false
     form.allow_support_data = false
+    form.allow_operation_data = false
   },
 )
 const productOptions = computed(() =>
@@ -281,6 +286,7 @@ onMounted(async () => {
     const grantId = linkedId(route.query.authorization)
     await loadShop()
     if (route.query.mode === 'question') form.template = 'question'
+    if (route.query.mode === 'daily_model') form.template = 'daily_model'
     if (route.query.mode === 'support_model') {
       form.template = 'support_model'
       const messageId = linkedId(route.query.message)
@@ -365,6 +371,7 @@ onUnmounted(() => {
           <label
             >执行流程<select v-model="form.template">
               <option value="daily">今日运营：检查 → 异常候选 → 核验</option>
+              <option value="daily_model">AI 今日运营：检查 → 概览解释 → 审批候选</option>
               <option value="analysis">销售与已知毛利（全店所选身份）</option>
               <option value="question">AI 经营问数：理解 → 计算 → 解释 → 核对待办</option>
               <option value="listing">商品事实 → Listing 模板草稿</option>
@@ -423,7 +430,11 @@ onUnmounted(() => {
             >
           </template>
           <template
-            v-if="['natural', 'question', 'listing_model', 'support_model'].includes(form.template)"
+            v-if="
+              ['natural', 'question', 'listing_model', 'support_model', 'daily_model'].includes(
+                form.template,
+              )
+            "
           >
             <label class="full-width"
               >运营目标<textarea
@@ -457,6 +468,26 @@ onUnmounted(() => {
               名称、文件名和买家消息留在本地。问题正文会原样发送，请核对其中内容。
               返回内容只可选择已有事实和核对建议，内部保存仍须审批。
             </p>
+            <template v-if="form.template === 'daily_model'">
+              <OperationModelContext
+                v-if="!rulesPending"
+                class="full-width"
+                :shop="shopId"
+                :scope="form.scope"
+                :disabled="busy || controlling"
+                @change="form.expected_operation_hash = $event"
+              />
+              <label class="full-width"
+                ><span>
+                  <input
+                    v-model="form.allow_operation_data"
+                    type="checkbox"
+                    :disabled="rulesPending || !form.expected_operation_hash"
+                  />
+                  我已核对运营范围，同意发送上述聚合检查数据用于概览解释
+                </span></label
+              >
+            </template>
             <template v-if="form.template === 'support_model'">
               <SupportModelContext
                 class="full-width"

@@ -19,6 +19,7 @@ class OperationScope(AnalysisInput):
 class RunInput(InputModel):
     request_id: UUID
     scope: OperationScope
+    expected_preview_hash: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")] | None = None
 
 
 class TaskQuery(InputModel):
@@ -84,6 +85,11 @@ class CheckPreview(OutputModel):
     findings: list[Finding]
     sources: list[SourceReference]
     valid_until: str | None
+
+
+class OperationContext(OutputModel):
+    preview: CheckPreview
+    preview_hash: str
 
 
 class RunOutput(OutputModel):

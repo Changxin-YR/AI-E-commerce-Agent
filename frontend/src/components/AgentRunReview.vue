@@ -7,6 +7,7 @@ import type {
   AnalysisExplanation,
   ListingCandidate,
   SupportCandidate,
+  OperationExplanation,
 } from '@/types/agent'
 import { agentLabels, agentReasons, sourcesIn } from '@/types/agent'
 import { sourceLabels } from '@/types/operations'
@@ -16,6 +17,8 @@ import AnalysisEvidence from './AnalysisEvidence.vue'
 import AnalysisNarrative from './AnalysisNarrative.vue'
 import ListingCandidatePreview from './ListingCandidatePreview.vue'
 import SupportCandidatePreview from './SupportCandidatePreview.vue'
+import OperationNarrative from './OperationNarrative.vue'
+import OperationFindingPreview from './OperationFindingPreview.vue'
 import SourceEvidence from './SupportSource.vue'
 import { supportTime } from '@/types/support'
 const props = defineProps<{ run: AgentRun; busy: boolean }>()
@@ -47,6 +50,11 @@ const explanation = computed(
       ?.output?.explanation as AnalysisExplanation | undefined,
 )
 const resumable = computed(() => ['paused', 'waiting_configuration'].includes(props.run.status))
+const operationExplanation = computed(
+  () =>
+    props.run.steps.find((s) => s.node === 'explain_operations' && s.status === 'completed')?.output
+      ?.explanation as OperationExplanation | undefined,
+)
 const supportCandidate = computed(
   () =>
     props.run.steps.find(
@@ -82,7 +90,16 @@ const recordLink = computed(() => {
   if (!entry) return undefined
   return {
     path: entry[0]!,
-    query: { shop: props.run.shop_id, [entry[1]!]: String(props.run.result?.record_id) },
+    query: {
+      shop: props.run.shop_id,
+      [entry[1]!]: String(props.run.result?.record_id),
+      ...(kind === 'operations'
+        ? {
+            identity: props.run.input?.scope.data_identity,
+            channel: props.run.input?.scope.channel,
+          }
+        : {}),
+    },
   }
 })
 const actionLabels: Record<string, string> = {
@@ -148,7 +165,7 @@ const actionLabels: Record<string, string> = {
         ><small>取消后在途请求仍可能产生费用</small>
       </div>
     </div>
-    <div v-if="branches.length" class="agent-branches">
+    <div v-if="branches.length && !operationExplanation" class="agent-branches">
       <p v-for="branch in branches" :key="branch.name">
         <strong>{{ branch.name }}：</strong>{{ branch.reason }}
       </p>
@@ -160,6 +177,15 @@ const actionLabels: Record<string, string> = {
     />
     <ListingCandidatePreview v-if="listingCandidate" :value="listingCandidate" />
     <SupportCandidatePreview v-if="supportCandidate" :value="supportCandidate" />
+    <OperationNarrative v-if="operationExplanation" :value="operationExplanation" />
+    <p v-if="operationExplanation && run.input">
+      本次范围：{{ run.input.scope.channel }} · {{ run.input.scope.data_identity }} ·
+      {{ run.input.scope.currency }} ·
+      {{ supportTime(run.input.scope.start_at, run.input.scope.timezone) }} 至
+      {{ supportTime(run.input.scope.end_at, run.input.scope.timezone) }}（结束不含，{{
+        run.input.scope.timezone
+      }}）。 商品按店铺读取，订单按此窗口和渠道检查；消息和库存取当前导入记录。
+    </p>
     <div v-if="run.status === 'waiting_approval'" class="data-note">
       <h3>审批当前内部写入 · R1 · 费用 0 USD</h3>
       <p>
@@ -181,11 +207,12 @@ const actionLabels: Record<string, string> = {
         待办可完成或重开，历史统计保留；来源清除将擦除相关快照。
       </p>
       <p v-else>候选可忽略，草稿可拒绝或存档；已有生效版本由业务页面管理。</p>
-      <article v-for="(finding, index) in findings" :key="index" class="analysis-line">
-        <strong>{{ finding.title }} · {{ finding.object_label }}</strong>
-        <p>{{ finding.basis }}</p>
-        <p>{{ finding.advice }}</p>
-      </article>
+      <OperationFindingPreview
+        v-for="(finding, index) in findings"
+        :key="index"
+        :finding="finding"
+        :shop="run.shop_id"
+      />
       <div class="button-row">
         <button
           class="button primary"
@@ -201,11 +228,12 @@ const actionLabels: Record<string, string> = {
     </div>
     <details v-if="run.status !== 'waiting_approval' && findings.length" class="section-block">
       <summary>查看检查时的 {{ findings.length }} 项候选</summary>
-      <article v-for="(finding, index) in findings" :key="index" class="analysis-line">
-        <strong>{{ finding.title }} · {{ finding.object_label }}</strong>
-        <p>{{ finding.basis }}</p>
-        <p>{{ finding.advice }}</p>
-      </article>
+      <OperationFindingPreview
+        v-for="(finding, index) in findings"
+        :key="index"
+        :finding="finding"
+        :shop="run.shop_id"
+      />
     </details>
     <div class="button-row">
       <button
@@ -231,7 +259,9 @@ const actionLabels: Record<string, string> = {
       >
     </div>
     <form v-if="resumable" @submit.prevent="emit('action', 'resume', { ...budget })">
-      <p v-if="['question', 'listing_model', 'support_model'].includes(run.template)">
+      <p
+        v-if="['question', 'listing_model', 'support_model', 'daily_model'].includes(run.template)"
+      >
         暂停期间丢弃的模型结果，在恢复时会重新请求并计费；已用费用计入总预算。
         在途或未确认费用尚未解除时，服务器会阻止恢复。
       </p>

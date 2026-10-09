@@ -176,9 +176,12 @@ onUnmounted(() => window.removeEventListener('focus', focus))
   <section aria-label="今日运营收件箱">
     <div class="section-title">
       <h2>今日运营</h2>
-      <span class="outline-label">本地规则 · 模型待配置</span>
+      <span class="outline-label">导入数据检查</span>
     </div>
     <p>检查已导入数据，查看证据，将需要核对的事项批准为本地待办。</p>
+    <RouterLink v-if="shopId" :to="{ path: '/agent', query: { shop: shopId, mode: 'daily_model' } }"
+      >启动 AI 今日运营概览</RouterLink
+    >
     <FeedbackBanner :message="error" />
     <p v-if="info" role="status">{{ info }}</p>
     <p v-if="dirty" role="status">有未保存的处理记录，请先保存后切换或刷新。</p>

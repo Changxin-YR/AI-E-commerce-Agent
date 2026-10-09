@@ -3,10 +3,26 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 
 from app.api.dependencies import CurrentSession, UowDependency
-from app.schemas.operations import RunInput, RunOutput, TaskInput, TaskOutput, TaskPage, TaskQuery
+from app.schemas.operations import (
+    OperationContext,
+    OperationScope,
+    RunInput,
+    RunOutput,
+    TaskInput,
+    TaskOutput,
+    TaskPage,
+    TaskQuery,
+)
 from app.services.operations import OperationsService
 
 router = APIRouter(prefix="/shops/{shop_id}/operations", tags=["今日运营"])
+
+
+@router.post("/preview")
+def preview(
+    shop_id: int, data: OperationScope, current: CurrentSession, uow: UowDependency
+) -> OperationContext:
+    return OperationsService(uow).model_context(current.user_id, shop_id, data)
 
 
 @router.post("/runs")

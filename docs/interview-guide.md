@@ -200,3 +200,11 @@
 - `GenerationReply` 将内容可用性和费用可知性分开。截断或拒答有有效 usage 时仍需记费；超时无 usage 时保留预留，自动重发可能造成双倍费用。
 - `reserve_generation` 对供应商声明的最大输出误差增加 10-token 余量；配置费率和 cost_note 随步骤保存。USD 预算折算是审计口径，不能冒充人民币实际账单。
 - `test_dashscope_candidate_runs_through_approval_and_readback` 使用 MockTransport 贯通真实业务存储与审批；独立受预算限制的合成联网测试验证凭据和协议。两者证据用途不同。
+
+## 运营模型的边界如何落在代码中
+
+- `services/operation_explanation.py`：为什么让模型选择编号？结构化输出只能约束格式，仍需核对 ID、去重并从本地目录恢复全部分支和缺失。模型排序不会改变确定性检查结果，也不能隐藏无数据模块。
+- `OperationsService.model_context` 和 `StartAgent.expected_operation_hash`：将页面同意绑定完整预览；不仅检查 revision，还包含库存时效形成的分支。前端请求序号处理迟到响应，状态在重新加载时立即清空。
+- `AgentService._current_operations` 与 `RunInput.expected_preview_hash`：网络释放锁后重验当前证据；保存前再次在同一事务中校验，避免批准的是旧候选、写入的是新候选。服务层保留权限，Agent 复用受控接口。
+- `test_operations_model.py`：在途取消/清除只影响内容采用，已知费用仍要记账；未知费用保留预留。审计失败回滚业务记录，重跑保留已完成事项，证明幂等不等于重置业务状态。
+- `OperationFindingPreview.vue` 与 `AgentRunReview.vue`：候选提供逐行依据；业务深链带身份/渠道，确保从 Agent 回读真实记录后仍能在原业务页面处理。

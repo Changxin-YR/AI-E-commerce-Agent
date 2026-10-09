@@ -1,7 +1,18 @@
 import { request } from './client'
-import type { OperationRun, OperationScope, OperationTask, TaskAction } from '@/types/operations'
+import type {
+  OperationContext,
+  OperationRun,
+  OperationScope,
+  OperationTask,
+  TaskAction,
+} from '@/types/operations'
 
 export const operationsApi = {
+  preview: (shop: number, scope: OperationScope) =>
+    request<OperationContext>(`/shops/${shop}/operations/preview`, {
+      method: 'POST',
+      body: JSON.stringify(scope),
+    }),
   run: (shop: number, scope: OperationScope, requestId: string) =>
     request<OperationRun>(`/shops/${shop}/operations/runs`, {
       method: 'POST',

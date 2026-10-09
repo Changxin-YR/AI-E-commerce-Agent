@@ -167,3 +167,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [Responses create](https://developers.openai.com/api/reference/resources/responses/methods/create) | 官方 API 文档，仅参考协议，自行实现业务逻辑 | 复用既有无工具、store=false、预算预留和 usage 记账；来源/版本/审批在本地重新核验 |
 
 沿用 Firecrawl 402 限制，经官方网页检索。仅发送卖家明确同意的目标、完整商品名与参数行；SKU、文件名、成本和订单留在本地。描述保留全部去重后的参数行，模型可排序；标题保留完整商品名并选用完整参数行。候选经过事实校验与前后对比，独立审批后成为本地生效版本。真实模型质量沿用 questions 的待验证项。
+
+## 运营模型解释（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs) | 官方协议文档，服务受供应商条款约束 | 复用已有 strict JSON schema 适配，模型仅选择分支和核对建议编号；本地强制保留全部分支、缺失项和候选 |
+| [Pydantic validators](https://docs.pydantic.dev/latest/concepts/validators/) | 官方文档；Pydantic 源码 MIT，未复制实现 | 结构校验之后核对编号集合、重复及来源版本，业务权限独立于模型结构 |
+
+沿用已确认的 Firecrawl 402 限制，经官方网页检索。发送数据限定为用户目标、范围、分支状态/行数和候选类型计数；不传分支原始解释、SKU、订单号、消息正文和文件名。全部具体证据保留在本地审阅，内部保存复用 OperationsService；合成替身验证两种供应商协议。

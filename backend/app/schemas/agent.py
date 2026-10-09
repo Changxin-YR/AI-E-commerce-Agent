@@ -17,6 +17,7 @@ Template = Literal[
     "question",
     "listing_model",
     "support_model",
+    "daily_model",
 ]
 Money = Annotated[Decimal, Field(ge=0, le=10, decimal_places=6)]
 
@@ -39,6 +40,8 @@ class StartAgent(InputModel):
     allow_analysis_data: StrictBool = False
     allow_listing_data: StrictBool = False
     allow_support_data: StrictBool = False
+    allow_operation_data: StrictBool = False
+    expected_operation_hash: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")] | None = None
     support_context: GenerateReply | None = None
     expected_product_source_row_id: Annotated[int, Field(gt=0)] | None = None
     budget: Budget = Field(default_factory=Budget)

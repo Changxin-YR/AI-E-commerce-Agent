@@ -286,3 +286,13 @@ Ruff **145 文件**规则和格式、mypy **107 app 文件**通过。Vue lint/ty
 新增桌面/手机客服模型 Playwright **2 项通过（13.3 秒）**，随后完整 **34 项通过（1.5 分钟）**。从确切消息进入模型流程，显示发送正文/政策，修改政策清空双授权，候选显示物流与退款双意图和人工接管，刷新回读，审批保存后跳转准确草稿，编辑/存档/刷新，再清除来源验证正文擦除。无页面脚本错误，手机无横向溢出。已实际查看桌面候选与手机存档截图；系统 Temp `soloops-support-{candidate,archived}-{desktop,mobile}.png` 为合成数据，不提交截图。
 
 pytest 与 Playwright 串行使用隔离 `_test` 库；浏览器替身只在测试 launcher 中向 `support-model-e2e-` 合成店铺开放。无需新迁移，head 仍为 `86df84dc129a`。上一提交 51c8701 的 [GitHub Actions](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37875677800) 已核实成功。74 SO、32 验收行完整保留，客服真实模型理解质量、运营模型流程及真实外发按矩阵继续验收。
+
+## 第十九迭代：运营模型概览与 P0 本地复核（2026-10-09）
+
+完整后端 `python -m pytest -q`：**398 passed / 140.32 秒**；新增 `test_operations_model.py` **24 项通过 / 19.58 秒**。覆盖九分支/四类计数完整保留、候选审批前零业务写入、回读及重跑保留完成状态、清除来源、空数据未检查；双授权与快照摘要、未知/重复/额外字段阻断且计费；在途暂停/取消/清除/覆盖；模型前/审批前/批准后库存到期；预算恢复、费用未知不重试；范围/对象隔离、审计失败回滚和两种供应商协议。无真实模型与邮件调用。
+
+Ruff **147 文件**规则/格式与 mypy **108 app 文件**通过；Vue type-check/lint/生产构建通过，Vitest **16 文件 30 项 / 2.32 秒**。新增运营预览迟到回包隔离、失败立即清空授权快照、文本转义。Vitest 初次在 Windows 沙箱缓存 rename 遇 EPERM，普通执行环境复验通过；Starlette/httpx 既有弃用提示仍在。
+
+运营模型桌面/手机定向 Playwright **2 项 / 12.8 秒**；完整 **36 项 / 1.4 分钟**。验证范围与快照授权、刷新清同意、完整缺数据概览、审批刷新回读、身份/渠道准确深链、原工作台批准/完成和清除。全站首轮发现逐项来源增加后旧测试的全文本定位重复，已将该用例限定到来源汇总容器；同轮临时 Vite 服务连接中断，后续用例未能运行，重启后的完整回归全部通过。已查看桌面概览和 390px 手机截图；非聚焦跳转链接不在视口内、手机无横向溢出。截图为系统 Temp 的 `soloops-operations-model-{desktop,mobile}.png`，不提交。
+
+pytest 和 Playwright 串行使用隔离 `_test` 库；新浏览器模型只对 `operations-model-e2e-` 合成店铺启用。无需迁移，head 仍为 `86df84dc129a`。交接提交 517d497 的 [CI](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37878451567) 已核实 success。74 SO、32 验收和 23 P0 最小模块复核表均完整。`p0-local-review.md` 记录 31 项本地适用行为的证据，A-13 真实外发送达仍待账号和授权；真实模型全面质量另验。
