@@ -4,6 +4,7 @@ from typing import Literal
 from app.schemas.analytics import SourceReference
 from app.schemas.common import OutputModel
 from app.schemas.expenses import ExpenseScope
+from app.schemas.fee_rules import FeeMapping
 from app.schemas.imports import StatementData
 
 
@@ -49,10 +50,12 @@ class FeeComparison(OutputModel):
 class StatementReconciliation(OutputModel):
     scope: ExpenseScope
     source_revision: int
+    rule_revision: int
     calculated_at: str
     statements: list[StatementItem]
     totals: list[StatementTotal]
     comparisons: list[FeeComparison]
+    mappings: list[FeeMapping]
     stale_expenses: int
     withdrawn_expenses: int
     checks: list[str]

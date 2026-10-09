@@ -4,10 +4,18 @@ import { comparisonStatuses, entryTypes, type StatementReconciliation } from '@/
 import { supportTime } from '@/types/support'
 import { expenseCategories } from '@/types/expenses'
 import StatementEvidence from './StatementEvidence.vue'
+import { mappingStatuses } from '@/types/feeRules'
 const props = defineProps<{ result: StatementReconciliation; shopId: number }>()
 const filter = ref('all')
 const comparisonLimit = ref(20)
 const lineLimit = ref(20)
+const mappingLimit = ref(20)
+const mappingFilter = ref('all')
+const mappings = computed(() =>
+  (props.result.mappings ?? []).filter(
+    (m) => mappingFilter.value === 'all' || m.status === mappingFilter.value,
+  ),
+)
 const filtered = computed(() =>
   props.result.comparisons.filter((c) => filter.value === 'all' || c.status === filter.value),
 )
@@ -19,6 +27,7 @@ const byId = computed(() => new Map(props.result.statements.map((line) => [line.
     <p>
       读取于 {{ supportTime(result.calculated_at, result.scope.timezone) }} · 来源版本
       {{ result.source_revision }}
+      · 收费规则变更号 {{ result.rule_revision }}
     </p>
     <p>
       {{ supportTime(result.scope.start_at, result.scope.timezone) }} 至
@@ -41,6 +50,48 @@ const byId = computed(() => new Map(props.result.statements.map((line) => [line.
       <ul>
         <li v-for="check in result.checks" :key="check">{{ check }}</li>
       </ul>
+    </details>
+    <details class="section-block">
+      <summary>当前收费分类（{{ result.mappings?.length ?? 0 }} 行）</summary>
+      <p>
+        此处应用当前人工规则版本；分类不代表已核对，不新增人工费用或计入净利润。规则变更后请重新读取。
+      </p>
+      <div class="form-field">
+        <label for="fee-mapping-filter">收费分类状态</label
+        ><select id="fee-mapping-filter" v-model="mappingFilter" @change="mappingLimit = 20">
+          <option value="all">全部</option>
+          <option v-for="(label, key) in mappingStatuses" :key="key" :value="key">
+            {{ label }}
+          </option>
+        </select>
+      </div>
+      <p v-if="!mappings.length">此筛选无收费分类行。</p>
+      <div
+        v-for="item in mappings.slice(0, mappingLimit)"
+        :key="item.statement_id"
+        class="section-block"
+      >
+        <p>
+          {{ byId.get(item.statement_id)?.fee_name }} · {{ mappingStatuses[item.status] }}<br />{{
+            item.category ? expenseCategories[item.category] : '类别待核'
+          }}<span v-if="item.rule_id !== null">
+            · 规则 #{{ item.rule_id }} v{{ item.rule_version }}</span
+          >
+        </p>
+        <StatementEvidence
+          v-if="byId.get(item.statement_id)"
+          :line="byId.get(item.statement_id)!"
+          :shop-id="shopId"
+          :timezone="result.scope.timezone"
+        />
+      </div>
+      <button
+        v-if="mappingLimit < mappings.length"
+        class="button secondary"
+        @click="mappingLimit += 20"
+      >
+        更多收费分类
+      </button>
     </details>
     <h3 class="section-block">费用差异清单</h3>
     <p>金额差额 = 账单费用 − 人工费用。重复编号与跨币种不计算差额；范围外记录可能造成单边缺失。</p>

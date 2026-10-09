@@ -9,6 +9,7 @@ import { qualityChannels } from '@/types/productQuality'
 import type { StatementReconciliation } from '@/types/statements'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import StatementResult from '@/components/StatementResult.vue'
+import FeeRules from '@/components/FeeRules.vue'
 
 const route = useRoute()
 const shops = ref<Shop[]>([])
@@ -23,6 +24,7 @@ const scope = reactive<StatementReconciliation['scope']>({
 const result = ref<StatementReconciliation | null>(null)
 const error = ref('')
 const busy = ref(false)
+const ruleBusy = ref(false)
 const importLink = computed(
   () =>
     `/imports?shop=${shopId.value}&kind=statements&identity=${scope.data_identity}&channel=${scope.channel}`,
@@ -105,7 +107,7 @@ onUnmounted(() => {
   </p>
   <section v-if="shops.length" class="form-panel section-block">
     <form @submit.prevent="reconcile">
-      <fieldset :disabled="busy">
+      <fieldset :disabled="busy || ruleBusy">
         <legend>核对范围</legend>
         <div class="form-grid">
           <div class="form-field">
@@ -152,6 +154,16 @@ onUnmounted(() => {
       </fieldset>
     </form>
   </section>
+  <FeeRules
+    v-if="shopId"
+    :key="[shopId, ...Object.values(scope)].join('|')"
+    :shop-id="shopId"
+    :scope="scope"
+    :disabled="busy"
+    @busy="ruleBusy = $event"
+    @invalidated="invalidate"
+    @changed="reconcile"
+  />
   <StatementResult v-if="result" :result="result" :shop-id="shopId" />
   <p v-else-if="shops.length && !busy" class="section-block">
     选择范围后读取当前记录。数据修订、页面切换或返回后，请重新核对。

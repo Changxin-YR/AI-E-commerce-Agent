@@ -11,6 +11,7 @@ from app.repositories.analytics import AnalyticsRepository
 from app.repositories.authorizations import AuthorizationsRepository
 from app.repositories.business_rules import BusinessRulesRepository
 from app.repositories.expenses import ExpenseRepository
+from app.repositories.fee_rules import FeeRuleRepository
 from app.repositories.identity import IdentityRepository
 from app.repositories.imports import ImportRepository
 from app.repositories.inventory import InventoryRepository
@@ -37,6 +38,7 @@ class UnitOfWork:
         self.authorizations = AuthorizationsRepository(session)
         self.business_rules = BusinessRulesRepository(session)
         self.expenses = ExpenseRepository(session)
+        self.fee_rules = FeeRuleRepository(session)
         self.identity = IdentityRepository(session)
         self.imports = ImportRepository(session)
         self.inventory = InventoryRepository(session)

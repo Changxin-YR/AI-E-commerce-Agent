@@ -16,6 +16,7 @@ from app.api.routes import (
     authorizations,
     business_rules,
     expenses,
+    fee_rules,
     imports,
     inventory,
     listings,
@@ -82,6 +83,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(product_quality.router, prefix="/api")
     application.include_router(product_edits.router, prefix="/api")
     application.include_router(expenses.router, prefix="/api")
+    application.include_router(fee_rules.router, prefix="/api")
     application.include_router(statements.router, prefix="/api")
 
     @application.get("/api/health/live", tags=["健康检查"])

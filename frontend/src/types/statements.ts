@@ -1,5 +1,6 @@
 import type { SourceReference } from './analytics'
 import type { ExpenseSummary, ExpenseContent } from './expenses'
+import type { FeeMapping } from './feeRules'
 
 export const entryTypes = {
   sale: '账单销售款',
@@ -50,10 +51,12 @@ export interface FeeComparison {
 export interface StatementReconciliation {
   scope: ExpenseSummary['scope']
   source_revision: number
+  rule_revision: number
   calculated_at: string
   statements: StatementItem[]
   totals: { currency: string; entry_type: keyof typeof entryTypes; amount: string; count: number }[]
   comparisons: FeeComparison[]
+  mappings: FeeMapping[]
   stale_expenses: number
   withdrawn_expenses: number
   checks: string[]

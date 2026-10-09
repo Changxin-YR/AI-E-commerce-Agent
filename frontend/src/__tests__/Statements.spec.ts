@@ -32,6 +32,8 @@ const result: StatementReconciliation = {
     end_at: '2026-10-08T00:00:00Z',
   },
   source_revision: 3,
+  rule_revision: 0,
+  mappings: [],
   calculated_at: '2026-10-09T00:00:00Z',
   statements: [
     {

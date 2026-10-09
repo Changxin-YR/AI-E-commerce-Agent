@@ -14,6 +14,7 @@ from app.schemas.statements import (
 )
 from app.services.evidence import evidence_key
 from app.services.expenses import naive_utc
+from app.services.fee_mapping import map_fees
 from app.services.profit_calculation import reference, utc_text
 
 
@@ -125,16 +126,24 @@ class StatementService:
                         occurred_at=utc_text(revision.occurred_at),
                     )
                 )
+        comparisons = compare_fees(statements, expenses)
+        rules = self.uow.fee_rules.active(owner, shop, scope.data_identity, scope.channel)
         output = StatementReconciliation(
             scope=scope,
             source_revision=store.data_revision,
+            rule_revision=self.uow.fee_rules.scope_revision(
+                owner, shop, scope.data_identity, scope.channel
+            ),
             calculated_at=utc_text(utc_now()),
             statements=statements,
             totals=[totals[key] for key in sorted(totals)],
-            comparisons=compare_fees(statements, expenses),
+            comparisons=comparisons,
+            mappings=map_fees(statements, comparisons, rules),
             stale_expenses=stale,
             withdrawn_expenses=withdrawn,
             checks=[
+                "收费名去首尾空白后区分大小写完整匹配当前人工规则；规则适用于同范围全部日期与币种。"
+                "分类结果仅供核对，未知、重复、异币种与类别冲突保持待核，不新增费用或改变金额。",
                 "两侧均按各自发生时间筛选半开窗口；只核对当前同店铺、数据身份与渠道的记录，跨期记录不自动寻找。",
                 "费用凭据编号按 NFKC、大小写及空白规范化后精确匹配；"
                 "同币种一对一才计算差额（账单费用减人工费用）。",

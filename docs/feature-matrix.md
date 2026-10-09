@@ -2,6 +2,8 @@
 
 需求基线：SoloOps V1.0（2026-10-08）。P0 23 项、P1 26 项、P2 25 项。状态描述当前交付切片，不代表整个长期模块完成。
 
+当前 SO-056 人工收费规则已完成合成数据闭环验证，规则变更号及刷新错误反馈的最终回归通过，见 testing 第二十六。
+
 | SO | 模块 | 优先级 | P0 切片 / 后续范围 | 实现位置 | 测试证据 | 当前状态 |
 |---|---|---|---|---|---|---|
 | SO-001 | 个人卖家初始化与经营资料 | P0 | 经营资料、店铺、模板/映射/预览/错误行/批次 | backend/app/services/profile.py、imports.py；frontend/src/views/ImportsView.vue | tests/test_identity.py、test_imports.py；frontend/e2e/imports.spec.ts | 初始化、商品/订单/消息/库存及通用渠道账单导入、映射与来源清除合成数据本地通过；更多真实渠道模板后续扩展 |
@@ -59,7 +61,7 @@
 | SO-053 | 实际成本与商品/店铺利润 | P0 | 订单行、采购成本和缺失费用的已知毛利 | services/profit_calculation.py | Decimal、缺口、币种、退款、阈值与来源测试 | 当前采购成本估算历史已知毛利基础通过；费用归集和实际历史成本待继续 |
 | SO-054 | 独立新品利润计算器 | P0 | 单币种单件已知毛利、费用假设、情景对比与敏感性 | services/profit.py、profit_rules.py；ProfitView.vue | test_profit.py 18 项；profit.spec.ts 桌面/手机；ProfitScenarioEditor.spec.ts | P0 最小切片合成数据本地通过：九类未知/零费用、依据、最多五方案、条件保本价、存档与清除；多币种换算与复杂费率后续扩展 |
 | SO-055 | 渠道账单、结算与回款 | P1 | 通用渠道账单 CSV/Excel、销售款/退款/费用/回款原行、历史与分类合计 | services/imports.py、statements.py、repositories/statements.py；ImportsView.vue、StatementsView.vue | test_statements.py；Statements.spec.ts、statements.spec.ts 桌面/手机 | 通用文件首片本地通过：预览确认/覆盖、原行历史、范围隔离、UTC/Decimal、撤销恢复与清除；回款到账、结算周期与余额核对、真实平台适配待实现 |
-| SO-056 | 平台费用映射、自定义费用与对账差异 | P1 | 人工费用版本台账、店铺/订单行归属、分币种合计与账单费用差异 | services/expenses.py、statements.py、evidence.py；ExpensesView.vue、StatementResult.vue | test_expenses.py、test_statements.py；费用/账单组件及桌面手机 E2E | 人工费用及通用账单核对本地通过：同范围明确凭据精确匹配，一致/金额差异/单边缺失/币种差异/重复歧义、原行与费用版本回读；平台收费类别规则、复杂分摊、物流/订单金额差异和人工核对结论存档待实现 |
+| SO-056 | 平台费用映射、自定义费用与对账差异 | P1 | 人工费用版本台账、归属/合计、账单差异与人工收费类别规则 | services/expenses.py、statements.py、fee_rules.py、fee_mapping.py；ExpensesView.vue、StatementResult.vue、FeeRules.vue | test_expenses.py、test_statements.py、test_fee_rules.py；FeeRules.spec.ts、fee-rules.spec.ts 及费用/账单桌面手机 E2E | 合成本地通过：人工费用、凭据差异与原行、完整收费名规则→差异预览/确认→当前应用→修订历史→撤销/清除；未知/重复/币种/类别冲突待核。真实平台收费定义、多条件/生效日期规则、复杂分摊、物流/订单金额差异和人工核对结论存档待继续 |
 | SO-057 | AI 自然语言经营问数和异常解释 | P0 | 销售/购买量前五/低毛利问题理解、匿名事实解释、来源与待办 | services/analysis_explanation.py、agent.py、analytics.py；AnalysisNarrative.vue | test_analysis_model.py 28 项；AnalysisNarrative.spec.ts、analysis-model.spec.ts | Responses 可配置适配、事实编号校验、确定性金额与来源、双重数据授权、费用/未知态、审批待办合成及协议替身通过；百炼通道已接入，问数真实模型理解质量待单独验证，精确净利润仍缺费用依据 |
 | SO-058 | 运营变更版本、A/B 测试与效果评估 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-059 | 多币种、汇率、税费与数据完整性 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |

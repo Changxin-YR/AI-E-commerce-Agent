@@ -232,3 +232,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [SQLAlchemy 查询执行选项](https://docs.sqlalchemy.org/en/20/orm/queryguide/api.html) | 官方文档，源码 MIT；未复制实现 | 用户→店铺锁之后用当前读与 populate_existing，账单及费用在同一事务快照内计算，Numeric/Decimal 分币种 |
 
 沿用已确认的 Firecrawl 402 限制，经官方网页检索。复用文件解析、预览、版本确认和批次生命周期；每行声明语义及正数绝对金额，费用凭据按统一规范化编号核对。首片只读计算当前范围的差异，不保存“已核对”人工结论，不自动改写账单或费用；平台收费映射、结算周期完整性、银行到账及真实报表验证继续待补。
+
+## 人工收费类别映射规则（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [Amazon Finances API](https://developer-docs.amazon/sp-api/docs/finances-api) | 官方业务文档，按网站条款使用；未复制正文或实现 | 保留平台财务来源语义，分类由卖家按实际收费定义确认；本地规则不预装未经真实报表核验的平台收费表 |
+| [SQLAlchemy Populate Existing](https://docs.sqlalchemy.org/en/20/orm/queryguide/api.html#populate-existing) | 官方文档，源码 MIT；未复制实现 | 用户→店铺锁后的当前读同时刷新 ORM 身份缓存；预览、规则版本、账单来源及费用版本在保存时复验 |
+
+沿用已确认的 Firecrawl 402 限制，经官方网页读取。规则按店铺/身份/渠道、去首尾空白后区分大小写的完整收费名匹配，当前规则适用于全部日期与币种；时间窗口仅限制差异预览。持久化人工规则及调整理由，账单应用结果实时计算，规则保存不等于人工账单核对结论。
