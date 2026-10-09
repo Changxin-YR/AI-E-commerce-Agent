@@ -1,84 +1,56 @@
 # SoloOps 重点上下文
 
-更新：2026-10-09。SO-056人工收费映射规则与调整历史已完成最终检查并推送main。用户“可以，批准检查”后的后端、前端单元和桌面/手机回归均通过；当前无执行许可阻塞。
+更新：2026-10-09。SO-055/SO-056 人工核对结论存档已完成并推送 main；本聊天完成落盘后停止写入，由新聊天独占主工作区继续。不要启动子代理，不要两个聊天并行修改。
 
-## 最新成果：人工收费类别规则
+## 当前提交与验证
 
-- `fee_rules` API→服务→repository，FeeRule/FeeRuleRevision，迁移`2d826d48220b`，`fee_mapping`纯分类；账单页FeeRules提供新建/修订→原行差异预览→明确保存→当前分类回读→历史→撤销/清除。development三十一/testing二十六，references/questions/interview-guide/README/矩阵已更新；全部74 SO/32验收保留。
-- 同用户店铺/身份/渠道，收费名strip后区分大小写/全半角/内部空白完整匹配；SHA256 UTF8有效匹配键唯一。七个费用类别、全部日期币种生效，窗口仅限预览；200有效规则/100次创建修订/20条列表，仍可撤销清除；预览复用每侧1000行/366天。
-- 用户→店铺锁，with_for_update/populate_existing当前读；preview复用reconcile与defer_commits同事务。摘要绑定完整输入/窗口、来源版本、费用版本、完整active规则ID/version/content、匹配契约fee-name-exact-v1。`scope_revision`读取同范围全部revision最新ID（含撤销清除），返回rule_revision，防新建后撤销把规则集恢复原样而复活旧预览。
-- UUID按用户唯一，hash绑定动作/范围/目标/version/预览；服务端锁后重算hash，旧预览409；UUID回放返回当前记录，清除不会重建正文。withdraw释放match_key保留历史；clear同事务擦current与所有revision正文/key，保留无正文状态/hash/审计；审计失败回滚。
-- 规则为独立人工字典，不保存来源账单/费用正文或批次依赖。原来源清除下一次读自然无分类行，规则仍保留；来源恢复重新分类，不恢复“已核对”结论。当前只读分类未保存核对结论；不改原账单/人工费用，不生成费用或净利。
-- 五状态unmapped/ambiguous/currency_mismatch/category_conflict/mapped；重复凭据或规则整组待核，异币种不分类，类别冲突显示拟分类并待核，mapped也标业务待核。旧金额比较六状态独立展示。
-- 前端范围变化重建组件，输入改变撤preview/consent；focus/unmount/epoch丢迟到，刷新/保存先隐藏旧正文，未知请求保留原UUID原输入回查。最后修正refresh在action前invalidate，确保请求失败错误可见；scope表单在ruleBusy锁定。
-- 本地完整后端 **570项/216.66秒**、完整E2E **50项/2.0分钟**在最后补充前通过；补充规则变更号/刷新错误后，最终规则与账单 **56项/29.84秒**、完整Vitest **22文件65项/3.78秒**、桌面/手机规则与账单E2E **4项/17.1秒**通过，当前571个后端用例均有本轮覆盖，不称一次完整571运行。
-- 最终Ruff规则/format197文件、mypy143app、Vue lint/type-check/build通过。隔离库迁移回退/升级/check及开发库升级/check通过；downgrade按依赖直接drop新增表，避免删除FK必需索引失败。最后30路径敏感文件/凭据模式与git diff --check通过。
-- Chromium URL http://127.0.0.1:5174/statements，1440×1000/390×844；URL/标题/内容/框架错误层/登录后console/pageerror/交互/手机无横溢均检查。Browser插件/browser技能未提供，依frontend-testing-debugging使用项目Playwright。截图已查看：系统Temp `soloops-fee-rules-{preview,history}-{desktop,mobile}.png`，不提交。
+- main **c108006e7926b3a7428e3c4d983780633c59efce** 已正常推送，共32文件；主工作区干净。人工核对结论实现见 development 三十二、testing 第二十七，references/interview-guide/questions/README/两矩阵已更新；全部74 SO/32验收/7长期E2E保留。
+- 当前 CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37936760400 已在 GitHub Actions 页面核实对应 c108006，最后状态 In progress。接续先核实结果，失败先修。前一 d53cf39 的 CI37932923289 已 Success（verify 6m27s）。
+- 完整后端 **604项/245.18秒**在最后原子当前回读调整前通过；补充同事务返回 record+preview 后，最终核对存档 **33项/20.10秒**通过。准确区分两次证据，不称最终修改后又完整运行604。
+- 最终完整 Vitest **23文件73项/3.22秒**、完整 Playwright **52项/2.1分钟**通过。Ruff规则/格式201文件、mypy148 app文件、Vue lint/type-check/生产构建通过。
+- 新迁移 **9862c543a46b**：隔离_test库 downgrade 2d826d48220b → upgrade head → check通过；开发库正常 upgrade/check通过。pytest、迁移回退与E2E严格串行。
+- Chromium 1440×1000、390×844；http://127.0.0.1:5174/statements。URL/标题/非空/overlay/登录后console/pageerror/交互/无横溢通过，四张预览与历史截图实际查看：系统Temp `soloops-statement-reviews-{preview,history}-{desktop,mobile}.png`，不提交。
+- 新测试初次stale分支重复创建同店标识，修正fixture后通过；新E2E初次来源定位包含祖先details，限定实际账单结果内后通过。截图复核把勾选框从普通input尺寸改为18px、沿用绿色及文本框样式。
 
-## 目标与授权
+## 最新能力：人工核对结论存档
 
-- 持续完成冻结稿 docs/requirements/SoloOps-V1.0.md。保留全部 74 SO、32 验收、7 长期 E2E；23 个 P0 当前仅为四条 MVP 的最小切片，计划不能称实现。
-- 简体中文；Vue 3/TypeScript、FastAPI/Python、MySQL；接口→服务→repository，Agent 只能调用受控服务。沿用现有设计。
-- 每功能先官方/GitHub 检索并更新 references（借鉴、许可证、适配）；实际实现前后端并验证，更新 development/interview-guide/testing/questions 与矩阵，正常提交推送 main/context-memory，不强推。
-- 用户授权上下文压力时先落盘推送，再创建本地接续聊天；接手后旧聊天停止修改，同工作区独占。未经明确要求不启动子代理。
-- 百炼凭据在本机忽略配置中；此前鉴权及累计 ¥0.01 合成测试一次性许可已用完。额外真实测试须独立授权，正常页面仍需数据同意与 USD 预算。A-13 真实邮件仍待本人通道、测试收件箱及授权。
-- 密钥、真实客户数据、本机配置与日志不提交。已有 backend/.env 无需索取或打印。仅本地合成测试可直接继续。
+- `statement_reviews` API → StatementReviewService → StatementReviewRepository；五表主记录、revision、source、expense、rule依赖。`/statements` StatementReviews 提供新建→输入结论/说明→预览→明确保存→详情/固定链接→当前来源费用规则→逐版本历史→修订→撤销/清除。
+- 窗口级 conclusion：consistent（本窗口费用一致）、differences_recorded（金额差异已说明，处理待跟进）、pending。说明1—1000字符。非空、全部比较一对一同币种、规则分类一致且无排除费用才允许前两种；金额差异不能确认一致，没有差异不能选择差异说明；未知分类/缺失一侧/重复/异币种/类别冲突/待重核撤销费用/空范围只许pending。
+- 状态active/stale/withdrawn/cleared；active不表示业务结论已解决，pending也可active。version记录所有状态变更，content_version指最近人工正文。每份100次保存/单次2MiB/累计10000历史依赖；查询复用366天和两侧各1000行，列表20条仅元数据，详情按version读单个完整依据，历史仅查JSON conclusion摘要。
+- 用户→店铺锁，with_for_update/populate_existing；预览复用StatementService与defer_commits。hash绑定契约statement-review-v1、完整draft/目标/version、范围、source_revision、expense_revision、rule_revision及完整比较结果（仅排除calculated_at）。ExpenseRepository新增scope_revision取同范围所有ExpenseRevision最大ID，包含撤销清除；规则已有同样变更号。集合恢复原样仍不能复活旧预览。
+- UUID用户内唯一、hash绑定动作/范围/对象/版本/全部输入；重复请求回读当前状态。导入变化保守失效同店active结论；费用/规则变动保守失效同店同身份同渠道结论（即使在窗口之外）。恢复原值不会激活旧确认，须新预览确认。失效递增状态版本，不伪造人工revision。
+- 每次保存累加全部当前账单批次、范围内所有费用（含排除项）、全部active规则，并展开费用所有历史来源批次。修订缩短窗口不丢旧依赖。任一历史批次/费用/规则清除，擦相关结论所有revision.snapshot（含说明/范围/账单金额正文）和三类依赖；保留最小状态/hash/无正文审计，与原清除和末尾审计同事务，失败整笔回滚。独立记录保留。
+- `GET /statement-reviews/{id}/current` **同一事务**返回ReviewCurrent(record最新存档状态, preview当前依据)；已清除返回preview=null。不能在前端分两次请求读取状态与依据，否则会有跨请求竞态。当前读不保存/激活结论，尚需明确确认。
+- 前端范围、focus、规则变化、卸载epoch丢迟到；操作开始隐藏旧正文，失败可见错误；未知请求保留原UUID输入回查，4xx明确拒绝后可重新预览。固定链接回填实际身份/渠道/范围，scope改变清initialReview，避免重建组件又打开旧深链。初始化也有独立epoch。
+- StatementResult新增historical标记和useId控件ID，可同页展示历史与当前；历史按保存时规则展示，不冒充当前读取。当前读结果清除时同步隐藏旧正文。源清除保持核对记录最小状态。
+- 不生成真实付款或额外费用，不输出实际净利；分类和一致结论仅覆盖导入窗口。Agent尚未新增此写入技能。
 
-## 当前提交、CI 与环境
+## 授权、工作方式与环境
 
-- main **d53cf39ba92d0a17dd3a39fe888d1577e2e836c3** 已正常推送，人工收费映射规则实现及文档共30文件；主工作区干净。本分支仅维护重点上下文，不合并到main。
-- 新CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37932923289 已从GitHub页面核实对应d53cf39，当前In progress；接续先确认结果。上一9530848的CI37928125060已核实Success。
-- 当前GitHub connector的github_fetch虽可发现但不可调用，gh未安装；通过可用浏览器读取GitHub CI。Firecrawl已知402，不重复计费接口；官方网页工具作为公开资料fallback，不临时编写HTTP抓取脚本。
-- backend/.venv Python3.11、frontend/node_modules；Docker MySQL8.4 开发3307/测试3308，项目容器soloops-mysql-1 / soloops-mysql-test-1。迁移head **2d826d48220b**；隔离_test库 down d32312391696 / up head / check 和开发库upgrade/check通过。
-- 开发API8000核实父44580/子40380命令行后隐藏重启，最后launcher28892；前端5173 Node28144沿用。最终OpenAPI含fee-rules及StatementReconciliation.rule_revision，账单页200。API无热重载；启停必须重核端口和CIM命令行，不凭旧PID停进程；Start-Process一律WindowStyle Hidden。
-- pytest、Playwright、迁移回退共用_test库，严格串行。Settings显式关闭真实模型/邮件/常规调度，专门worker测试才开启本地扫描；Vitest可独立运行。日志在忽略的.local，不提交。
-- Windows沙箱MySQL socket10013/Vitest缓存rename EPERM需允许执行环境；用户本轮明确批准最终检查，已成功运行。若10061先查项目MySQL容器；使用python -m mypy，直接mypy.exe历史有uv trampoline路径问题。
-- E2E必须 **npm run test:e2e**：pretest先build-only，Playwright管理隔离API8001与vite preview5174，CI=true。不要直接npx playwright test漏构建。
-- 本机Node24.15.0 / Vite8.3.4历史偶发预览退出/请求状态-1，根因未定位。本轮首次定向4项3过1单次清除连接中断，随后完整50项与最终定向4项通过。不得把复验通过当作环境根因修复；日志/trace含合成cookie/CSRF，只提取方法/路径/状态/错误类型，不原样输出，保持忽略。
+- 简体中文；Vue3/TypeScript、FastAPI/Python、MySQL；API→服务→repository，Agent只能调用受控服务。功能基线docs/requirements/SoloOps-V1.0.md；23 P0是四MVP最小切片，不把计划或替身当生产验收。
+- 每功能先官方/GitHub检索并更新references（资料/许可证/借鉴/适配），沿用现有UI。前后端、相关测试和静态/桌面手机通过后更新development/interview-guide/testing/questions与矩阵，正常提交推送main和context-memory，禁止强推。
+- 用户授权上下文压力时先落盘推送，再创建本地接续聊天。交接后旧聊天停止工作区写入；未经明确要求不启动子代理。context-memory分支仅存重点上下文，不合并main、不保存完整聊天。
+- 真实百炼一次性合成测试许可已耗尽（历史累计估算¥0.0001108/¥0.01），不能再用旧许可额外调用。正常测试关闭真实模型、邮件、常规调度；专门worker测试例外仅本地合成。A-13真实邮件仍缺本人通道/测试收件箱/授权。密钥和真实客户数据、本机配置/日志不提交，不输出.env或trace中cookie/CSRF。
+- backend/.venv Python3.11，frontend/node_modules；Docker MySQL8.4开发3307、测试3308，soloops-mysql-1 / soloops-mysql-test-1。
+- E2E必须 **npm run test:e2e**，pretest先build-only、Playwright管理隔离API8001与preview5174，CI=true；不用直接npx playwright test跳过构建。pytest/迁移回退/E2E共享_test库，严格串行；Vitest可独立。
+- Windows沙箱MySQL socket10013与Vitest缓存rename EPERM需要允许执行环境，用户先前已批准检查，本轮执行均获自动允许。若10061先查项目MySQL容器。python -m mypy避免旧mypy.exe trampoline问题。
+- 本机Node24.15/Vite8.3.4曾偶发退出/请求状态-1，根因未定位；本轮52项全过不代表环境根因修复。Starlette/httpx、NO_COLOR警告仍保留。日志与trace忽略，只提取路径/方法/状态/错误类型。
+- 开发API8000旧监听46968/父28892经过CIM核对后隐藏重启，最后launcher **54672**；前端5173既有Node28144沿用。最终OpenAPI核实新路由和ReviewCurrent、前端200。后续重启务必重核端口/CIM身份，不能凭此PID停进程；Start-Process必须WindowStyle Hidden。
+- GitHub connector当前github_fetch虽能发现但不可调用，gh未安装。可用cua IAB公开GitHub页面核实CI。本轮Chrome不可用，Edge策略读取失败，IAB可用。Browser插件/browser技能未列出，前端按frontend-testing-debugging用项目Playwright。
+- Firecrawl已知402，不重复计费接口，官方web工具fallback，不写HTTP抓取脚本。普通文件定位用rg，语义图才用codegraphcontext且先检查可用。
 
-## 既有账单与费用差异能力
+## 既有财务与来源不变量
 
-- development三十/testing第二十五。`/statements`：范围→CSV/Excel模板与上传→映射纠错预览→明确确认导入→当前费用核对→状态筛选→原始行/批次/人工费用深链→撤销/清除→重新核对。AppShell第17项导航；导入页支持statements类型和范围/批次深链，进入批次先隐藏旧正文。
-- 新ImportKind statements复用2MiB/2000行/64列上限和既有导入版本/幂等/更新确认/撤销恢复。字段statement_id、line_id、entry_type、amount、currency、occurred_at、evidence_ref、fee_name、settlement_id、order_id、note。四类sale/refund/fee/payout使用正绝对值Decimal/Numeric(18,4)，分别合计；payout是平台记载回款、到账待核。fee要求凭据费用行编号和原始收费项名各120字符；非fee禁止fee_name，note500，稳定ID120。
-- 无明确语义的调整/余额/返还/符号净额拒绝。无偏移时间使用批次IANA，拒绝DST歧义/缺失，UTC年2000—2100，未来最多5分钟；StatementLine发生时间和批次created_at/expires_at/committed_at为DATETIME(6)。唯一键shop+identity+channel+statement_id+line_id，ID保留大小写utf8mb4_bin，ImportRow业务键包含kind/identity/channel/两个ID，避免跨范围覆盖。
-- `api/routes/statements.py → StatementService → StatementRepository`；POST `/shops/{shop_id}/statements/reconcile`只读，复用ExpenseScope。含偏移半开时间窗最多366天，两侧各1000行，任一超限整体拒绝。用户→店铺锁，两侧with_for_update/populate_existing当前读，防RR旧快照及ORM缓存。双方各按自身发生时间过滤，不跨期找编号。
-- 比较窗口内当前fee账单和active人工费用，NFKC/casefold/空白折叠的共同evidence_key在services/evidence.py。六类matched/amount_difference/statement_only/expense_only/ambiguous/currency_mismatch；一对一同币种差额=账单-人工费用；重复整组歧义不加总，异币种不算差额。stale/withdrawn计排除笔数；cleared无时间正文不计。
-- 返回读取时刻、店铺source_revision、每笔expense.version及账单source，只读不保存人工已核对结论，不改原记录。来源变化保守失效订单行费用，恢复不复活确认，独立shop费用保留。撤销恢复剩余有效账单版本；清除擦原行及其它同业务键行的previous副本，下一次当前读自然不含清除行。整店运营报告继续失效，四类运营候选不消费账单。
-- StatementsView/StatementResult/StatementEvidence沿用现有设计；每页20条、六状态筛选、原始收费名/人工类别归属/币种符号/窗口/完整性未知明确。范围变化、刷新、focus隐藏旧结果，epoch丢迟到返回。共享SupportSource按店铺/源行getter监听，父页面新对象但同源时保留正文；再次读取先清旧值，真正切换/unmount递增epoch，A→B→A旧请求不能回填。
-- 新后端最终 **35项/20.00秒**；完整pytest先 **548项/263.56秒**通过，其后新增2个数据库边界用例包含在最终35项定向中。当前550测试均有本轮通过覆盖，不称一次完整550运行。Ruff规则/格式189文件、mypy137app、Vue lint/type/build通过，完整Vitest **21文件60项/4.71秒**。迁移隔离库回退/升级/check和开发库升级/check均通过。
-- 最终完整E2E **47/48项/2.1分钟**，失败和环境限制见上；最终定时+账单定向 **6项/20.3秒**全通过。Chromium 1440×1000和390×844，URL http://127.0.0.1:5174/statements；URL/标题/内容/overlay/登录后console/pageerror/交互/横溢均检查。Browser插件/browser技能未提供，按frontend-testing-debugging用项目Playwright。最新入口及详情截图已查看：系统Temp soloops-statements-{entry-}{desktop,mobile}.png。38文件路径/敏感token检查及git diff --check通过。
-- SO-055/SO-056当前为通用文件和本地费用差异切片；真实平台收费映射、订单/物流差异、人工核对结论存档、结算周期/银行到账和复杂分摊待继续。账单费用不自动重复加入人工费用，完整性未知，不输出实际净利润。
+- 通用账单kind statements：四类sale/refund/fee/payout正绝对金额；fee要求evidence_ref和fee_name，其他禁止fee_name。2MiB文件/2000行/64列；无偏移按批次IANA，拒DST歧义缺失，UTC2000—2100未来5分钟。Numeric(18,4)、DATETIME(6)，大小写敏感键shop+identity+channel+statement_id+line_id。
+- StatementService只读reconcile：同范围半开窗366天/各1000，用户→店铺锁与当前读；共同evidence_key为NFKC/casefold/空白折叠。六状态matched/amount_difference/statement_only/expense_only/ambiguous/currency_mismatch；差额账单减人工，仅一对一同币种，重复整组待核不抵销。双方各按自身发生时间筛选，stale/withdrawn排除。
+- FeeRule独立人工字典，完整收费名strip后区分大小写/全半角/内部空白，SHA256匹配键唯一；七类别/全部日期币种，预览窗口不是生效期。200active/100revision。规则变化号包含撤销清除；withdraw释放key，clear擦全部正文。五分类mapped/unmapped/ambiguous/currency_mismatch/category_conflict均不自动生成人工已核对结论。
+- Expense人工台账：shop未分摊或order_line单行全额，不乘数量。金额Decimal/UTC/IANA、凭据同范围去重active/stale阻断，UUID回放当前状态。来源变化保守失效order_line，shop费用保留；ExpenseSource保存所有历史批次，改成shop也不删除历史依赖。来源清除擦所有版本、金额、时间、凭据键与依赖。
+- ImportService撤销恢复剩余有效投影；清除擦原行和同业务键previous副本。产品人工修订为独立manual_edit批次并登记全部祖先，后代优先撤销清除、整链同事务。SupportSource按shop/源行getter watch，真实切换epoch防A→B→A迟到。
 
-## 既有费用台账的不变量
+## 其他长期不变量与接续起点
 
-- development二十九/testing第二十四。`/expenses`：店铺/身份/渠道→名称类别、金额币种、发生时间/IANA、凭据行编号、事实依据、理由→明确确认保存→详情/历史/固定链接→修订→撤销/清除→按发生时间核对合计。金额Decimal/Numeric(18,4)，大于0，时间UTC DATETIME(6)，偏移须匹配IANA，未来最多5分钟时钟误差，年份2000—2100。
-- API→ExpenseService→ExpenseRepository。Expense维护状态/版本/当前内容版本，ExpenseRevision保存每次人工操作的强类型amount/occurred_at及有界snapshot，ExpenseSource登记全部历史批次。名称100/凭据120/依据1000/理由500字符；每笔最多100次录入/修订，仍可撤销/清除；列表20条游标，订单精确查找最多100行，核对最多366天/1000笔整体拒绝超限。
-- 两种归属：shop未分摊、order_line单行全额。订单关联验证当前源行、shop.data_revision、同店/身份/渠道/币种；费用总额只计一次，不乘订单数量。订单状态始终展示，取消/退款后费用是否适用仍需人工依据。无多行分摊/换汇。
-- 用户→店铺→费用锁 + populate_existing当前读。UUID按用户唯一，hash绑定目标/动作/版本/范围/全部输入，同请求返回当前状态；不同内容拒绝。凭据编号NFKC/casefold/空白折叠后在同店/身份/渠道去重，active与stale都阻断，撤销/清除释放；旧UUID不会重建清除内容。所有版本/来源/无正文审计同事务。
-- 任意店铺导入变更保守地将有效order_line费用stale并递增版本，恢复旧投影不复活旧确认；shop独立费用保留。重新核对关联并保存才active。状态版本与内容版本可能间隔。
-- ImportService清除任一历史来源时，擦该笔全部revision snapshot/金额/发生时间/凭据键/全部依赖，即使已改成shop费用也擦历史。独立记录保留；源清除和费用清除同事务，审计故障整笔回滚。
-- 核对按当前版本occurred_at半开窗口、身份/渠道、币种/类别/归属，active Decimal合计，stale/withdrawn计排除笔数，cleared无法计入时间窗。费用完整性未知，平台/物流账单及回款待核对；空范围不代表实际零费用；既有毛利与新品假设独立，不能据此输出净利润。
-- ExpensesView/ExpenseEditor/ExpenseEvidence使用现有设计。更改字段清确认；编辑订单行必须重新查来源；epoch丢迟到范围/订单回包；保存/刷新/处理先隐藏旧正文及列表，失败不残留。未知请求保存原UUID/输入用于回查。读合计时禁用而不卸载编辑表单，保留未保存输入；固定链接回填身份渠道。导入页提示费用依赖影响。
-
-## 既有主要能力与不变量
-
-- owner/shop约束；用户→店铺→来源→派生锁序；Decimal/Numeric，UTC持久化、IANA显示。锁后当前读防MySQL RR旧快照及ORM缓存。商品键shop+SKU、订单shop+order+line、消息shop+channel+message_id、库存shop+channel+SKU。
-- SO-014 `/product-quality` 当前主档检查，1000商品/2MB；名称/参数/售价成本币种、相似SKU、有限关键词规则，missing/review及未检查项明确。保存范围/revision/hash/UUID，全部商品依赖，来源变化stale，清任何依赖擦正文和SKU前缀。
-- SO-014 `/product-edits` 本地名称/参数批修，最多50商品、1MB正文、1000祖先批次。草稿差异→逐次审批→整批生效/逐项失败→当前来源计数→拒绝/撤销/清除。审批绑定草稿version/hash、全部原行、整店revision，来源恢复不复活审批。
-- 人工商品修订独立manual_edit ImportBatch+ImportRow，raw保留理由和before，normalized after，金额继承原来源；复用ImportService.commit更新Product和派生失效。全部祖先依赖，ImportService.withdraw外层事务后代优先处理输出再原批次，无递归提交；源清除擦祖先派生/下游正文，独立分支保留，审计故障整链回滚。共享SourceReference.origin/SupportSource区分人工依据。
-- SO-006定时巡检/自然周期报表：日周月、DST、唯一周期、最近一期24小时恢复，更旧合并、暂停不补跑；每店100计划、每轮20。daily Agent本地候选仍逐次审批。报表锚原计划时刻取前自然日/周/月，分币种前后期，OverviewService+依赖+通知+下期同事务，通知只引用ID。外部通知、事件、紧急分级后续。
-- 今日运营四类：来源待核履约、有效低库存、客服回复核对、已知成本低毛利。单项10000行/最多500候选、超限整体拒绝；重跑保留人工状态。MVP01 daily_model仅发送目标/范围/聚合分支和候选数，本地恢复9分支/4类候选；双同意与完整hash，调用前后/审批/保存复验。
-- 问数：半开窗口最多366天/10000行，同身份同币种当前成本估历史毛利，费用缺失不算净利；question_plan→metrics→explain_analysis→analysis_todo→verify，数值本地渲染，最多20匿名SKU。
-- Listing模型只选标题参数/排序全部参数，描述不得漏事实；来源/当前基线网络前后/保存复验，候选保存和本地生效独立审批，依赖包括比较旧版，去重保留人工状态。
-- 客服规则与模型意图并集，固定事实/政策ID、本地中英模板和完整FAQ；敏感/冲突/未知语言转人工，消息/政策双同意绑定原行/版本/全部订单行人工核验；全部已发送政策登记依赖。语义检索、自动语言检测、多轮后续。
-- 模型openai_responses/dashscope_chat固定官方端点，无工具/重试/代理/重定向，有界JSON。预算预留/持久租约网络前提交，返回复验；已知usage拒答或无效仍计费，未知保留预留不重发。Agent默认12步/120秒/0USD，恢复提高总预算不归零，临时白名单读最多3次，写不重试，defer_commits/savepoint保持原子。
-- R1预授权绑定范围/规则/来源/次数/时效；R2 Resend默认关闭，仅本人验证邮箱/全文摘要一次，未知只读回查不重发。跨店Overview按币种/显式时区/完整依赖，驾驶舱10类元数据UNION ALL稳定keyset，读不执行、深链回原权限服务。
-
-## P0边界与接续起点
-
-- p0-local-review.md保留4 MVP、23 P0最小模块、32验收边界；A01—12与A14—32共31项本地适用证据通过。A13真实邮件、真实模型全面质量、七条长期E2E未完整验收。
-- 接续先核对d53cf39的CI37932923289，失败先修。读AGENTS、冻结稿、矩阵、development三十一/testing第二十六及本文件；新聊天独占主工作区，旧聊天停止修改。
-- 下一独立切片建议 **SO-055/SO-056 人工核对结论存档**：先官方/GitHub检索更新references，阅读SO-053/055/056/057及statements/expenses/fee_rules/imports分层，确定有界人工结论及差异说明契约，实现预览→明确保存→当前来源/费用/规则回读→历史→撤销/清除前后端闭环。
-- 保存结论绑定当前账单来源、人工费用版本、完整范围与规则变更号，以及全部历史来源依赖。来源/费用/规则变化使旧结论失效；恢复原值不复活旧确认；来源清除擦所有历史依赖正文，与源清除及末尾审计同事务。未知/重复/币种与类别冲突仍明确待核，不自动生成费用或真实付款，不输出实际净利润。
-- 真实平台收费定义、多条件/生效日期规则、复杂分摊、物流/订单金额差异、结算周期和银行到账继续保留待实现。每功能更新全部跟踪文档、测试/静态/桌面手机后正常推送main/context-memory；继续独立P1/P2。
-- 上下文压力时依既有授权先落盘推送再创建本地接续聊天；创建后旧聊天停止修改，不启动子代理。
+- 今日运营四类本地候选、逐次审批；问数固定统计/匿名事实、当前成本估历史毛利，未知费用不能算净利。Listing模型只编排事实、客服规则和模型并集敏感转人工；模型网络前后及保存复验来源、预算/授权，未知响应不重发。
+- R1范围/规则/次数/时效预授权，R2 Resend默认关闭、本人验证邮箱单次全文摘要、未知只读回查。定时本地日周月/DST/唯一周期、24小时最近一期恢复、站内通知只引用ID，日历报表按完整上期自然区间。商品质量与本地名称参数批修、跨店总览、驾驶舱原权限深链均已合成通过，完整边界见对应docs。
+- 接续先读AGENTS、冻结稿、矩阵、development三十二/testing第二十七及本文；先核实 c108006 的CI37936760400，失败先修。
+- 下一独立切片建议 **SO-055 结算周期与人工回款凭据核对**。先检索官方/GitHub资料并更新references，阅读SO-053/055/056/057/059与现有statements/expenses/reviews/imports。定义有界、可溯源的周期及平台记载回款/卖家人工登记到账依据契约，区分平台记载、人工声称及真实银行证据；未知覆盖/余额/跨币种不自动确认。实现本地预览→明确保存→当前来源回读→差异/历史→撤销/清除闭环，保持全部历史依赖及原子审计。
+- 本地合成数据可独立推进；不得申请真实银行连接、触发付款、自动生成重复费用或把人工登记当银行API确证。真实平台报表、结算余额、银行到账、复杂分摊/物流订单差异继续如实区分未验部分。若设计发现必要业务语义缺失，写questions并推进独立部分。
