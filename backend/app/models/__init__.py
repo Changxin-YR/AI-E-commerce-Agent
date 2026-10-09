@@ -1,6 +1,7 @@
 from app.models.agent import AgentExecution, AgentPolicySource, AgentSource, AgentStep
 from app.models.authorizations import AuthorizationUse, InternalAuthorization
 from app.models.business_rules import BusinessRuleRevision
+from app.models.expenses import Expense, ExpenseRevision, ExpenseSource
 from app.models.identity import AuditEvent, LoginSession, SellerProfile, Shop, User
 from app.models.imports import (
     CustomerMessage,
@@ -28,6 +29,9 @@ from app.models.schedules import OperationSchedule, ScheduleOccurrence
 from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
 
 __all__ = [
+    "Expense",
+    "ExpenseRevision",
+    "ExpenseSource",
     "ProductEdit",
     "ProductEditSource",
     "ProductQualityReport",

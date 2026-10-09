@@ -350,3 +350,17 @@ Browser 插件及其 browser 技能在本会话未提供，按 frontend-testing-
 迁移 `c5e81a209d74 / d6f920a41b85` 在隔离 `_test` 库 **downgrade 7b92c4d16e80 → upgrade head → alembic check** 通过；开发库 upgrade/check 通过。pytest、迁移回退和 Playwright 严格串行。核实 uvicorn 命令行后隐藏重启开发 API8000（本次 launcher27088），前端5173继续使用现有服务，两端200，新修订接口已可读；后续启停仍需重核进程身份。
 
 交接基线 cb6c585 的 [CI](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37917649249) 已核实 verify completed/success。仍完整保留 **74 SO / 32 验收 / 7 长期 E2E**；SO-014 本轮增加名称/参数本地批量运营证据，价格/库存/素材与多店同步仍为后续范围。
+
+## 第二十四迭代：自定义实际费用与本地核对（2026-10-09）
+
+新增 `test_expenses.py` 最终 **29 项 / 12.06 秒**通过，完整后端 **515 项 / 206.83 秒**通过。覆盖 Decimal 精度与 Numeric 回读、UTC/微秒、IANA 偏移/DST、未来时间、字段长度/额外字段、确认门禁、凭据规范化去重、范围/用户/CSRF、创建和修订 UUID 回放、双会话竞争、版本冲突、订单币种和源行绑定、整店来源失效与恢复阻断、半开窗口/分币种/当前版本合计、1000 笔范围及 100 次修订上限、分页、手动与全部历史依赖清除、独立费用保留、创建/修订/清除/导入末尾审计失败整体回滚。原经营分析金额保持原口径。全部为合成数据，无真实模型或邮件调用。
+
+Ruff 规则/格式 **182 文件**、mypy **132 app 文件**通过；Vue type-check/lint/生产构建通过。新增费用组件最终 **7 项 / 1.15 秒**，完整 Vitest **20 文件 52 项 / 3.54 秒**通过。覆盖金额变化撤掉确认、源行绑定、订单查找/历史请求迟到丢弃、文本转义、历史范围回填、刷新失败隐藏正文、原 UUID 回查，以及费用合计查询期间保留未保存的编辑输入。
+
+新增桌面/手机 Playwright 定向 **2 项 / 11.3 秒**通过；最终完整生产预览回归 **46 项 / 1.7 分钟**通过。流程覆盖显式合成身份、实际费用录入、原始订单行、金额改动撤确认、固定链接刷新、再查来源后修订、两版本回读、费用合计、导入变化待重核、改为店铺费用、旧历史依赖清除、独立新费用撤销/清除及刷新。页面 URL/标题、非空内容、无框架错误层、登录后控制台、交互结果、390px 无横溢均通过，桌面与手机入口/详情截图已查看。截图在系统 Temp `soloops-expenses-{entry-}{desktop,mobile}.png`，未提交。浏览器环境为 Chromium、1440×1000 和 390×844，URL `http://127.0.0.1:5174/expenses`；Browser plugin not available，依 frontend-testing-debugging 使用项目 Playwright，预览代理隔离 API8001。
+
+迁移 `a269fe553f96` 在隔离 `_test` 库 **downgrade d6f920a41b85 → upgrade head → alembic check** 通过，开发库 upgrade/check 通过；后端测试、迁移回退、浏览器测试严格串行。开发 API8000 核实父子进程身份后隐藏重启（本次 launcher39496），API/前端5173均正常，新费用路由可读；后续重启仍重新核实进程身份。
+
+验证修正记录：首次来源测试错误使用不存在的 kind 字段与 purge/withdraw 路由，按现有 SourceReference、clear/revoke 契约修正；随后发现默认 DATETIME 秒精度令首存与回读创建时间不同，改为 DATETIME(6) 并重做迁移验证。首轮浏览器业务流程已到撤销，测试在未展开的新处理区等待而超时；按真实操作重新展开后复验通过。首次全站回归在第 3 项发生预览服务 ECONNRESET，后续连接拒绝，共 2 通过/44 失败；普通终端重新运行后全部 46 项通过。未查到可定位原因的近期 Node 应用错误事件，不把这次复测当作本机预览退出根因已修复。Windows 沙箱 socket10013 / Vitest 缓存 EPERM 在允许执行环境验证，既有 Starlette/httpx、NO_COLOR 提示保留。
+
+交接基线 c652c91 的 [CI](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37920901327) 已核实 completed/success。全部 **74 SO / 32 验收 / 7 长期 E2E** 保留，SO-056 当前只增加人工实际费用与本地核对证据，平台收费映射、复杂分摊、账单/物流/回款差异核对继续待实现。

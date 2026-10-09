@@ -214,3 +214,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [SQLAlchemy Session API](https://docs.sqlalchemy.org/en/20/orm/session_api.html)、[官方 issue 5572](https://github.com/sqlalchemy/sqlalchemy/issues/5572) | SQLAlchemy MIT；官方文档与问题记录 | 锁定读配合 populate_existing 更新 ORM 状态，修订来源行、投影、依赖与审计在同一事务；原始导入保持独立 |
 
 沿用 Firecrawl 已确认的 402 限制，经官方网页与 GitHub 检索。人工修订生成单独来源批次，继承数据身份和渠道，登记全部祖先依赖。来源撤销使派生修订失效，清除沿依赖链擦除正文；后续文件导入仍按当前投影比较。
+
+## 自定义实际费用与本地核对（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [SQLAlchemy Numeric](https://github.com/sqlalchemy/sqlalchemy/blob/main/lib/sqlalchemy/sql/sqltypes.py)、[Session Basics](https://docs.sqlalchemy.org/en/20/orm/session_basics.html) | 官方文档与仓库，MIT；未复制源码 | Numeric(18,4) 持久 Decimal，用户→店铺锁定读；费用版本、全部历史来源依赖与审计同事务 |
+| [Python decimal](https://docs.python.org/3/library/decimal.html)、[datetime](https://docs.python.org/3/library/datetime.html) | 官方标准库文档，PSF；未复制实现 | 有界十进制金额，显式偏移与 IANA 时区一致性校验，UTC 存储，半开查询窗口与分币种汇总 |
+
+沿用已确认的 Firecrawl 402 限制，通过官方网页检索。实际人工费用独立于新品假设；首片支持店铺未分摊和单订单行全额直接归属。凭据编号去重、来源变化待重核、历史依赖清除均由本地服务完成；平台账单/物流/回款尚未核对，费用完整性未知，不据此计算净利润。

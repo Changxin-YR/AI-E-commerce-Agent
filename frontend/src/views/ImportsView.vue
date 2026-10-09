@@ -472,7 +472,7 @@ onMounted(initialize)
       </div>
       <div v-if="batch.status !== 'cleared'" class="form-actions">
         <span
-          >撤销后恢复剩余有效来源，依赖本批的人工商品修订同步失效。清除还会擦除源行与依赖修订正文；保留必要状态和操作审计。</span
+          >撤销后恢复剩余有效来源，关联费用须重新核对，依赖本批的人工商品修订同步失效。清除还会擦除源行、依赖修订及费用的全部历史正文；保留必要状态和操作审计。</span
         >
         <div class="button-group">
           <button
@@ -493,7 +493,7 @@ onMounted(initialize)
             pendingAction === 'clear'
               ? '清除此批次的源行与修正数据，清除后无法恢复'
               : '停止使用此批次，保留已提交的源行以便复核'
-          }}。依赖本批的人工商品修订将同步{{
+          }}。依赖本批的人工商品修订及费用依据将同步{{
             pendingAction === 'clear' ? '清除正文' : '失效'
           }}，后续分析需要使用最新数据重新计算。
         </p>
