@@ -6,6 +6,7 @@ import type {
   AgentRun,
   AnalysisExplanation,
   ListingCandidate,
+  SupportCandidate,
 } from '@/types/agent'
 import { agentLabels, agentReasons, sourcesIn } from '@/types/agent'
 import { sourceLabels } from '@/types/operations'
@@ -14,6 +15,7 @@ import type { AnalysisResult } from '@/types/analytics'
 import AnalysisEvidence from './AnalysisEvidence.vue'
 import AnalysisNarrative from './AnalysisNarrative.vue'
 import ListingCandidatePreview from './ListingCandidatePreview.vue'
+import SupportCandidatePreview from './SupportCandidatePreview.vue'
 import SourceEvidence from './SupportSource.vue'
 import { supportTime } from '@/types/support'
 const props = defineProps<{ run: AgentRun; busy: boolean }>()
@@ -45,6 +47,12 @@ const explanation = computed(
       ?.output?.explanation as AnalysisExplanation | undefined,
 )
 const resumable = computed(() => ['paused', 'waiting_configuration'].includes(props.run.status))
+const supportCandidate = computed(
+  () =>
+    props.run.steps.find(
+      (s) => s.node === 'compose_support' && s.status === 'completed' && s.output?.candidate,
+    )?.output as unknown as SupportCandidate | undefined,
+)
 const listingCandidate = computed(
   () =>
     props.run.steps.find(
@@ -151,6 +159,7 @@ const actionLabels: Record<string, string> = {
       :explanation="explanation"
     />
     <ListingCandidatePreview v-if="listingCandidate" :value="listingCandidate" />
+    <SupportCandidatePreview v-if="supportCandidate" :value="supportCandidate" />
     <div v-if="run.status === 'waiting_approval'" class="data-note">
       <h3>审批当前内部写入 · R1 · 费用 0 USD</h3>
       <p>
@@ -163,7 +172,9 @@ const actionLabels: Record<string, string> = {
                 ? '保存上方已核对的模型候选为待审 Listing，随后在业务页面单独审批生效；相同来源、基线及文案复用记录。'
                 : run.next_node === 'listing_draft'
                   ? '按商品名称和完整参数生成本地模板草稿，在 Listing 页面查看差异并单独审批生效。'
-                  : '保存未核验订单、未选择政策的人工接管草稿，在客服页面继续核对。'
+                  : run.next_node === 'support_candidate'
+                    ? '将上方候选保存为本地客服草稿；需人工接管的原因随草稿保留，客服页面可编辑和存档。'
+                    : '保存未核验订单、未选择政策的人工接管草稿，在客服页面继续核对。'
         }}
       </p>
       <p v-if="run.next_node === 'analysis_todo'">
@@ -220,7 +231,7 @@ const actionLabels: Record<string, string> = {
       >
     </div>
     <form v-if="resumable" @submit.prevent="emit('action', 'resume', { ...budget })">
-      <p v-if="['question', 'listing_model'].includes(run.template)">
+      <p v-if="['question', 'listing_model', 'support_model'].includes(run.template)">
         暂停期间丢弃的模型结果，在恢复时会重新请求并计费；已用费用计入总预算。
         在途或未确认费用尚未解除时，服务器会阻止恢复。
       </p>

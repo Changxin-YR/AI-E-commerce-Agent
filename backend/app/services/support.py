@@ -18,10 +18,13 @@ from app.schemas.support import (
     ReplyAction,
     ReplyOutput,
     ReplySnapshot,
+    SupportCandidateInput,
+    SupportPreparation,
     SupportWorkspace,
 )
 from app.services.listings import digest
 from app.services.profit_calculation import reference, utc_text
+from app.services.support_composition import compose_support
 from app.services.support_rules import classify, prepare_reply
 
 T = TypeVar("T")
@@ -280,6 +283,78 @@ class SupportService:
             "reply_draft",
             item.id,
             {"order_verified": data.order_verified, "intents": snapshot.intents},
+        )
+        return self._finish(reply_output(item))
+
+    def prepare_candidate(
+        self, owner: int, shop: int, message_id: int, data: GenerateReply
+    ) -> SupportPreparation:
+        store = self._shop(owner, shop)
+        message = self._message(owner, shop, message_id)
+        if message.source.row_id != data.expected_source_row_id:
+            raise ConflictError("消息与同意发送的来源版本不同，请刷新后重新确认")
+        orders = self._orders(owner, shop, message) if data.order_verified else []
+        if data.order_verified and (
+            not orders
+            or sorted(o.source.row_id for o in orders) != sorted(data.expected_order_row_ids)
+        ):
+            raise ConflictError("订单证据已变化，请重新核验关联")
+        candidates = self._policies(owner, store, message)
+        selected = [p for p in candidates if p.id in data.policy_ids]
+        if len(selected) != len(data.policy_ids):
+            raise ConflictError("所选政策重复、不适用、已过期或版本变化")
+        conflicts = any(n > 1 for n in Counter(p.data.topic for p in candidates if p.data).values())
+        return self._finish(
+            SupportPreparation(
+                snapshot=prepare_reply(message, orders, data.order_verified, selected, conflicts),
+                conflicts=conflicts,
+            )
+        )
+
+    def save_candidate(self, owner: int, shop: int, data: SupportCandidateInput) -> ReplyOutput:
+        with self.uow.defer_commits():
+            prepared = self.prepare_candidate(owner, shop, data.message_id, data.context)
+        if digest(prepared.model_dump(mode="json")) != data.preparation_hash:
+            raise ConflictError("客服依据已变化，请重新审阅候选")
+        try:
+            snapshot = compose_support(prepared, data.selection)
+        except ValueError as error:
+            raise BusinessError("invalid_model_output", "客服候选未通过事实校验", 422) from error
+        message = snapshot.message
+        key = digest([shop, message.channel, message.message_id])
+        request_key = digest(
+            [
+                shop,
+                data.model_dump(mode="json"),
+                self.repo.epoch(owner, shop, key),
+            ]
+        )
+        prior = self.repo.draft_request(owner, shop, request_key)
+        if prior:
+            return self._finish(reply_output(prior))
+        item = ReplyDraft(
+            owner_id=owner,
+            shop_id=shop,
+            message_key=key,
+            source_row_id=message.source.row_id,
+            request_key=request_key,
+            version=1,
+            status="human_review" if snapshot.reasons else "draft",
+            source_status="current",
+            engine=data.engine,
+            snapshot=snapshot.model_dump(mode="json"),
+        )
+        self.repo.add_draft(
+            item,
+            {message.source.batch_id} | {o.source.batch_id for o in snapshot.orders},
+            {p.id for p in prepared.snapshot.policies},
+        )
+        self.uow.record_event(
+            owner,
+            "support.model_candidate_saved",
+            "reply_draft",
+            item.id,
+            {"order_verified": snapshot.order_verified, "intents": snapshot.intents},
         )
         return self._finish(reply_output(item))
 

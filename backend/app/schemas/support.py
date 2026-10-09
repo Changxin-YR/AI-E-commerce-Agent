@@ -91,6 +91,41 @@ class ReplySnapshot(OutputModel):
     reasons: list[str]
     handoff_summary: str
     reply: str
+    model_facts: list[str] = Field(default_factory=list)
+
+
+class SupportPreparation(OutputModel):
+    snapshot: ReplySnapshot
+    conflicts: bool
+
+
+class SupportSelection(InputModel):
+    intent_ids: Annotated[
+        list[
+            Literal[
+                "shipping",
+                "refund",
+                "address_change",
+                "cancel",
+                "dispute",
+                "warranty",
+                "faq",
+                "unknown",
+            ]
+        ],
+        Field(min_length=1, max_length=8),
+    ]
+    fact_ids: Annotated[list[str], Field(min_length=3, max_length=3)]
+    policy_ids: Annotated[list[str], Field(max_length=10)]
+    next_action: Literal["offer_draft", "handoff"]
+
+
+class SupportCandidateInput(InputModel):
+    message_id: PositiveId
+    context: GenerateReply
+    preparation_hash: Annotated[str, Field(min_length=64, max_length=64)]
+    selection: SupportSelection
+    engine: Literal["openai_responses", "dashscope_chat", "test_double"]
 
 
 class ReplyOutput(OutputModel):

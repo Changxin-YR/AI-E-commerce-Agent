@@ -18,10 +18,19 @@ from app.schemas.listings import (
     ProductFacts,
 )
 from app.schemas.operations import CheckPreview, OperationScope, RunInput, RunOutput
-from app.schemas.support import GenerateReply, MessageFacts, ReplyOutput
+from app.schemas.support import (
+    GenerateReply,
+    MessageFacts,
+    ReplyOutput,
+    SupportCandidateInput,
+    SupportSelection,
+)
+from app.schemas.support import (
+    SupportPreparation as ModelSupportPreparation,
+)
 from app.services.analytics import AnalyticsService
 from app.services.listing_generation import FactTemplateGenerator
-from app.services.listings import ListingService
+from app.services.listings import ListingService, digest
 from app.services.operations import OperationsService
 from app.services.support import SupportService
 
@@ -87,6 +96,19 @@ CONTRACTS = {
     ),
     "support_draft": Contract(
         "保存未核验订单的人工接管草稿", "support.generate", SupportInput, ReplyOutput, True
+    ),
+    "support_context": Contract(
+        "读取卖家核对的消息、订单关联和适用政策",
+        "support.prepare_candidate",
+        SupportInput,
+        ModelSupportPreparation,
+    ),
+    "support_candidate": Contract(
+        "保存已审阅的客服模型候选或人工接管草稿",
+        "support.save_candidate",
+        SupportCandidateInput,
+        ReplyOutput,
+        True,
     ),
 }
 
@@ -201,6 +223,22 @@ class ControlledSkills:
                 content=ListingContent.model_validate(prior["candidate"]),
                 engine=prior["engine"],
             ).model_dump(mode="json")
+        if name == "support_context":
+            if data.message_id is None or data.support_context is None:
+                raise BusinessError("missing_object", "请先选择消息并核对客服依据", 422)
+            return SupportInput(
+                message_id=data.message_id, **data.support_context.model_dump()
+            ).model_dump(mode="json")
+        if name == "support_candidate":
+            if data.message_id is None or data.support_context is None:
+                raise BusinessError("missing_object", "客服依据缺失", 422)
+            return SupportCandidateInput(
+                message_id=data.message_id,
+                context=data.support_context,
+                preparation_hash=digest(prior["preparation"]),
+                selection=SupportSelection.model_validate(prior["selection"]),
+                engine=prior["engine"],
+            ).model_dump(mode="json")
         prepared_message = SupportPreparation.model_validate(prior)
         return SupportInput(
             message_id=prepared_message.message.id,
@@ -260,6 +298,20 @@ class ControlledSkills:
                 .message
             )
             result = SupportPreparation(message=message)
+        elif name == "support_context":
+            support = SupportInput.model_validate(args)
+            result = SupportService(self.uow).prepare_candidate(
+                self.owner,
+                self.shop,
+                support.message_id,
+                GenerateReply.model_validate(support.model_dump(exclude={"message_id"})),
+            )
+        elif name == "support_candidate":
+            result = SupportService(self.uow).save_candidate(
+                self.owner,
+                self.shop,
+                SupportCandidateInput.model_validate(args),
+            )
         else:
             support = SupportInput.model_validate(args)
             result = SupportService(self.uow).generate(

@@ -6,9 +6,17 @@ from pydantic import Field, StrictBool
 
 from app.schemas.common import InputModel, OutputModel
 from app.schemas.operations import OperationScope
+from app.schemas.support import GenerateReply
 
 Template = Literal[
-    "daily", "analysis", "listing", "support", "natural", "question", "listing_model"
+    "daily",
+    "analysis",
+    "listing",
+    "support",
+    "natural",
+    "question",
+    "listing_model",
+    "support_model",
 ]
 Money = Annotated[Decimal, Field(ge=0, le=10, decimal_places=6)]
 
@@ -30,6 +38,8 @@ class StartAgent(InputModel):
     allow_model: StrictBool = False
     allow_analysis_data: StrictBool = False
     allow_listing_data: StrictBool = False
+    allow_support_data: StrictBool = False
+    support_context: GenerateReply | None = None
     expected_product_source_row_id: Annotated[int, Field(gt=0)] | None = None
     budget: Budget = Field(default_factory=Budget)
 

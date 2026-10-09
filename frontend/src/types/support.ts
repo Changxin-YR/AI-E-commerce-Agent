@@ -57,10 +57,17 @@ export interface ReplyDraft {
     reasons: string[]
     handoff_summary: string
     reply: string
+    model_facts?: string[]
   } | null
   created_at: string
   updated_at: string
   external_status: 'not_submitted'
+}
+export interface SupportContext {
+  expected_source_row_id: number
+  expected_order_row_ids: number[]
+  order_verified: boolean
+  policy_ids: number[]
 }
 export interface SupportWorkspace {
   message: MessageFacts

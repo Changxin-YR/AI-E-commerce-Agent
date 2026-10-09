@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|---|
 | SO-001 | 个人卖家初始化与经营资料 | P0 | 经营资料、店铺、模板/映射/预览/错误行/批次 | backend/app/services/profile.py、imports.py；frontend/src/views/ImportsView.vue | tests/test_identity.py、test_imports.py；frontend/e2e/imports.spec.ts | 初始化与商品/订单导入切片合成数据本地通过；其他数据组待继续 |
 | SO-002 | 跨店铺经营总览与运营日报 | P0 | 按店铺/登记平台/市场/日期/币种总览、日周月摘要与依据 | services/overview.py、overview_calculation.py；OverviewView.vue、OverviewShopCard.vue | test_overview.py；OverviewShopCard.spec.ts、overview.spec.ts | 跨店分币种销售/订单/退款/已知商品毛利与对比、当前库存/消息/未结待办回顾、持久摘要及依赖清除合成本地通过；实际净利润、营销及实时平台数据待后续 |
-| SO-003 | 自然语言 AI 运营总控 | P0 | 受控目标理解、事实生成与审批任务 | services/agent.py、agent_model.py、analysis_explanation.py、listing_composition.py；AgentView.vue | test_agent.py、test_analysis_model.py、test_listing_model.py；模型业务 E2E | 路由、问数和 Listing 模型协议与本地审批回读已用替身通过；双重发送授权、绑定源行与预算有持久记录；百炼真实合成路由与 Listing 编排已通过；客服/运营模型流程及完整质量验收待继续 |
+| SO-003 | 自然语言 AI 运营总控 | P0 | 受控目标理解、事实生成与审批任务 | services/agent.py、agent_model.py、analysis_explanation.py、listing_composition.py、support_composition.py；AgentView.vue | test_agent.py、test_analysis_model.py、test_listing_model.py、test_support_model.py；模型业务 E2E | 路由、问数、Listing 和客服模型协议与审批回读已用替身通过；客服发送绑定消息/政策版本与人工订单核验，强制敏感接管；百炼真实合成路由与 Listing 已通过；运营模型流程及完整质量验收待继续 |
 | SO-004 | 一键今日运营 | P0 | 已导入数据巡检与真实内部动作 | services/agent.py、agent_skills.py、operations.py；AgentView.vue | test_agent.py、test_operations.py；agent.spec.ts | 检查→数据分支→审批→候选保存→回读核验本地通过，逐项处理复用工作台；完整 AI 解释待继续 |
 | SO-005 | 主动异常发现与运营待办 | P0 | 有证据、可处理、去重的异常待办 | services/operations.py、workbench.py；OperationTaskReview.vue、WorkInbox.vue | 重跑/并发/状态/来源失效及清除测试 | 主动运行后的四类核对候选、来源/建议/固定标签、审批/拒绝/延期/忽略/完成/重开本地通过；统一清单筛选、计数及精确对象深链本地通过；完整异常集与 Agent 委托待继续 |
 | SO-006 | 定时运营与经营通知 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
@@ -35,8 +35,8 @@
 | SO-029 | 订单编辑与批量操作 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-030 | AI 订单巡检与异常处理 | P0 | 导入订单异常与有依据的内部待办 | services/operation_checks.py、operations.py | test_operations.py | 已支付来源未履约/部分履约→核对事项→审批/处理本地通过；当前超时/物流状态未知，AI 层待继续 |
 | SO-031 | 统一客户消息与邮件中心 | P0 | 手工/导入消息与已核验订单关联 | services/imports.py、support.py；SupportView.vue | test_support.py；support.spec.ts | 手工/CSV/Excel 消息、搜索、原文/源行、核验订单及存档本地通过；真实渠道与完整消息运营待继续 |
-| SO-032 | 多语言 AI 客服与人工接管 | P0 | 多意图、依据检索、草稿与人工接管 | services/support_rules.py、support.py；SupportReply.vue | 双意图、敏感转人工、编辑/存档/清除、手机 E2E | 中英文关键词多标签与模板、接管摘要本地通过；真实模型、自动语言检测、多轮及外发待继续 |
-| SO-033 | 客服知识库完整管理 | P0 | 政策/FAQ 来源版本、检索和拒答 | models/support.py；SupportPolicies.vue | 政策范围/版本/过期/冲突/清除/重新录入测试 | 手工政策/FAQ、出处与有效期、检索、无依据核实提示本地通过；批量运营与问答评估待继续 |
+| SO-032 | 多语言 AI 客服与人工接管 | P0 | 多意图、依据检索、草稿与人工接管 | services/support_rules.py、support_composition.py、support.py；SupportModelContext.vue、SupportCandidatePreview.vue、SupportReply.vue | test_support_model.py、test_support.py；SupportModelContext.spec.ts、support-model.spec.ts | 模型与规则多意图并集、受控事实/政策编号、双授权、人工接管、候选审阅/审批保存/编辑/存档及清除合成替身通过；真实客服模型质量、自动语言检测、多轮及外发待继续 |
+| SO-033 | 客服知识库完整管理 | P0 | 政策/FAQ 来源版本、检索和拒答 | models/support.py、services/support.py；SupportPolicies.vue | 政策范围/版本/过期/冲突/清除；test_support_model.py 政策到期门禁 | 手工政策/FAQ、出处与有效期、主题筛选、本地与模型候选引用及无依据提示本地通过；模型调用前/回包后/审批/保存复验，全部已发送政策登记清除依赖；语义检索、批量运营与真实问答评估待继续 |
 | SO-034 | 客服自动化规则与效能度量 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-035 | 售后、退货、退款与争议 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-036 | 买家档案与客户分析 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
@@ -63,7 +63,7 @@
 | SO-057 | AI 自然语言经营问数和异常解释 | P0 | 销售/购买量前五/低毛利问题理解、匿名事实解释、来源与待办 | services/analysis_explanation.py、agent.py、analytics.py；AnalysisNarrative.vue | test_analysis_model.py 28 项；AnalysisNarrative.spec.ts、analysis-model.spec.ts | Responses 可配置适配、事实编号校验、确定性金额与来源、双重数据授权、费用/未知态、审批待办合成及协议替身通过；百炼通道已接入，问数真实模型理解质量待单独验证，精确净利润仍缺费用依据 |
 | SO-058 | 运营变更版本、A/B 测试与效果评估 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-059 | 多币种、汇率、税费与数据完整性 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
-| SO-060 | 内置运营 Skills | P0 | 有元数据/权限/风险/去重声明的内置技能 | services/agent_skills.py；schemas/agent.py | 元数据篡改、范围拒绝、问数/Listing 审批去重与审计回滚测试 | 九项固定技能覆盖既有 P0 能力，新增模型 Listing 候选保存；完整元数据和工具白名单本地通过，模型只选择受控事实与分支；客服及运营模型切片继续 |
+| SO-060 | 内置运营 Skills | P0 | 有元数据/权限/风险/去重声明的内置技能 | services/agent_skills.py；schemas/agent.py | 元数据篡改、范围拒绝、问数/Listing/客服审批去重与审计回滚测试 | 十一项固定技能覆盖既有 P0 能力，新增客服依据读取与模型候选保存；完整元数据、工具白名单和审批回读本地通过；运营模型切片继续 |
 | SO-061 | 第三方 Skills 安装与生命周期管理 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-062 | 可配置运营工作流 | P0 | 技能、分支、审批、暂停恢复和记录 | services/agent.py；AgentView.vue、AgentRunReview.vue | 条件分支/审批/去重/预算/暂停恢复/取消/E2E | 固定流程节点、数据分支、审批、核验与失败状态合成本地通过；定时/事件/模板启停复制条件修改等完整范围待继续 |
 | SO-063 | 跨平台连接器中心 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
@@ -71,7 +71,7 @@
 | SO-065 | 软件使用助手与新手引导 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-066 | 经营规则、偏好与可验证的业务记忆 | P0 | 分范围经营约束、偏好依据、版本、恢复和有限授权 | services/business_rules.py、authorizations.py、outbound.py；RulesView.vue、InternalAuthorizations.vue、OutboundView.vue | 规则/R1/R2 服务、组件与 E2E 测试 | 阈值版本与 R1 有界预授权本地通过；R2 按全文/地址/检查绑定限一次、1—24 小时预授权，可撤销并回读消耗；文本偏好仍为人工参考 |
 | SO-067 | 审批、操作前预览与回退边界 | P0 | 对象/差异/依据/风险预览及权限化审批 | services/listings.py、operations.py、authorizations.py、outbound.py；OutboundMailReview.vue | test_authorizations.py、test_outbound.py；outbound.spec.ts | R1 审批/候选撤回及 R2 全文预览、修改失效、单次/预授权、提交门禁本地通过；邮件不可撤回，真实外发凭据与送达待验证，统一清单可定位原审批全文与指定 R1 授权；更多长期动作继续 |
-| SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久执行、统一清单、恢复与未知结果 | services/agent.py、workbench.py、analytics.py、outbound.py；WorkInbox.vue、AgentRunReview.vue | test_analysis_model.py、test_listing_model.py、test_workbench.py；模型业务/外发 E2E | 十类统一记录与原入口、问数/Listing 的费用预留、未知不重发、在途取消清除、事实持久回读合成本地通过；Listing 并发基线变化阻断；百炼已接入，真实邮件通道仍待授权 |
+| SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久执行、统一清单、恢复与未知结果 | services/agent.py、workbench.py、analytics.py、support.py、outbound.py；AgentRunReview.vue | test_support_model.py、test_analysis_model.py、test_listing_model.py、test_workbench.py；模型业务/外发 E2E | 十类统一记录与原入口、问数/Listing/客服的费用预留、未知不重发、在途取消清除及持久回读合成替身通过；客服政策到期和当前来源门禁通过；真实邮件通道仍待授权 |
 | SO-069 | 授权的开发者 OpenAPI | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-070 | 移动端轻量运营能力 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-071 | 外部经营数据与提醒渠道 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
@@ -79,6 +79,6 @@
 | SO-073 | 独立站内容维护与基础建站辅助 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-074 | 账号、基础权限、系统设置与隐私管理 | P0 | 登录恢复、权限、隐私、批次与派生数据清理 | services/auth.py、imports.py；repositories/analytics.py、listings.py、support.py | 身份/导入/分析/Listing/客服集成测试与 E2E | 身份、源内容及依赖分析/待办/Listing/客服草稿擦除本地通过；长期留存待用户确认 |
 
-MVP-04 的模型协议与持久业务闭环已用替身验证；百炼真实合成路由和 MVP-02 事实编排通过。四条 MVP 的完整验收及其余模型业务切片继续，P0 总体尚未完成。
+MVP-04 问数和 MVP-03 客服的模型协议与持久业务闭环已用替身验证；百炼真实合成路由和 MVP-02 事实编排通过。四条 MVP 的完整验收及其余模型业务切片继续，P0 总体尚未完成。
 
 E2E-01—07 全部保留在需求冻结稿第 8 节，目前均未完整验收。P0-External 缺少用户授权的发送通道与测试收件箱，处于待授权验证状态。

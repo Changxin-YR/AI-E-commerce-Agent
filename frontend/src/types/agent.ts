@@ -1,9 +1,17 @@
 import type { OperationScope } from './operations'
 import type { SourceReference } from './analytics'
 import type { ListingContent, ProductFacts } from './listings'
+import type { ReplyDraft, SupportContext } from './support'
 
 export type AgentTemplate =
-  'daily' | 'analysis' | 'listing' | 'support' | 'natural' | 'question' | 'listing_model'
+  | 'daily'
+  | 'analysis'
+  | 'listing'
+  | 'support'
+  | 'natural'
+  | 'question'
+  | 'listing_model'
+  | 'support_model'
 export type AgentAction =
   'advance' | 'pause' | 'resume' | 'cancel' | 'approve' | 'reject' | 'use_authorization'
 export interface AgentBudget {
@@ -22,6 +30,8 @@ export interface AgentInput {
   allow_model: boolean
   allow_analysis_data?: boolean
   allow_listing_data?: boolean
+  allow_support_data?: boolean
+  support_context?: SupportContext | null
   expected_product_source_row_id?: number | null
   budget: AgentBudget
 }
@@ -101,7 +111,15 @@ export interface ListingCandidate {
   candidate: ListingContent
   engine: string
 }
+export interface SupportCandidate {
+  candidate: NonNullable<ReplyDraft['snapshot']>
+  engine: string
+}
 export const agentLabels: Record<string, string> = {
+  support_model: 'AI 客服候选',
+  support_context: '读取客服依据',
+  compose_support: '识别诉求与组织回复',
+  support_candidate: '保存客服候选',
   listing_model: 'AI Listing 候选',
   compose_listing: '组织商品事实文案',
   listing_candidate: '保存模型 Listing 候选',
@@ -146,6 +164,9 @@ export const agentLabels: Record<string, string> = {
   test_double: '测试替身',
 }
 export const agentReasons: Record<string, string> = {
+  support_consent_required: '请核对消息、所选政策与发送范围，并同意目标和客服数据发送后新建任务。',
+  support_handoff: '本次候选需要人工接管。核对全部诉求和证据后，可批准保存本地草稿。',
+  support_candidate_ready: '客服候选已准备，请审阅回复全文和政策依据后批准保存。',
   listing_consent_required: '请核对目标商品与参数并同意发送到模型，然后新建任务。',
   listing_needs_review: '模型建议先人工核对目标或商品事实。补充来源后可新建任务。',
   listing_candidate_ready: '已生成事实候选，请核对前后差异后批准保存草稿。',

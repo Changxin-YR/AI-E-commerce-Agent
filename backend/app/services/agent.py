@@ -23,6 +23,7 @@ from app.schemas.agent import (
     StepOutput,
 )
 from app.schemas.analytics import AnalysisResult
+from app.schemas.support import SupportPreparation, SupportSelection
 from app.services.agent_model import DecisionModel, GenerationReply, ModelReply
 from app.services.agent_skills import (
     CONTRACTS,
@@ -45,6 +46,7 @@ from app.services.listings import ListingService, digest
 from app.services.operations import OperationsService
 from app.services.profit_calculation import utc_text
 from app.services.support import SupportService
+from app.services.support_composition import compose_support, support_request
 
 FIRST_NODE = {
     "daily": "data_check",
@@ -54,6 +56,7 @@ FIRST_NODE = {
     "natural": "plan",
     "question": "question_plan",
     "listing_model": "product_context",
+    "support_model": "support_context",
 }
 TERMINAL = {"succeeded", "cancelled", "rejected", "blocked", "result_unknown", "circuit_open"}
 
@@ -102,6 +105,22 @@ class AgentService:
                 run.source_status = "stale"
                 run.version += 1
                 self._event(run, "business_rules_changed", run.status)
+        if (
+            run.template == "support_model"
+            and run.input
+            and run.result
+            and run.source_status == "current"
+            and run.next_node in {"compose_support", "support_candidate"}
+        ):
+            try:
+                prepared = SupportPreparation.model_validate(
+                    run.result.get("preparation", run.result)
+                )
+                self._current_support(run, prepared)
+            except BusinessError:
+                run.source_status = "stale"
+                run.version += 1
+                self._event(run, "source_changed", run.status)
         if (
             run.authorization_id
             and run.next_node == "propose_tasks"
@@ -203,6 +222,10 @@ class AgentService:
             canonical.pop("allow_listing_data")
         if canonical["expected_product_source_row_id"] is None:
             canonical.pop("expected_product_source_row_id")
+        if not canonical["allow_support_data"]:
+            canonical.pop("allow_support_data")
+        if canonical["support_context"] is None:
+            canonical.pop("support_context")
         key = digest([shop_id, canonical])
         prior = self.repo.by_request(owner, str(data.request_id))
         if prior:
@@ -323,7 +346,12 @@ class AgentService:
         else:
             if run.next_node == "plan":
                 return self._plan(run)
-            if run.next_node in {"question_plan", "explain_analysis", "compose_listing"}:
+            if run.next_node in {
+                "question_plan",
+                "explain_analysis",
+                "compose_listing",
+                "compose_support",
+            }:
                 return self._generate_content(run)
             return self._local(run)
         run.version += 1
@@ -409,6 +437,13 @@ class AgentService:
         return self._finish(run)
 
     def _check_scope(self, node: str, data: StartAgent, result: dict[str, Any]) -> None:
+        if node == "support_context":
+            message = result["snapshot"]["message"]
+            if (
+                message["source"]["data_identity"] != data.scope.data_identity
+                or message["channel"] != data.scope.channel
+            ):
+                raise BusinessError("scope_mismatch", "消息不属于所选身份或渠道", 403)
         if (
             node == "product_context"
             and result["product"]["source"]["data_identity"] != data.scope.data_identity
@@ -435,6 +470,14 @@ class AgentService:
                 self.repo.listing_sources(run.id, int(listing_id), run.owner_id, run.shop_id)
         if result.get("valid_until"):
             run.valid_until = datetime.fromisoformat(result["valid_until"]).replace(tzinfo=None)
+        if node == "support_context":
+            dates = [
+                p["data"]["valid_until"]
+                for p in result["snapshot"]["policies"]
+                if p.get("data") and p["data"].get("valid_until")
+            ]
+            if dates:
+                run.valid_until = min(datetime.fromisoformat(d).replace(tzinfo=None) for d in dates)
 
     def _choose_next(self, run: AgentExecution, node: str, result: dict[str, Any]) -> None:
         run.result, run.reason = result, ""
@@ -466,6 +509,8 @@ class AgentService:
                 run.status, run.reason = "waiting_input", "missing_product_facts"
         elif node == "message_context":
             run.next_node, run.status = "support_draft", "waiting_approval"
+        elif node == "support_context":
+            run.next_node, run.status = "compose_support", "ready"
         elif node == "metrics" and run.template == "question":
             run.next_node, run.status = "explain_analysis", "ready"
         elif node in {
@@ -473,6 +518,7 @@ class AgentService:
             "listing_draft",
             "listing_candidate",
             "support_draft",
+            "support_candidate",
             "analysis_todo",
         }:
             run.next_node, run.status = "verify", "ready"
@@ -593,6 +639,10 @@ class AgentService:
         return lease
 
     def _generation_request(self, run: AgentExecution, data: StartAgent) -> dict[str, Any]:
+        if run.next_node == "compose_support":
+            support = SupportPreparation.model_validate(run.result)
+            self._current_support(run, support)
+            return support_request(data.goal, support)
         if run.next_node == "compose_listing":
             prepared = ListingPreparation.model_validate(run.result)
             self._current_listing(run, prepared)
@@ -600,6 +650,20 @@ class AgentService:
         if run.next_node == "question_plan":
             return question_request(data.goal, data.scope.model_dump(mode="json"))
         return explanation_request(data.goal, AnalysisResult.model_validate(run.result))
+
+    def _current_support(self, run: AgentExecution, prepared: SupportPreparation) -> None:
+        data = StartAgent.model_validate(run.input)
+        if data.message_id is None or data.support_context is None:
+            raise BusinessError("missing_object", "客服依据缺失", 422)
+        with self.uow.defer_commits():
+            current = SupportService(self.uow).prepare_candidate(
+                run.owner_id,
+                run.shop_id,
+                data.message_id,
+                data.support_context,
+            )
+        if current != prepared:
+            raise ConflictError("消息、订单关联或适用政策已变化，请重新核对")
 
     def _current_listing(self, run: AgentExecution, prepared: ListingPreparation) -> None:
         current = ListingService(self.uow).workspace(
@@ -615,12 +679,25 @@ class AgentService:
         data = StartAgent.model_validate(run.input)
         status = self.model.status()
         listing = run.next_node == "compose_listing"
-        consent = data.allow_listing_data if listing else data.allow_analysis_data
+        support = run.next_node == "compose_support"
+        consent = (
+            data.allow_support_data
+            if support
+            else data.allow_listing_data
+            if listing
+            else data.allow_analysis_data
+        )
         if not data.goal:
             run.status, run.reason = "blocked", "missing_goal"
         elif not data.allow_model or not consent:
             run.status = "waiting_configuration"
-            run.reason = "listing_consent_required" if listing else "analysis_consent_required"
+            run.reason = (
+                "support_consent_required"
+                if support
+                else "listing_consent_required"
+                if listing
+                else "analysis_consent_required"
+            )
         elif status.status != "configured":
             run.status, run.reason = "waiting_configuration", "not_configured"
             run.model_status = status.status
@@ -715,6 +792,26 @@ class AgentService:
     def _accept_generation(
         self, run: AgentExecution, content: dict[str, Any], engine: str
     ) -> dict[str, Any]:
+        if run.next_node == "compose_support":
+            support = SupportPreparation.model_validate(run.result)
+            self._current_support(run, support)
+            selection = SupportSelection.model_validate(content)
+            snapshot = compose_support(support, selection)
+            if engine not in {"openai_responses", "dashscope_chat", "test_double"}:
+                raise ValueError("Unknown composition engine")
+            output = {
+                "preparation": support.model_dump(mode="json"),
+                "candidate": snapshot.model_dump(mode="json"),
+                "selection": selection.model_dump(mode="json"),
+                "engine": engine,
+            }
+            run.result = output
+            run.status, run.reason, run.next_node = (
+                "waiting_approval",
+                "support_handoff" if snapshot.reasons else "support_candidate_ready",
+                "support_candidate",
+            )
+            return output
         if run.next_node == "compose_listing":
             prepared = ListingPreparation.model_validate(run.result)
             self._current_listing(run, prepared)

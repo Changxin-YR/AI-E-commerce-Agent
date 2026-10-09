@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { intentLabels, replyStatus, supportTime, type ReplyDraft } from '@/types/support'
 import { sourceStatus } from '@/types/listings'
 import SupportSource from './SupportSource.vue'
+import { agentLabels } from '@/types/agent'
 const props = defineProps<{ item: ReplyDraft; shopId: number; timezone: string; busy: boolean }>()
 const emit = defineEmits<{
   edit: [text: string]
@@ -30,8 +31,14 @@ const editable = computed(
       <span class="outline-label">{{ replyStatus[item.status] }} · v{{ item.version }}</span>
     </div>
     <p>
-      {{ item.engine === 'manual' ? '人工编辑（基于本地规则草稿）' : '本地规则模板' }} ·
-      {{ sourceStatus[item.source_status] }} · 外部未提交
+      {{
+        item.engine === 'manual'
+          ? '人工编辑'
+          : item.engine === 'local_rules'
+            ? '本地规则模板'
+            : (agentLabels[item.engine] ?? item.engine)
+      }}
+      · {{ sourceStatus[item.source_status] }} · 外部未提交
     </p>
     <p>
       更新于
@@ -48,6 +55,9 @@ const editable = computed(
       <div class="support-handoff">
         <h3>人工接管摘要</h3>
         <p>{{ item.snapshot.handoff_summary }}</p>
+        <ul v-if="item.snapshot.model_facts?.length">
+          <li v-for="fact in item.snapshot.model_facts" :key="fact">{{ fact }}</li>
+        </ul>
         <ul v-if="item.snapshot.reasons.length">
           <li v-for="reason in item.snapshot.reasons" :key="reason">{{ reason }}</li>
         </ul>

@@ -42,8 +42,12 @@ def prepare_reply(
     verified: bool,
     policies: list[PolicyOutput],
     conflicts: bool,
+    model_intents: list[str] | None = None,
+    review_reasons: list[str] | None = None,
 ) -> ReplySnapshot:
     intents = classify(message.body)
+    if model_intents:
+        intents = list(dict.fromkeys([*intents, *model_intents]))
     reasons = []
     sensitive = {"refund", "address_change", "cancel", "dispute", "warranty"} & set(intents)
     if sensitive:
@@ -63,6 +67,7 @@ def prepare_reply(
     if not policies or any(not p.data or not p.data.source_confirmed for p in policies):
         reasons.append("缺少已核对的适用政策；不能作退款、保修或时效承诺")
 
+    reasons = list(dict.fromkeys([*reasons, *(review_reasons or [])]))
     english = message.language == "en"
     parts = ["Thank you for your message." if english else "感谢您的来信。"]
     if "shipping" in intents:

@@ -184,6 +184,15 @@
 - Agent 中的候选、Listing 待审草稿、本地生效版本各有真实状态；模型回包不能直接批准生效。`test_model_candidate_diff_approval_readback_dedupe_and_clear` 检查两道审批、回读、去重及清除。
 - `test_save_revalidates_active_base_and_rolls_back_on_audit_failure` 验证草稿写入与审计同事务失败回滚；在途暂停/取消/清除用例验证网络请求已产生的费用和正文采纳分别处理。
 
+## 客服模型：怎样保留人工接管与当前证据？
+
+- `compose_support` 将模型意图与本地规则取并集，固定事实 ID 必须完整且唯一。模型省略 refund 或把下一步选为 offer_draft，仍无法擦除敏感诉求和物流缺口；`test_mixed_intents_cannot_downgrade_handoff_or_infer_identity` 验证这个不变量。
+- 结构化订单字段留在本地不等于正文已脱敏。`support_request` 使用明确投影，`SupportModelContext.vue` 展示消息和选中政策，告知正文可能含个人信息，并绑定具体源行与政策版本。
+- `prepare_candidate` 只允许人工核验的全部当前订单行关联，模型接收的是核验状态而非订单号。新增/撤销订单行改变关联证据，旧候选必须重建。
+- 政策有效期会随时间变化，即使数据库没有写入也可能过期。`AgentService._current_support` 和最早 valid_until 在调用、审批和保存门禁重新判断；`test_policy_expiration_rechecked_at_each_gate` 覆盖三处边界。
+- 只把模型选中的政策登记为依赖会遗漏已发送但未选中的正文；本实现为全部已发送政策建立关联。来源清除后回包不能复活内容，费用结算与正文采纳独立。
+- `SupportService.save_candidate` 在外层 defer_commits/savepoint 下重验准备摘要、去重并保存。`test_save_and_audit_are_atomic` 检查审计失败回滚；重复候选保留人工已编辑草稿，避免把重跑当作重置。
+
 ## 多供应商模型：协议转换与业务权限
 
 - `configured_model` 在服务端选择固定官方端点；客户端不能自填 URL，以免密钥被发送到任意主机。`_request` 明确禁重定向和环境代理，错误不包含远端正文或异常字符串。

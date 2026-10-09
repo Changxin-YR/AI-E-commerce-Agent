@@ -144,6 +144,9 @@ onMounted(async () => {
     if (id) {
       await show(id)
       await revealRecord('linked-reply')
+    } else {
+      const messageId = linkedId(route.query.message)
+      if (messageId) await choose(messageId)
     }
   } catch (cause) {
     error.value = errorMessage(cause)
@@ -160,7 +163,7 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
     <span class="outline-label">客服工作台</span>
   </div>
   <FeedbackBanner
-    message="当前使用本地关键词规则与中英文模板。请阅读完整原文核对意图；AI 模型、实时物流和发信通道尚未接入。"
+    message="可使用本地中英文模板，或从消息进入 AI 客服候选流程。请核对完整原文、政策与全部诉求；当前草稿仅在本地保存，物流查询需要可靠轨迹。"
     kind="info"
   />
   <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
@@ -236,6 +239,14 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
       </section>
       <section v-if="workspace" class="section-block support-evidence" aria-label="消息证据核验">
         <h2>核验消息 #{{ workspace.message.message_id }}</h2>
+        <RouterLink
+          :to="{
+            path: '/agent',
+            query: { shop: shopId, mode: 'support_model', message: workspace.message.id },
+          }"
+          class="button secondary"
+          >生成 AI 客服候选</RouterLink
+        >
         <p class="preserve-text">{{ workspace.message.body }}</p>
         <SupportSource :shop-id="shopId" :source="workspace.message.source" />
         <h3>订单关联</h3>

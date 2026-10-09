@@ -21,6 +21,7 @@ import type { ProductFacts } from '@/types/listings'
 import type { MessageFacts } from '@/types/support'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import AgentRunReview from '@/components/AgentRunReview.vue'
+import SupportModelContext from '@/components/SupportModelContext.vue'
 import InternalAuthorizations from '@/components/InternalAuthorizations.vue'
 import { authorizationsApi, type InternalAuthorization } from '@/api/authorizations'
 
@@ -61,6 +62,8 @@ const form = reactive<AgentInput>({
   allow_model: false,
   allow_analysis_data: false,
   allow_listing_data: false,
+  allow_support_data: false,
+  support_context: null,
   budget: { max_steps: 12, max_seconds: 120, max_cost_usd: '0' },
   scope: {
     start_at: new Date(Date.now() - 7 * 86400000).toISOString(),
@@ -81,6 +84,8 @@ watch(
     form.template,
     form.goal,
     form.product_id,
+    form.message_id,
+    JSON.stringify(form.support_context),
     JSON.stringify(products.value),
     JSON.stringify(form.scope),
     JSON.stringify(form.budget),
@@ -89,6 +94,7 @@ watch(
     form.allow_model = false
     form.allow_analysis_data = false
     form.allow_listing_data = false
+    form.allow_support_data = false
   },
 )
 const productOptions = computed(() =>
@@ -275,6 +281,19 @@ onMounted(async () => {
     const grantId = linkedId(route.query.authorization)
     await loadShop()
     if (route.query.mode === 'question') form.template = 'question'
+    if (route.query.mode === 'support_model') {
+      form.template = 'support_model'
+      const messageId = linkedId(route.query.message)
+      if (messageId) {
+        const workspace = await supportApi.workspace(shopId.value, messageId)
+        if (!messages.value.some((m) => m.id === messageId)) messages.value.push(workspace.message)
+        form.scope.data_identity =
+          workspace.message.source.data_identity === 'synthetic' ? 'synthetic' : 'user_import'
+        if (['generic', 'amazon', 'shopify'].includes(workspace.message.channel))
+          form.scope.channel = workspace.message.channel as typeof form.scope.channel
+        form.message_id = messageId
+      }
+    }
     if (route.query.mode === 'listing_model') {
       form.template = 'listing_model'
       const productId = linkedId(route.query.product)
@@ -351,6 +370,7 @@ onUnmounted(() => {
               <option value="listing">商品事实 → Listing 模板草稿</option>
               <option value="listing_model">AI Listing：事实 → 模型候选 → 审批保存</option>
               <option value="support">消息 → 人工接管草稿</option>
+              <option value="support_model">AI 客服：诉求与依据 → 候选 → 审批保存</option>
               <option value="natural">自然语言目标（需要模型）</option>
             </select></label
           >
@@ -369,7 +389,11 @@ onUnmounted(() => {
           >
           <label>币种<input v-model="form.scope.currency" required maxlength="3" /></label>
           <template
-            v-if="['listing', 'listing_model', 'support', 'natural'].includes(form.template)"
+            v-if="
+              ['listing', 'listing_model', 'support', 'support_model', 'natural'].includes(
+                form.template,
+              )
+            "
           >
             <label
               >查找商品或消息<input
@@ -377,7 +401,7 @@ onUnmounted(() => {
                 placeholder="关键词，最多显示 50 项"
                 @change="readOptions"
             /></label>
-            <label v-if="form.template !== 'support'"
+            <label v-if="!['support', 'support_model'].includes(form.template)"
               >目标商品<select v-model="form.product_id">
                 <option :value="null">未选择</option>
                 <option
@@ -398,7 +422,9 @@ onUnmounted(() => {
               </select></label
             >
           </template>
-          <template v-if="['natural', 'question', 'listing_model'].includes(form.template)">
+          <template
+            v-if="['natural', 'question', 'listing_model', 'support_model'].includes(form.template)"
+          >
             <label class="full-width"
               >运营目标<textarea
                 v-model="form.goal"
@@ -431,6 +457,27 @@ onUnmounted(() => {
               名称、文件名和买家消息留在本地。问题正文会原样发送，请核对其中内容。
               返回内容只可选择已有事实和核对建议，内部保存仍须审批。
             </p>
+            <template v-if="form.template === 'support_model'">
+              <SupportModelContext
+                class="full-width"
+                :shop="shopId"
+                :message="form.message_id"
+                :identity="form.scope.data_identity"
+                :channel="form.scope.channel"
+                :disabled="busy || controlling"
+                @change="form.support_context = $event"
+              />
+              <label class="full-width">
+                <span
+                  ><input
+                    v-model="form.allow_support_data"
+                    type="checkbox"
+                    :disabled="!form.support_context"
+                  />
+                  我已核对上述消息原文和选中政策，同意将这些客服数据发送至配置的模型
+                </span>
+              </label>
+            </template>
             <div
               v-if="form.template === 'listing_model'"
               class="full-width data-note"
@@ -513,7 +560,8 @@ onUnmounted(() => {
         </details>
         <p>
           固定流程使用本地规则或事实模板，模型费用为 0。自然语言目标用于路由；AI
-          经营问数根据确定性结果组织证据解释，AI Listing 根据商品原文组织候选。
+          经营问数根据确定性结果组织证据解释，AI Listing 根据商品原文组织候选，AI
+          客服按消息和政策组织回复候选与接管摘要。
         </p>
         <p v-if="model?.status === 'configured'">
           {{ agentLabels[model.provider] ?? model.provider }} · {{ model.model }} · 每百万输入 /
@@ -528,6 +576,8 @@ onUnmounted(() => {
             busy ||
             controlling ||
             rulesPending ||
+            (form.template === 'support_model' &&
+              (!form.support_context || !form.allow_model || !form.allow_support_data)) ||
             (form.template === 'listing_model' &&
               (!selectedProduct || !form.allow_model || !form.allow_listing_data))
           "
