@@ -1,6 +1,19 @@
 # SoloOps 重点上下文
 
-更新：2026-10-09。业务代码在 main；本分支只保存重点上下文，不合并到 main。
+更新：2026-10-09。SO-056人工收费映射规则与调整历史已完成最终检查并推送main。用户“可以，批准检查”后的后端、前端单元和桌面/手机回归均通过；当前无执行许可阻塞。
+
+## 最新成果：人工收费类别规则
+
+- `fee_rules` API→服务→repository，FeeRule/FeeRuleRevision，迁移`2d826d48220b`，`fee_mapping`纯分类；账单页FeeRules提供新建/修订→原行差异预览→明确保存→当前分类回读→历史→撤销/清除。development三十一/testing二十六，references/questions/interview-guide/README/矩阵已更新；全部74 SO/32验收保留。
+- 同用户店铺/身份/渠道，收费名strip后区分大小写/全半角/内部空白完整匹配；SHA256 UTF8有效匹配键唯一。七个费用类别、全部日期币种生效，窗口仅限预览；200有效规则/100次创建修订/20条列表，仍可撤销清除；预览复用每侧1000行/366天。
+- 用户→店铺锁，with_for_update/populate_existing当前读；preview复用reconcile与defer_commits同事务。摘要绑定完整输入/窗口、来源版本、费用版本、完整active规则ID/version/content、匹配契约fee-name-exact-v1。`scope_revision`读取同范围全部revision最新ID（含撤销清除），返回rule_revision，防新建后撤销把规则集恢复原样而复活旧预览。
+- UUID按用户唯一，hash绑定动作/范围/目标/version/预览；服务端锁后重算hash，旧预览409；UUID回放返回当前记录，清除不会重建正文。withdraw释放match_key保留历史；clear同事务擦current与所有revision正文/key，保留无正文状态/hash/审计；审计失败回滚。
+- 规则为独立人工字典，不保存来源账单/费用正文或批次依赖。原来源清除下一次读自然无分类行，规则仍保留；来源恢复重新分类，不恢复“已核对”结论。当前只读分类未保存核对结论；不改原账单/人工费用，不生成费用或净利。
+- 五状态unmapped/ambiguous/currency_mismatch/category_conflict/mapped；重复凭据或规则整组待核，异币种不分类，类别冲突显示拟分类并待核，mapped也标业务待核。旧金额比较六状态独立展示。
+- 前端范围变化重建组件，输入改变撤preview/consent；focus/unmount/epoch丢迟到，刷新/保存先隐藏旧正文，未知请求保留原UUID原输入回查。最后修正refresh在action前invalidate，确保请求失败错误可见；scope表单在ruleBusy锁定。
+- 本地完整后端 **570项/216.66秒**、完整E2E **50项/2.0分钟**在最后补充前通过；补充规则变更号/刷新错误后，最终规则与账单 **56项/29.84秒**、完整Vitest **22文件65项/3.78秒**、桌面/手机规则与账单E2E **4项/17.1秒**通过，当前571个后端用例均有本轮覆盖，不称一次完整571运行。
+- 最终Ruff规则/format197文件、mypy143app、Vue lint/type-check/build通过。隔离库迁移回退/升级/check及开发库升级/check通过；downgrade按依赖直接drop新增表，避免删除FK必需索引失败。最后30路径敏感文件/凭据模式与git diff --check通过。
+- Chromium URL http://127.0.0.1:5174/statements，1440×1000/390×844；URL/标题/内容/框架错误层/登录后console/pageerror/交互/手机无横溢均检查。Browser插件/browser技能未提供，依frontend-testing-debugging使用项目Playwright。截图已查看：系统Temp `soloops-fee-rules-{preview,history}-{desktop,mobile}.png`，不提交。
 
 ## 目标与授权
 
@@ -13,18 +26,17 @@
 
 ## 当前提交、CI 与环境
 
-- main **953084838bb5b7df25dc823e655b0ff736aba407** 已正常推送：feat: import channel statements and reconcile expense evidence。主工作区干净。
-- 当前 CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37928125060 最后观测 in_progress，接续先核对，失败先修。交接基线 a085232 的 CI37924316380 已核实 completed/success。
-- GitHub connector github_fetch 读 REST，JSON 常在 structuredContent.content，有时再套一层；只打印状态摘要。同 URL 可能缓存旧值，可用有效参数或 workflow runs 集合按 head_sha 核对。当前 actions/runs?per_page=5 可读。
-- backend/.venv Python3.11、frontend/node_modules；Docker MySQL8.4 开发3307/测试3308，项目容器 soloops-mysql-1 / soloops-mysql-test-1。迁移 head **d32312391696**，新增渠道账单行并将批次生命周期时间改为DATETIME(6)。隔离库 down a269fe553f96 / up head / check 与开发库 upgrade/check 已通过。
-- 开发 API8000 已核实原父39496/子41704命令行后隐藏重启，本次 launcher52200（实际PID后续重核）；前端5173 Node28144沿用，CI=true。两端200，新 statements/reconcile OpenAPI 路由可读。API无热重载；启停必须重核端口和CIM命令行，不凭旧PID停进程；Start-Process一律WindowStyle Hidden。
-- pytest、Playwright、迁移回退共用 _test 库，严格串行。测试 Settings 显式关闭真实模型/邮件/常规调度，专门worker测试才开启本地扫描。日志在忽略的 .local，不提交。
-- Windows 沙箱 socket10013 / Vitest临时缓存rename EPERM须允许执行环境。若10061先查两个项目MySQL容器。使用 python -m mypy，直接mypy.exe历史有uv trampoline路径问题。
-- E2E必须 **npm run test:e2e**：pretest:e2e先build-only，Playwright管理隔离API8001与vite preview5174，CI=true，生产预览代理隔离API。不要直接npx playwright test漏构建。
-- 本机 Node24.15.0 / Vite8.3.4 历史偶发退出，开发转换服务曾捕获0xC0000409，根因未定位。本轮首次完整预览回归7通过/41失败，先暴露共享来源组件竞态，后从第9项开始读取失败、5174连接拒绝。修复组件后第二轮47/48通过，唯一失败为定时历史筛选一个并行GET /schedules状态-1，其余history/status均200；随后定时4项+账单2项定向全部通过。不把定向复验当环境稳定性修复。日志/trace含合成会话cookie/CSRF，勿原样输出；仅提取状态/错误类型，保持忽略。
-- Firecrawl已知402，不重复计费接口；用官方网页/GitHub工具，不临时编写HTTP抓取脚本。
+- main **d53cf39ba92d0a17dd3a39fe888d1577e2e836c3** 已正常推送，人工收费映射规则实现及文档共30文件；主工作区干净。本分支仅维护重点上下文，不合并到main。
+- 新CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37932923289 已从GitHub页面核实对应d53cf39，当前In progress；接续先确认结果。上一9530848的CI37928125060已核实Success。
+- 当前GitHub connector的github_fetch虽可发现但不可调用，gh未安装；通过可用浏览器读取GitHub CI。Firecrawl已知402，不重复计费接口；官方网页工具作为公开资料fallback，不临时编写HTTP抓取脚本。
+- backend/.venv Python3.11、frontend/node_modules；Docker MySQL8.4 开发3307/测试3308，项目容器soloops-mysql-1 / soloops-mysql-test-1。迁移head **2d826d48220b**；隔离_test库 down d32312391696 / up head / check 和开发库upgrade/check通过。
+- 开发API8000核实父44580/子40380命令行后隐藏重启，最后launcher28892；前端5173 Node28144沿用。最终OpenAPI含fee-rules及StatementReconciliation.rule_revision，账单页200。API无热重载；启停必须重核端口和CIM命令行，不凭旧PID停进程；Start-Process一律WindowStyle Hidden。
+- pytest、Playwright、迁移回退共用_test库，严格串行。Settings显式关闭真实模型/邮件/常规调度，专门worker测试才开启本地扫描；Vitest可独立运行。日志在忽略的.local，不提交。
+- Windows沙箱MySQL socket10013/Vitest缓存rename EPERM需允许执行环境；用户本轮明确批准最终检查，已成功运行。若10061先查项目MySQL容器；使用python -m mypy，直接mypy.exe历史有uv trampoline路径问题。
+- E2E必须 **npm run test:e2e**：pretest先build-only，Playwright管理隔离API8001与vite preview5174，CI=true。不要直接npx playwright test漏构建。
+- 本机Node24.15.0 / Vite8.3.4历史偶发预览退出/请求状态-1，根因未定位。本轮首次定向4项3过1单次清除连接中断，随后完整50项与最终定向4项通过。不得把复验通过当作环境根因修复；日志/trace含合成cookie/CSRF，只提取方法/路径/状态/错误类型，不原样输出，保持忽略。
 
-## 最新成果：SO-055 通用渠道账单与 SO-056 费用差异首片
+## 既有账单与费用差异能力
 
 - development三十/testing第二十五。`/statements`：范围→CSV/Excel模板与上传→映射纠错预览→明确确认导入→当前费用核对→状态筛选→原始行/批次/人工费用深链→撤销/清除→重新核对。AppShell第17项导航；导入页支持statements类型和范围/批次深链，进入批次先隐藏旧正文。
 - 新ImportKind statements复用2MiB/2000行/64列上限和既有导入版本/幂等/更新确认/撤销恢复。字段statement_id、line_id、entry_type、amount、currency、occurred_at、evidence_ref、fee_name、settlement_id、order_id、note。四类sale/refund/fee/payout使用正绝对值Decimal/Numeric(18,4)，分别合计；payout是平台记载回款、到账待核。fee要求凭据费用行编号和原始收费项名各120字符；非fee禁止fee_name，note500，稳定ID120。
@@ -65,7 +77,8 @@
 ## P0边界与接续起点
 
 - p0-local-review.md保留4 MVP、23 P0最小模块、32验收边界；A01—12与A14—32共31项本地适用证据通过。A13真实邮件、真实模型全面质量、七条长期E2E未完整验收。
-- 接续先核对9530848的CI37928125060，失败先修。读AGENTS、冻结稿、矩阵、development三十/testing第二十五及本文件；新聊天独占主工作区，旧聊天停止修改。
-- 下一切片建议 **SO-056 原始收费项到统一费用类别的人工映射规则与调整历史**，不依赖外部账号。先官方/GitHub检索更新references；读SO-053/055/056/057及statements/expenses/imports分层。自行确定有界精确匹配契约、店铺/身份/渠道范围、规则版本及明确确认，提供创建/修订→差异预览→当前账单应用回读→历史→撤销/清除的前后端闭环。未知/重复/冲突收费项保持待核，规则不得自动改写原始账单或人工费用、生成真实付款或声称实际净利。
-- 规则调整需明确影响范围；保存结论如引用账单或费用，绑定当前来源/费用版本与规则版本，来源恢复不复活旧确认、清除所有历史依赖同事务。可先做只读映射结果，必须清楚区分规则保存与人工核对结论。每项剩余能力在矩阵如实保留，不将计划称实现。
-- 每功能更新全部跟踪文档、测试/静态/桌面手机后正常推送main/context-memory；继续独立P1/P2。上下文压力时依既有授权先推送再创建本地接续，创建后旧聊天停止修改，不启动子代理。
+- 接续先核对d53cf39的CI37932923289，失败先修。读AGENTS、冻结稿、矩阵、development三十一/testing第二十六及本文件；新聊天独占主工作区，旧聊天停止修改。
+- 下一独立切片建议 **SO-055/SO-056 人工核对结论存档**：先官方/GitHub检索更新references，阅读SO-053/055/056/057及statements/expenses/fee_rules/imports分层，确定有界人工结论及差异说明契约，实现预览→明确保存→当前来源/费用/规则回读→历史→撤销/清除前后端闭环。
+- 保存结论绑定当前账单来源、人工费用版本、完整范围与规则变更号，以及全部历史来源依赖。来源/费用/规则变化使旧结论失效；恢复原值不复活旧确认；来源清除擦所有历史依赖正文，与源清除及末尾审计同事务。未知/重复/币种与类别冲突仍明确待核，不自动生成费用或真实付款，不输出实际净利润。
+- 真实平台收费定义、多条件/生效日期规则、复杂分摊、物流/订单金额差异、结算周期和银行到账继续保留待实现。每功能更新全部跟踪文档、测试/静态/桌面手机后正常推送main/context-memory；继续独立P1/P2。
+- 上下文压力时依既有授权先落盘推送再创建本地接续聊天；创建后旧聊天停止修改，不启动子代理。
