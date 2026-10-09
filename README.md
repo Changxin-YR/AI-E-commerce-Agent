@@ -13,17 +13,31 @@
 
 ## 当前提交与环境
 
-- 仓库 https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。main **fa5cba53df43587f11a721ae7ec25740d3b0b88d** 已正常推送，feat: add persistent local operations schedules and notifications；工作区干净。
-- 本提交 CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37882272193 最后观测 in_progress，接续先核对，失败先修。前提交8fdd985的CI37880173315已 success。
-- backend/.venv Python3.11、frontend/node_modules；Docker MySQL8.4开发3307/测试3308。迁移 head **a364d8b4b6bf**；新调度两表已应用开发库，隔离测试库 down/up/check 通过。
-- 开发API8000已核实原父子进程后隐藏重启，新 launcher PID **46192** / API PID **50688**；前端5173原Node32612，两者健康200。API无热重载，改动后重启须重新核实实际端口进程，不能凭旧PID停止。
+- 仓库 https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。main **9ae51bcea5b281839ff74da0f3dccfa3a35ac1e2** 已正常推送，feat: schedule calendar operating reports with persistent evidence；工作区干净。
+- 本提交 CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37884256378 最后观测 in_progress，接续先核对，失败先修。前提交 fa5cba5 的 CI37882272193 已 completed/success。
+- backend/.venv Python3.11、frontend/node_modules；Docker MySQL8.4开发3307/测试3308。迁移 head **54df8f2c09a1**；周期记录新增 task/report_id，开发库已升级，隔离测试库 down/up/check 通过。
+- 开发 API8000 隐藏重启，launcher PID **23520** / API PID **13608**；前端5173 Node32612。两者健康200。API无热重载，后续先重核端口、命令行及父进程再停止，不凭旧PID操作。
 - .env、backend/.env、.local/test.env、.local回执/日志和.context-memory从main忽略。密钥不打印、不提交、不写聊天文档。backend/.env已有百炼key，无需索取/复制。
 - pytest、Playwright、迁移回退共用隔离_test库，必须串行。测试入口 _env_file=None、显式覆盖provider/key/name/rates并关闭真实模型/邮件；开发只用MockTransport/合成替身。
-- Windows MySQL/Node/Git写/联网常需允许的普通执行环境；Vitest沙箱缓存rename EPERM在普通环境通过。本轮完整Playwright在普通管道下两次Vite连接断开，改exec_command tty=true持久终端完整38项通过；尚未确认退出根因，建议Windows长E2E使用tty。Start-Process一律WindowStyle Hidden。终端命令保持正确workdir。
+- Windows数据库连接沙箱WinError10013、Vitest缓存rename EPERM在普通允许执行环境通过。长浏览器测试可用 exec_command tty=true 加忽略目录日志。Start-Process 一律 WindowStyle Hidden。
+- **E2E入口已改为生产构建预览**：npm run test:e2e 先 pretest:e2e → build-only，再 Playwright；测试前端命令 npm run preview -- --host 127.0.0.1 --port 5174 --strictPort，代理测试API8001、CI=true，Playwright管理启停。完整40项已通过。不要直接用 npx playwright test 而忘记先构建。
+- 本机 Vite 8.3.4 开发转换服务完整E2E多次中途断连；子进程观察捕获退出码3221226505(0xC0000409)，具体原生模块未定位。简单stdin实验未复现关闭。生产预览全套通过；开发5173仍为原Vite，不声称原生原因已修复。诊断脚本/日志均在.local忽略。
 - Firecrawl已知402，不重复调用计费接口；使用官方网页/GitHub工具，不临时编写网页抓取脚本。
-- CI状态用GitHub connector github_fetch读取REST并解析structuredContent.content，只输出状态摘要；fetch_workflow_run_jobs有时读到旧状态。
+- CI状态用GitHub connector github_fetch读取REST并解析structuredContent.content，只输出状态摘要；同URL有时返回缓存旧状态，可使用有效参数如 ?exclude_pull_requests=true 重新核对。
 
-## 最新成果：SO-006 持久本地定时巡检与站内通知
+## 最新成果：SO-006 自然日周月经营报表调度
+
+- development二十六、testing二十一。ScheduleConfig.task=operations/report，report_currencies为空表示所有币种分别统计；原计划默认operations，旧创建请求散列兼容。迁移54df8f2c09a1为ScheduleOccurrence新增task与report_id外键，旧记录补operations，历史类型不随计划修改。
+- schedule_reports.report_scope：日报前一自然日；周一取上一完整周；每月1日取上一自然月；比较更前一完整周期。显式IANA、跨年/闰月/DST，含开始不含结束；月对比天数可不同。周报固定weekday0、月报month_day1，报告独立阈值且覆盖所选店铺/身份全部导入渠道。
+- 定时窗口锚定原计划时刻，跨日补跑不漂移；复用最近一期24小时内恢复/旧期合并/暂停不补跑。手动按当前时间取最近完整报告期，新UUID允许刷新当前数据，同UUID回放原结果。
+- 报告经页面确认按期保存，OverviewService.save_scheduled与人工save共用锁后计算和保存；人工仍验expected_revisions。用户→店铺→计划锁和defer_commits覆盖报告、OverviewSource、周期通知与下次时刻，失败整笔回滚，恢复错误仅固定码并暂停。
+- 复用Decimal、分币种、本期/对比期依赖、缺失保持未知。库存/成本/未结待办为生成时投影；报告通知只引用ID，从Overview读stale/clear和源行，清除任何依赖擦正文。巡检保持原Agent daily逐次审批；没有真实模型或外发调用。
+- 页面新建/修改类型、周期、币种与确认，修改清同意；epoch丢迟到巡检规则，切回巡检重新绑定。通知显示报表已保存与报告深链，桌面/390px配置→生成→回读→清除通过；普通视口截图已查看，系统Temp soloops-schedule-reports-{desktop,mobile}.png。
+- 新后端21项，定向70/23.37s，完整 **448 passed /186.09s**；Ruff159文件、mypy116app。Vue lint/type/build通过，Vitest17文件32/2.83s；最终测试Array.at改slice兼容后相关2/1.39s通过。定向E2E4/15.7s，生产预览完整 **40/1.6min**。
+- 首次浏览器测试未展开库存details便检查可见性，已按实际操作展开后通过。隔离迁移down a364d8b4b6bf/up/check、开发upgrade与API重启已完成。22文件提交前路径/敏感模式检查通过，日志/凭据未提交。
+- SO-006仍保留业务事件触发、紧急分级、评论/营销监测和授权外部通道，74SO/32验收/7长期E2E完整保留。
+
+## 既有成果：SO-006 持久本地定时巡检与站内通知
 
 - development二十五、testing二十。新增 schedules三层、schedule_clock日历、scheduler worker；迁移a364d8b4b6bf有operation_schedules / schedule_occurrences。
 - 卖家确认创建日/周/月计划（每月1—28日），IANA时区/UTC持久化，DST不存在时刻跳过，重复取fold=0。订单窗口[计划时刻-N×24h,计划时刻)，N<=365；库存/商品/消息取执行时投影，时效按真实当前时间。
@@ -72,7 +86,7 @@
 
 ## 接续起点
 
-1. 先核对fa5cba5的CI37882272193；失败先修。读取AGENTS、冻结稿SO-006/SO-002、矩阵以及development二十五/testing二十，保持既有权限和隐私不变量。
-2. 继续 **SO-006 下一本地切片：专用日/周/月经营报表调度**。先官方/GitHub资料与references，再读已有OverviewService及调度服务，自行完成最小设计和实际实现，复用分币种/显式日期窗口、来源完整性、持久摘要与批次清除。周期巡检频率不等同专用经营日报/周报/月报，矩阵目前准确保留未完成范围。按真实本地业务边界决定报告生成是否需单独确认，保持调度显式授权；外部通知/付费模型不默认启用。之后继续不依赖外部权限的P1/P2（如SO-014），不能只写计划停工。
-3. 每功能测试/静态检查、桌面手机、文档及74SO/32验收，正常提交推送main/context-memory。pytest、Playwright、迁移回退共用_test库严格串行；Windows长E2E建议普通执行环境+tty=true。每次启动/停止进程重新核实端口及命令行。
-4. 用户授权上下文压力下先落盘推送，再建本地接续聊天；新聊天接手后旧聊天停止修改，不能同时操作同一工作区。未经用户明确要求不启动子代理。
+1. 先核对9ae51bc的CI37884256378，失败先修。读AGENTS、冻结稿、矩阵、development二十六/testing二十一；保持当前权限、数据与隐私不变量。
+2. 继续不依赖外部凭据的P1 **SO-014 商品信息质量与批量运营**。先官方/GitHub资料和references，再检视商品导入投影、Listing/运营质量分支、来源依赖及审批层，自行确定可验收的本地首片并实际完成前后端闭环。建议先做商品质量检查、缺失/待核原因与可回读依据，必要的内部修订或批量动作仍需预览和审批；真实平台同步另守授权门禁。不能只写计划停工，不把当前无品牌/编码/图片字段的范围称完整检查。之后继续独立P1/P2。
+3. 每功能完成相关测试/静态检查、桌面手机、development/interview/testing/questions及74SO/32验收，正常提交推送main/context-memory。pytest、Playwright、迁移回退严格串行；npm run test:e2e 自动先构建生产页面。每次启停服务重核端口和命令行。
+4. 用户授权上下文压力下先落盘推送，再建本地接续聊天；新聊天接手后旧聊天停止修改，同工作区独占。未经用户明确要求不启动子代理。
