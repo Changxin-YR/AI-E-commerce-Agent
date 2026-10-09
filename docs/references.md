@@ -277,3 +277,9 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 
 - Vue Router官方[编程式导航](https://router.vuejs.org/guide/essentials/navigation.html)与[Composition API](https://router.vuejs.org/guide/advanced/composition-api)：借鉴显式query传递及对实际变化字段响应。vuejs/router采用MIT；本轮仅参考公开接口，自行实现有界对象ID、范围与返回事项契约，不复制实现。
 - MySQL8.4官方[mysqldump](https://dev.mysql.com/doc/refman/8.4/en/mysqldump.html)与[备份方式](https://dev.mysql.com/doc/refman/8.4/en/backup-methods.html)：参考InnoDB single-transaction、无并发DDL和逻辑恢复约束。官方手册为Oracle版权，不复制内容；工具使用现有MySQL容器中的客户端，凭据不放参数，恢复到新建隔离库并核对代表记录。Firecrawl已知402，使用官方网页检索核实。
+
+## 基础版本：首次启动与进程恢复（2026-10-09）
+
+- Docker官方[独立项目名](https://docs.docker.com/compose/how-tos/project-name/)与[Compose参数](https://docs.docker.com/reference/cli/docker/compose/)：使用独立项目名、配置文件和端口隔离容器、网络与持久卷；只启动验收项目的MySQL。Docker Compose采用Apache-2.0，文档仅作接口参考，不复制实现。
+- Pydantic官方[Settings优先级](https://pydantic.dev/docs/validation/latest/concepts/pydantic_settings/)：环境变量优先于dotenv。pydantic-settings采用MIT，本轮独立验收清除继承的SOLOOPS变量，从新副本backend工作目录读取新配置；真实模型及邮件显式关闭，避免继承开发配置。
+- 适配：从已提交源码导出独立副本，执行现有setup_local、迁移及账号CLI，经过真实HTTP与独立API进程验证。初始化补齐对已有.local/test.env的保护，所有配置文件使用独占创建模式；配置与证据均留忽略目录。

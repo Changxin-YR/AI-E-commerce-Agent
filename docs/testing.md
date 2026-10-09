@@ -448,3 +448,11 @@ Windows Node24.15.0 下首次完整 E2E 为 **52 通过/2 失败，2.4 分钟**�
 同一合成贯通库在停止测试API后经`database_backup.py`导出并恢复至全新`soloops_restore_foundation_20261009_test`，**64表行数/CHECKSUM与head7e7851694067一致**。只读回查2主店、6完成事项、2失效但完成的低毛利事项、2历史已批准Listing、2毛利13的历史分析与完成待办、2客服存档、2摘要；临时恢复用户0。第二次同目标恢复拒绝覆盖。SQL/manifest保存在忽略目录`.local/backups/foundation-20261009-2304`，包含合成测试资料，不提交；完整命令与边界见foundation-user-guide。
 
 实际查看系统Temp中的`soloops-foundation-task-mobile.png`和`soloops-foundation-support-desktop.png`：状态/备注/敏感接管、外部未提交含义可读，390px无横溢。测试报告和trace不提交。pytest与浏览器/恢复验证严格串行；Node24.16.0隔离运行时，常规测试关闭真实模型、邮件与调度。既有Starlette/httpx、NO_COLOR提示保留。本阶段真实模型新授权累计1元尚为0调用/已知0元；G-04首次配置/进程重启、G-05真实模型、G-06本人邮件仍待继续。
+
+## 第三十一迭代：独立首次安装与实际进程恢复（2026-10-09）
+
+业务基线8f6956f的[CI37950996694](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37950996694)Success，verify9分14秒、总9分18秒。新改动仅初始化配置保护：`pytest tests/test_local_setup.py -q --tb=short --basetemp=../.local/pytest-setup-g04` **4 passed / 1.01秒**，Ruff规则与223文件格式、mypy158文件通过。首次沙箱默认Temp创建失败，改用工作区忽略目录后通过；基线685项业务测试与97项Vue回归证据保留，本次不改业务代码。
+
+G-04从源码副本新建venv安装47锁定包，独立Docker项目/卷/端口下空库0→64表，head7e7851694067。账号CLI→实际HTTP登录/资料/店铺/五文件预览确认→3商品/5订单/3库存/2消息，Amazon/USD销量4、75/62/13。14份业务响应在进程重启后一致。真实23:36到期期间停机，worker关闭后历史0，开启后1期待审批；审批成功再重启后仍1周期/1执行/6任务，模型费用0。未修改时间或到期字段，亦未用直接tick代替实际进程。
+
+新副本前端npm ci安装293包、审计0漏洞；Node24.16.0 build/type-check通过，225模块、Vite1.23秒。Chromium桌面1440×1000和手机390×844登录/选店/刷新/持久会话通过，页面错误0、横溢0，手机截图已查看。原三份配置哈希相同；隔离前端/API/MySQL已关闭且持久卷保留。完整可核查证据与本机文件位置见[foundation-runtime-evidence.md](foundation-runtime-evidence.md)。G-05/G-06仍待真实模型及本人邮件证据。

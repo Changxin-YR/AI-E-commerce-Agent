@@ -304,3 +304,9 @@
 - **来源变化为什么保留已完成历史？** 处理状态说明卖家做过什么，来源状态说明旧依据是否仍适用。修订成本后旧低毛利事项completed/stale保留备注，新证据形成待审批候选；`foundation.spec.ts`同时验证旧记录和新金额。
 - **恢复为什么不用管理员导入整个SQL？** `database_backup.restore`用root建立新库，再用仅限该库的临时用户导入，已有目标直接拒绝。SQL内容即使带其它库语句也受数据库权限约束；测试验证失败路径清理账号且不输出私密错误。
 - **如何证明备份可用？** 文件SHA256只证明文件未改变，恢复后的表行数、CHECKSUM和迁移版本证明数据一致；本轮还回读了任务状态、历史金额、批准版本、客服存档和报告，不能用文件存在代替恢复证据。
+
+## 首次安装与进程恢复（2026-10-09）
+
+- **为什么单元测试之外还要启停实际进程？** TestClient/直接tick能验证分支，但不能证明启动目录的.env、迁移、会话持久化和lifespan worker共同工作。G-04从空库启动Uvicorn，经HTTP保存14份快照，再实际停止/启动比较；证据见foundation-runtime-evidence。
+- **暂停计划、关闭worker与关闭API有何区别？** SchedulesService.act暂停会清空next_run_at，恢复从当前日历计算未来时刻；scheduler_enabled只控制main.py中的serve任务，计划到期仍保留。进程恢复时run_due按最新周期和唯一slot_key处理，24小时窗口内执行，其余记录missed；多个实例各自的开关不能当作全库关闭。
+- **初始化如何避免误覆盖？** scripts/setup_local.py先检查开发与测试三份配置，write_new用独占创建防止预检后同名文件出现时被覆盖。test_local_setup.py验证已有配置保持字节不变，G-04对原工作区配置另做SHA256前后核验。

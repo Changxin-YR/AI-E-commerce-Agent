@@ -4,9 +4,52 @@
 
 ## 安装与首次使用
 
-环境：Python3.11、uv、Node.js24.16+（Windows）与Docker Desktop。按照[README本地启动](../README.md#本地启动)的setup_local.py生成本机配置、启动MySQL、安装锁定依赖、alembic升级、交互建账号与启动API/前端步骤。密钥仅填忽略配置；不要把密码写在命令参数、截图或共享日志中。本轮干净配置安装与实际进程重启证据尚待G-04完成。
+环境：Python3.11、uv、Node.js24.16+（Windows）与Docker Desktop。按照[README本地启动](../README.md#本地启动)的setup_local.py生成本机配置、启动MySQL、安装锁定依赖、alembic升级、交互建账号与启动API/前端步骤。密钥仅填忽略配置；不要把密码写在命令参数、截图或共享日志中。初始化发现根.env、backend/.env或.local/test.env任一已存在时，会在写入前拒绝覆盖。
 
 登录后先创建经营资料与店铺，再经导入页上传商品、订单、消息和库存。用[统一合成样本](../examples/foundation/README.md)可复现四流程；选择合成测试身份及每份文件标明的渠道，预览字段与错误行后确认。样本应有3商品、5订单行、3库存和2消息；Amazon/USD销售75、当前采购成本62、已知商品毛利13。业务文件可仅导入所需类型，缺数据时补充资料。
+
+### 独立演练首次安装
+
+已有工作库时，可在项目.local下用已提交源码建立全新副本。以下名称须尚未使用；不要在有业务配置的目录执行初始化或更改连接目标：
+
+```powershell
+git archive --format=zip --output=.local/foundation-install.zip HEAD
+Expand-Archive -LiteralPath .local/foundation-install.zip -DestinationPath .local/foundation-install
+cd .local/foundation-install
+python scripts/setup_local.py
+```
+
+仅编辑新副本生成的配置：根.env中MYSQL_PORT设为3309；backend/.env中数据库URL的端口设为3309、库名设为soloops_foundation_install_test，保留随机口令；显式设置SOLOOPS_MODEL_ENABLED=false、SOLOOPS_OUTBOUND_ENABLED=false、SOLOOPS_SCHEDULER_ENABLED=true。若使用8002 API和5175前端，SOLOOPS_TRUSTED_ORIGINS设为JSON数组`["http://127.0.0.1:8002","http://127.0.0.1:5175"]`。
+
+在新副本增加compose.install.yaml：
+
+```yaml
+services:
+  mysql:
+    environment:
+      MYSQL_DATABASE: soloops_foundation_install_test
+```
+
+新终端清除先前导出的SOLOOPS配置变量，防止环境变量优先级覆盖新配置。确认3309、8002、5175空闲，再执行：
+
+```powershell
+docker compose -p soloops-foundation-install --env-file .env -f compose.yaml -f compose.install.yaml up -d --wait mysql
+cd backend
+uv sync --frozen --python 3.11
+uv run alembic upgrade head
+uv run python -m app.cli create-user foundation_owner
+uv run uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8002 --no-access-log
+```
+
+另开终端进入新副本frontend，执行`npm ci`及`npm run build`。设置`$env:SOLOOPS_API_TARGET='http://127.0.0.1:8002'`后运行`npm run dev -- --port 5175`，打开127.0.0.1:5175，用新账号走经营资料→店铺→合成导入。项目名隔离容器、网络和卷；命令只启动新项目mysql，不启动固定3308端口的mysql-test。已有开发配置与数据库不参与演练。
+
+### 关闭、重启和调度恢复
+
+前台启动时，在API与前端各自终端按Ctrl+C关闭；先等待在途操作结束。只关闭API时，MySQL持久数据保留；重新执行相同启动命令后，原账号、会话和业务记录可回读。后台进程应先核实监听端口、程序路径及父子进程身份再停止，勿使用历史PID批量结束Python进程。
+
+SOLOOPS_SCHEDULER_ENABLED=false关闭该API实例的自动调度，但已有计划与到期时刻保留。所有连接同一数据库的API实例均关闭调度后，才是整个库暂停自动检查。重新启用后，轮询每30秒检查一次；停机错过多期时只考虑最近一期，24小时恢复窗口内执行，窗口外记为missed。计划页“暂停”使计划next_run_at为空，“恢复”按当前配置计算下一次未来时刻；与单纯关闭API有不同语义。
+
+定时运营生成待审批执行，继续审批前不会保存业务待办；真实模型与外发不由本地定时器调用。恢复后先回读通知、原执行和next_run_at，确认只新增一个周期。应用关闭后可在该副本根目录执行相同`docker compose -p ... --env-file ... -f ...`前缀加`stop mysql`；保持卷即可下次恢复。
 
 ## 四条日常流程
 
