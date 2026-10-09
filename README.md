@@ -13,30 +13,34 @@
 
 ## 当前提交、CI 与环境
 
-- main **cb6c585309ac57f5a4f592ce42b307a5227b7829** 已正常推送：feat: inspect product quality with source-backed reports。主工作区干净。
-- 本提交 CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37917649249 最后观测 in_progress；接续先核对，失败先修。交接基线9ae51bc的CI37884256378已completed/success。
+- main **c652c9175ae026dd86bff2ec51ee319e8c62a43e** 已正常推送：feat: approve source-backed bulk product edits。主工作区干净。
+- 本提交 CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37920901327 最后观测 in_progress；接续先核对，失败先修。交接基线cb6c585的CI37917649249已verify completed/success。
 - GitHub connector github_fetch 读 REST，JSON 在 structuredContent.content；只输出状态摘要。同 URL 可能缓存旧值，可用有效参数 ?exclude_pull_requests=true 或按 head_sha 筛选 workflow runs 核对。
-- backend/.venv Python3.11、frontend/node_modules；Docker MySQL8.4 开发3307/测试3308。本轮恢复了已停止的 soloops-mysql-1 / soloops-mysql-test-1，均 healthy。
-- 迁移 head **7b92c4d16e80**；隔离测试库 down54df8f2c09a1/up/check 通过，开发库 upgrade/check 通过。新表 product_quality_reports / product_quality_sources。
-- 开发 API8000 已隐藏恢复：launcher9548 / 实际API28420；前端5173 Node28144，CI=true 防标准输入退出。两者健康200。API无热重载；后续操作前重核端口与命令行，勿凭旧PID停止。Start-Process 一律 WindowStyle Hidden。
-- pytest、Playwright、迁移回退共用 _test 库，严格串行。测试 Settings 显式禁真实模型/邮件/常规调度；开发仅合成替身，专门 worker 测试才显式开启本地扫描。
+- backend/.venv Python3.11、frontend/node_modules；Docker MySQL8.4 开发3307/测试3308。使用项目容器 soloops-mysql-1 / soloops-mysql-test-1，本轮完整数据库回归和迁移通过。
+- 迁移 head **d6f920a41b85**；c5e81a209d74 建 product_edits/product_edit_sources，d6f920a41b85 增 import_batches.origin（历史 file_import，人工 manual_edit）。隔离测试库 down7b92c4d16e80/up/check、开发库 upgrade/check 通过。
+- 开发 API8000 已核实原9548/28420的uvicorn身份后隐藏重启：新launcher27088（实际PID后续重核）；前端5173 Node28144，CI=true 防标准输入退出。两者健康200，OpenAPI包含product-edits新路由。API无热重载；后续操作前重核端口与命令行，勿凭旧PID停止。Start-Process 一律 WindowStyle Hidden。
+- pytest、Playwright、迁移回退共用 _test 库，严格串行。测试 Settings 显式禁真实模型/邮件/常规调度；本轮验证仅合成替身，专门 worker 测试才显式开启本地扫描。
 - Windows 沙箱 socket10013、Vitest缓存rename EPERM须普通允许执行环境。若10061先查项目容器是否运行。长E2E可tty=true，日志重定向.local。使用 python -m mypy，直接mypy.exe曾出现uv trampoline路径问题。
 - E2E用 **npm run test:e2e**：pretest:e2e先build-only，再由Playwright管理API8001与vite preview5174，CI=true、生产构建、代理隔离API。不要直接npx playwright test漏构建。
 - 本机Vite8.3.4开发转换服务此前退出码3221226505/0xC0000409，具体原生模块未定位；生产预览完整回归通过，不声称根因已修。
 - Firecrawl已知402，不重复计费接口；用官方网页/GitHub工具，不临时编写HTTP抓取脚本。
 
-## 最新成果：SO-014 商品信息质量检查与报告
+## 最新成果：SO-014 名称/参数本地批量修订
 
-- development二十七、testing二十二。/product-quality当前主档检查→依据→确认保存→历史/固定链接回读→来源stale/clear与手动清除。仅本地确定性规则，无模型/外发/平台变更。
-- 范围按用户/店铺/数据身份、可选来源渠道和区分大小写SKU前缀。最多1000商品、正文2MB，超限整体拒绝；所有返回行均保存，不因页面筛选丢依赖。
-- product_quality_rules：名称/参数空值及整字段占位、重复参数行、按行属性:值的同名多值、售价/成本及币种缺失、零售价、异币种、NFKC+casefold+空白折叠的相似SKU、六类有限描述关键词。missing/review明确，零成本保留已知零。相似组完整计数、最多20个同行SKU示例，全部商品仍包含在报告。
-- 品牌/GTIN/MPN、图片规格、类目属性和平台/跨店一致性明确未检查；空数据全部未检查。不宣称完整质量或平台合规。批量编辑/价格/库存/素材/多店同步仍后续。
-- API→ProductQualityService→repository；用户→店铺锁后with_for_update/populate_existing当前读。保存仅接收范围、revision、预览hash、UUID和确认，重新计算；hash覆盖规则/范围/全文证据，排除checked_at。报告/所有来源/审计同事务。同UUID回放当前持久状态，改变输入拒绝；清除后回放不复活。
-- 导入提交/撤销/清除保守使本店报告stale（沿用全店data_revision，包括其他类型数据）。撤销恢复不会复活旧current。依赖包含全部已检查商品，包括无问题行；任一批次清除擦snapshot、SKU前缀和所有关联，独立报告保留。主动清除同样幂等。
-- ProductQualityView按范围epoch丢迟到响应、变更清同意；刷新/保存/清除先隐藏快照。历史回读同步回填scope；acceptReport用restoringScope抑制内部回填触发reset，清除也同步擦表单SKU前缀。ProductQualityResult缺失/待核筛选、每页20个、原始行复用SupportSource。
-- 新后端17/7.38秒，完整pytest **465/168.32秒**；Ruff规则格式167文件、mypy122app。Vue最终lint/type/build通过；完整Vitest18文件37/3.42秒，最终清除前缀修订后相关组件6/1.19秒通过（当前总用例因此多1，未把未跑的全套计为38）。
-- 新E2E首轮2/10.5秒；范围回填后完整 **42/1.6分钟**；最终清除前缀修订定向2/8.9秒通过。桌面和390px手机无横溢，截图system Temp soloops-product-quality-{desktop,mobile}.png已看。
-- 首轮完整E2E在截图发现范围显示需回填后主动终止于25项，不计完整通过；之后重建全套42通过。Starlette/httpx、NO_COLOR既有提示保留。28个暂存文件路径/敏感token模式检查通过，未提交日志/凭据。
+- development二十八、testing二十三。/product-edits：加载当前商品→最多50个选择编辑/共同前缀追加参数→保存草稿→全量差异及原行→明确审批→本地生效→历史/固定链接/当前数量→拒绝/撤销/清除。同用户/店铺/身份/渠道；目录沿用1000商品/2MB，修订正文1MB、祖先依赖1000批次。
+- API→ProductEditService→repository。名称1—240字符、参数≤2000、理由1—500、重复/无改动/额外字段拒绝。保存原before/after、SourceReference、理由与shop.data_revision。批准仅收版本/hash/confirm，锁后逐项重读并验整店revision；任一冲突整批不执行，conflict/blocked逐项持久failed。无关导入也保守阻断；来源覆盖再恢复不能让旧批准有效。
+- 审批后建立独立ImportBatch origin=manual_edit/人工修订标签及新ImportRow，raw保留依据批次/行、理由和旧名称/参数，corrections新字段、normalized完整新资料，金额原样继承。原文件独立。复用ImportService.commit更新Product.source_row_id和所有派生失效；新增SourceReference.origin，SupportSource显示人工依据。商品金额/SKU/库存/素材/外部平台未在本片修改范围。
+- 创建UUID按用户唯一、摘要绑定；原创建请求回读当前状态。批准重放原版本/hash只返回已有结果；清除后不复活。defer_commits将来源/投影/审批/依赖/审计同事务，末尾审计错误整体回滚。
+- ProductEditSource登记直接来源及全部人工祖先。ImportService.withdraw新增外层协调：读所有affected（含本记录输出批次），后代优先用_withdraw_single处理输出，再处理原批次；完整祖先使其无需递归。撤销pending→stale，applied→revoked；清除snapshot/依赖/新源行及下游全文。独立文件与修订保留，撤销按仍committed来源重建，已撤祖先不复活。导入页确认文案提示依赖影响。
+- 详情同时展示曾执行数量/current_count（锁定当前读）；后续独立导入可覆盖人工版本，导入差异与人工当前源行比较。前端epoch丢迟到回包，变更重置审批；保存/刷新/批准/清除先隐藏正文，失败不残留；未知保存用同UUID回查，历史回填身份/渠道。批量拼接字段过长在发送前指出SKU并保留编辑。
+- 新后端最终21/10.55秒；完整pytest **486/206.81秒**。Ruff规则/格式175文件、mypy127app。最终Vue type-check/lint/build通过；新组件7/1.64秒，完整Vitest **19文件45/3.16秒**。
+- 新E2E2/12.2秒，完整 **44/1.7分钟**；最后增加批量共同填入和超长前端检查后定向2/13.6秒。desktop1440x1000/mobile390x844页面身份/非空/无overlay/登录后console/交互/无横溢通过。系统Temp soloops-product-edits-{entry-}{desktop,mobile}.png已看。
+- 首轮E2E业务完成但console断言将正常未登录401计为错误；调整为登录后检查并复验。Browser插件/browser skill缺席，按frontend-testing-debugging用项目Playwright。全套测试、迁移回退严格串行，真实模型/邮件均未调用。36暂存文件路径/敏感token模式检查通过，未提交日志/凭据。
+
+## 既有 SO-014 质量检查
+
+- /product-quality 首片见development二十七/testing二十二。当前主档按身份/渠道/大小写SKU前缀检查，1000商品/2MB整体拒绝；名称/参数占位、重复/冲突、售价/成本/币种、零售价、相似SKU、六类描述关键词。missing/review明确；品牌/编码/素材/类目/平台未检查。
+- 保存范围/revision/hash/UUID/确认，锁内重算，报告/全部已检查商品来源/审计同事务。来源变化stale，清任何依赖擦snapshot/SKU前缀/所有关联，独立报告保留，旧UUID不复活。前端epoch、历史范围回填和隐藏失效正文已有验证。
 
 ## 既有主要能力与不变量
 
@@ -56,6 +60,6 @@
 ## P0边界与接续起点
 
 - p0-local-review.md记录4 MVP、23 P0最小模块、32验收边界。A01—12与A14—32共31项本地适用证据通过；A13真实测试邮件仍待本人通道/收件证据。真实模型全面质量与七条长期E2E未完整验收。
-- 接续先核对cb6c585的CI37917649249，失败先修。读AGENTS、冻结稿、矩阵、development二十七/testing二十二；当前主工作区由新聊天独占。
-- 下一切片继续不依赖外部凭据的 **SO-014 商品本地批量修订**。先官方/GitHub参考并更新references，检查ImportService的投影/版本/撤销与来源清除、Listing审批版本、ProductQuality证据，再设计并完成有草稿→差异预览→明确审批→本地生效→回读/失败明细的首片（可从名称/参数修订切入）。不得直接改Product却沿用旧source_row_id冒充新事实；保留原始导入、人工修订依据及依赖，批量动作限定规模，快照/权限/幂等/事务/撤销和清除需可验。实际平台、价格/库存/素材同步继续遵守外部审批门禁。
-- 自行确定合理技术方案并实际完成前后端，不只写计划停工；之后继续独立P1/P2。每功能更新全部跟踪文档、测试/静态检查/桌面手机，再正常推送main/context-memory。上下文压力时先推送再创建接续本地聊天，创建后旧聊天停止修改。
+- 接续先核对c652c91的CI37920901327，失败先修。读AGENTS、冻结稿、矩阵、development二十八/testing二十三；新聊天独占主工作区，旧聊天停止修改。
+- 下一切片选择不依赖外部凭据的 **SO-056 自定义实际费用记录与费用核对首片**。先检索官方/GitHub更新references，读SO-053/055/056/057及现有analytics/profit分层，设计并实际完成前后端有界录入→明确归属/币种/发生时间/事实依据→确认保存→当前/历史回读→修改版本/撤销清除的最小业务闭环。金额Decimal/Numeric、UTC/IANA、用户/店铺/身份隔离、幂等、审计同事务、重复/失效来源和依赖清除可验。实际费用与SO-054新品假设费用分开；未有平台账单不伪称对账通过，缺完整费用/归属不输出精确净利。自行确定最小合理分摊/订单关联边界，避免擅加真实费用或静默改变既有毛利。
+- 自行确定技术方案并完成实现，不只写计划停工；持续推进独立P1/P2。每功能更新全部跟踪文档、测试/静态检查/桌面手机后正常推送main/context-memory。上下文压力时先推送再创建接续本地聊天，创建后旧聊天停止修改；未经用户明确要求不启动子代理。
