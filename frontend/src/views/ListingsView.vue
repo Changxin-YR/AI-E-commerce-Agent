@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
+import { useRoute, useRouter } from 'vue-router'
+import { linkedId, linkedShop, revealRecord, returnTaskQuery } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { listingsApi } from '@/api/listings'
 import { errorMessage } from '@/api/client'
@@ -19,6 +19,7 @@ import ListingReview from '@/components/ListingReview.vue'
 
 const shops = ref<Shop[]>([])
 const route = useRoute()
+const router = useRouter()
 const shopId = ref(0)
 const products = ref<ProductFacts[]>([])
 const history = ref<ListingVersion[]>([])
@@ -101,6 +102,11 @@ async function updateResult(item: ListingVersion, message: string): Promise<void
     workspace.value = await listingsApi.workspace(shopId.value, item.snapshot.product.product_id)
   await loadHistory()
   success.value = message
+  await router.replace({
+    path: '/listings',
+    query: { ...route.query, shop: String(shopId.value), listing: String(item.id) },
+    hash: '#linked-listing',
+  })
 }
 async function generate(): Promise<void> {
   if (!workspace.value) return
@@ -144,6 +150,13 @@ onMounted(async () => {
     if (id) {
       await show({ id })
       await revealRecord('linked-listing')
+    } else {
+      const productId = linkedId(route.query.product)
+      if (productId)
+        await action(async () => {
+          workspace.value = null
+          workspace.value = await listingsApi.workspace(shopId.value, productId)
+        })
     }
   } catch (cause) {
     error.value = errorMessage(cause)
@@ -242,7 +255,14 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
       class="button secondary"
       :to="{
         path: '/agent',
-        query: { shop: shopId, mode: 'listing_model', product: workspace.product.product_id },
+        query: {
+          shop: shopId,
+          mode: 'listing_model',
+          product: workspace.product.product_id,
+          identity: workspace.product.source.data_identity,
+          channel: route.query.channel,
+          ...returnTaskQuery(route.query, shopId),
+        },
       }"
       >生成 AI Listing 候选</RouterLink
     >

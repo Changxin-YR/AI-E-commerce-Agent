@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { identityApi } from '@/api/identity'
+import { linkedShop, applyLinkedScope } from '@/composables/deepLink'
 import { statementsApi } from '@/api/statements'
 import { errorMessage } from '@/api/client'
 import type { Shop } from '@/types/identity'
@@ -59,9 +60,9 @@ async function initialize(): Promise<void> {
     const response = await identityApi.shops()
     if (!alive || initializing !== initializeEpoch) return
     shops.value = response
-    shopId.value =
-      response.find((s) => s.id === Number(route.query.shop))?.id ?? response[0]?.id ?? 0
+    shopId.value = linkedShop(response, route.query.shop)
     scope.timezone = response.find((s) => s.id === shopId.value)?.timezone ?? 'UTC'
+    applyLinkedScope(scope, route.query)
     initialReview.value = undefined
     const reviewId = Number(route.query.review)
     if (shopId.value && Number.isSafeInteger(reviewId) && reviewId > 0) {
@@ -140,6 +141,11 @@ onUnmounted(() => {
     >登记结算周期与人工回款</RouterLink
   >
   <FeedbackBanner :message="error" />
+  <RouterLink
+    :to="`/order-reconciliation?shop=${shopId}&identity=${scope.data_identity}&channel=${scope.channel}`"
+    class="button secondary"
+    >核对订单销售与退款</RouterLink
+  >
   <button v-if="error && !shops.length" class="button secondary" @click="initialize">
     重新加载店铺
   </button>

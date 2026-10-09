@@ -4,6 +4,7 @@ export interface AnalysisScope {
   timezone: string
   currency: string
   data_identity: 'synthetic' | 'user_import'
+  channel?: string | null
   intent: 'summary' | 'sales' | 'low_margin'
   min_quantity: number
   max_margin_percent: string

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { linkedShop, applyLinkedScope, scopeQuery, returnTaskQuery } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { inventoryApi } from '@/api/inventory'
 import { errorMessage } from '@/api/client'
@@ -9,6 +11,7 @@ import { supportTime } from '@/types/support'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import SourceEvidence from '@/components/SupportSource.vue'
 
+const route = useRoute()
 const shops = ref<Shop[]>([])
 const shopId = ref(0)
 const scope = reactive<InventoryScope>({
@@ -47,7 +50,17 @@ onMounted(async () => {
   window.addEventListener('focus', refresh)
   try {
     shops.value = await identityApi.shops()
-    shopId.value = shops.value[0]?.id ?? 0
+    shopId.value = linkedShop(shops.value, route.query.shop)
+    const linkedScope = { ...scope }
+    applyLinkedScope(linkedScope, route.query)
+    scope.data_identity = linkedScope.data_identity
+    scope.channel = linkedScope.channel
+    scope.max_age_hours = linkedScope.max_age_hours
+    if (route.query.sku !== undefined) {
+      if (typeof route.query.sku !== 'string' || route.query.sku.length > 120)
+        throw new Error('链接中的 SKU 无效。')
+      scope.search = route.query.sku
+    }
     await load()
   } catch (cause) {
     error.value = errorMessage(cause)
@@ -62,7 +75,19 @@ onUnmounted(() => window.removeEventListener('focus', refresh))
       <h1>库存判断，从快照出发。</h1>
       <p>核对可售数量、快照时间和你设定的安全阈值。</p>
     </div>
-    <RouterLink class="button primary" to="/imports">导入库存快照</RouterLink>
+    <RouterLink
+      class="button primary"
+      :to="{
+        path: '/imports',
+        query: {
+          shop: shopId,
+          kind: 'inventory',
+          ...scopeQuery(scope),
+          ...returnTaskQuery(route.query),
+        },
+      }"
+      >导入库存快照</RouterLink
+    >
   </div>
   <FeedbackBanner :message="error" />
   <section class="data-note">

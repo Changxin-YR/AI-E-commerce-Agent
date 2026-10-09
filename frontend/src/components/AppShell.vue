@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useSession } from '@/composables/useSession'
 import { errorMessage } from '@/api/client'
 import FeedbackBanner from './FeedbackBanner.vue'
+import ReturnToTask from './ReturnToTask.vue'
 
 const router = useRouter()
 const { session, logout } = useSession()
@@ -86,7 +87,7 @@ async function signOut(): Promise<void> {
         <span>个人卖家工作空间</span><span class="local-label">本地数据 · 由你掌控</span>
       </header>
       <main id="main-content" tabindex="-1">
-        <FeedbackBanner :message="error" /><RouterView :key="$route.fullPath" />
+        <FeedbackBanner :message="error" /><ReturnToTask /><RouterView :key="$route.fullPath" />
       </main>
     </div>
   </div>

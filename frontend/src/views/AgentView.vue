@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
+import {
+  linkedId,
+  linkedShop,
+  revealRecord,
+  applyLinkedScope,
+  returnTaskQuery,
+} from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { agentApi } from '@/api/agent'
 import { listingsApi } from '@/api/listings'
@@ -285,6 +291,7 @@ onMounted(async () => {
     const id = linkedId(route.query.execution)
     const grantId = linkedId(route.query.authorization)
     await loadShop()
+    applyLinkedScope(form.scope, route.query)
     if (route.query.mode === 'question') form.template = 'question'
     if (route.query.mode === 'daily_model') form.template = 'daily_model'
     if (route.query.mode === 'support_model') {
@@ -295,7 +302,7 @@ onMounted(async () => {
         if (!messages.value.some((m) => m.id === messageId)) messages.value.push(workspace.message)
         form.scope.data_identity =
           workspace.message.source.data_identity === 'synthetic' ? 'synthetic' : 'user_import'
-        if (['generic', 'amazon', 'shopify'].includes(workspace.message.channel))
+        if (['generic', 'amazon', 'shopify', 'other'].includes(workspace.message.channel))
           form.scope.channel = workspace.message.channel as typeof form.scope.channel
         form.message_id = messageId
       }
@@ -372,7 +379,7 @@ onUnmounted(() => {
             >执行流程<select v-model="form.template">
               <option value="daily">今日运营：检查 → 异常候选 → 核验</option>
               <option value="daily_model">AI 今日运营：检查 → 概览解释 → 审批候选</option>
-              <option value="analysis">销售与已知毛利（全店所选身份）</option>
+              <option value="analysis">销售与已知毛利（所选身份与渠道）</option>
               <option value="question">AI 经营问数：理解 → 计算 → 解释 → 核对待办</option>
               <option value="listing">商品事实 → Listing 模板草稿</option>
               <option value="listing_model">AI Listing：事实 → 模型候选 → 审批保存</option>
@@ -446,7 +453,7 @@ onUnmounted(() => {
             </label>
             <p v-if="form.template === 'question'" class="full-width">
               支持销售汇总、原购买数量前五、销量高但已知毛利低。使用下方时间、币种及阈值，
-              统计全店所选数据身份；渠道用于绑定经营规则，订单统计不按渠道过滤。
+              按所选身份、订单渠道和时间窗统计；商品成本使用本店同身份的当前主档。
               问题要求的范围若不同，请先修改表单。
             </p>
             <label class="full-width"
@@ -634,6 +641,7 @@ onUnmounted(() => {
     </div>
     <p v-if="!runs.length">尚未运行任务。启动后，实际结果会保存在这里。</p>
     <AgentRunReview
+      :return-context="Number(route.query.shop) === shopId ? returnTaskQuery(route.query) : {}"
       id="linked-agent"
       v-if="selected"
       :run="selected"

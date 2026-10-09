@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { linkedShop } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { importsApi } from '@/api/imports'
 import { errorMessage } from '@/api/client'
@@ -116,13 +117,22 @@ async function initialize(): Promise<void> {
     shops.value = loadedShops
     catalog.value = loadedCatalog
     templates.value = loadedTemplates
-    const selectedShop =
-      loadedShops.find((shop) => shop.id === Number(route.query.shop)) ?? loadedShops[0]
+    const selectedShop = loadedShops.find(
+      (shop) => shop.id === linkedShop(loadedShops, route.query.shop),
+    )
     if (selectedShop) {
       shopId.value = selectedShop.id
       timezone.value = selectedShop.timezone
     }
-    if (route.query.kind === 'statements') kind.value = 'statements'
+    const requestedKind = route.query.kind
+    if (
+      requestedKind === 'products' ||
+      requestedKind === 'orders' ||
+      requestedKind === 'messages' ||
+      requestedKind === 'inventory' ||
+      requestedKind === 'statements'
+    )
+      kind.value = requestedKind
     if (route.query.identity === 'synthetic') identity.value = 'synthetic'
     if (['generic', 'shopify', 'amazon', 'other'].includes(String(route.query.channel)))
       channel.value = route.query.channel as SourceChannel
@@ -302,7 +312,14 @@ onMounted(initialize)
       </p>
       <RouterLink
         v-if="kind === 'statements' || batch?.kind === 'statements'"
-        :to="`/statements?shop=${shopId}`"
+        :to="{
+          path: '/statements',
+          query: {
+            shop: shopId,
+            identity: batch?.data_identity ?? identity,
+            channel: batch?.source_channel ?? channel,
+          },
+        }"
         >前往账单费用核对</RouterLink
       >
       <form @submit.prevent="upload">

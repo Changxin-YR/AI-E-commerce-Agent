@@ -217,6 +217,8 @@ def check_data(
     ]
     branches = [check_products(products), *(result.branch for result in results)]
     findings = [finding for result in results for finding in result.findings]
+    for finding in findings:
+        finding.scope = scope
     branches.extend(
         [
             Branch(name=name, status="not_checked", count=0, reason=reason)

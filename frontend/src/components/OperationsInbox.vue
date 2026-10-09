@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
+import {
+  linkedId,
+  linkedShop,
+  revealRecord,
+  scopeQuery,
+  applyLinkedScope,
+} from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { operationsApi } from '@/api/operations'
 import { errorMessage } from '@/api/client'
@@ -117,8 +123,19 @@ async function inspect(id: number, kind: 'task' | 'run'): Promise<void> {
   busy.value = true
   error.value = ''
   try {
-    if (kind === 'task') selected.value = await operationsApi.getTask(shopId.value, id)
-    else run.value = await operationsApi.getRun(shopId.value, id)
+    if (kind === 'task') {
+      selected.value = null
+      const task = await operationsApi.getTask(shopId.value, id)
+      if (task.data_identity) scope.data_identity = task.data_identity
+      if (task.channel) scope.channel = task.channel
+      await readLists()
+      selected.value = task
+    } else {
+      run.value = null
+      run.value = await operationsApi.getRun(shopId.value, id)
+      Object.assign(scope, run.value.scope)
+      await readLists()
+    }
   } catch (cause) {
     error.value = errorMessage(cause)
   } finally {
@@ -153,6 +170,7 @@ onMounted(async () => {
       scope.currency = currentShop.currency
       scope.timezone = currentShop.timezone
     }
+    applyLinkedScope(scope, route.query)
     await refresh(true)
     if (taskId) {
       await inspect(taskId, 'task')
@@ -179,7 +197,9 @@ onUnmounted(() => window.removeEventListener('focus', focus))
       <span class="outline-label">导入数据检查</span>
     </div>
     <p>检查已导入数据，查看证据，将需要核对的事项批准为本地待办。</p>
-    <RouterLink v-if="shopId" :to="{ path: '/agent', query: { shop: shopId, mode: 'daily_model' } }"
+    <RouterLink
+      v-if="shopId"
+      :to="{ path: '/agent', query: { shop: shopId, mode: 'daily_model', ...scopeQuery(scope) } }"
       >启动 AI 今日运营概览</RouterLink
     >
     <FeedbackBanner :message="error" />
@@ -440,9 +460,19 @@ onUnmounted(() => window.removeEventListener('focus', focus))
       </div>
     </details>
     <div class="history-buttons">
-      <RouterLink to="/listings" class="button secondary">查看 Listing 草稿与审批</RouterLink
-      ><RouterLink to="/support" class="button secondary">查看客服草稿</RouterLink
-      ><RouterLink to="/analytics" class="button secondary">查看经营分析</RouterLink>
+      <RouterLink
+        :to="{ path: '/listings', query: { shop: shopId, ...scopeQuery(scope) } }"
+        class="button secondary"
+        >查看 Listing 草稿与审批</RouterLink
+      ><RouterLink
+        :to="{ path: '/support', query: { shop: shopId, ...scopeQuery(scope) } }"
+        class="button secondary"
+        >查看客服草稿</RouterLink
+      ><RouterLink
+        :to="{ path: '/analytics', query: { shop: shopId, ...scopeQuery(scope) } }"
+        class="button secondary"
+        >查看经营分析</RouterLink
+      >
     </div>
   </section>
 </template>

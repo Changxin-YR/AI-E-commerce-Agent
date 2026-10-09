@@ -37,6 +37,9 @@ export type TaskAction = 'approve' | 'reject' | 'ignore' | 'defer' | 'complete' 
 export interface OperationTask {
   id: number
   shop_id: number
+  data_identity?: 'synthetic' | 'user_import'
+  channel?: string
+  destinations?: { label: string; path: string; query: Record<string, string> }[]
   kind: string
   status: string
   source_status: string

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
+import { scopeQuery } from '@/composables/deepLink'
 import type {
   AgentAction,
   AgentBudget,
@@ -21,7 +22,11 @@ import OperationNarrative from './OperationNarrative.vue'
 import OperationFindingPreview from './OperationFindingPreview.vue'
 import SourceEvidence from './SupportSource.vue'
 import { supportTime } from '@/types/support'
-const props = defineProps<{ run: AgentRun; busy: boolean }>()
+const props = defineProps<{
+  run: AgentRun
+  busy: boolean
+  returnContext?: Record<string, string>
+}>()
 const emit = defineEmits<{ action: [action: AgentAction, budget?: AgentBudget] }>()
 const budget = reactive<AgentBudget>({ max_steps: 12, max_seconds: 120, max_cost_usd: '0' })
 watch(
@@ -92,13 +97,9 @@ const recordLink = computed(() => {
     path: entry[0]!,
     query: {
       shop: props.run.shop_id,
+      ...props.returnContext,
+      ...scopeQuery(props.run.input?.scope ?? {}),
       [entry[1]!]: String(props.run.result?.record_id),
-      ...(kind === 'operations'
-        ? {
-            identity: props.run.input?.scope.data_identity,
-            channel: props.run.input?.scope.channel,
-          }
-        : {}),
     },
   }
 })

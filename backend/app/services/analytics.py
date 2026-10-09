@@ -47,6 +47,7 @@ class AnalyticsService:
             scope.start_at.replace(tzinfo=None),
             scope.end_at.replace(tzinfo=None),
             scope.data_identity,
+            scope.channel,
         )
         if len(orders) > 10000:
             raise BusinessError("range_too_large", "时间窗超过 10000 行，请缩小范围", 422)
@@ -88,7 +89,11 @@ class AnalyticsService:
         if data.expected_revision != result.source_revision:
             raise ConflictError("数据已变化，请重新计算后保存")
         canonical = json.dumps(
-            [shop_id, result.source_revision, data.scope.model_dump(mode="json")],
+            [
+                shop_id,
+                result.source_revision,
+                data.scope.model_dump(mode="json", exclude_none=True),
+            ],
             sort_keys=True,
             ensure_ascii=False,
         )

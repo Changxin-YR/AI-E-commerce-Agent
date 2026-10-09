@@ -67,7 +67,7 @@ CONTRACTS = {
         "检查导入数据与异常证据", "operations.preview", OperationScope, CheckPreview
     ),
     "metrics": Contract(
-        "确定性销售与已知毛利；全店所选身份，不按渠道过滤",
+        "确定性销售与已知毛利；按明确身份、订单渠道与时间窗统计",
         "analytics.run",
         AnalysisInput,
         AnalysisResult,

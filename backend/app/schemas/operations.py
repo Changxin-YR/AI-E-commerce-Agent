@@ -48,6 +48,7 @@ class TaskInput(InputModel):
 
 
 class Finding(OutputModel):
+    scope: OperationScope | None = None
     rule_revision_id: int = 0
     kind: str
     object_label: str
@@ -113,9 +114,18 @@ class TaskEventOutput(OutputModel):
     due_at: str | None
 
 
+class TaskDestination(OutputModel):
+    label: str
+    path: Literal["/imports", "/inventory", "/analytics", "/listings", "/support"]
+    query: dict[str, str]
+
+
 class TaskOutput(OutputModel):
     id: int
     shop_id: int
+    data_identity: DataIdentity
+    channel: SourceChannel
+    destinations: list[TaskDestination] = Field(default_factory=list)
     kind: str
     status: str
     source_status: str

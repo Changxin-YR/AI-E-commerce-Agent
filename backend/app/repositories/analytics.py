@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import case, delete, select, update
+from sqlalchemy import case, delete, select, true, update
 from sqlalchemy.orm import Session, defer
 
 from app.models.analytics import AnalysisSource, AnalysisTodo, SavedAnalysis
@@ -15,7 +15,13 @@ class AnalyticsRepository:
         self.session = session
 
     def orders(
-        self, owner_id: int, shop_id: int, start: datetime, end: datetime, data_identity: str
+        self,
+        owner_id: int,
+        shop_id: int,
+        start: datetime,
+        end: datetime,
+        data_identity: str,
+        channel: str | None = None,
     ) -> list[OrderEvidence]:
         rows = self.session.execute(
             select(OrderLine, ImportRow, ImportBatch)
@@ -26,6 +32,7 @@ class AnalyticsRepository:
                 ImportBatch.shop_id == shop_id,
                 ImportBatch.status == "committed",
                 ImportBatch.data_identity == data_identity,
+                ImportBatch.source_channel == channel if channel is not None else true(),
                 OrderLine.shop_id == shop_id,
                 OrderLine.ordered_at >= start,
                 OrderLine.ordered_at < end,

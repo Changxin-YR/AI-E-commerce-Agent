@@ -266,3 +266,14 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 |---|---|---|
 | [Node Windows TCP 连接崩溃 #63620](https://github.com/nodejs/node/issues/63620) | 官方仓库问题及维护者回复；未复制复现代码 | 24.15.0 在短连接负载下的原生退出与本机现象相近，维护者确认 24.16.0 的相关修复；作为隔离版本对照的依据，不把相似现象当作本机堆栈已确诊 |
 | [Node 24.16.0 发布与校验值](https://nodejs.org/en/blog/release/v24.16.0) | 官方发行说明；Node 运行时 MIT 及所附第三方许可证 | 官方 Windows x64 zip 按公开 SHA256 校验，解压到被忽略的 `.local/runtimes`；仅测试命令临时修改 PATH，全局安装及项目依赖锁保持原状态 |
+
+## SO-056 订单金额与账单待核清单（2026-10-09）
+
+- Shopify 官方 [Refund](https://shopify.dev/docs/api/admin-graphql/latest/objects/Refund)：退款包含商品、运费、税费等组成，退款记录存在不代表支付已成功，须另查交易状态。文档版权归 Shopify，本轮只借鉴语义，不复制实现；当前订单只有行退款累计值，缺退款编号、发生时间和组成，故仅展示待核证据，不自动计算退款差额或确证到账。
+- Amazon 官方 [Settlement Reports](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement)：V2 账单分列 amount-type / amount-description / amount，另有订单及订单项标识。文档版权归 Amazon，本轮只借鉴字段边界；通用账单的 sale 标签不能证明与折后商品款相同，默认金额口径未知。卖家在只读查询中明确两侧金额口径并填写依据后，才对精确一对一、同币种、同当地日期且均在窗内的销售记录计算账单减订单差额。
+- 适配决定：保持现有原始导入契约，新增独立 API → service → repository 的有界只读核对；窗口选取候选后回查同范围同订单号全部当前来源，防止窗口截断隐藏多行、多笔与迟到记录。未知文件覆盖、来源缺一侧、跨日和复杂分摊均保留待核。无新增依赖、平台接口调用、模型调用或财务写入。
+
+## 基础版本：跨页流程与备份恢复（2026-10-09）
+
+- Vue Router官方[编程式导航](https://router.vuejs.org/guide/essentials/navigation.html)与[Composition API](https://router.vuejs.org/guide/advanced/composition-api)：借鉴显式query传递及对实际变化字段响应。vuejs/router采用MIT；本轮仅参考公开接口，自行实现有界对象ID、范围与返回事项契约，不复制实现。
+- MySQL8.4官方[mysqldump](https://dev.mysql.com/doc/refman/8.4/en/mysqldump.html)与[备份方式](https://dev.mysql.com/doc/refman/8.4/en/backup-methods.html)：参考InnoDB single-transaction、无并发DDL和逻辑恢复约束。官方手册为Oracle版权，不复制内容；工具使用现有MySQL容器中的客户端，凭据不放参数，恢复到新建隔离库并核对代表记录。Firecrawl已知402，使用官方网页检索核实。

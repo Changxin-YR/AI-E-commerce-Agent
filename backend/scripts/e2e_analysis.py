@@ -84,7 +84,13 @@ def configure(app: FastAPI, settings: Settings) -> None:
     def model(shop_id: int, current: CurrentSession, uow: UowDependency) -> OpenAIResponsesModel:
         shop = uow.identity.get_shop(current.user_id, shop_id)
         if shop and shop.code.startswith(
-            ("question-e2e-", "listing-model-e2e-", "support-model-e2e-", "operations-model-e2e-")
+            (
+                "question-e2e-",
+                "listing-model-e2e-",
+                "support-model-e2e-",
+                "operations-model-e2e-",
+                "foundation-e2e-",
+            )
         ):
             return BrowserAnalysis(disabled)
         return OpenAIResponsesModel(disabled)

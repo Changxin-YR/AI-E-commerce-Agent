@@ -5,7 +5,7 @@ from typing import Annotated, Any, Literal, Self
 from pydantic import Field, field_validator, model_validator
 
 from app.schemas.common import Currency, InputModel, OutputModel, Timezone
-from app.schemas.imports import DataIdentity
+from app.schemas.imports import DataIdentity, SourceChannel
 
 Intent = Literal["sales", "low_margin", "summary"]
 
@@ -16,6 +16,7 @@ class AnalysisInput(InputModel):
     timezone: Timezone
     currency: Currency
     data_identity: DataIdentity
+    channel: SourceChannel | None = None
     intent: Intent = "summary"
     min_quantity: Annotated[int, Field(ge=1, le=1000000)] = 1
     max_margin_percent: Annotated[Decimal, Field(ge=-1000, le=100, decimal_places=2)] = Decimal(20)

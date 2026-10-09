@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
+import { linkedId, linkedShop, revealRecord, returnTaskQuery } from '@/composables/deepLink'
 import { supportApi } from '@/api/support'
 import { identityApi } from '@/api/identity'
 import { errorMessage } from '@/api/client'
@@ -242,7 +242,14 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
         <RouterLink
           :to="{
             path: '/agent',
-            query: { shop: shopId, mode: 'support_model', message: workspace.message.id },
+            query: {
+              shop: shopId,
+              mode: 'support_model',
+              message: workspace.message.id,
+              identity: workspace.message.source.data_identity,
+              channel: workspace.message.channel,
+              ...returnTaskQuery(route.query, shopId),
+            },
           }"
           class="button secondary"
           >生成 AI 客服候选</RouterLink

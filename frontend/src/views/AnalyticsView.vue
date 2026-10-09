@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { linkedId, linkedShop, revealRecord } from '@/composables/deepLink'
+import {
+  linkedId,
+  linkedShop,
+  revealRecord,
+  scopeQuery,
+  applyLinkedScope,
+  returnTaskQuery,
+} from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { analyticsApi } from '@/api/analytics'
 import { errorMessage } from '@/api/client'
@@ -27,6 +34,7 @@ const scope = reactive<AnalysisScope>({
   timezone: 'Asia/Shanghai',
   currency: 'USD',
   data_identity: 'user_import',
+  channel: null,
   intent: 'summary',
   min_quantity: 1,
   max_margin_percent: '20',
@@ -81,6 +89,7 @@ onMounted(async () => {
   try {
     shopId.value = linkedShop(shops.value, route.query.shop)
     await selectShop()
+    applyLinkedScope(scope, route.query, false)
     const id = linkedId(route.query.analysis)
     if (id) {
       await show({ id })
@@ -174,9 +183,21 @@ function time(value: string, timezone: string): string {
   </div>
   <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
   <p v-if="shopId">
-    <RouterLink :to="{ path: '/agent', query: { shop: shopId, mode: 'question' } }">
+    <RouterLink
+      v-if="scope.channel"
+      :to="{
+        path: '/agent',
+        query: {
+          shop: shopId,
+          mode: 'question',
+          ...scopeQuery(scope),
+          ...returnTaskQuery(route.query, shopId),
+        },
+      }"
+    >
       打开 AI 经营问数，确认范围与模型预算
     </RouterLink>
+    <span v-else>使用 AI 问数前，请先选择明确的订单来源渠道。</span>
   </p>
   <p v-if="!shops.length && !busy">
     还没有店铺，请先<RouterLink to="/settings">添加经营资料</RouterLink>，再<RouterLink
@@ -196,6 +217,15 @@ function time(value: string, timezone: string): string {
         >数据身份<select v-model="scope.data_identity">
           <option value="user_import">用户导入数据</option>
           <option value="synthetic">合成测试数据</option>
+        </select></label
+      >
+      <label
+        >订单来源渠道<select v-model="scope.channel">
+          <option :value="null">全部渠道</option>
+          <option value="generic">通用文件</option>
+          <option value="shopify">Shopify</option>
+          <option value="amazon">Amazon</option>
+          <option value="other">其他</option>
         </select></label
       >
       <label

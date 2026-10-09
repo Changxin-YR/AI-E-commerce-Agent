@@ -53,7 +53,13 @@ for (const mobile of [false, true]) {
       page.getByText('批次已导入。可展开源行核对，重复确认不会重复增加业务记录。', { exact: true }),
     ).toBeVisible()
     await page.getByRole('link', { name: '前往账单费用核对', exact: true }).click()
-    await expect(page).toHaveURL(new RegExp(`/statements\\?shop=${shop}$`))
+    await expect(page).toHaveURL(
+      (url) =>
+        url.pathname === '/statements' &&
+        url.searchParams.get('shop') === String(shop) &&
+        url.searchParams.get('identity') === 'synthetic' &&
+        url.searchParams.get('channel') === 'generic',
+    )
     await expect(page).toHaveTitle(/SoloOps/)
     await expect(page.getByRole('heading', { name: '账单与费用，逐行核对。' })).toBeVisible()
     await expect(page.locator('vite-error-overlay')).toHaveCount(0)

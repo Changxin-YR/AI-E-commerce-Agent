@@ -76,6 +76,16 @@ async function act(action: TaskAction): Promise<void> {
       <p>{{ task.snapshot.basis }}</p>
       <p>{{ task.snapshot.impact }}</p>
       <p><strong>建议：</strong>{{ task.snapshot.advice }}</p>
+      <div v-if="available && !dirty && !busy" class="task-actions">
+        <RouterLink
+          v-for="destination in task.destinations ?? []"
+          :key="destination.label"
+          class="button secondary"
+          :to="{ path: destination.path, query: destination.query }"
+        >
+          {{ destination.label }}
+        </RouterLink>
+      </div>
       <dl>
         <template v-for="(value, name) in task.snapshot.facts" :key="name"
           ><dt>{{ name }}</dt>

@@ -16,6 +16,7 @@ from app.schemas.operations import (
     RunInput,
     RunOutput,
     RunSnapshot,
+    TaskDestination,
     TaskEventOutput,
     TaskInput,
     TaskOutput,
@@ -88,6 +89,11 @@ class OperationsService:
         return TaskOutput(
             id=task.id,
             shop_id=task.shop_id,
+            data_identity=task.data_identity,
+            channel=task.channel,
+            destinations=self._destinations(task)
+            if detail and rule_current and task.source_status == "current"
+            else [],
             owner_id=task.owner_id,
             kind=task.kind,
             status=task.status,
@@ -114,6 +120,101 @@ class OperationsService:
             if detail
             else [],
         )
+
+    def _destinations(self, task: OperationTask) -> list[TaskDestination]:
+        if not task.snapshot:
+            return []
+        finding = Finding.model_validate(task.snapshot)
+        query = {
+            "shop": str(task.shop_id),
+            "identity": task.data_identity,
+            "channel": task.channel,
+            "return_task": str(task.id),
+        }
+        if finding.scope:
+            query.update(
+                {
+                    key: str(value)
+                    for key, value in finding.scope.model_dump(mode="json").items()
+                    if key
+                    in {
+                        "start_at",
+                        "end_at",
+                        "timezone",
+                        "currency",
+                        "max_age_hours",
+                        "min_quantity",
+                        "max_margin_percent",
+                    }
+                }
+            )
+        links: list[TaskDestination] = []
+        if task.kind == "low_inventory":
+            links.append(
+                TaskDestination(
+                    label="核对当前库存",
+                    path="/inventory",
+                    query={
+                        **query,
+                        "sku": finding.object_label,
+                    },
+                )
+            )
+        if task.kind == "low_margin":
+            links.append(
+                TaskDestination(
+                    label="查看同范围经营分析",
+                    path="/analytics",
+                    query={
+                        **query,
+                        "start_at": finding.facts["订单起点(含)"],
+                        "end_at": finding.facts["订单终点(不含)"],
+                        "currency": finding.facts["币种"],
+                        "sku": finding.object_label,
+                    },
+                )
+            )
+            product_id = self.repo.current_object_id(
+                Product, task, [ref.row_id for ref in finding.sources]
+            )
+            if product_id is not None:
+                links.append(
+                    TaskDestination(
+                        label="维护此商品 Listing",
+                        path="/listings",
+                        query={
+                            **query,
+                            "product": str(product_id),
+                        },
+                    )
+                )
+        if task.kind == "message_review":
+            message_id = self.repo.current_object_id(
+                CustomerMessage, task, [ref.row_id for ref in finding.sources]
+            )
+            if message_id is not None:
+                links.append(
+                    TaskDestination(
+                        label="处理此客户消息",
+                        path="/support",
+                        query={
+                            **query,
+                            "message": str(message_id),
+                        },
+                    )
+                )
+        if finding.sources:
+            links.append(
+                TaskDestination(
+                    label="查看来源与补充导入",
+                    path="/imports",
+                    query={
+                        **query,
+                        "batch": str(finding.sources[0].batch_id),
+                    },
+                )
+            )
+        return links
 
     def _task_rule_current(self, task: OperationTask) -> bool:
         return BusinessRulesService(self.uow).is_current(

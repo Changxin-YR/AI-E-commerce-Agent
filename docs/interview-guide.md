@@ -287,3 +287,20 @@
 - **为什么当前占用恢复原样仍不能使用旧预览？** `SettlementRepository.scope_revision` 取同身份渠道全部修订变更号，包含撤销和清除。来源版本和该变更号共同绑定预览，`test_registry_restoration_invalidates_old_preview` 验证创建再撤销的恢复场景。
 - **历史清除如何跨修订生效？** `SettlementSource` 累计全部版本的批次。`purge` 擦除整份登记快照、Numeric 到账历史和依赖，导入末尾审计失败整笔回滚。`test_clear_after_receipt_revision_erases_every_numeric_history` 及历史换账单用例验证。
 - **前端如何处理原确认和未知写入？** `SettlementRecords.vue` 绑定全部周期/凭据输入；`SettlementRecords.spec.ts` 验证 epoch、原 UUID 回查、范围切换、原子当前回读和清除正文。桌面/手机 `settlements.spec.ts` 走实际 API 与原始行。
+## 订单金额核对：关联成立与金额可比（2026-10-09）
+
+- **关联相同订单为什么还不能算差额？** `OrderReconciliationScope` 默认金额口径未知。`compare_group` 同时检查卖家声明、行数、币种、状态、日期和折扣；账单 sale 可能包含运费税费，技术关联不能替代业务金额定义。
+- **为什么要在窗口外寻找同订单行？** `OrderReconciliationRepository` 先选窗口候选，再对其订单号读取同范围全部当前行。`test_all_dates_lookup_prevents_hidden_duplicates` 验证一笔窗外交易不会被截断后伪装成一对一。
+- **如何避免数据库近似匹配？** 订单号使用 MySQL BINARY 比较，而非凭据的 NFKC/casefold；`test_unknowns_never_compute` 验证 O1、o1、Ｏ１各自独立。所有 JOIN 都验证当前店铺、owner、身份、渠道和 committed 来源。
+- **累计退款能否与某笔退款直接比？** 当前字段缺逐笔退款时间和标识，`refund_transaction_unknown` 始终保留。两边金额刚好相等也不能证明是同一退款，更不能证明资金已退回。
+- **数值与时间如何核验？** Decimal 保留四位小数，差额方向固定账单减订单；退款不重复扣销售。UTC 存储，显式 ZoneInfo 比当地日期；测试覆盖同一北京时间日期却跨 UTC 日期的情况。
+- **只读结果如何处理失效？** 不持久化派生结论，来源生命周期由现有投影处理。页面在范围/focus/输入变化后撤结果和口径，epoch 防旧请求覆盖新请求；`OrderReconciliation.spec.ts` 验证迟到回包与未知结果可见。
+
+## 基础闭环：跨页契约与可恢复数据（2026-10-09）
+
+- **为什么跨页不能只传店铺ID？** 同店可能包含多身份、渠道、窗口和对象。`OperationTask.destinations`由受控服务从当前来源生成；`scopeQuery/applyLinkedScope`传递并校验范围，目标API再次做权限检查。后端定向测试证明另一店铺同类对象不能误命中。
+- **为什么不把整个表单直接传给所有接口？** 运营检查包含库存时效，分析接口仅接受统计字段。连续场景发现多余字段导致422，`AnalyticsView`现在按目标契约应用范围；单测锁住这个跨域字段边界。
+- **刷新后为什么会打开旧版本？** 页面选中状态与URL不同步。`ListingsView.updateResult`保存新待审版本后替换URL编号，浏览器场景覆盖编辑、批准和刷新回读。
+- **来源变化为什么保留已完成历史？** 处理状态说明卖家做过什么，来源状态说明旧依据是否仍适用。修订成本后旧低毛利事项completed/stale保留备注，新证据形成待审批候选；`foundation.spec.ts`同时验证旧记录和新金额。
+- **恢复为什么不用管理员导入整个SQL？** `database_backup.restore`用root建立新库，再用仅限该库的临时用户导入，已有目标直接拒绝。SQL内容即使带其它库语句也受数据库权限约束；测试验证失败路径清理账号且不输出私密错误。
+- **如何证明备份可用？** 文件SHA256只证明文件未改变，恢复后的表行数、CHECKSUM和迁移版本证明数据一致；本轮还回读了任务状态、历史金额、批准版本、客服存档和报告，不能用文件存在代替恢复证据。

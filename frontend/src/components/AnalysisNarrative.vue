@@ -10,7 +10,8 @@ defineProps<{ analysis: AnalysisResult; explanation?: AnalysisExplanation }>()
     <h3>经营事实与核对建议</h3>
     <p>
       {{ analysis.scope.data_identity === 'synthetic' ? '合成测试数据' : '用户导入数据' }} ·
-      {{ analysis.scope.currency }} · 全店所选身份 · 数据版本 {{ analysis.source_revision }}
+      {{ analysis.scope.currency }} · {{ analysis.scope.channel ?? '全部渠道' }} · 数据版本
+      {{ analysis.source_revision }}
     </p>
     <p>
       {{ supportTime(analysis.scope.start_at, analysis.scope.timezone) }} 至

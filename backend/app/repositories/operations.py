@@ -66,6 +66,29 @@ class OperationsRepository:
         self.session.add(item)
         self.session.flush()
 
+    def current_object_id(
+        self,
+        model: type[Product] | type[CustomerMessage],
+        task: OperationTask,
+        source_rows: list[int],
+    ) -> int | None:
+        return self.session.scalar(
+            select(model.id)
+            .join(ImportRow, model.source_row_id == ImportRow.id)
+            .join(ImportBatch, ImportRow.batch_id == ImportBatch.id)
+            .where(
+                model.shop_id == task.shop_id,
+                ImportBatch.owner_id == task.owner_id,
+                ImportBatch.shop_id == task.shop_id,
+                ImportBatch.data_identity == task.data_identity,
+                ImportBatch.status == "committed",
+                model.source_row_id.in_(source_rows),
+            )
+            .order_by(model.id)
+            .limit(1)
+            .with_for_update()
+        )
+
     def run_sources(self, run_id: int, batches: set[int]) -> None:
         self.session.add_all([OperationRunSource(run_id=run_id, batch_id=b) for b in batches])
 

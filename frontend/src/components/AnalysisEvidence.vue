@@ -43,6 +43,7 @@ async function inspect(ref: SourceReference): Promise<void> {
 <template>
   <section class="section-block analysis-evidence">
     <h2>订单行与来源</h2>
+    <p>订单渠道：{{ result.scope.channel ?? '全部渠道' }}；商品成本取此店铺同身份的当前主档。</p>
     <p>共 {{ result.lines.length }} 行；取消、未付款、测试和其他币种的行显示排除原因。</p>
     <details v-for="line in rows" :key="line.source.row_id" class="analysis-line">
       <summary>
