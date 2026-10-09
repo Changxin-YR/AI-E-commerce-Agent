@@ -456,3 +456,11 @@ Windows Node24.15.0 下首次完整 E2E 为 **52 通过/2 失败，2.4 分钟**�
 G-04从源码副本新建venv安装47锁定包，独立Docker项目/卷/端口下空库0→64表，head7e7851694067。账号CLI→实际HTTP登录/资料/店铺/五文件预览确认→3商品/5订单/3库存/2消息，Amazon/USD销量4、75/62/13。14份业务响应在进程重启后一致。真实23:36到期期间停机，worker关闭后历史0，开启后1期待审批；审批成功再重启后仍1周期/1执行/6任务，模型费用0。未修改时间或到期字段，亦未用直接tick代替实际进程。
 
 新副本前端npm ci安装293包、审计0漏洞；Node24.16.0 build/type-check通过，225模块、Vite1.23秒。Chromium桌面1440×1000和手机390×844登录/选店/刷新/持久会话通过，页面错误0、横溢0，手机截图已查看。原三份配置哈希相同；隔离前端/API/MySQL已关闭且持久卷保留。完整可核查证据与本机文件位置见[foundation-runtime-evidence.md](foundation-runtime-evidence.md)。G-05/G-06仍待真实模型及本人邮件证据。
+
+## 第三十二迭代：真实模型四流程与摘要口径（2026-10-10整理）
+
+G-05于10月9日23:54至23:56执行7次真实百炼请求，通过实际Agent API、生产适配器与同组资料完成运营、问数规划/解释、Listing、FAQ、混合敏感及缺证据。逐次token、时间、最高档预留与目录价估算见foundation-model-evidence.md；累计0.0007750元，应用保守USD费用0.000933，未知费用0。审批保存、待办完成重开、人工Listing版本本地批准、客服草稿/存档、源变更409及历史毛利13/当前10均回读通过。关闭付费验收API，再以模型/邮件/调度全关闭的实际API启动，原会话和6执行+分析历史+Listing历史+当前检查共9份快照完全一致，账本仍7次。
+
+邮件审阅发现分支读取记录数被标成异常数，outbound.py已改为检查记录数；既有全过程测试加入正常已履约订单，验证2条记录的正文统计口径和审批后发送替身仍与审阅全文一致。定向命令`pytest tests/test_outbound.py tests/test_dashscope_model.py tests/test_analysis_model.py tests/test_listing_model.py tests/test_support_model.py tests/test_operations_model.py -q --tb=short --basetemp=../.local/pytest-g05`：**152 passed / 68.38秒**。使用3308测试库，真实模型和邮件显式关闭；3309真实验收证据保留。Ruff规则/223文件格式通过、mypy158 app文件通过，无新迁移、前端代码未变。Starlette/httpx弃用提示保留。
+
+基线d5fe67f的[CI37954208866](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37954208866)已核实Success，verify10分17秒、总10分20秒。前端沿用此前97单元、浏览器完整54通过加定向4通过覆盖；本轮无前端改动，未扩大重复运行。B-06通过；B-07仍待本人通道配置、邮箱验证、本次单次发送许可与实际收件。已备operation_run #4的全文审阅稿，尚未创建或提交真实邮件。

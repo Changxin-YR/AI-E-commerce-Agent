@@ -97,9 +97,9 @@ def verify(client: TestClient, shop: int, fake: FakeMail) -> dict[str, Any]:
     return response.json()
 
 
-def prepare(client: TestClient, shop: int, fake: FakeMail) -> dict[str, Any]:
+def prepare(client: TestClient, shop: int, fake: FakeMail, orders: str = ORDERS) -> dict[str, Any]:
     verify(client, shop, fake)
-    imported(client, shop, ORDERS, "orders")
+    imported(client, shop, orders, "orders")
     report = run(client, shop)
     result = client.post(root(shop) + "/messages", json={"run_id": report["id"]})
     assert result.status_code == 200, result.text
@@ -157,9 +157,21 @@ def test_verify_attempts_committed_and_lockout(logged_in, mailbox):
 
 def test_preview_approval_send_replay_receipt_and_erasure(logged_in, mailbox):
     shop, fake, _ = mailbox
-    mail = prepare(logged_in, shop, fake)
+    mail = prepare(
+        logged_in,
+        shop,
+        fake,
+        ORDERS + "O2,1,001,1,8,USD,2026-10-07T02:00:00Z,paid,0,0,fulfilled\n",
+    )
     base = root(shop) + f"/messages/{mail['id']}"
     assert mail["risk"] == "R2" and mail["body"] and "synthetic" in mail["body"]
+    report = logged_in.get(f"/api/shops/{shop}/operations/runs/{mail['run_id']}").json()
+    order_branch = next(
+        branch for branch in report["snapshot"]["branches"] if branch["name"] == "订单履约核对"
+    )
+    assert order_branch["count"] == 2
+    assert "订单履约核对：checked；检查记录数 2" in mail["body"]
+    assert "异常数" not in mail["body"]
     assert (
         logged_in.post(
             base + "/send", json={"version": mail["version"], "approval_id": 999}

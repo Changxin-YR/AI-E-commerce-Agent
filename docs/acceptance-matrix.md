@@ -18,7 +18,7 @@ SO-055 结算周期与人工到账补充（2026-10-09）：`test_settlements.py`
 | A-04 | 同一订单下两种 SKU | 按订单行分别归属数量与金额 | 合成本地通过：test_two_skus_partial_coverage_no_mismatched_subtraction |
 | A-05 | 商品成本缺失或币种不同且无汇率 | 只算可验证部分、提出补全提示 | 合成本地通过：test_missing_values_disable_complete_margin、test_window_currency_identity_and_cost_identity；独立新品试算未知费用不补零且禁止确定保本价，单币种不换汇 定时报表复用分币种及缺成本口径，test_due_report_currency_dates_current_data_evidence_and_clear 通过。 商品质量检查保留缺金额/币种与零成本，异币种提示待核，不推导利润；test_product_quality.py 合成通过。 账单销售款/退款/费用/回款各自分币种，跨币种费用不算差额，文件完整性与银行到账未知时不输出净利润。 |
 | A-06 | 取消、退款、未付款订单混杂 | 依据被声明的统计口径分类，展示对应记录 | 合成本地通过：test_status_rules 六类状态；退款不恢复采购成本测试 |
-| A-07 | 客服邮件“Where is my order? Also refund it.” | 识别物流+退款双意图；查询证据、生成待审草稿 | 本地规则合成数据通过：test_multi_intent_evidence_and_local_only、support.spec.ts；真实模型意图理解待验证 模型与规则意图并集、不能删除退款条件、受控政策引用、候选审批/回读/修改/存档经 test_support_model.py 和桌面/手机 support-model.spec.ts 合成替身验证；真实客服模型质量待独立授权验证。 |
+| A-07 | 客服邮件“Where is my order? Also refund it.” | 识别物流+退款双意图；查询证据、生成待审草稿 | 本地规则合成数据通过：test_multi_intent_evidence_and_local_only、support.spec.ts；G-05真实模型同时识别shipping/refund且转人工 模型与规则意图并集、不能删除退款条件、受控政策引用、候选审批/回读/修改/存档经 test_support_model.py 和桌面/手机 support-model.spec.ts 合成替身验证；G-05真实FAQ、混合敏感及缺证据接管已通过。 |
 | A-08 | 客服订单没有匹配或轨迹过期 | 说明无法验证当前物流，提交人工处理 | 无匹配订单、未知语言和无可靠轨迹本地通过；历史 fulfilled 不作当前物流承诺。真实运单与时效阈值接入待继续 客服模型保留物流未知与身份未核验条件，未识别语言留空待人工；test_support_model.py 覆盖。 |
 | A-09 | 上传文件内夹带“忽略权限限制”类文本 | 作为普通非可信业务数据，不提升工具权限 | 导入与业务文本转义、内置技能白名单本地通过；问数供应商事实包排除导入原文，模型只能返回既有事实/建议 ID，额外工具/金额/新 ID 均阻断，test_analysis_model.py；实际模型红队验证仍待真实供应商授权 客服模型输出只接收意图/事实/政策编号；未知、重复、遗漏、额外正文和发送动作均阻断，并保留已知费用。 运营供应商请求只含聚合分支/候选数量，模型未知或重复编号、额外正文/动作均拒收；test_operations_model.py。 商品质量按固定规则读取原文，Vue 转义显示；ProductQuality.spec.ts 验证脚本文字按文本展示。 |
 | A-10 | 重复点击一键运营或重放失败节点 | 同一来源同一异常只建一个有效待办；可审计 | 合成本地通过：内部任务/授权回放与并发去重；外发重复预览和发送回读原记录，两个旧 RR 快照竞争仅一次实际 POST，进程中断后不重发。test_authorizations.py、test_outbound.py、outbound.spec.ts；分析核对待办完成/重开使用版本与同目标回放，旧版本冲突及审计失败回滚本地通过。 运营模型通过原 OperationsService 保存全部候选；重跑复用待办并保留已完成状态，审计失败整体回滚。 定时周期与手动请求分别唯一去重，双 worker 竞争及原子回滚重启经 test_schedules.py 验证。 定时报表的双 worker 与手动 UUID 回放、报告/依赖/通知同事务回滚经 test_schedule_reports.py 通过。 商品质量报告保存以用户 UUID 去重，双会话竞争只留一报告/依赖/审计，失败整体回滚；test_product_quality.py 合成通过。 商品修订创建 UUID 与审批版本/hash 去重，两会话仅一份输出来源批次；test_product_edits.py 通过。 |
@@ -26,7 +26,7 @@ SO-055 结算周期与人工到账补充（2026-10-09）：`test_settlements.py`
 | A-12 | 尝试发送给非授权邮箱或混合意图 | 拒绝自动外发，保留草稿/待审 | 本地通过：邮箱固定部署名单并须验证，前端替换地址或传 R1 授权字段被拒绝；客服混合意图仍转人工。当前 R2 只发送已审阅检查摘要至本人测试邮箱，真实买家自动外发未开放 |
 | A-13 | 自有测试邮箱完成消息发送 | 记录批准、通道回执与收件证据，明确“测试邮箱” | 本地连接/验证码/全文审批/回执/人工收件声明路径已用合成邮件替身验证；真实 P0-External 仍阻塞于本人发送账号、测试邮箱授权和真实送达证据，不能标为实际发送通过 |
 | A-14 | P0 技能缺权限、缺输入或命中 R3 | 显示具体阻断理由、允许用户补充条件 | 合成本地通过：技能元数据与对象隔离；R1 预授权仅保存候选、范围不符拒绝，撤销/过期/用尽转待审并允许单次批准；缺模型待配置。test_agent.py、test_authorizations.py 客服依据读取与候选保存两项技能加入固定白名单，跨店/身份/渠道不匹配在模型网络前阻断。 运营模型须双授权和匹配预览摘要；来源/经营规则/库存时效变化在调用、审批和保存前阻断。 规则变化阻断定时检查并暂停计划，核对配置再恢复；测试覆盖且调度无模型适配器。 定时候选停在逐次审批，test_due_coalesces_persists_requires_fresh_approval_and_readback；schedules.spec.ts。 |
-| A-15 | 经营问数重复询问同范围同口径 | 与原始订单行匹配的统计一致、来源可追溯 | 确定性统计与跨店原始行核对本地通过；模型问数重复调用保持统计和来源一致，test_question_explains_then_approves_saves_verifies_and_deduplicates；真实供应商理解质量待验证 自然日/周/月报告复用确定性总览计算，显式时区、原始行和日期边界经 test_schedule_reports.py 验证。 |
+| A-15 | 经营问数重复询问同范围同口径 | 与原始订单行匹配的统计一致、来源可追溯 | 确定性统计与跨店原始行核对本地通过；模型问数重复调用保持统计和来源一致，test_question_explains_then_approves_saves_verifies_and_deduplicates；G-05真实百炼low_margin理解、75/62/13及保存回读通过 自然日/周/月报告复用确定性总览计算，显式时区、原始行和日期边界经 test_schedule_reports.py 验证。 |
 | A-16 | 外部平台尚无授权 | 允许文件导入分析、内部草稿与待办 | 文件导入→分析→待办、商品→Listing 本地审批及客服消息→证据→草稿→存档合成本地通过；统一清单聚合十类本地记录并深链至原服务，合成浏览器流程通过。 名称/参数批量修订仅本地主档生效，保留 manual_edit 来源与平台未同步提示；product-edits.spec.ts 桌面/手机通过。 |
 | A-17 | 与内置模板匹配的订单 CSV | 自动建议正确字段映射，卖家确认后导入，行数与金额可核对 | 合成格式本地通过：两种风格样本、Decimal 与源行测试；真实平台预设未验证 |
 | A-18 | 未知列名、非标准表头或格式变化 | 进入人工映射向导，可预览并保存该用户的映射规则 | 合成数据本地通过：test_unknown_headers_corrections_and_injection_are_data；imports.spec.ts 完整映射纠错流程 通用渠道账单已加入同一映射/纠错/CSV与Excel模板入口；仅明确类型和正数金额可提交，费用须填写凭据行号与原始收费项。 |
@@ -48,3 +48,7 @@ SO-055 结算周期与人工到账补充（2026-10-09）：`test_settlements.py`
 ## 基础版本运行证据补充（2026-10-09）
 
 原A-01至A-32及7条长期E2E保留。G-04为账号/导入/持久任务/审批恢复增加实际进程证据：独立新配置与空库完成迁移、创建账号、5文件导入及75/62/13计算；14份业务快照回读一致；定时恢复一期，审批成功后重复启动不重复。完整证据见foundation-runtime-evidence，基础B-01/B-10/B-12通过；A-13真实本人邮件仍等待本人通道配置、验证邮箱与本次单次许可。
+
+## G-05真实模型补充（2026-10-10整理）
+
+7次真实百炼调用已补充四流程及A-07/A-15的模型证据；敏感诉求、缺政策/身份未核验、来源变化409、旧记录与费用回读均通过，详见foundation-model-evidence.md。A-13/B-07仍缺本人通道、验证邮箱、本次许可及真实收件佐证，审阅稿已准备。原32项验收、7条长期E2E与真实经营样本限制保留。

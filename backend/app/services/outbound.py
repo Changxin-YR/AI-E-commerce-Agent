@@ -158,7 +158,10 @@ class OutboundService:
                 f"{scope.end_at.astimezone(UTC).isoformat()})；"
                 f"币种 {scope.currency}",
                 f"规则版本 #{scope.rule_revision_id}；数据截至 {snapshot.data_as_of}",
-                *[f"{b.name}：{b.status}；异常数 {b.count}；{b.reason}" for b in snapshot.branches],
+                *[
+                    f"{b.name}：{b.status}；检查记录数 {b.count}；{b.reason}"
+                    for b in snapshot.branches
+                ],
                 f"本次新增候选 {snapshot.created_candidates}；复用 {snapshot.reused_candidates}。",
                 "关联候选（最多展示前 50 项）："
                 + (", ".join(f"#{t}" for t in snapshot.task_ids[:50]) or "无"),

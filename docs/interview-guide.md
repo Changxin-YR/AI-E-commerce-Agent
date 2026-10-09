@@ -310,3 +310,9 @@
 - **为什么单元测试之外还要启停实际进程？** TestClient/直接tick能验证分支，但不能证明启动目录的.env、迁移、会话持久化和lifespan worker共同工作。G-04从空库启动Uvicorn，经HTTP保存14份快照，再实际停止/启动比较；证据见foundation-runtime-evidence。
 - **暂停计划、关闭worker与关闭API有何区别？** SchedulesService.act暂停会清空next_run_at，恢复从当前日历计算未来时刻；scheduler_enabled只控制main.py中的serve任务，计划到期仍保留。进程恢复时run_due按最新周期和唯一slot_key处理，24小时窗口内执行，其余记录missed；多个实例各自的开关不能当作全库关闭。
 - **初始化如何避免误覆盖？** scripts/setup_local.py先检查开发与测试三份配置，write_new用独占创建防止预检后同名文件出现时被覆盖。test_local_setup.py验证已有配置保持字节不变，G-04对原工作区配置另做SHA256前后核验。
+
+## 真实模型验收中的事实与费用（2026-10-10）
+
+- **如何证明模型结果可保存而且可追溯？** Agent API真实执行后逐步审批，再回读分析/Listing/客服/运营记录，核对模型步骤usage；修改来源后旧候选审批409、历史金额保留。G-05证明生产适配器与三层业务链实际配合，而不仅是网络连通。
+- **为什么有两份费用值？** agent_model._cost使用部署的最高档USD预算费率并向上取整，预算用于拒绝超额请求；验收人民币账本按官方当前档位和供应商usage核算目录估算。0.000933 USD与0.0007750 CNY不是实时汇率换算，实际扣款另看账单。未知usage保留预留并停止重试。
+- **正常记录为什么不能写成异常？** operation_checks中Branch.count统计读取记录数，Finding才代表候选问题；outbound.py邮件摘要需沿用该口径。test_outbound.py加入正常订单，锁定检查记录数与异常含义的区别。
