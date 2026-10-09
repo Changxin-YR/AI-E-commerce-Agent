@@ -1,12 +1,12 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from app.schemas.common import Currency, InputModel, OutputModel, Timezone
 
-ImportKind = Literal["products", "orders", "messages", "inventory"]
+ImportKind = Literal["products", "orders", "messages", "inventory", "statements"]
 DataIdentity = Literal["user_import", "synthetic"]
 SourceChannel = Literal["generic", "shopify", "amazon", "other"]
 Money = Annotated[Decimal, Field(ge=0, max_digits=18, decimal_places=4)]
@@ -51,6 +51,32 @@ class InventoryData(InputModel):
     available: Annotated[int, Field(ge=0, le=1000000000)]
     snapshot_at: datetime
     safety_threshold: Annotated[int, Field(ge=0, le=1000000000)]
+
+
+class StatementData(InputModel):
+    statement_id: Identifier
+    line_id: Identifier
+    entry_type: Literal["sale", "refund", "fee", "payout"]
+    amount: Money
+    currency: Currency
+    occurred_at: datetime
+    evidence_ref: Annotated[str, Field(max_length=120)] = ""
+    fee_name: Annotated[str, Field(max_length=120)] = ""
+    settlement_id: Annotated[str, Field(max_length=120)] = ""
+    order_id: Annotated[str, Field(max_length=120)] = ""
+    note: Annotated[str, Field(max_length=500)] = ""
+
+    @model_validator(mode="after")
+    def semantics(self) -> Self:
+        if self.amount <= 0:
+            raise ValueError("账单金额须为正数绝对金额，由收支类型明确含义")
+        if self.occurred_at.utcoffset() is None or not 2000 <= self.occurred_at.year <= 2100:
+            raise ValueError("账单发生时间须在 2000—2100 年并具有明确时区")
+        if self.entry_type == "fee" and (not self.evidence_ref or not self.fee_name):
+            raise ValueError("费用行须提供凭据费用行编号及原始收费项名称")
+        if self.entry_type != "fee" and self.fee_name:
+            raise ValueError("原始收费项名称仅用于费用行")
+        return self
 
 
 class UploadOptions(InputModel):
@@ -173,5 +199,6 @@ class CatalogOutput(OutputModel):
     orders: list[FieldDefinition]
     messages: list[FieldDefinition]
     inventory: list[FieldDefinition]
+    statements: list[FieldDefinition]
     max_bytes: int
     max_rows: int

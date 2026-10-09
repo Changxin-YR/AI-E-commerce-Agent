@@ -205,6 +205,9 @@ class OperationsRepository:
             "messages": CustomerMessage,
             "products": Product,
         }
+        # Statements change the shop revision, but the four daily findings do not consume them.
+        if kind == "statements":
+            return
         model = models[kind]
         invalid = (
             select(OperationTaskSource.task_id)

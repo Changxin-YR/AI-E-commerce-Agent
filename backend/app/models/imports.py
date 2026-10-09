@@ -26,9 +26,9 @@ class ImportBatch(Base):
     file_sha256: Mapped[str] = mapped_column(String(64))
     timezone: Mapped[str] = mapped_column(String(64))
     exported_at: Mapped[datetime | None] = mapped_column(DATETIME(fsp=6))
-    created_at: Mapped[datetime] = mapped_column(default=utc_now)
-    expires_at: Mapped[datetime]
-    committed_at: Mapped[datetime | None]
+    created_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6), default=utc_now)
+    expires_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6))
+    committed_at: Mapped[datetime | None] = mapped_column(DATETIME(fsp=6))
     status: Mapped[str] = mapped_column(String(16), default="draft")
     version: Mapped[int] = mapped_column(default=1)
     preview_revision: Mapped[int | None]
@@ -112,6 +112,37 @@ class MappingTemplate(Base):
     kind: Mapped[str] = mapped_column(String(16))
     source_channel: Mapped[str] = mapped_column(String(20))
     mapping: Mapped[dict[str, str]] = mapped_column(JSON)
+
+
+class StatementLine(Base):
+    __tablename__ = "statement_lines"
+    __table_args__ = (
+        UniqueConstraint(
+            "shop_id",
+            "data_identity",
+            "channel",
+            "statement_id",
+            "line_id",
+            name="uq_statement_scope_line",
+        ),
+        Index("ix_statement_scope_time", "shop_id", "data_identity", "channel", "occurred_at"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    shop_id: Mapped[int] = mapped_column(ForeignKey("shops.id"), index=True)
+    data_identity: Mapped[str] = mapped_column(String(20))
+    channel: Mapped[str] = mapped_column(String(20))
+    statement_id: Mapped[str] = mapped_column(String(120, collation="utf8mb4_bin"))
+    line_id: Mapped[str] = mapped_column(String(120, collation="utf8mb4_bin"))
+    entry_type: Mapped[str] = mapped_column(String(16))
+    amount: Mapped[Decimal] = mapped_column(Numeric(18, 4))
+    currency: Mapped[str] = mapped_column(String(3))
+    occurred_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6))
+    evidence_ref: Mapped[str] = mapped_column(String(120))
+    fee_name: Mapped[str] = mapped_column(String(120))
+    settlement_id: Mapped[str] = mapped_column(String(120))
+    order_id: Mapped[str] = mapped_column(String(120))
+    note: Mapped[str] = mapped_column(String(500))
+    source_row_id: Mapped[int] = mapped_column(ForeignKey("import_rows.id"))
 
 
 class CustomerMessage(Base):

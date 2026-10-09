@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { identityApi } from '@/api/identity'
 import { importsApi } from '@/api/imports'
 import { errorMessage } from '@/api/client'
@@ -16,6 +17,15 @@ import type {
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import ImportMapping from '@/components/ImportMapping.vue'
 import ImportRows from '@/components/ImportRows.vue'
+
+const route = useRoute()
+const kindLabels = {
+  products: '商品',
+  orders: '订单行',
+  messages: '客服消息',
+  inventory: '库存快照',
+  statements: '渠道账单',
+}
 
 const shops = ref<Shop[]>([])
 const shopId = ref(0)
@@ -106,9 +116,20 @@ async function initialize(): Promise<void> {
     shops.value = loadedShops
     catalog.value = loadedCatalog
     templates.value = loadedTemplates
-    if (loadedShops[0]) {
-      shopId.value = loadedShops[0].id
-      timezone.value = loadedShops[0].timezone
+    const selectedShop =
+      loadedShops.find((shop) => shop.id === Number(route.query.shop)) ?? loadedShops[0]
+    if (selectedShop) {
+      shopId.value = selectedShop.id
+      timezone.value = selectedShop.timezone
+    }
+    if (route.query.kind === 'statements') kind.value = 'statements'
+    if (route.query.identity === 'synthetic') identity.value = 'synthetic'
+    if (['generic', 'shopify', 'amazon', 'other'].includes(String(route.query.channel)))
+      channel.value = route.query.channel as SourceChannel
+    if (Number(route.query.batch) > 0) {
+      const selected = await importsApi.get(Number(route.query.batch))
+      shopId.value = selected.shop_id
+      adopt(selected)
     }
     await loadHistory()
   })
@@ -175,13 +196,17 @@ async function commit(): Promise<void> {
 }
 async function openBatch(id: number): Promise<void> {
   await perform(async () => {
+    batch.value = null
     adopt(await importsApi.get(id))
   })
 }
 async function withdraw(): Promise<void> {
   await perform(async () => {
     if (!batch.value || !pendingAction.value) return
-    adopt(await importsApi.withdraw(batch.value.id, batch.value.version, pendingAction.value))
+    const { id, version } = batch.value
+    const action = pendingAction.value
+    batch.value = null
+    adopt(await importsApi.withdraw(id, version, action))
     await loadHistory()
     success.value = '批次状态已更新；有效业务记录已按剩余批次重新确定。'
   })
@@ -264,9 +289,22 @@ onMounted(initialize)
             class="button secondary small"
             :href="`/api/imports/templates/inventory?format=${templateFormat}`"
             >库存快照模板</a
+          ><a
+            class="button secondary small"
+            :href="`/api/imports/templates/statements?format=${templateFormat}`"
+            >渠道账单模板</a
           >
         </div>
       </div>
+      <p v-if="kind === 'statements'" class="data-note">
+        账单模板按 sale 销售款、refund 退款、fee 费用、payout 平台记载回款分别录入正数金额。
+        费用行须提供凭据费用行编号和原始收费项名称；到账与结算周期完整性待核。
+      </p>
+      <RouterLink
+        v-if="kind === 'statements' || batch?.kind === 'statements'"
+        :to="`/statements?shop=${shopId}`"
+        >前往账单费用核对</RouterLink
+      >
       <form @submit.prevent="upload">
         <div class="form-grid">
           <div class="form-field">
@@ -284,6 +322,7 @@ onMounted(initialize)
               <option value="orders">通用订单行文件</option>
               <option value="messages">通用客服消息文件</option>
               <option value="inventory">通用库存快照文件</option>
+              <option value="statements">通用渠道账单文件</option>
             </select>
           </div>
           <div class="form-field">
@@ -353,11 +392,7 @@ onMounted(initialize)
       <p class="muted">
         {{ batch.data_identity === 'synthetic' ? '合成测试数据' : '用户导入文件' }} ·
         {{ batch.source_channel }} · {{ batch.sheet_name }} ·
-        {{
-          { products: '商品', orders: '订单行', messages: '客服消息', inventory: '库存快照' }[
-            batch.kind
-          ]
-        }}
+        {{ kindLabels[batch.kind] }}
       </p>
       <p class="muted">
         导入时间 {{ displayTime(batch.created_at, batch.timezone) }} · 导出时间
@@ -371,9 +406,7 @@ onMounted(initialize)
         <h3 class="section-block">02 / 核对字段映射</h3>
         <p class="muted">
           识别候选：{{
-            { products: '商品', orders: '订单行', messages: '客服消息', inventory: '库存快照' }[
-              batch.suggested_kind
-            ]
+            kindLabels[batch.suggested_kind]
           }}。请核对已选报表类型；若不符，可重新上传并选择类型。
         </p>
         <div class="template-controls">

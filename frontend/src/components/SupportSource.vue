@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 import { analyticsApi } from '@/api/analytics'
 import { errorMessage } from '@/api/client'
 import type { SourceDetail, SourceReference } from '@/types/analytics'
@@ -9,25 +9,34 @@ const props = defineProps<{ shopId: number; source: SourceReference }>()
 const detail = ref<SourceDetail | null>(null)
 const error = ref('')
 const busy = ref(false)
+let epoch = 0
 watch(
-  () => [props.shopId, props.source.row_id],
+  [() => props.shopId, () => props.source.row_id],
   () => {
+    epoch++
     detail.value = null
     error.value = ''
+    busy.value = false
   },
+  { flush: 'sync' },
 )
+onUnmounted(() => {
+  epoch++
+})
 async function inspect(): Promise<void> {
+  const current = ++epoch
   const row = props.source.row_id
   const shop = props.shopId
   error.value = ''
   busy.value = true
+  detail.value = null
   try {
     const result = await analyticsApi.source(shop, row)
-    if (shop === props.shopId && row === props.source.row_id) detail.value = result
+    if (current === epoch) detail.value = result
   } catch (cause) {
-    error.value = errorMessage(cause)
+    if (current === epoch) error.value = errorMessage(cause)
   } finally {
-    busy.value = false
+    if (current === epoch) busy.value = false
   }
 }
 </script>

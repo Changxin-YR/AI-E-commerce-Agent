@@ -13,11 +13,18 @@ from app.models.imports import (
     MappingTemplate,
     OrderLine,
     Product,
+    StatementLine,
 )
-from app.schemas.imports import InventoryData, MessageData, OrderData, ProductData
+from app.schemas.imports import InventoryData, MessageData, OrderData, ProductData, StatementData
 
-ImportedRecord = Product | OrderLine | CustomerMessage | InventorySnapshot
-ImportedModel = type[Product] | type[OrderLine] | type[CustomerMessage] | type[InventorySnapshot]
+ImportedRecord = Product | OrderLine | CustomerMessage | InventorySnapshot | StatementLine
+ImportedModel = (
+    type[Product]
+    | type[OrderLine]
+    | type[CustomerMessage]
+    | type[InventorySnapshot]
+    | type[StatementLine]
+)
 
 
 class ImportRepository:
@@ -85,6 +92,7 @@ class ImportRepository:
             "orders": OrderLine,
             "messages": CustomerMessage,
             "inventory": InventorySnapshot,
+            "statements": StatementLine,
         }
         model = models[kind]
         entries = self.session.execute(
@@ -115,6 +123,14 @@ class ImportRepository:
             values = OrderData.model_validate(row.normalized).model_dump()
             values["ordered_at"] = values["ordered_at"].astimezone(UTC).replace(tzinfo=None)
             model = OrderLine
+        elif kind == "statements":
+            values = StatementData.model_validate(row.normalized).model_dump()
+            values["occurred_at"] = values["occurred_at"].astimezone(UTC).replace(tzinfo=None)
+            batch = self.session.get(ImportBatch, row.batch_id)
+            assert batch is not None
+            values["channel"] = batch.source_channel
+            values["data_identity"] = batch.data_identity
+            model = StatementLine
         elif kind == "inventory":
             values = InventoryData.model_validate(row.normalized).model_dump()
             values["snapshot_at"] = values["snapshot_at"].astimezone(UTC).replace(tzinfo=None)

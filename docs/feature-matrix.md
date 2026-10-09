@@ -4,7 +4,7 @@
 
 | SO | 模块 | 优先级 | P0 切片 / 后续范围 | 实现位置 | 测试证据 | 当前状态 |
 |---|---|---|---|---|---|---|
-| SO-001 | 个人卖家初始化与经营资料 | P0 | 经营资料、店铺、模板/映射/预览/错误行/批次 | backend/app/services/profile.py、imports.py；frontend/src/views/ImportsView.vue | tests/test_identity.py、test_imports.py；frontend/e2e/imports.spec.ts | 初始化、商品/订单/消息/库存四类导入、映射与来源清除合成数据本地通过；更多渠道模板后续扩展 |
+| SO-001 | 个人卖家初始化与经营资料 | P0 | 经营资料、店铺、模板/映射/预览/错误行/批次 | backend/app/services/profile.py、imports.py；frontend/src/views/ImportsView.vue | tests/test_identity.py、test_imports.py；frontend/e2e/imports.spec.ts | 初始化、商品/订单/消息/库存及通用渠道账单导入、映射与来源清除合成数据本地通过；更多真实渠道模板后续扩展 |
 | SO-002 | 跨店铺经营总览与运营日报 | P0 | 按店铺/登记平台/市场/日期/币种总览、日周月摘要与依据 | services/overview.py、overview_calculation.py；OverviewView.vue、OverviewShopCard.vue | test_overview.py；OverviewShopCard.spec.ts、overview.spec.ts | 跨店分币种销售/订单/退款/已知商品毛利与对比、当前库存/消息/未结待办回顾、持久摘要及依赖清除合成本地通过；实际净利润、营销及实时平台数据待后续 |
 | SO-003 | 自然语言 AI 运营总控 | P0 | 受控目标理解、事实生成与审批任务 | services/agent.py、agent_model.py、analysis_explanation.py、listing_composition.py、support_composition.py；AgentView.vue | test_agent.py、test_analysis_model.py、test_listing_model.py、test_support_model.py；模型业务 E2E | 路由、问数、Listing 和客服模型协议与审批回读已用替身通过；客服发送绑定消息/政策版本与人工订单核验，强制敏感接管；百炼真实合成路由与 Listing 已通过；运营聚合概览与审批回读已用替身通过；四条 MVP 真实模型质量仍待独立验证 |
 | SO-004 | 一键今日运营 | P0 | 已导入数据巡检与真实内部动作 | services/agent.py、agent_skills.py、operations.py、operation_explanation.py；AgentView.vue | test_agent.py、test_operations.py、test_operations_model.py；agent.spec.ts、operations-model.spec.ts | 检查→数据分支→审批→候选保存→回读核验本地通过，逐项处理复用工作台；聚合事实模型概览、全部分支/缺失保留、快照授权与审批回读经 test_operations_model.py、operations-model.spec.ts 合成替身通过 |
@@ -58,8 +58,8 @@
 | SO-052 | 销售、订单和经营报表 | P0 | 导入数据内单店与跨店分币种统计、日历区间对比 | services/profit_calculation.py、overview_calculation.py；AnalyticsView.vue、OverviewView.vue | test_analytics.py、test_overview.py；analytics.spec.ts、overview.spec.ts | 订单行销售/退款/来源、分店币种订单去重、前日/七日/三十日/自选对比与摘要合成本地通过；全量覆盖与实时统计须实际来源 |
 | SO-053 | 实际成本与商品/店铺利润 | P0 | 订单行、采购成本和缺失费用的已知毛利 | services/profit_calculation.py | Decimal、缺口、币种、退款、阈值与来源测试 | 当前采购成本估算历史已知毛利基础通过；费用归集和实际历史成本待继续 |
 | SO-054 | 独立新品利润计算器 | P0 | 单币种单件已知毛利、费用假设、情景对比与敏感性 | services/profit.py、profit_rules.py；ProfitView.vue | test_profit.py 18 项；profit.spec.ts 桌面/手机；ProfitScenarioEditor.spec.ts | P0 最小切片合成数据本地通过：九类未知/零费用、依据、最多五方案、条件保本价、存档与清除；多币种换算与复杂费率后续扩展 |
-| SO-055 | 渠道账单、结算与回款 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
-| SO-056 | 平台费用映射、自定义费用与对账差异 | P1 | 自定义实际费用、店铺/订单行归属、版本与本地费用核对 | services/expenses.py、repositories/expenses.py；ExpensesView.vue、ExpenseEditor.vue | test_expenses.py、Expenses.spec.ts、expenses.spec.ts | 人工费用台账首片本地通过：Decimal/UTC、确认、凭据去重、版本/幂等、来源待重核/全历史清除、分币种合计；平台收费映射、复杂分摊和真实账单差异仍待实现 |
+| SO-055 | 渠道账单、结算与回款 | P1 | 通用渠道账单 CSV/Excel、销售款/退款/费用/回款原行、历史与分类合计 | services/imports.py、statements.py、repositories/statements.py；ImportsView.vue、StatementsView.vue | test_statements.py；Statements.spec.ts、statements.spec.ts 桌面/手机 | 通用文件首片本地通过：预览确认/覆盖、原行历史、范围隔离、UTC/Decimal、撤销恢复与清除；回款到账、结算周期与余额核对、真实平台适配待实现 |
+| SO-056 | 平台费用映射、自定义费用与对账差异 | P1 | 人工费用版本台账、店铺/订单行归属、分币种合计与账单费用差异 | services/expenses.py、statements.py、evidence.py；ExpensesView.vue、StatementResult.vue | test_expenses.py、test_statements.py；费用/账单组件及桌面手机 E2E | 人工费用及通用账单核对本地通过：同范围明确凭据精确匹配，一致/金额差异/单边缺失/币种差异/重复歧义、原行与费用版本回读；平台收费类别规则、复杂分摊、物流/订单金额差异和人工核对结论存档待实现 |
 | SO-057 | AI 自然语言经营问数和异常解释 | P0 | 销售/购买量前五/低毛利问题理解、匿名事实解释、来源与待办 | services/analysis_explanation.py、agent.py、analytics.py；AnalysisNarrative.vue | test_analysis_model.py 28 项；AnalysisNarrative.spec.ts、analysis-model.spec.ts | Responses 可配置适配、事实编号校验、确定性金额与来源、双重数据授权、费用/未知态、审批待办合成及协议替身通过；百炼通道已接入，问数真实模型理解质量待单独验证，精确净利润仍缺费用依据 |
 | SO-058 | 运营变更版本、A/B 测试与效果评估 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-059 | 多币种、汇率、税费与数据完整性 | P1 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |

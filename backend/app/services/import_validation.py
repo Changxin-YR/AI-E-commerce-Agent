@@ -1,7 +1,7 @@
 import hashlib
 import json
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -17,6 +17,7 @@ from app.schemas.imports import (
     ProductData,
     RowIssue,
     RowOutput,
+    StatementData,
 )
 from app.services.import_catalog import FIELDS
 
@@ -56,8 +57,12 @@ def unsafe_text(value: str) -> bool:
     )
 
 
-def business_key(kind: str, normalized: dict[str, Any], channel: str = "generic") -> str:
-    if kind == "messages":
+def business_key(
+    kind: str, normalized: dict[str, Any], channel: str = "generic", identity: str = "user_import"
+) -> str:
+    if kind == "statements":
+        parts = ["statements", identity, channel, normalized["statement_id"], normalized["line_id"]]
+    elif kind == "messages":
         parts = [channel, normalized["message_id"]]
     elif kind == "inventory":
         parts = ["inventory", channel, normalized["sku"]]
@@ -99,6 +104,21 @@ def normalize_row(
     money_fields = (
         {"price", "unit_cost"} if kind == "products" else {"unit_price", "discount", "refund"}
     )
+    if kind == "statements":
+        money_fields = {"amount"}
+        values["entry_type"] = values.get("entry_type", "").lower()
+        if values["entry_type"] == "fee":
+            for key in ("evidence_ref", "fee_name"):
+                if not values.get(key):
+                    issue(key, "费用行必须填写凭据费用行编号及原始收费项名称")
+        elif values.get("fee_name"):
+            issue("fee_name", "原始收费项名称仅用于费用行")
+        try:
+            values["occurred_at"] = parse_time(values.get("occurred_at", ""), timezone)
+            if values["occurred_at"].replace(tzinfo=None) > utc_now() + timedelta(minutes=5):
+                issue("occurred_at", "账单行须已发生，请核对时间与时区")
+        except ValueError as error:
+            issue("occurred_at", str(error))
     if kind == "inventory":
         money_fields = set()
         for key in ("available", "safety_threshold"):
@@ -142,12 +162,18 @@ def normalize_row(
     if not errors:
         try:
             schemas: dict[
-                str, type[ProductData] | type[OrderData] | type[MessageData] | type[InventoryData]
+                str,
+                type[ProductData]
+                | type[OrderData]
+                | type[MessageData]
+                | type[InventoryData]
+                | type[StatementData],
             ] = {
                 "products": ProductData,
                 "orders": OrderData,
                 "messages": MessageData,
                 "inventory": InventoryData,
+                "statements": StatementData,
             }
             schema = schemas[kind]
             model = schema.model_validate(values)
@@ -158,7 +184,7 @@ def normalize_row(
         except ValidationError as error:
             labels = {field.key: field for field in FIELDS[kind]}
             for item in error.errors(include_input=False, include_context=False):
-                key = str(item["loc"][0])
+                key = str(item["loc"][0]) if item["loc"] else "entry_type"
                 field = labels.get(key)
                 issue(
                     key, f"{field.label if field else key}无效或缺失；{field.help if field else ''}"
@@ -194,6 +220,8 @@ def normalize_row(
                 warnings.append("该状态不计入已支付销售")
         elif kind == "inventory":
             warnings.append("仅表示该渠道在快照时刻的可售数量；跨渠道不合计，不代表实时库存")
+        elif kind == "statements":
+            warnings.append("仅为该来源账单行，周期完整性与银行到账待核，不能据此确定净利润")
         else:
             warnings.append("消息及订单号仅为来源记录；客户与订单关联需人工核验，未取得外发权限")
     return RowOutput(

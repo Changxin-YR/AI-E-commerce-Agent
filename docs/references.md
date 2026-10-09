@@ -223,3 +223,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [Python decimal](https://docs.python.org/3/library/decimal.html)、[datetime](https://docs.python.org/3/library/datetime.html) | 官方标准库文档，PSF；未复制实现 | 有界十进制金额，显式偏移与 IANA 时区一致性校验，UTC 存储，半开查询窗口与分币种汇总 |
 
 沿用已确认的 Firecrawl 402 限制，通过官方网页检索。实际人工费用独立于新品假设；首片支持店铺未分摊和单订单行全额直接归属。凭据编号去重、来源变化待重核、历史依赖清除均由本地服务完成；平台账单/物流/回款尚未核对，费用完整性未知，不据此计算净利润。
+
+## 通用渠道账单与费用差异核对（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [Stripe 回款核对报告](https://docs.stripe.com/reports/payout-reconciliation)、[账务分类](https://docs.stripe.com/reports/reporting-categories) | 官方业务文档，按网站条款使用；未复制正文或源码 | 交易明细与回款分别表示，保留稳定行标识和来源。通用文件明确销售款、退款、费用、平台记载回款；银行到账证据单独待核，不把回款文件等同现金到账 |
+| [SQLAlchemy 查询执行选项](https://docs.sqlalchemy.org/en/20/orm/queryguide/api.html) | 官方文档，源码 MIT；未复制实现 | 用户→店铺锁之后用当前读与 populate_existing，账单及费用在同一事务快照内计算，Numeric/Decimal 分币种 |
+
+沿用已确认的 Firecrawl 402 限制，经官方网页检索。复用文件解析、预览、版本确认和批次生命周期；每行声明语义及正数绝对金额，费用凭据按统一规范化编号核对。首片只读计算当前范围的差异，不保存“已核对”人工结论，不自动改写账单或费用；平台收费映射、结算周期完整性、银行到账及真实报表验证继续待补。

@@ -1,6 +1,5 @@
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-from unicodedata import normalize
 from zoneinfo import ZoneInfo
 
 from app.core.errors import BusinessError, ConflictError, NotFoundError
@@ -22,6 +21,7 @@ from app.schemas.expenses import (
     ExpenseTotal,
     ExpenseWrite,
 )
+from app.services.evidence import evidence_key
 from app.services.product_quality import digest
 from app.services.profit_calculation import reference, utc_text
 
@@ -145,9 +145,7 @@ class ExpenseService:
             expense.content_version = expense.version
             action = "update"
         content = data.content
-        key = digest(
-            {"reference": " ".join(normalize("NFKC", content.evidence_ref).casefold().split())}
-        )
+        key = evidence_key(content.evidence_ref)
         if self.repo.duplicate(expense, key):
             raise ConflictError("该店铺、身份和渠道已有相同凭据编号，请核对原费用并修订。")
         snapshot = self._evidence(owner, store, data)

@@ -15,6 +15,63 @@ def field(
 
 
 FIELDS: dict[str, list[FieldDefinition]] = {
+    "statements": [
+        field(
+            "statement_id",
+            "账单编号",
+            "文本",
+            True,
+            "同店铺/身份/渠道内稳定编号；重导同编号及行号更新原行",
+        ),
+        field(
+            "line_id", "账单行编号", "文本", True, "账单内稳定唯一标识，不能使用每次文件的行序号"
+        ),
+        field(
+            "entry_type",
+            "账单类型",
+            "枚举",
+            True,
+            "sale销售款/refund退款/fee费用/payout平台记载回款；回款到账待核",
+        ),
+        field(
+            "amount",
+            "账单行金额",
+            "金额",
+            True,
+            "正数绝对金额，最多四位小数；类型决定方向，禁止带符号净额",
+        ),
+        field("currency", "币种", "币种", True, "逐行明确币种，跨币种不换算"),
+        field(
+            "occurred_at",
+            "账单发生时间",
+            "日期时间",
+            True,
+            "ISO 日期时间；无偏移使用批次时区；须已发生",
+        ),
+        field(
+            "evidence_ref",
+            "凭据费用行编号",
+            "文本",
+            False,
+            "费用行必填；与人工费用相同凭据编号核对，不按订单号猜测",
+        ),
+        field(
+            "fee_name",
+            "原始收费项名称",
+            "文本",
+            False,
+            "费用行必填；保持来源含义，成本类别映射待人工核对",
+        ),
+        field(
+            "settlement_id",
+            "结算批号",
+            "文本",
+            False,
+            "来源明确提供时填写；不证明周期完整或银行到账",
+        ),
+        field("order_id", "来源订单号", "文本", False, "仅保留来源引用，不自动关联或分摊"),
+        field("note", "账单说明", "文本", False, "最多500字；请移除个人资料"),
+    ],
     "inventory": [
         field("sku", "SKU", "文本", True, "店铺、渠道内唯一；跨渠道不合计", "seller-sku"),
         field("available", "已知可售数量", "非负整数", True, "0—1000000000；未知不能填零"),
@@ -140,6 +197,10 @@ def suggest_mapping(kind: str, headers: list[str]) -> list[MappingSuggestion]:
 
 
 def guess_kind(headers: list[str]) -> ImportKind:
+    if {"statement_id", "entry_type", "amount"} <= {
+        item.field for item in suggest_mapping("statements", headers)
+    }:
+        return "statements"
     if {"sku", "available", "snapshot_at"} <= {
         item.field for item in suggest_mapping("inventory", headers)
     }:

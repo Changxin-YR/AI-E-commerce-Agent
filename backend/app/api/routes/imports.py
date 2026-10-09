@@ -34,6 +34,7 @@ def catalog(current: CurrentSession) -> CatalogOutput:
         orders=FIELDS["orders"],
         messages=FIELDS["messages"],
         inventory=FIELDS["inventory"],
+        statements=FIELDS["statements"],
         max_bytes=MAX_BYTES,
         max_rows=MAX_ROWS,
     )

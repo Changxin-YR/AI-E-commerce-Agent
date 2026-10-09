@@ -156,7 +156,9 @@ class ImportService:
                 batch.timezone,
             )
             key = (
-                business_key(batch.kind, result.normalized, batch.source_channel)
+                business_key(
+                    batch.kind, result.normalized, batch.source_channel, batch.data_identity
+                )
                 if result.normalized
                 else None
             )
@@ -204,7 +206,11 @@ class ImportService:
                 if row.normalized.get(key)
             }
         )
-        time_key = {"messages": "sent_at", "inventory": "snapshot_at"}.get(batch.kind, "ordered_at")
+        time_key = {
+            "messages": "sent_at",
+            "inventory": "snapshot_at",
+            "statements": "occurred_at",
+        }.get(batch.kind, "ordered_at")
         times = [str(row.normalized[time_key]) for row in results if row.normalized.get(time_key)]
         batch.coverage_start = min(times, key=datetime.fromisoformat) if times else None
         batch.coverage_end = max(times, key=datetime.fromisoformat) if times else None
