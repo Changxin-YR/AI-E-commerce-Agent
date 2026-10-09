@@ -13,17 +13,31 @@
 
 ## 当前提交与环境
 
-- 仓库 https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。main **8fdd985d470804124f859b356695fa76c8c6823e** 已正常推送，feat: add grounded operations overview and P0 local review；工作区干净。
-- 本提交 CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37880173315 最后观测 in_progress，接续先核对，失败先修。前提交517d497的CI37878451567已 success。
-- backend/.venv Python3.11、frontend/node_modules；Docker MySQL8.4开发3307/测试3308。迁移 head **86df84dc129a**，本轮无新迁移。
-- 开发API8000已核实原父子进程后隐藏窗口重启，新 launcher PID **44420**；前端5173原Node32612，两者健康200。API无热重载，改动后重启须重新核实实际端口进程，不能凭旧PID停止。
+- 仓库 https://github.com/Changxin-YR/AI-E-commerce-Agent.git 。main **fa5cba53df43587f11a721ae7ec25740d3b0b88d** 已正常推送，feat: add persistent local operations schedules and notifications；工作区干净。
+- 本提交 CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37882272193 最后观测 in_progress，接续先核对，失败先修。前提交8fdd985的CI37880173315已 success。
+- backend/.venv Python3.11、frontend/node_modules；Docker MySQL8.4开发3307/测试3308。迁移 head **a364d8b4b6bf**；新调度两表已应用开发库，隔离测试库 down/up/check 通过。
+- 开发API8000已核实原父子进程后隐藏重启，新 launcher PID **46192** / API PID **50688**；前端5173原Node32612，两者健康200。API无热重载，改动后重启须重新核实实际端口进程，不能凭旧PID停止。
 - .env、backend/.env、.local/test.env、.local回执/日志和.context-memory从main忽略。密钥不打印、不提交、不写聊天文档。backend/.env已有百炼key，无需索取/复制。
 - pytest、Playwright、迁移回退共用隔离_test库，必须串行。测试入口 _env_file=None、显式覆盖provider/key/name/rates并关闭真实模型/邮件；开发只用MockTransport/合成替身。
-- Windows MySQL/Node/Git写/联网常需允许的普通执行环境；Vitest沙箱缓存rename EPERM在普通环境通过。Start-Process一律WindowStyle Hidden。终端命令保持正确workdir。
+- Windows MySQL/Node/Git写/联网常需允许的普通执行环境；Vitest沙箱缓存rename EPERM在普通环境通过。本轮完整Playwright在普通管道下两次Vite连接断开，改exec_command tty=true持久终端完整38项通过；尚未确认退出根因，建议Windows长E2E使用tty。Start-Process一律WindowStyle Hidden。终端命令保持正确workdir。
 - Firecrawl已知402，不重复调用计费接口；使用官方网页/GitHub工具，不临时编写网页抓取脚本。
 - CI状态用GitHub connector github_fetch读取REST并解析structuredContent.content，只输出状态摘要；fetch_workflow_run_jobs有时读到旧状态。
 
-## 最新成果：MVP01 运营模型概览
+## 最新成果：SO-006 持久本地定时巡检与站内通知
+
+- development二十五、testing二十。新增 schedules三层、schedule_clock日历、scheduler worker；迁移a364d8b4b6bf有operation_schedules / schedule_occurrences。
+- 卖家确认创建日/周/月计划（每月1—28日），IANA时区/UTC持久化，DST不存在时刻跳过，重复取fold=0。订单窗口[计划时刻-N×24h,计划时刻)，N<=365；库存/商品/消息取执行时投影，时效按真实当前时间。
+- FastAPI lifespan每30秒扫描至多20到期计划，API运行时有效；SOLOOPS_SCHEDULER_ENABLED默认true。pytest和E2E显式false；专门lifespan测试开启真实worker，已验证自动运行与正常停止。
+- 用户→店铺→计划当前读，计划+UTC周期唯一键。只处理最近一期，24小时内补跑，更旧周期合并起点；超窗记missed。创建/编辑/恢复从未来一期开始；暂停/撤销不补跑，撤销终态。
+- 只用AgentService daily→data_check，有候选停waiting_approval，无候选保存缺口结束。LocalOnlyModel无网络，0费用、不绑定旧R1授权；原Agent再审批保存与工作台逐项处理。规则变化阻断并暂停，修改确认后恢复。
+- defer_commits将执行/来源/通知/下次时刻同事务提交；Agent组合模式的OperationalError向外抛由调用方回滚。普通异常回滚后新事务比较版本/到期值，相符才记录无正文失败并暂停；数据库完全不可用待恢复扫描。
+- 通知仅执行索引/周期结束状态，原Agent当前来源/审批另读，来源清除沿用原依赖擦正文。免打扰按计划时区延后未读列表，完整历史始终可看；已读幂等，50条游标历史，每店100计划上限。
+- SchedulesView / ScheduleEditor沿用既有设计，桌面/手机配置修改、确认变更重置、暂停/恢复/撤销、立即检查、原审批深链、通知已读/刷新/清除已验。正常视口截图system Temp soloops-schedules-{desktop,mobile}.png已查看，390px无横溢。
+- 完整pytest **427 passed / 146.96s**（新增29）；调度+Agent定向51/15.16s后补lifespan纳入全套。Ruff156文件、mypy115app；Vue lint/type/build、Vitest16文件30/2.96s；定向E2E2/11.2s、完整 **38/1.6min**。
+- 完整E2E前两次Vite连接断开，第一次后续全部拒连，第二次5项通过后ECONNRESET，持久tty重新启动后38通过；不冒充前两次通过。首次新downgrade先删FK支撑索引被MySQL1553拒绝，改为按从表→主表drop_table后隔离down/up/check通过；开发库已upgrade。
+- 32文件提交前路径/敏感token模式检查通过，.env与日志未提交。SO-006仍是首片；专用日周月经营报表、业务事件/紧急分级、评论/营销监测和外部通知继续保留。
+
+## 既有成果：MVP01 运营模型概览
 
 - development二十四、testing十九。daily_model：data_check→explain_operations→propose_tasks（审批）→verify。复用现有十一项技能及OperationsService，无新迁移。
 - operation_explanation只允许branch_ids/check_ids；模型排序概览和建议，本地恢复全部九个检查分支、四类候选计数、缺失原因和适用核对建议。模型不能删除候选、修改金额、批准事项或外发；有候选必待审批，无候选保留未知并结束。
@@ -58,6 +72,7 @@
 
 ## 接续起点
 
-1. 先核对8fdd985的CI37880173315；失败先修。读取AGENTS、冻结稿、p0-local-review和矩阵；必要时读development运营/Agent/规则与授权章节。
-2. 按冻结稿继续 **P1 SO-006 定时运营与经营通知**，先官方资料及references，然后实际实现。优先持久化本地定时检查、站内通知、暂停/恢复/撤销和可回读执行状态，显式时区/UTC、唯一周期去重、进程重启与错过周期的有界恢复。沿用受控Operations/Agent服务与权限规则；不能把旧R1快照授权泛化为未来新来源自动批准，也不能后台默认调用付费模型或邮件。外部通知继续等待原授权条件。设计时先读现有服务与需求，具体方案由接手聊天自行判断并完成验证。
-3. 新切片完成相关测试/静态检查、桌面手机与文档后提交推送main/context-memory；用户目标是持续开发，不能只写计划停工。遇上下文压力按原授权先交接落盘再开新聊天，独占工作区。
+1. 先核对fa5cba5的CI37882272193；失败先修。读取AGENTS、冻结稿SO-006/SO-002、矩阵以及development二十五/testing二十，保持既有权限和隐私不变量。
+2. 继续 **SO-006 下一本地切片：专用日/周/月经营报表调度**。先官方/GitHub资料与references，再读已有OverviewService及调度服务，自行完成最小设计和实际实现，复用分币种/显式日期窗口、来源完整性、持久摘要与批次清除。周期巡检频率不等同专用经营日报/周报/月报，矩阵目前准确保留未完成范围。按真实本地业务边界决定报告生成是否需单独确认，保持调度显式授权；外部通知/付费模型不默认启用。之后继续不依赖外部权限的P1/P2（如SO-014），不能只写计划停工。
+3. 每功能测试/静态检查、桌面手机、文档及74SO/32验收，正常提交推送main/context-memory。pytest、Playwright、迁移回退共用_test库严格串行；Windows长E2E建议普通执行环境+tty=true。每次启动/停止进程重新核实端口及命令行。
+4. 用户授权上下文压力下先落盘推送，再建本地接续聊天；新聊天接手后旧聊天停止修改，不能同时操作同一工作区。未经用户明确要求不启动子代理。
