@@ -1,61 +1,44 @@
 # SoloOps 接续上下文
 
-更新：2026-10-09 23:47（Asia/Shanghai）。基础G-01至G-04已完成并提交推送。交接后由新聊天独占主工作区，旧聊天停止写入；不要启动子代理或其他并行写入聊天。
+更新：2026-10-10 00:07（Asia/Shanghai）。G-01至G-05已完成；主工作区由当前开发聊天独占，不启用子代理或并行开发聊天。用户要求上下文接近上限时先落盘提交推送，再创建新聊天接续，旧聊天停止写入。该许可不需要重复取得。
 
-## 用户当前要求
+## 当前目标与提交
 
-- 按 `docs/foundation-release.md` 的基础版本继续开发，完整实现四条流程及 B-01 至 B-14。长期扩展保存在 `foundation-backlog.md`，等用户以后启动；基础版本剩余项必须继续完成。
-- 用户再次明确：主动关注上下文接近上限，先整理、提交、推送，再创建新本地聊天继续；不要在同一聊天长期积累，不必重复请求交接许可。
-- 本轮真实模型已授权：已有北京百炼通道、合成数据，累计人民币 1 元封顶。当前本轮 0 调用、已知费用 0 元。未知费用先核对；每次调用预留上界并记录累计。旧的 0.01 元一次性许可已耗尽，与本轮独立。
-- 本人邮件仍缺通道配置、验证的本人测试收件箱和本次单次发送许可。模型额度不授权邮件。保留 B-07/A-13 的真实提交与收件证据，等待期间推进其余工作。
+- 交付docs/foundation-release.md可运行基础版，四流程及B-01至B-14；长期扩展按foundation-backlog.md等用户启动。74SO、32原验收、7长期E2E全部保留，不能把计划写成实现。
+- main **b1f3d751fdc87a798a72245bdb9cfc7b5d8f94a1** 已正常推送，16文件。仅业务增量为outbound.py将分支count从异常数改成检查记录数；相关全过程测试加入一条正常已履约订单。其余模型/四流程/前端/迁移与d5fe67f相同。
+- 新[CI37956738913](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37956738913)于00:06为In progress，继续时先查最终结果，失败先修。基线[d5fe67f CI37954208866](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37954208866)已核实Success，verify10分17秒/总10分20秒。
+- 本轮定向152 passed/68.38秒：test_outbound、test_dashscope_model、test_analysis_model、test_listing_model、test_support_model、test_operations_model。Ruff规则/223文件格式、mypy158 app文件通过。测试仅3308库，关闭真实模型/邮件/调度；无迁移，head7e7851694067。
+- 继承业务基线完整后端685 passed/301.69秒；G-04初始化4项/1.01秒通过。Vue97单元、lint/type-check/构建通过；浏览器完整58项为54通过/4断言失败，修正断言后定向4项/46.8秒通过，不写成本地单次58全绿。前端本轮未改。
 
-## 当前提交与验证
+## G-05已完成，不重复付费验收
 
-- main **d5fe67feeecde74cd9927d10cc822651fc76155f** 已正常推送origin/main，13文件；主工作区干净。本次G-04新增首次安装/实际进程恢复证据，初始化脚本保护已有.local/test.env，并以独占模式创建三份配置。业务API/前端/迁移仍与8f6956f一致。
-- 新提交[CI37954208866](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37954208866)在23:47核实时In progress，接续先查最终结果。基线[8f6956f CI37950996694](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37950996694)已核实Success，verify9分14秒/总9分18秒。
-- 新增`test_local_setup.py` **4 passed / 1.01秒**；Ruff规则及格式 **223文件**、mypy **158 app文件**通过。沙箱默认Temp失败后用`--basetemp=../.local/pytest-setup-g04`通过，测试要求不变。
-- 业务基线完整后端 **685 passed / 301.69秒**。Ruff规则与格式 **222文件**、mypy **158 app文件**通过；CI已包含根 scripts 检查。
-- Vue lint/type-check/生产构建通过，Vitest **26文件97项 / 4.28秒**。
-- 浏览器 58 项完整运行 **54通过/4断言失败，3.0分钟**；只修改费用规则旧URL断言和基础场景Z/+00:00时间点比较后，桌面/手机定向 **4项全部通过 / 46.8秒**。业务代码未在完整运行后改变。58项均有最终代码通过覆盖，不能写成单次58项全绿。
-- `foundation.spec.ts` 覆盖同组资料四流程、完整范围/对象、返回原事项、审批/完成/重开、来源变化、刷新、退出再登录、经营摘要保存回读。Node24.16.0，Chromium1440×1000/390×844；实际查看Temp中的task-mobile和support-desktop截图，无横溢。日志/trace/截图不提交。
-- 无新迁移，head仍 **7e7851694067**。原74 SO、32验收、7长期E2E完整保留，后续47 SO登记。开发文档三十六、测试三十一、README、矩阵及foundation规格/验收/维护/运行证据已同步。B-01/B-10/B-12已通过；B-06/B-07继续必验。
+- 2026-10-09 23:54至23:56，已有北京百炼dashscope_chat/qwen3.7-flash，生产Agent API→受控服务→生产adapter。同组G-04合成资料在独立库新店#2导入。7次真实请求：今日运营；问数规划+解释2次；Listing；FAQ；物流退款混合；缺政策且未核验订单身份。
+- 本轮授权人民币1元累计封顶。已执行**7次**，usage已知目录估算**0.0007750 CNY**，未知费用0；应用保守预算费用**0.000933 USD**，reserved0。7次最高档包络预留总和0.0830340元，均未超界，无重试。目录估算剩余0.9992250元；实际扣款以供应商账单为准。旧0.01元许可独立已用。
+- 官方费率已复核：北京输入≤32K输入0.2/输出0.8元每百万tokens；最高档1.2/4.8。现有本机配置USD费率0.24/0.96，说明为最高档乘固定1CNY=0.20USD预算折算，非实时汇率。不能把USD预算数字当人民币扣款。
+- 真实结果：9运营分支/5候选，审批检查#3/待办#7至#11，5项完成→重开→完成；问数75/62/13，CUP55/54/1，分析#2待办#1完成重开完成；完整商品名/不锈钢350mL Listing模型版本#2，人工标题整理版本#3批准本地；FAQ草稿#2人工编辑仍draft；混合物流+退款draft#3为human_review后存档，均not_submitted。
+- 缺证据真实候选#7为handoff、无臆造政策/物流/退款。经导入修订FAQ消息后旧候选source_status=stale，按当前version审批HTTP409，客服记录仍2份。商品CUP成本18改19，原已完成分析保留13且stale，当前重算10；Listing批准指针和历史保留并明确stale。新本地operation_run #4来源current，可用于后续R2。
+- 成功的5个执行重放相同request_id和advance仍原id/succeeded，付费数保持7。停付费API后用全关闭配置实际重启，原会话与6个执行+旧分析+旧Listing+当前检查共9份快照精确一致。
+- 完整逐次token/时间/费用/审阅事实在docs/foundation-model-evidence.md，B-02至B-06通过。G-05不需要重复跑或再建新付费执行。
 
-## 已实现基础缺口
+## G-06/B-07当前阻塞与准备
 
-- G-01：AnalysisInput可选channel，省略保持原全部渠道及旧哈希兼容；服务SQL/保存/Agent/驾驶舱范围一致。运营事项以当前来源及所有权给出精确库存SKU、产品Listing、消息客服、分析窗口入口；旧来源或规则隐藏入口。前端有界query校验、完整范围、回原事项、跨店去除return_task；Agent结果深链保存原scope。修复分析误带库存时效422和Listing另存刷新仍指旧版本。
-- G-02：`scripts/foundation_samples.py` 生成五份合成CSV与manifest，统一UTC锚点/政策期/库存时效。3商品、5订单、3库存、2消息。主Amazon/USD销售75、成本62、毛利13、qty4；全部渠道USD87但成本/毛利未知并有EUR边界。修订CUP成本后主范围毛利10。5当前事项，来源更新保留旧completed/stale历史并形成新候选。样本和完整复现见 examples/foundation、foundation-user-guide。
-- G-03：`scripts/database_backup.py` 容器mysqldump、前后head/行数/checksum、SHA256清单；只向mysql-test中新建soloops_restore_*_test恢复，拒绝已有目标。SQL用临时受限账号执行，数据库权限转义下划线，禁local-infile/客户端命令，finally删除临时账号；凭据不在参数或输出。11项防护测试通过。
-- 接手SO-056只读核对：精确原字符order_id及用户/店铺/身份/渠道；先窗口候选再读取所有相关当前来源，两侧各1000上限。卖家声明口径、同币种同当地日、双方窗内单行单sale且折扣/状态已知才算Decimal差额。累计退款仍待核，无迁移。35后端/6Vue/2浏览器已纳入本轮验证。
+- 尚缺本人Resend发送配置、已验证的本人测试收件箱及本次单次发送许可。已向用户询问准备情况，当前未收到新增配置或许可。模型额度不覆盖邮件。
+- 已准备docs/foundation-mail-review.md全文，来自**3309独立库店铺#2的operation_run #4**；不能用overview_report当R2输入。该文件只是本地审阅稿，通道not_configured，验证码/经营摘要均0发送、外发记录0。
+- 实际R2创建要求active通道。本人配置在本机忽略backend/.env，包含API_KEY、SENDER、TEST_RECIPIENT、DOMAIN_ID、OWNER_ID、SHOP_ID。连接动作会发验证码邮件，必须取得对应许可；15分钟验证码验证后，再展示确切地址/全文并取得摘要单次发送许可。不得把密钥打印或放聊天。
+- 使用同库#2与会话核对owner，不沿用其他库编号。文档正文可能因源/库存时效变化需重新检查生成，再全文审阅批准。最终保留真实提交回执与本人实际收件佐证；unknown只回查不重发。用户未提供条件前不标基础版全部完成、不把长期模块作为替代工作。
+- 使用配置步骤已补foundation-user-guide。当前邮件正文标签已修为检查记录数，区分读取量与候选数。
 
-## 隔离恢复的实际证据
+## 环境及证据保留
 
-- 已执行 backup --service mysql-test --name foundation-20261009-2304，以及 restore --name foundation-20261009-2304 --target soloops_restore_foundation_20261009_test。
-- 64表、head、行数和CHECKSUM一致；只读回查2主店、6完成事项、2失效但已完成低毛利事项、2历史批准Listing、2历史毛利13分析及完成待办、2客服存档、2经营摘要，临时恢复账号0。再次同目标恢复被拒绝。
-- 备份在忽略目录 `.local/backups/foundation-20261009-2304`；只读回查脚本 `.local/foundation_restore_readback.py`。源soloops_test之后被全套测试重置；恢复副本仍在mysql-test容器，tmpfs随容器停止丢失，文件备份保留。不能把该副本当作首次安装证据。
-
-## G-04实际运行证据及保留环境
-
-- 完整报告`docs/foundation-runtime-evidence.md`；从Git源码导出的`.local/foundation-g04`独立副本，初始化补丁与main一致。新venv锁定安装47包，前端npm ci293包审计0漏洞，Node24.16.0生产构建/type-check通过。数据库0→64表/head7e7851694067，账号CLI密码标准输入。
-- Compose项目`soloops-foundation-g04`、独立持久卷`soloops-foundation-g04_mysql-data`，MySQL3309、库`soloops_foundation_g04_test`、API8002/前端5175。验收结束这三个服务均已停止，卷保留。开发mysql3307、测试mysql3308及旧API8000未被操作；原三份配置SHA256一致。
-- 实际HTTP经营资料/店铺/5文件预览确认，3商品/5订单/3库存/2消息、2有效政策；Amazon/USD销量4、销售75/成本62/毛利13。保存完成事项、批准Listing、人工客服存档、分析和摘要。原会话及14份响应快照在多次API进程重启后精确一致。
-- 用真实时间15:36UTC/北京时间23:36创建计划、暂停→恢复，然后停API跨过到期；scheduler=false启动时历史0并保留到期，true重启仅恢复1期waiting_approval。受控批准推进succeeded后再次重启，1周期/1执行/6任务编号均不变。第二次检查窗口不同，低毛利新范围候选使任务从5变6，不能把它写成重复任务。调度历史保存触发状态waiting_approval，当前执行另从Agent回读succeeded。
-- 新副本Chromium桌面1440×1000/手机390×844登录/选店/刷新/持久会话通过，错误0/横溢0；手机截图已查看。
-- 忽略目录保留`.local/g04_prepare.py`（只能新建，勿重复）、g04_bootstrap.py（要求空库，勿重跑）、g04_http.py（seed只能一次；read/schedule-read可回读）、g04_control.ps1、g04_browser.mjs、g04_audit.py。副本`.local`内有initial/bootstrap/http-state/final-audit、samples.json和截图；account.json及http-state含账号/会话，禁止打印或提交。
-- 可按完整前缀`docker compose -p soloops-foundation-g04 --env-file .env -f compose.yaml -f compose.g04.yaml up -d --wait mysql`（在副本根）重启3309保留数据。G-05可复用同组数据或另建合成店铺；先核对政策时效、当前源与样本scope。不要用setup或pytest重置该证据库。复制的backend/.env默认模型/邮件关闭、调度true；G-05如果复用应关闭调度并仅从主backend忽略配置安全加载既有模型字段。
-
-## 接续立即执行
-
-1. 先读AGENTS.md、foundation-release/acceptance/backlog/user-guide及foundation-runtime-evidence，核实d5fe67f的CI37954208866，失败先修；G-04已完成，不要重做或扩大长期功能。
-2. **立即推进G-05/B-06**：真实四流程验收，¥1累计上限且本轮仍0调用/已知0元。读取现有配置只输出安全模型/费率字段，不打印.env/密钥。历史已知provider dashscope_chat、qwen3.7-flash、北京endpoint；先核实当前官方费率、现有USD预算换算及每次包络费用上界。通过项目Agent受控服务/adapter、同组合成资料执行今日运营、问数（可能规划+解释2次）、Listing、FAQ和混合敏感客服；保存后核验事实、审批、来源变化/缺证据边界。未知响应先查持久记录，不盲目重试；费用未知暂停付费部分。逐次token/时间/脱敏结果、已知估算费用和人民币累计记证据。模型实现在app/services/agent_model.py，历史费率/协议见references和testing27，必须重新核实。常规pytest/E2E真实模型/邮件关闭。
-3. **G-06/B-07**仍等待本人通道配置、验证本人收件箱及本次单次发送许可；模型额度不包含邮件。条件到位后沿R2发送已审阅且有来源的operation_run经营摘要，保留真实回执及实际收件佐证。R2不支持overview_report，不可混淆。缺条件时继续独立收尾，基础版本不能标全部完成。
-4. 对应改动测试、静态检查、开发/测试/知识点/矩阵/问题同步后正常提交推送main与context-memory，不强推。通过的检查不无故重复扩大；上下文接近上限同样先保存推送再新建接续聊天，旧聊天立即停止工作区写入。
-
-## 环境与操作约束
-
-- Windows PowerShell；工作区 `C:\Users\27363\Desktop\AI E-commerce Agent`。Vue3/TS、FastAPI/Python3.11、MySQL8.4，API→service→repository。金额Decimal/Numeric、UTC保存/显式IANA显示，当前用户/店铺约束；Agent只能调用受控业务服务。
-- 每功能先查官方/GitHub并更新references许可证/借鉴/适配；Firecrawl已确认402，用官方web工具fallback，不反复尝试计费接口，不编HTTP抓取脚本。
-- backend/.venv、frontend/node_modules已存在。MySQL开发3307、测试3308；容器soloops-mysql-1和soloops-mysql-test-1。pytest/迁移/E2E/测试库恢复必须串行。真实模型、邮件、常规定时在常规测试中关闭。
-- E2E在frontend目录使用 `npm run test:e2e`（先生产构建，测试器管理API8001/preview5174，CI=true）。临时将 `.local/runtimes/node-v24.16.0-win-x64` 加入PATH，不能用全局24.15.0；后者曾Windows TCP原生崩溃，详见testing二十八。全局安装未改。
-- 沙箱MySQL socket10013、Vitest EPERM、Git索引只读时使用已授权允许环境；不重复请求用户确认普通开发/检查/正常推送。没有自动审批拒绝遗留。本轮新增4项测试用工作区basetemp避免沙箱Temp创建失败。gh未安装，GitHubconnector不可用时可用IAB公开页面看CI。Browser插件不可用，浏览器测试沿项目Playwright。
-- 真实客户、密钥、本机配置、日志、截图/trace不提交；`.local`和`.context-memory`在main忽略。context-memory独立分支只存本文重点，不合并main、不保存整段聊天。禁止强推。
-- 项目ID `1c274a7b-2f1e-45ca-bf1b-10475766545b`（电商智能体）。切新聊天用local同项目，先落盘推送、传明确起点，交接后旧聊天停止修改。当前没有需要创建的定时自动化；用户要求的是上下文接近上限时主动换聊天。
+- 主目录C:\Users\27363\Desktop\AI E-commerce Agent；Windows PowerShell，Vue3/TS/FastAPI/Python3.11/MySQL8.4，三层服务，Decimal/Numeric、UTC和显式时区/用户店铺隔离。
+- **当前隔离API8002/前端5175/MySQL3309均停止，持久卷保留。** 开发3307、测试3308及旧API8000未操作启停。G-05常规pytest只重置原3308测试库，不碰3309。
+- G-04副本.local/foundation-g04，Compose项目soloops-foundation-g04，卷soloops-foundation-g04_mysql-data，库soloops_foundation_g04_test。启动保留库：在副本根`docker compose -p soloops-foundation-g04 --env-file .env -f compose.yaml -f compose.g04.yaml up -d --wait mysql`。不要重跑setup/bootstrap/seed，不要向该库运行pytest。
+- G-04本机脚本.local/g04_prepare.py、g04_bootstrap.py、g04_http.py、g04_control.ps1、g04_browser.mjs、g04_audit.py；副本.local中initial/bootstrap/http-state/final-audit/samples/account，账号/会话严禁打印。副本.env真实模型/邮件关闭；常规scheduler原true，复用时须关闭。
+- G-05本机.local/foundation-g05/ledger.json含7次usage及规范化合成响应，http-state.json含阶段快照，audit.json有合计。辅助脚本g05_server.py临时审计子类、g05_http.py、g05_closeout.py、g05_readback_server.py。不要直接重跑付费脚本，不要删除账本。readback-server为主代码+副本DB配置，模型/邮件/调度全关闭。
+- g05_closeout.py restart-read可在只读配置API下回读9快照；它使用已有会话，过期需安全重新登录。辅助g05_docs.py/g05_update_docs.py只属本轮一次性整理，**不要重跑覆盖最新文档**。
+- G-04在新配置/venv/独立容器空库0→64表，CLI创建账号及实际HTTP五文件导入75/62/13，14响应精确恢复。真实23:36停机到期，worker关闭不运行、启用恢复一期waiting_approval，批准后再重启1周期1执行6待办不变。详见foundation-runtime-evidence。
+- G-03备份.local/backups/foundation-20261009-2304，64表head/行数/CHECKSUM一致，历史代表回读通过；恢复副本位于mysql-test(tmpfs停止丢失)，文件备份保留。
+- 本地静态/测试用backend/.venv；pytest/迁移/E2E共享3308须严格串行。浏览器使用.local/runtimes/node-v24.16.0-win-x64与npm run test:e2e，禁用真实模型/邮件。全局24.15曾Windows原生崩溃，不复用。
+- 普通开发、定向测试与正常提交推送已授权，不强推；沙箱Docker/MySQL/Git写索引受限时按权限机制升级。本轮无自动审批拒绝。gh未安装，CI可用IAB公开页。Firecrawl已402，官方web工具fallback，不反复消耗接口，不编HTTP抓取脚本。
+- docs/development37、testing32、interview、README、矩阵、foundation证据/维护已同步。context-memory独立分支只存本文重点，不合并main，不提交完整聊天/本机日志。
+- 接续先读AGENTS.md与foundation-release/acceptance/backlog、runtime/model evidence。项目ID1c274a7b-2f1e-45ca-bf1b-10475766545b，换聊天用local同项目，单开发聊天独占。
