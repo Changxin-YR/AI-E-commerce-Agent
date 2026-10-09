@@ -21,8 +21,10 @@ from app.services.agent import AgentService
 from app.services.agent_model import GenerationReply, ModelReply
 from app.services.business_rules import BusinessRulesService
 from app.services.listings import digest
+from app.services.overview import OverviewService
 from app.services.profit_calculation import utc_text
 from app.services.schedule_clock import notification_time, occurrence
+from app.services.schedule_reports import report_scope
 
 
 class LocalOnlyModel:
@@ -83,7 +85,10 @@ class SchedulesService:
         return row
 
     def _validate(self, owner: int, shop: int, config: ScheduleConfig, now: datetime) -> None:
-        BusinessRulesService(self.uow).validate_scope(owner, shop, operation_scope(config, now))
+        if config.task == "operations":
+            BusinessRulesService(self.uow).validate_scope(owner, shop, operation_scope(config, now))
+        else:
+            report_scope(config, shop, now)
 
     def _output(self, row: OperationSchedule) -> ScheduleOutput:
         return ScheduleOutput(
@@ -106,6 +111,8 @@ class SchedulesService:
             scheduled_at=utc_text(row.scheduled_at),
             coalesced_from=utc_text(row.coalesced_from) if row.coalesced_from else None,
             execution_id=row.execution_id,
+            task=row.task,
+            report_id=row.report_id,
             status=row.status,
             reason=row.reason,
             notify_at=utc_text(row.notify_at),
@@ -116,8 +123,13 @@ class SchedulesService:
     def create(self, owner: int, shop: int, data: CreateSchedule) -> ScheduleOutput:
         self._shop(owner, shop)
         if not data.confirmed:
-            raise ConflictError("请确认周期检查范围和站内通知")
-        key = digest([shop, data.config.model_dump(mode="json")])
+            raise ConflictError("请确认计划范围和站内通知")
+        content = data.config.model_dump(mode="json")
+        # Preserve request replay for plans created before report scheduling was added.
+        if data.config.task == "operations" and not data.config.report_currencies:
+            content.pop("task")
+            content.pop("report_currencies")
+        key = digest([shop, content])
         prior = self.repo.by_request(owner, str(data.request_id))
         if prior:
             if prior.request_hash != key:
@@ -163,7 +175,7 @@ class SchedulesService:
             raise ConflictError("计划已变化或已撤销，请刷新")
         if data.action in {"resume", "edit"}:
             if not data.confirmed:
-                raise ConflictError("请重新确认周期检查范围")
+                raise ConflictError("请重新确认计划范围")
             config = (
                 data.config if data.action == "edit" else ScheduleConfig.model_validate(row.config)
             )
@@ -224,28 +236,35 @@ class SchedulesService:
         config = ScheduleConfig.model_validate(row.config)
         executed_version = row.version
         execution_id = None
+        report_id = None
         status, reason = "missed", "outside_recovery_window"
         if now - due <= timedelta(hours=24):
             try:
                 # No network and no intermediate commit. Crash rolls back the entire cycle.
                 with self.uow.session.begin_nested(), self.uow.defer_commits():
-                    service = AgentService(self.uow, LocalOnlyModel())
-                    run = service.start(
-                        row.owner_id,
-                        row.shop_id,
-                        StartAgent(
-                            request_id=uuid4(),
-                            template="daily",
-                            scope=operation_scope(config, due),
-                        ),
-                    )
-                    run = service.act(
-                        row.owner_id,
-                        row.shop_id,
-                        run.id,
-                        AgentAction(version=run.version, action="advance"),
-                    )
-                    execution_id, status, reason = run.id, run.status, run.reason
+                    if config.task == "report":
+                        report = OverviewService(self.uow).save_scheduled(
+                            row.owner_id, report_scope(config, row.shop_id, due), uuid4()
+                        )
+                        report_id, status, reason = report.id, "succeeded", "report_saved"
+                    else:
+                        service = AgentService(self.uow, LocalOnlyModel())
+                        run = service.start(
+                            row.owner_id,
+                            row.shop_id,
+                            StartAgent(
+                                request_id=uuid4(),
+                                template="daily",
+                                scope=operation_scope(config, due),
+                            ),
+                        )
+                        run = service.act(
+                            row.owner_id,
+                            row.shop_id,
+                            run.id,
+                            AgentAction(version=run.version, action="advance"),
+                        )
+                        execution_id, status, reason = run.id, run.status, run.reason
             except BusinessError as error:
                 status, reason = "blocked", error.code
         if status not in {"waiting_approval", "succeeded", "missed"}:
@@ -262,13 +281,17 @@ class SchedulesService:
             scheduled_at=due,
             coalesced_from=coalesced,
             execution_id=execution_id,
+            task=config.task,
+            report_id=report_id,
             status=status,
             reason=reason,
             notify_at=notification_time(config, now),
             created_at=now,
         )
         self.repo.add(notice)
-        self._event(row, "checked" if execution_id else "missed_or_blocked")
+        self._event(
+            row, "report_saved" if report_id else "checked" if execution_id else "missed_or_blocked"
+        )
         return notice
 
     def fail_due(
@@ -303,6 +326,7 @@ class SchedulesService:
                 coalesced_from=expected_due if expected_due < due else None,
                 status="blocked",
                 reason="local_check_failed",
+                task=config.task,
                 notify_at=notification_time(config, now),
             )
         )

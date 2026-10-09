@@ -32,9 +32,10 @@ const info = ref('')
 const confirmAction = ref<{ row: Schedule; action: ScheduleAction } | null>(null)
 const reasons: Record<string, string> = {
   conflict: '经营规则发生变化，请修改计划并核对当前规则。',
-  local_check_failed: '本次检查未完成，已回滚；核对后可恢复计划。',
+  local_check_failed: '本次运行未完成，已回滚；核对后可恢复计划。',
   range_too_large: '数据量超过本次检查上限，请缩小范围。',
   too_many_findings: '候选数量超过本次检查上限，请缩小范围。',
+  invalid_local_date: '报告日期起点在所选时区不存在，请核对运行时区和日期。',
 }
 let createId = crypto.randomUUID()
 let manualId = crypto.randomUUID()
@@ -105,7 +106,10 @@ async function check(row: Schedule): Promise<void> {
     await schedulesApi.check(row, manualId)
     manualId = crypto.randomUUID()
     unread.value = false
-    info.value = '本次检查已保存，请从运行历史查看依据和审批。'
+    info.value =
+      row.config.task === 'report'
+        ? '经营报表已保存，可从运行历史查看报表与依据。'
+        : '本次检查已保存，请从运行历史查看依据和审批。'
     await refresh()
   })
 }
@@ -133,7 +137,7 @@ onMounted(async () => {
   <div class="page-heading">
     <div>
       <h1>定时运营</h1>
-      <p>把日常检查排进日历，每次结果都有记录可查。</p>
+      <p>安排运营巡检与日、周、月经营报表，每次结果都有记录可查。</p>
     </div>
     <span class="outline-label">本地规则 · 站内通知</span>
   </div>
@@ -155,13 +159,13 @@ onMounted(async () => {
       <p v-if="worker !== null">
         {{
           worker
-            ? '自动检查已启用，API 服务运行期间每 30 秒扫描到期计划。'
+            ? '自动调度已启用，API 服务运行期间每 30 秒扫描到期计划。'
             : '当前服务关闭自动调度，可手动检查并查看记录。'
         }}
         时间显示：{{ shop?.timezone }}。
       </p>
       <p>
-        巡检已导入的订单、库存、消息与已知毛利，生成待审候选和数据缺口记录。每次使用当时可用数据，审批请进入任务执行台。
+        巡检可生成待审候选，报表可定期保存经营摘要。每次使用当时可用的导入数据，结果和依据从运行历史进入。
       </p>
       <div class="form-actions">
         <button class="button" :disabled="busy" @click="edit(null)">新建计划</button
@@ -203,8 +207,16 @@ onMounted(async () => {
         </p>
         <p>
           {{ row.config.data_identity === 'synthetic' ? '合成演示数据' : '用户导入数据' }} ·
-          {{ row.config.channel }} · {{ row.config.currency }} · 回看
-          {{ row.config.lookback_days }} 天 · 规则 #{{ row.config.rule_revision_id }}
+          <template v-if="row.config.task === 'report'"
+            >经营报表 · {{ row.config.report_currencies.join('、') || '全部币种分别统计' }} ·
+            上一完整{{
+              { daily: '自然日', weekly: '自然周', monthly: '自然月' }[row.config.frequency]
+            }}</template
+          >
+          <template v-else
+            >{{ row.config.channel }} · {{ row.config.currency }} · 回看
+            {{ row.config.lookback_days }} 天 · 规则 #{{ row.config.rule_revision_id }}
+          </template>
         </p>
         <p>下一次：{{ time(row.next_run_at, row.config.timezone) }}</p>
         <p v-if="row.config.quiet_start !== null">
@@ -219,7 +231,7 @@ onMounted(async () => {
             :disabled="busy"
             @click="check(row)"
           >
-            立即检查一次
+            {{ row.config.task === 'report' ? '立即生成报表' : '立即检查一次' }}
           </button>
           <button
             v-if="row.status === 'active'"
@@ -278,7 +290,7 @@ onMounted(async () => {
         />只看已到提醒时间的未读通知</label
       >
       <p>
-        显示周期结束时的状态；原任务的当前来源、审批与处理进度请点“查看检查与审批”。免打扰期间的结果在完整历史中可见。
+        显示周期结束时的状态；请进入对应的检查或报表查看当前进度与来源状态。免打扰期间的结果在完整历史中可见。
       </p>
       <p v-if="!history.length">{{ unread ? '当前没有到期的未读通知。' : '还没有运行记录。' }}</p>
       <article
@@ -288,7 +300,12 @@ onMounted(async () => {
         :aria-label="`周期记录 ${item.id}`"
       >
         <h3>
-          计划 #{{ item.schedule_id }} · {{ labels[item.status] ?? item.status }}
+          计划 #{{ item.schedule_id }} ·
+          {{
+            item.task === 'report' && item.status === 'succeeded'
+              ? '报表已保存'
+              : (labels[item.status] ?? item.status)
+          }}
           <span v-if="!item.read_at" class="outline-label">未读</span>
         </h3>
         <p>
@@ -300,12 +317,18 @@ onMounted(async () => {
         </p>
         <p v-if="item.status === 'missed'">最近一期已超过 24 小时补跑窗口，等待下一周期。</p>
         <p v-if="['blocked', 'paused', 'circuit_open'].includes(item.status)">
-          该周期检查受阻，计划当时已暂停。{{
+          该周期运行受阻，计划当时已暂停。{{
             reasons[item.reason] ?? '请查看原任务，核对条件后恢复计划。'
           }}
         </p>
         <p>提醒时间：{{ time(item.notify_at) }}</p>
         <div class="form-actions">
+          <RouterLink
+            v-if="item.report_id"
+            :to="{ path: '/overview', query: { report: item.report_id } }"
+            class="button secondary small"
+            >查看报表与依据</RouterLink
+          >
           <RouterLink
             v-if="item.execution_id"
             :to="{ path: '/agent', query: { shop: shopId, execution: item.execution_id } }"

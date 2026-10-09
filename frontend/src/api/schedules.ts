@@ -2,6 +2,8 @@ import { request } from './client'
 
 export interface ScheduleConfig {
   name: string
+  task: 'operations' | 'report'
+  report_currencies: string[]
   timezone: string
   frequency: 'daily' | 'weekly' | 'monthly'
   local_time: string
@@ -36,6 +38,8 @@ export interface Occurrence {
   scheduled_at: string
   coalesced_from: string | null
   execution_id: number | null
+  task: 'operations' | 'report'
+  report_id: number | null
   status: string
   reason: string
   notify_at: string

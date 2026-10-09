@@ -308,3 +308,17 @@ Ruff 规则/格式 **156 文件**、mypy **115 app 文件**通过。Vue type-che
 迁移 `a364d8b4b6bf`：隔离 `_test` 库 **downgrade 86df84dc129a → upgrade head → alembic check** 已通过，开发库升级至新 head。首次自动生成的 downgrade 先删除外键支撑索引，被 MySQL 1553 阻止；改为先删除从表再删除主表，随表释放索引后复验通过。pytest、Playwright 和迁移回退严格串行；测试入口关闭真实模型、邮件和常规后台扫描，仅专门测试显式开启本地 worker。
 
 交接基线 8fdd985 的 [CI](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37880173315) 已核实 success。74 个 SO、32 个验收项均保留；SO-006 当前仅标记持久本地巡检/站内通知首片通过，专用经营报表、业务事件、紧急分级、评论/营销监测与外部通道继续保留后续范围。
+
+## 第二十一迭代：自然日周月经营报表调度（2026-10-09）
+
+新增 `test_schedule_reports.py` **21 项**，与既有调度/总览定向 **70 项 / 23.37 秒**，完整 pytest **448 项 / 186.09 秒**通过。覆盖自然日期与半开边界、跨年/闰月/夏令时 23/25 小时、自然月对比、原计划时刻补跑、错过窗口、数据身份与币种筛选、缺成本保留、原始行、来源/正文清除、并发单周期、手动 UUID 回放、保存后普通/数据库错误整笔回滚、故障暂停和确认门禁。所有数据为合成，无真实模型或邮件调用。
+
+Ruff 规则与格式 **159 文件**、mypy **116 app 文件**通过。Vue lint、最终 type-check 与生产构建通过，Vitest **17 文件 32 项 / 2.83 秒**；最终测试写法改为兼容编译目标的 slice 后，相关组件 **2 项 / 1.39 秒**复验通过。新增组件验证报表确认重置、迟到巡检规则丢弃和切回巡检重新绑定规则。
+
+调度页面定向 Playwright **4 项 / 15.7 秒**通过；生产构建预览下完整 **40 项 / 1.6 分钟**通过。覆盖报表配置/确认、月报保存、报告深链与刷新、原始库存依据展开、手动及来源依赖清除后从通知回读；原巡检修改/审批/免打扰/已读继续通过。390px 无横溢，桌面与手机普通视口截图已实际查看，系统 Temp `soloops-schedule-reports-{desktop,mobile}.png`，未提交。
+
+迁移 `54df8f2c09a1` 在隔离 `_test` 库 **downgrade a364d8b4b6bf → upgrade head → alembic check** 通过；开发库升级完成，核实 API 父子进程后隐藏重启，API8000/前端5173均健康200。pytest、迁移回退和 Playwright 严格串行。
+
+环境与修复记录：首次 pytest 被沙箱本机 socket 权限 WinError10013 阻断，Vitest 被缓存 rename EPERM 阻断；允许执行环境下通过。浏览器新用例首次未展开库存 details 就检查可见性，按实际用户操作先展开后通过。完整开发服务回归多次出现 ECONNRESET/拒连，独立观察捕获 Vite 进程链退出码 **3221226505（0xC0000409）**；未定位到具体原生模块，标准输入关闭的简单实验未复现退出。验收入口改为自动构建并启动本机 `vite preview`，测试服务 CI=true 且由 Playwright 管理，最终全套通过。前端最终类型检查发现新增测试 Array.at 不在该编译目标中，已改为 slice 并复验；既有 Starlette/httpx 弃用提示保留。
+
+交接提交 fa5cba5 的 [CI](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37882272193) 已核实 completed/success。矩阵仍保留全部 **74 SO / 32 验收 / 7 长期 E2E**；本轮 SO-006 增加自然周期报表本地通过证据，业务事件、紧急分级、评论/营销和外部通知仍为后续范围。

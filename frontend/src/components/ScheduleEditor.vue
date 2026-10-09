@@ -13,6 +13,8 @@ const form = reactive<ScheduleConfig>(
     ? (JSON.parse(JSON.stringify(props.initial)) as ScheduleConfig)
     : {
         name: '每日运营检查',
+        task: 'operations',
+        report_currencies: [],
         timezone: props.shop.timezone,
         frequency: 'daily',
         local_time: '09:00',
@@ -41,6 +43,15 @@ async function rules(): Promise<void> {
   pending.value = true
   error.value = ''
   confirmed.value = false
+  if (form.task === 'report') {
+    form.rule_revision_id = 0
+    form.channel = 'generic'
+    form.weekday = 0
+    form.month_day = 1
+    activeRule.value = false
+    pending.value = false
+    return
+  }
   try {
     const result = await rulesApi.current(props.shop.id, form.channel, form.data_identity)
     if (current !== epoch) return
@@ -56,7 +67,7 @@ async function rules(): Promise<void> {
     if (current === epoch) error.value = errorMessage(cause)
   }
 }
-watch(() => [form.channel, form.data_identity], rules, { immediate: true })
+watch(() => [form.task, form.channel, form.data_identity], rules, { immediate: true })
 watch(
   form,
   () => {
@@ -75,11 +86,18 @@ function save(): void {
 </script>
 <template>
   <form class="form-panel section-block" aria-label="定时计划配置" @submit.prevent="save">
-    <h2>{{ initial ? '修改计划' : '新建定时检查' }}</h2>
+    <h2>{{ initial ? '修改计划' : '新建定时计划' }}</h2>
     <FeedbackBanner :message="error" />
     <fieldset :disabled="busy">
       <legend>周期与范围</legend>
       <div class="form-grid">
+        <div class="form-field">
+          <label for="schedule-task">计划内容</label>
+          <select id="schedule-task" v-model="form.task">
+            <option value="operations">运营巡检 · 候选逐次审批</option>
+            <option value="report">经营报表 · 按期保存摘要</option>
+          </select>
+        </div>
         <div class="form-field">
           <label for="schedule-name">计划名称</label
           ><input id="schedule-name" v-model="form.name" required maxlength="80" />
@@ -100,7 +118,7 @@ function save(): void {
           <label for="schedule-time">当地运行时间</label
           ><input id="schedule-time" v-model="form.local_time" type="time" required />
         </div>
-        <div v-if="form.frequency === 'weekly'" class="form-field">
+        <div v-if="form.task === 'operations' && form.frequency === 'weekly'" class="form-field">
           <label for="schedule-weekday">星期</label
           ><select id="schedule-weekday" v-model="form.weekday">
             <option
@@ -112,7 +130,7 @@ function save(): void {
             </option>
           </select>
         </div>
-        <div v-if="form.frequency === 'monthly'" class="form-field">
+        <div v-if="form.task === 'operations' && form.frequency === 'monthly'" class="form-field">
           <label for="schedule-day">每月日期（1–28）</label
           ><input
             id="schedule-day"
@@ -123,7 +141,7 @@ function save(): void {
             required
           />
         </div>
-        <div class="form-field">
+        <div v-if="form.task === 'operations'" class="form-field">
           <label for="schedule-lookback">订单回看天数</label
           ><input
             id="schedule-lookback"
@@ -141,7 +159,7 @@ function save(): void {
             <option value="synthetic">合成演示数据</option>
           </select>
         </div>
-        <div class="form-field">
+        <div v-if="form.task === 'operations'" class="form-field">
           <label for="schedule-channel">检查渠道</label
           ><select id="schedule-channel" v-model="form.channel">
             <option value="generic">通用文件</option>
@@ -150,7 +168,7 @@ function save(): void {
             <option value="other">其他渠道</option>
           </select>
         </div>
-        <div class="form-field">
+        <div v-if="form.task === 'operations'" class="form-field">
           <label for="schedule-currency">统计币种</label
           ><select id="schedule-currency" v-model="form.currency">
             <option
@@ -162,7 +180,28 @@ function save(): void {
           </select>
         </div>
       </div>
-      <p>
+      <template v-if="form.task === 'report'">
+        <fieldset class="section-block">
+          <legend>报表币种（不选则全部币种分别统计）</legend>
+          <div class="form-actions">
+            <label
+              v-for="value in ['USD', 'CNY', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'HKD', 'SGD']"
+              :key="value"
+              class="check-label"
+            >
+              <input v-model="form.report_currencies" type="checkbox" :value="value" />{{ value }}
+            </label>
+          </div>
+        </fieldset>
+        <p>
+          日报汇总前一自然日；周报每周一汇总上一完整周（周一至周日）；月报每月 1
+          日汇总上一自然月。对比上一完整日、周或月，均按运行时区计算。
+        </p>
+        <p>
+          覆盖本店所选数据身份的全部导入渠道，按币种分别统计。库存与未结事项是生成时的状态；缺失数据保持未知。手动生成同样使用最近完整报告期。
+        </p>
+      </template>
+      <p v-else>
         按每次计划时刻向前回看指定天数（每一天为 24 小时）；商品、库存和消息读取当时可用的导入记录。
       </p>
       <p>
@@ -170,14 +209,22 @@ function save(): void {
         小时记为错过；暂停期间不补跑。
       </p>
       <div class="section-block">
-        <p role="status">
+        <p v-if="form.task === 'operations'" role="status">
           {{
             pending
               ? '正在核对经营规则…'
               : `绑定经营规则版本 #${form.rule_revision_id}${activeRule ? '，使用已生效阈值' : '，使用下方检查阈值'}`
           }}
         </p>
-        <button type="button" class="button secondary small" @click="rules">刷新经营规则</button>
+        <button
+          v-if="form.task === 'operations'"
+          type="button"
+          class="button secondary small"
+          @click="rules"
+        >
+          刷新经营规则
+        </button>
+        <p v-else>报表使用以下独立核对阈值，与经营总览口径一致。</p>
         <div class="form-grid">
           <div class="form-field">
             <label for="schedule-age">库存有效小时</label
@@ -244,14 +291,17 @@ function save(): void {
         </div>
       </div>
       <p>
-        免打扰按运行时区生效，期间检查照常保存，未读提醒延后显示；运行历史可随时查看。规则版本变化后计划自动暂停，需核对并更新配置。
+        免打扰按运行时区生效，期间结果照常保存，未读提醒延后显示；运行历史可随时查看。<template
+          v-if="form.task === 'operations'"
+          >规则版本变化后计划自动暂停，需核对并更新配置。</template
+        >
       </p>
       <label class="check-label"
-        ><input
-          v-model="confirmed"
-          type="checkbox"
-          :disabled="pending"
-        />我确认按此周期和范围执行本地检查并保存站内通知，候选逐次审批</label
+        ><input v-model="confirmed" type="checkbox" :disabled="pending" />{{
+          form.task === 'report'
+            ? '我确认按此周期和范围自动生成并保存本地经营报表及站内通知'
+            : '我确认按此周期和范围执行本地检查并保存站内通知，候选逐次审批'
+        }}</label
       >
       <div class="form-actions">
         <button class="button" :disabled="!confirmed || pending || busy">保存计划</button

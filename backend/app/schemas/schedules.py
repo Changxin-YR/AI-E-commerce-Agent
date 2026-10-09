@@ -10,6 +10,8 @@ from app.schemas.imports import DataIdentity, SourceChannel
 
 class ScheduleConfig(InputModel):
     name: Annotated[str, Field(min_length=1, max_length=80)]
+    task: Literal["operations", "report"] = "operations"
+    report_currencies: Annotated[list[Currency], Field(max_length=9)] = []
     timezone: Timezone
     frequency: Literal["daily", "weekly", "monthly"] = "daily"
     local_time: Annotated[str, Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$")] = "09:00"
@@ -28,6 +30,12 @@ class ScheduleConfig(InputModel):
 
     @model_validator(mode="after")
     def quiet_hours(self) -> Self:
+        if self.task == "report":
+            if self.weekday != 0 or self.month_day != 1:
+                raise ValueError("经营周报每周一生成，月报每月 1 日生成")
+            if self.rule_revision_id != 0 or self.channel != "generic":
+                raise ValueError("经营报表使用独立阈值并覆盖所选店铺全部导入渠道")
+        self.report_currencies = sorted(set(self.report_currencies))
         if (self.quiet_start is None) != (self.quiet_end is None):
             raise ValueError("免打扰起止小时须同时设置")
         if self.quiet_start is not None and self.quiet_start == self.quiet_end:
@@ -72,6 +80,8 @@ class OccurrenceOutput(OutputModel):
     scheduled_at: str
     coalesced_from: str | None
     execution_id: int | None
+    task: str
+    report_id: int | None
     status: str
     reason: str
     notify_at: str

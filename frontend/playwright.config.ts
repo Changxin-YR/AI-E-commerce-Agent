@@ -25,9 +25,10 @@ export default defineConfig({
       timeout: 60000,
     },
     {
-      command: 'npm run dev -- --port 5174',
+      command: 'npm run preview -- --host 127.0.0.1 --port 5174 --strictPort',
       url: 'http://127.0.0.1:5174',
-      env: { SOLOOPS_API_TARGET: 'http://127.0.0.1:8001' },
+      // Exercise the production build; Playwright owns the preview server lifetime.
+      env: { SOLOOPS_API_TARGET: 'http://127.0.0.1:8001', CI: 'true' },
       reuseExistingServer: false,
     },
   ],

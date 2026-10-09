@@ -40,6 +40,8 @@ class ScheduleOccurrence(Base):
     scheduled_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6))
     coalesced_from: Mapped[datetime | None] = mapped_column(DATETIME(fsp=6))
     execution_id: Mapped[int | None] = mapped_column(ForeignKey("agent_executions.id"))
+    task: Mapped[str] = mapped_column(String(16), default="operations")
+    report_id: Mapped[int | None] = mapped_column(ForeignKey("overview_reports.id"))
     status: Mapped[str] = mapped_column(String(24))
     reason: Mapped[str] = mapped_column(String(64), default="")
     notify_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6))

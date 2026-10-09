@@ -65,6 +65,85 @@ async function setup(
   return { shop, batch: batch.id, headers }
 }
 
+async function eraseReport(
+  page: Page,
+  batch: number,
+  headers: Record<string, string>,
+  source: boolean,
+): Promise<void> {
+  if (source) {
+    for (const action of ['revoke', 'clear']) {
+      const current = (await (await page.request.get(`/api/imports/${batch}`)).json()) as {
+        version: number
+      }
+      expect(
+        (
+          await page.request.post(`/api/imports/${batch}/${action}`, {
+            headers,
+            data: { version: current.version },
+          })
+        ).ok(),
+      ).toBeTruthy()
+    }
+    await page.getByRole('button', { name: '刷新摘要与来源状态' }).click()
+  } else {
+    await page.getByRole('checkbox', { name: /清除摘要 #/ }).check()
+    await page.getByRole('button', { name: '清除所选摘要正文' }).click()
+  }
+}
+
+for (const mobile of [false, true]) {
+  test(`scheduled calendar reports persist and erase ${mobile ? 'mobile' : 'desktop'}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: mobile ? 390 : 1280, height: 844 })
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    const { shop, batch, headers } = await setup(page)
+    await page.getByLabel('计划内容').selectOption('report')
+    await page.getByLabel('计划名称').fill('每月经营回顾')
+    await page.getByLabel('执行周期').selectOption('monthly')
+    await expect(page.getByLabel('订单回看天数')).toHaveCount(0)
+    await expect(page.getByLabel('每月日期（1–28）')).toHaveCount(0)
+    const confirm = page.getByRole('checkbox', { name: /我确认按此周期和范围自动生成/ })
+    await confirm.check()
+    await page.getByLabel('当地运行时间').fill('10:30')
+    await expect(confirm).not.toBeChecked()
+    await confirm.check()
+    await page.getByRole('button', { name: '保存计划', exact: true }).click()
+    const plan = page.getByRole('article', { name: '计划 每月经营回顾', exact: true })
+    await expect(plan).toContainText('全部币种分别统计')
+    await expect(plan).toContainText('上一完整自然月')
+    await plan.getByRole('button', { name: '立即生成报表', exact: true }).click()
+    const history = page.getByRole('region', { name: '站内通知与运行历史' })
+    await expect(history).toContainText('报表已保存')
+    await expect(history.getByRole('link', { name: '查看检查与审批' })).toHaveCount(0)
+    await page.reload()
+    await expect(history.getByRole('link', { name: '查看报表与依据' })).toBeVisible()
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true)
+    await plan.scrollIntoViewIfNeeded()
+    await page.screenshot({
+      path: path.join(tmpdir(), `soloops-schedule-reports-${mobile ? 'mobile' : 'desktop'}.png`),
+      fullPage: false,
+    })
+    await history.getByRole('link', { name: '查看报表与依据' }).click()
+    await expect(page.getByRole('heading', { name: '03 / 当次经营摘要' })).toBeVisible()
+    await expect(page.getByText(/自然月报 ·/)).toBeVisible()
+    await page.getByText(/当前库存 · 已知低库存/).click()
+    await expect(page.getByText('SCHEDULE-001', { exact: false }).first()).toBeVisible()
+    await page.reload()
+    await expect(page.getByText(/自然月报 ·/)).toBeVisible()
+    await eraseReport(page, batch, headers, mobile)
+    await expect(page.getByRole('heading', { name: '03 / 当次经营摘要' })).toHaveCount(0)
+    await page.goto(`/schedules?shop=${shop}`)
+    await history.getByRole('link', { name: '查看报表与依据' }).click()
+    await expect(page.getByText('正文已清除', { exact: false }).first()).toBeVisible()
+    expect(errors).toEqual([])
+  })
+}
+
 test('schedule edit pause resume check approval notification readback and revoke', async ({
   page,
 }) => {

@@ -1,6 +1,8 @@
 import hashlib
 import json
 from datetime import datetime
+from typing import Any
+from uuid import UUID
 
 from app.core.errors import BusinessError, ConflictError, NotFoundError
 from app.core.time import utc_now
@@ -76,6 +78,10 @@ class OverviewService:
         ]
         days = (scope.end_date - scope.start_date).days
         label = {1: "日报", 7: "七日周报", 30: "三十日月报"}.get(days, "自选区间摘要")
+        if scope.start_date.day == scope.end_date.day == 1 and 28 <= days <= 31:
+            label = "自然月报"
+        elif days == 7 and scope.start_date.weekday() == 0:
+            label = "自然周报"
         summary = [
             f"{label} · {scope.start_date} 至 {scope.end_date}（终点不含）· {scope.timezone}",
             f"所选 {len(shops)} 家店铺；数据身份 {scope.data_identity}；本地规则生成。",
@@ -213,26 +219,42 @@ class OverviewService:
         ), used
 
     def save(self, owner: int, data: OverviewSave) -> OverviewSaved:
-        self._shops(owner, data.scope.shop_ids)
-        content = data.model_dump(mode="json", exclude={"request_id"})
-        content["scope"]["max_margin_percent"] = format(
-            data.scope.max_margin_percent.normalize(), "f"
-        )
+        return self._save(owner, data.scope, data.request_id, data.expected_revisions)
+
+    def save_scheduled(self, owner: int, scope: OverviewScope, request_id: UUID) -> OverviewSaved:
+        """A confirmed local report schedule authorizes saving the current snapshot."""
+        return self._save(owner, scope, request_id, None)
+
+    def _save(
+        self,
+        owner: int,
+        scope: OverviewScope,
+        request_id: UUID,
+        expected_revisions: dict[int, int] | None,
+    ) -> OverviewSaved:
+        self._shops(owner, scope.shop_ids)
+        content: dict[str, Any] = {
+            "scope": scope.model_dump(mode="json"),
+            "expected_revisions": {str(key): value for key, value in expected_revisions.items()}
+            if expected_revisions is not None
+            else None,
+        }
+        content["scope"]["max_margin_percent"] = format(scope.max_margin_percent.normalize(), "f")
         digest = hashlib.sha256(json.dumps(content, sort_keys=True).encode()).hexdigest()
-        existing = self.repo.by_request(owner, str(data.request_id))
+        existing = self.repo.by_request(owner, str(request_id))
         if existing:
             if existing.request_hash != digest:
                 raise ConflictError("请求标识已用于其他摘要范围")
             return self._output(existing)
-        result = self.calculate(owner, data.scope)
+        result = self.calculate(owner, scope)
         revisions = {shop.shop_id: shop.source_revision for shop in result.shops}
-        if revisions != data.expected_revisions:
+        if expected_revisions is not None and revisions != expected_revisions:
             raise ConflictError("来源已变化，请重新生成后保存摘要")
         report = OverviewReport(
             owner_id=owner,
-            request_id=str(data.request_id),
+            request_id=str(request_id),
             request_hash=digest,
-            scope=data.scope.model_dump(mode="json"),
+            scope=scope.model_dump(mode="json"),
             snapshot=result.model_dump(mode="json"),
             status="current",
             valid_until=datetime.fromisoformat(result.valid_until).replace(tzinfo=None)
@@ -240,7 +262,7 @@ class OverviewService:
             else None,
         )
         self.repo.add(
-            report, data.scope.shop_ids, {s.batch_id for shop in result.shops for s in shop.sources}
+            report, scope.shop_ids, {s.batch_id for shop in result.shops for s in shop.sources}
         )
         self.uow.record_event(owner, "overview.saved", "overview", report.id)
         response = self._output(report)

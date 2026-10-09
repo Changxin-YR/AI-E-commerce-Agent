@@ -185,3 +185,14 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [MySQL 8.4 locking reads](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html) | 官方数据库文档；仅参考事务语义 | 用户→店铺→计划当前锁定读，周期唯一键与原子事务避免多进程重复；本地检查无网络，崩溃回滚后可安全重跑 |
 
 沿用 Firecrawl 已确认的 402 限制，通过官方网页检索。使用已有 SQLAlchemy 与标准库实现有界调度；每周期只启动固定 daily 检查，候选仍逐次审批，站内通知仅保存执行索引与状态。
+
+## 日周月经营报表调度（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [Python datetime](https://docs.python.org/3/library/datetime.html) | 官方标准库文档，PSF；未复制源码 | 先在计划 IANA 时区定位自然日、周一和月首，再计算完整上期与前期；月份按日历移动，不以固定 30 天替代 |
+| [SQLAlchemy Session API](https://docs.sqlalchemy.org/en/20/orm/session_api.html) | 官方文档，源码 MIT；未复制实现 | 使用现有 begin_nested / defer_commits 将报告、依赖、周期通知和下次时刻作为同一事务；失败整体回滚 |
+| [Vite CI 生命周期修复](https://github.com/vitejs/vite/pull/3659) | Vite 官方仓库，源码 MIT；仅参考设计 | 自动化 Vite 子服务设置 CI=true，由 Playwright 统一管理启停 |
+| [Vite 构建预览](https://vite.dev/guide/static-deploy)、[Playwright webServer](https://playwright.dev/docs/test-webserver) | 官方文档；Vite MIT，Playwright Apache-2.0，未复制源码 | E2E 先构建页面再启动本机 preview，API 代理沿用独立测试端口；两个服务由测试运行器启动并回收 |
+
+沿用 Firecrawl 已确认的 402 限制，经官方网页检索。报表保存复用 OverviewService；计划确认授权仅覆盖本地报表保存，通知仅引用报告 ID，来源清除沿用原依赖链。
