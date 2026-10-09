@@ -40,6 +40,9 @@ async function inspect(): Promise<void> {
       {{ source.data_identity === 'synthetic' ? '合成测试数据' : '用户导入数据' }} · 导出时间
       {{ source.exported_at ?? '未知' }}（UTC）
     </p>
+    <p v-if="source.origin === 'manual_edit'">
+      人工商品修订：来源行保留修订依据、原名称和原参数，规范化值为审批后的完整资料。
+    </p>
     <button class="button secondary" :disabled="busy" @click="inspect">查看来源原始行</button>
     <FeedbackBanner :message="error" />
     <div v-if="detail" role="region" aria-label="来源原始值">

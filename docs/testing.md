@@ -336,3 +336,17 @@ Ruff 规则与格式 **167 文件**、mypy **122 app 文件**通过。最终 Vue
 环境与修复记录：初次沙箱运行触发 socket10013；普通执行环境随后显示10061，查明两个项目 MySQL 容器已停止，恢复既有容器后通过。Vitest 临时缓存 rename EPERM 同样通过允许的本机执行环境解决。新增 E2E 断言按项目 lint 改为可等待属性断言。截图复核发现历史报告范围应回填到表单，修订后重新构建验证；首轮完整 E2E 主动终止于 25 项，未计为完整通过。既有 Starlette/httpx 与 NO_COLOR 提示保留。
 
 交接基线 9ae51bc 的 [CI](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37884256378) 已核实 completed/success。全部 **74 SO / 32 验收 / 7 长期 E2E** 保留；本轮只增加 SO-014 当前主档质量检查与报告证据，批量编辑、多店同步及未提供字段的完整核验仍待后续。
+
+## 第二十三迭代：商品本地批量修订（2026-10-09）
+
+新增 `test_product_edits.py` 最终 **21 项 / 10.55 秒**通过，最终完整后端 **486 项 / 206.81 秒**通过。覆盖草稿不改主档、完整前后差异、50 商品上限、额外字段拒绝、金额精度/未知保留、新人工来源行与原文件独立、UUID/审批重放、两会话竞争、整店版本与来源恢复阻断、逐项冲突/整批不生效、跨店/跨用户/CSRF、祖先依赖上限、多层撤销/清除、独立分支保留、末尾审计失败回滚整个生效或清除事务。全部为合成数据，未调用真实模型或邮件。
+
+Ruff 规则与格式 **175 文件**、mypy **127 app 文件**通过；最终 Vue type-check/lint/生产构建通过。新增 ProductEdits 组件 **7 项 / 1.64 秒**，完整 Vitest **19 文件 45 项 / 3.16 秒**通过。组件验证文本转义、确认重置、迟到范围请求、只发送允许字段、失败隐藏快照、同 UUID 回查、历史范围回填、来源改变清编辑，以及批量拼接字段超长时保留编辑内容并指明 SKU。
+
+桌面/390px 手机新 Playwright 流程 **2 项 / 12.2 秒**通过；完整生产预览回归 **44 项 / 1.7 分钟**通过；最后补充批量共同填入与字段长度检查后，定向 **2 项 / 13.6 秒**通过。流程包含空身份、选择编辑、批量填入、原始依据、保存草稿/固定链接刷新、逐次批准、真实主档回读、撤销恢复、来源冲突失败、新草稿、依赖清除及主动清除。路由、标题、有内容页面、无框架错误层、登录后控制台、交互结果和横向尺寸均已检查。桌面与手机入口/差异截图保存于系统 Temp `soloops-product-edits-{entry-}{desktop,mobile}.png`，已查看，未提交。
+
+Browser 插件及其 browser 技能在本会话未提供，按 frontend-testing-debugging 技能使用项目既有 Playwright；验收 URL 为 `http://127.0.0.1:5174/product-edits`，API8001 与开发服务隔离。首轮流程完成后，控制台断言把正常未登录 `/api/auth/session` 401 计为错误；已明确在成功登录后收集控制台错误并复验通过。沙箱 MySQL socket10013 和 Vitest 缓存 rename EPERM 通过允许执行环境验证；既有 Starlette/httpx、NO_COLOR 提示保留。
+
+迁移 `c5e81a209d74 / d6f920a41b85` 在隔离 `_test` 库 **downgrade 7b92c4d16e80 → upgrade head → alembic check** 通过；开发库 upgrade/check 通过。pytest、迁移回退和 Playwright 严格串行。核实 uvicorn 命令行后隐藏重启开发 API8000（本次 launcher27088），前端5173继续使用现有服务，两端200，新修订接口已可读；后续启停仍需重核进程身份。
+
+交接基线 cb6c585 的 [CI](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37917649249) 已核实 verify completed/success。仍完整保留 **74 SO / 32 验收 / 7 长期 E2E**；SO-014 本轮增加名称/参数本地批量运营证据，价格/库存/素材与多店同步仍为后续范围。

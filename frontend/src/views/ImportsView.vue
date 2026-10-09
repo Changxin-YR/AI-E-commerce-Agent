@@ -471,7 +471,9 @@ onMounted(initialize)
         </button>
       </div>
       <div v-if="batch.status !== 'cleared'" class="form-actions">
-        <span>撤销后恢复剩余有效批次的最新记录。清除还会移除源行；仅保留批次状态和操作审计。</span>
+        <span
+          >撤销后恢复剩余有效来源，依赖本批的人工商品修订同步失效。清除还会擦除源行与依赖修订正文；保留必要状态和操作审计。</span
+        >
         <div class="button-group">
           <button
             v-if="batch.status !== 'revoked' && batch.status !== 'expired'"
@@ -491,7 +493,9 @@ onMounted(initialize)
             pendingAction === 'clear'
               ? '清除此批次的源行与修正数据，清除后无法恢复'
               : '停止使用此批次，保留已提交的源行以便复核'
-          }}。后续分析需要使用最新数据重新计算。
+          }}。依赖本批的人工商品修订将同步{{
+            pendingAction === 'clear' ? '清除正文' : '失效'
+          }}，后续分析需要使用最新数据重新计算。
         </p>
         <div class="button-group">
           <button class="button primary" :disabled="busy" @click="withdraw">
@@ -513,7 +517,8 @@ onMounted(initialize)
           <h3>#{{ item.id }} · {{ item.filename }}</h3>
           <p class="muted">
             {{ item.data_identity === 'synthetic' ? '合成测试' : '用户导入' }} ·
-            {{ item.total_rows }} 行 · {{ statusLabels[item.status] }}
+            {{ item.origin === 'manual_edit' ? '人工修订' : '文件导入' }} · {{ item.total_rows }} 行
+            · {{ statusLabels[item.status] }}
           </p>
         </div>
         <button class="button secondary small" :disabled="busy" @click="openBatch(item.id)">

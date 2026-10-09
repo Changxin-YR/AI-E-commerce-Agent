@@ -9,6 +9,7 @@ export interface AnalysisScope {
   max_margin_percent: string
 }
 export interface SourceReference {
+  origin?: string
   batch_id: number
   row_id: number
   row_number: number

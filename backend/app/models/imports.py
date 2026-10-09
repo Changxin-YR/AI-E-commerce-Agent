@@ -16,6 +16,9 @@ class ImportBatch(Base):
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     shop_id: Mapped[int] = mapped_column(ForeignKey("shops.id"), index=True)
     kind: Mapped[str] = mapped_column(String(16))
+    origin: Mapped[str] = mapped_column(
+        String(20), default="file_import", server_default="file_import"
+    )
     source_channel: Mapped[str] = mapped_column(String(20))
     data_identity: Mapped[str] = mapped_column(String(20))
     filename: Mapped[str] = mapped_column(String(240))

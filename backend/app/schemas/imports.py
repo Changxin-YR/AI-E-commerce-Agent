@@ -132,6 +132,7 @@ class RowOutput(OutputModel):
 
 
 class BatchSummary(OutputModel):
+    origin: str
     id: int
     shop_id: int
     kind: str

@@ -33,6 +33,7 @@ export interface ImportRow {
   action: 'new' | 'update' | 'unchanged' | 'error'
 }
 export interface BatchSummary {
+  origin?: 'file_import' | 'manual_edit'
   id: number
   shop_id: number
   kind: ImportKind

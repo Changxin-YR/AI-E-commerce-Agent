@@ -30,6 +30,7 @@ def utc_text(value: datetime) -> str:
 
 def reference(row: ImportRow, batch: ImportBatch) -> SourceReference:
     return SourceReference(
+        origin=batch.origin,
         batch_id=batch.id,
         row_id=row.id,
         row_number=row.row_number,

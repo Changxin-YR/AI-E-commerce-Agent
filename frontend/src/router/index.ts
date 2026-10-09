@@ -24,6 +24,7 @@ const router = createRouter({
         { path: 'overview', component: () => import('@/views/OverviewView.vue') },
         { path: 'schedules', component: () => import('@/views/SchedulesView.vue') },
         { path: 'product-quality', component: () => import('@/views/ProductQualityView.vue') },
+        { path: 'product-edits', component: () => import('@/views/ProductEditsView.vue') },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },

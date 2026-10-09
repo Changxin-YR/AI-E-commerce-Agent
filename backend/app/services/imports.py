@@ -262,6 +262,34 @@ class ImportService:
         self.uow.identity.lock_user(owner_id)
         batch = self._batch(owner_id, batch_id)
         if batch.status == "cleared" or (batch.status == "revoked" and not purge):
+            output = self._output(owner_id, batch)
+            self.uow.commit()
+            return output
+        if batch.version != version:
+            raise ConflictError("批次已变化，请刷新后操作")
+        self._shop(owner_id, batch.shop_id)
+        affected = self.uow.product_edits.affected(owner_id, batch.shop_id, batch_id)
+        # Every edit stores its full ancestry. Process descendants without recursive transactions.
+        with self.uow.defer_commits():
+            for edit in affected:
+                if edit.output_batch_id and edit.output_batch_id != batch_id:
+                    child = self._batch(owner_id, edit.output_batch_id)
+                    self._withdraw_single(owner_id, child.id, child.version, purge=purge)
+                if purge:
+                    self.uow.product_edits.clear(edit)
+                elif edit.status not in {"rejected", "revoked"}:
+                    edit.status = "revoked" if edit.output_batch_id else "stale"
+                    edit.version += 1
+            output = self._withdraw_single(owner_id, batch_id, version, purge=purge)
+        self.uow.commit()
+        return output
+
+    def _withdraw_single(
+        self, owner_id: int, batch_id: int, version: int, *, purge: bool = False
+    ) -> BatchOutput:
+        self.uow.identity.lock_user(owner_id)
+        batch = self._batch(owner_id, batch_id)
+        if batch.status == "cleared" or (batch.status == "revoked" and not purge):
             return self._output(owner_id, batch)
         if batch.version != version:
             raise ConflictError("批次已变化，请刷新后操作")

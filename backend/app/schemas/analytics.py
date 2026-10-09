@@ -45,6 +45,7 @@ class SaveInput(InputModel):
 
 
 class SourceReference(OutputModel):
+    origin: str = "file_import"
     batch_id: int
     row_id: int
     row_number: int

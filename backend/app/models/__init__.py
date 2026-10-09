@@ -21,12 +21,15 @@ from app.models.operations import (
 )
 from app.models.outbound import OutboundApproval, OutboundMessage, TestMailChannel
 from app.models.overview import OverviewReport, OverviewShop, OverviewSource
+from app.models.product_edits import ProductEdit, ProductEditSource
 from app.models.product_quality import ProductQualityReport, ProductQualitySource
 from app.models.profit import ProfitFee, ProfitScenario, ProfitStudy
 from app.models.schedules import OperationSchedule, ScheduleOccurrence
 from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
 
 __all__ = [
+    "ProductEdit",
+    "ProductEditSource",
     "ProductQualityReport",
     "ProductQualitySource",
     "OperationSchedule",

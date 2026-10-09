@@ -208,7 +208,9 @@ onUnmounted(() => {
       <h1>商品资料，逐项核对。</h1>
       <p>从已导入的名称、参数与金额出发，保留每个核对项的依据。</p>
     </div>
-    <RouterLink class="button secondary" to="/imports">导入或修订商品</RouterLink>
+    <RouterLink class="button secondary" :to="`/product-edits?shop=${shopId}`"
+      >批量修订商品</RouterLink
+    >
   </div>
   <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
   <section class="data-note">
@@ -216,7 +218,7 @@ onUnmounted(() => {
     <div>
       <h3>本地商品检查</h3>
       <p>
-        检查后可保存报告。修改商品请补充源文件并在导入预览中核对差异；品牌、编码、图片和平台刊登要求仍需另外核验。
+        检查后可保存报告。名称与参数可进入批量修订，保存差异草稿后审批本地生效；品牌、编码、图片和平台刊登要求仍需另外核验。
       </p>
     </div>
   </section>

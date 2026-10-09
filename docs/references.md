@@ -205,3 +205,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [SQLAlchemy Session API](https://docs.sqlalchemy.org/en/20/orm/session_api.html) | 官方文档，源码 MIT；未复制实现 | 用户→店铺锁后当前读，预览摘要复验，报告、来源依赖和审计在同一事务保存；清除来源时同步擦除派生正文 |
 
 沿用已确认的 Firecrawl 402 限制，通过官方检索获得资料。商品主档当前不包含品牌、GTIN/MPN、图片或类目属性模板，明确列为未检查。相似 SKU、参数冲突与描述关键词只提供人工核对线索；本地质量报告不调用模型、不修改商品或外发。
+
+## 商品本地批量修订（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [Shopify productVariantsBulkUpdate](https://shopify.dev/docs/api/admin-graphql/latest/mutations/productVariantsBulkUpdate) | 官方接口文档，受网站条款约束；未复制源码 | 参考整批失败与逐项错误的区分。本地首片最多 50 个商品，任一基线冲突则整批不生效，保存逐项原因；不调用平台接口 |
+| [SQLAlchemy Session API](https://docs.sqlalchemy.org/en/20/orm/session_api.html)、[官方 issue 5572](https://github.com/sqlalchemy/sqlalchemy/issues/5572) | SQLAlchemy MIT；官方文档与问题记录 | 锁定读配合 populate_existing 更新 ORM 状态，修订来源行、投影、依赖与审计在同一事务；原始导入保持独立 |
+
+沿用 Firecrawl 已确认的 402 限制，经官方网页与 GitHub 检索。人工修订生成单独来源批次，继承数据身份和渠道，登记全部祖先依赖。来源撤销使派生修订失效，清除沿依赖链擦除正文；后续文件导入仍按当前投影比较。

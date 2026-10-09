@@ -232,3 +232,12 @@
 - `ProductQualityRepository.products` 为什么使用 with_for_update 与 populate_existing？在 MySQL RR 和 ORM 身份映射下，普通读取可能沿用旧快照；先用户/店铺锁，再当前读，把保存前核验和来源修改串行化。UUID 唯一键与两个会话竞争测试共同验证幂等。
 - `ProductQualitySource` 为什么包含没有问题的商品批次？没有问题也是依赖来源得出的判断，相似 SKU 分组还依赖同组其他商品。任一来源清除必须擦整份结果，不能只登记存在缺失项的行。筛选中的 SKU 前缀也是商品信息，清除时一并擦除。
 - `ProductQualityView.vue` 如何避免迟到响应和清除后的屏幕残留？范围改变递增 epoch，响应落地前复验；保存、刷新和清除先卸载快照组件，失败不会保留已失去确认的内容。组件测试覆盖迟到预览、确认重置、保存冲突和来源版本变化。
+
+## 批量修订：投影、审批与完整来源链
+
+- 为什么不能直接更新 Product.name 而保留旧 source_row_id？旧行只证明导入时的事实。`ProductEditService._batch` 建立独立 manual_edit 批次，保存原名称/参数、修订理由和新规范化资料，再通过 ImportService 更新当前投影；原文件事实仍可回读。
+- 为什么源行 ID 未变也可能需要拒绝旧审批？来源可能被其他批次覆盖后又恢复。`EditSnapshot.source_revision` 绑定单调递增的店铺数据版本，`test_restored_source_never_reactivates_an_old_approval` 验证恢复旧源行不会使旧批准有效。
+- 整批原子操作如何显示逐项失败？审批先检查所有商品，冲突项记录 conflict，其他项记录 blocked；只保存失败报告，不部分改商品。数据库故障或末尾审计错误由外层事务回滚，区别于已持久化的业务冲突。
+- 为什么依赖中保存全部祖先？第二次人工修订包含第一次继承的资料，清除原始导入也须擦除二次修订。`ProductEditRepository.ancestors/affected` 物化可追溯集合，`ImportService.withdraw` 后代优先处理，同事务恢复剩余有效投影，避免嵌套提交和恢复已撤销祖先。
+- 幂等如何兼容清除？请求只保留 UUID 与散列，重复创建回读当前记录；清除后 snapshot=None，重复请求不能从客户端旧正文重建它。审批只接受版本和 hash，不能重新提交任意 after 值。
+- 历史执行成功是否代表现在仍有效？`current_count` 从 Product.source_row_id 当前锁定读计算，页面将“曾执行”与“仍为主档来源”分别展示；后续独立文件导入可以覆盖人工版本，历史记录仍保留实际执行结果。
