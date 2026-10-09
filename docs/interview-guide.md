@@ -270,3 +270,11 @@
 - 内部服务调用为什么用 defer_commits？`StatementService.reconcile` 平常会结束只读事务；嵌入规则保存时提前提交会释放锁，留下检查后再修改的竞态。外层将其转换为 flush，使预览复验、规则版本与审计仍在同一事务。
 - 为什么规则不随账单清除一起删除？规则只保存卖家独立输入的分类定义，没有账单/费用快照或来源引用。应用结果即时读取，不持久化人工已核对结论；若未来保存结论，必须另建全部历史依赖。`test_source_lifecycle_recomputes_without_saved_conclusions` 验证清除后无应用行，独立规则仍在。
 - 为什么映射命中仍显示业务待核？类别只是人工规则，不证明费用适用性、金额、分摊或账单完整性；重复凭据、币种冲突和人工类别冲突保持待核。`test_duplicates_and_cross_currency_remain_unresolved` 与分类冲突测试保证不把技术命中称为财务确认。
+
+## 人工核对结论存档：可解释的状态与历史（2026-10-09）
+
+- **为什么哈希还要包含变更号？** `services/statement_reviews.py` 除输入和比较快照外绑定来源、费用与规则变更号。只哈希当前集合，会让“新增再清除”后的原集合恢复旧预览；`repositories/expenses.py::scope_revision` 包含全部历史动作，单测覆盖恢复原样仍冲突。
+- **失效与历史为何分开？** `StatementReview.version/content_version` 区分状态变化和人工保存。来源变化仅使 active→stale，旧正文用于追溯；新的明确确认才产生新正文。当前读只返回依据，不自动把旧结论激活。
+- **怎么避免历史数据泄漏？** 三类依赖表累计登记账单批次、费用和规则，费用再展开全部历史批次。`StatementReviewRepository.purge/clear` 清全部快照，导入/费用/规则清除与最后审计处于同一事务；跨窗口修订也不能丢失旧依赖。
+- **有界历史怎么读取？** 清单每页 20 条元数据；历史摘要只取 JSON conclusion；完整依据按版本读取，每版本最多 2 MiB，避免一次返回全部历史快照。金额原数据仍用 Numeric，计算用 Decimal。
+- **如何证明页面可用？** `StatementReviews.spec.ts` 验证确认绑定、文本转义、迟到请求丢弃、失败隐藏正文及原 UUID 重试；`statement-reviews.spec.ts` 从导入到结论、当前回读、历史、撤销/清除与来源清除，在桌面和 390px 手机验证。

@@ -173,6 +173,7 @@ class ExpenseService:
         self.uow.record_event(
             owner, f"expense.{action}", "expense", expense.id, {"version": expense.version}
         )
+        self.uow.statement_reviews.invalidate(owner, shop, expense.data_identity, expense.channel)
         output = self._output(expense)
         self.uow.commit()
         return output
@@ -290,6 +291,7 @@ class ExpenseService:
         self.uow.record_event(
             owner, f"expense.{action}", "expense", expense.id, {"version": expense.version}
         )
+        self.uow.statement_reviews.invalidate(owner, shop, expense.data_identity, expense.channel)
         output = self._output(expense)
         self.uow.commit()
         return output

@@ -28,6 +28,7 @@ from app.api.routes import (
     profile,
     profit,
     schedules,
+    statement_reviews,
     statements,
     support,
     workbench,
@@ -85,6 +86,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(expenses.router, prefix="/api")
     application.include_router(fee_rules.router, prefix="/api")
     application.include_router(statements.router, prefix="/api")
+    application.include_router(statement_reviews.router, prefix="/api")
 
     @application.get("/api/health/live", tags=["健康检查"])
     def live() -> dict[str, str]:

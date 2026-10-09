@@ -6,11 +6,31 @@ from sqlalchemy.orm import Session
 from app.models.expenses import Expense, ExpenseRevision, ExpenseSource
 from app.models.imports import ImportBatch, ImportRow, OrderLine
 from app.repositories.analytics import OrderEvidence
+from app.repositories.statement_reviews import StatementReviewRepository
 
 
 class ExpenseRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
+
+    def scope_revision(self, owner: int, shop: int, identity: str, channel: str) -> int:
+        return (
+            self.session.scalar(
+                select(ExpenseRevision.id)
+                .join(Expense, ExpenseRevision.expense_id == Expense.id)
+                .where(
+                    Expense.owner_id == owner,
+                    Expense.shop_id == shop,
+                    Expense.data_identity == identity,
+                    Expense.channel == channel,
+                    ExpenseRevision.owner_id == owner,
+                )
+                .order_by(ExpenseRevision.id.desc())
+                .limit(1)
+                .with_for_update()
+            )
+            or 0
+        )
 
     def get(self, owner: int, shop: int, expense: int) -> Expense | None:
         return self.session.scalar(
@@ -169,6 +189,9 @@ class ExpenseRepository:
             expense.version += 1
 
     def clear(self, expense: Expense) -> None:
+        StatementReviewRepository(self.session).purge(
+            expense.owner_id, expense.shop_id, "expense", expense.id
+        )
         for revision in self.revisions(expense):
             revision.snapshot = None
             revision.amount = None

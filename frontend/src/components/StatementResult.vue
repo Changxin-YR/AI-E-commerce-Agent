@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, useId } from 'vue'
 import { comparisonStatuses, entryTypes, type StatementReconciliation } from '@/types/statements'
 import { supportTime } from '@/types/support'
 import { expenseCategories } from '@/types/expenses'
 import StatementEvidence from './StatementEvidence.vue'
 import { mappingStatuses } from '@/types/feeRules'
-const props = defineProps<{ result: StatementReconciliation; shopId: number }>()
+const props = defineProps<{
+  result: StatementReconciliation
+  shopId: number
+  historical?: boolean
+}>()
+const mappingId = useId()
+const comparisonId = useId()
 const filter = ref('all')
 const comparisonLimit = ref(20)
 const lineLimit = ref(20)
@@ -23,7 +29,8 @@ const byId = computed(() => new Map(props.result.statements.map((line) => [line.
 </script>
 <template>
   <section class="form-panel section-block statement-result" aria-label="账单核对结果">
-    <h2>当前范围的账单与费用</h2>
+    <h2>{{ historical ? '存档时的账单与费用' : '当前范围的账单与费用' }}</h2>
+    <p v-if="historical">此处为保存时的历史依据；当前来源、费用和规则请使用存档的回读操作核对。</p>
     <p>
       读取于 {{ supportTime(result.calculated_at, result.scope.timezone) }} · 来源版本
       {{ result.source_revision }}
@@ -52,13 +59,15 @@ const byId = computed(() => new Map(props.result.statements.map((line) => [line.
       </ul>
     </details>
     <details class="section-block">
-      <summary>当前收费分类（{{ result.mappings?.length ?? 0 }} 行）</summary>
+      <summary>
+        {{ historical ? '存档收费分类' : '当前收费分类' }}（{{ result.mappings?.length ?? 0 }} 行）
+      </summary>
       <p>
-        此处应用当前人工规则版本；分类不代表已核对，不新增人工费用或计入净利润。规则变更后请重新读取。
+        此处应用读取时的人工规则版本；分类不代表已核对，不新增人工费用或计入净利润。规则变更后请重新读取。
       </p>
       <div class="form-field">
-        <label for="fee-mapping-filter">收费分类状态</label
-        ><select id="fee-mapping-filter" v-model="mappingFilter" @change="mappingLimit = 20">
+        <label :for="mappingId">收费分类状态</label
+        ><select :id="mappingId" v-model="mappingFilter" @change="mappingLimit = 20">
           <option value="all">全部</option>
           <option v-for="(label, key) in mappingStatuses" :key="key" :value="key">
             {{ label }}
@@ -96,8 +105,8 @@ const byId = computed(() => new Map(props.result.statements.map((line) => [line.
     <h3 class="section-block">费用差异清单</h3>
     <p>金额差额 = 账单费用 − 人工费用。重复编号与跨币种不计算差额；范围外记录可能造成单边缺失。</p>
     <div class="form-field">
-      <label for="statement-filter">核对状态</label>
-      <select id="statement-filter" v-model="filter" @change="comparisonLimit = 20">
+      <label :for="comparisonId">核对状态</label>
+      <select :id="comparisonId" v-model="filter" @change="comparisonLimit = 20">
         <option value="all">全部（{{ result.comparisons.length }}）</option>
         <option v-for="(label, key) in comparisonStatuses" :key="key" :value="key">
           {{ label }}（{{ result.comparisons.filter((c) => c.status === key).length }}）
@@ -150,7 +159,9 @@ const byId = computed(() => new Map(props.result.statements.map((line) => [line.
       显示更多核对条目
     </button>
     <details class="section-block">
-      <summary>全部当前账单明细（{{ result.statements.length }}）</summary>
+      <summary>
+        {{ historical ? '全部存档账单明细' : '全部当前账单明细' }}（{{ result.statements.length }}）
+      </summary>
       <StatementEvidence
         v-for="line in result.statements.slice(0, lineLimit)"
         :key="line.id"

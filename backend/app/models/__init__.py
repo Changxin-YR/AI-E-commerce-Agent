@@ -28,9 +28,21 @@ from app.models.product_edits import ProductEdit, ProductEditSource
 from app.models.product_quality import ProductQualityReport, ProductQualitySource
 from app.models.profit import ProfitFee, ProfitScenario, ProfitStudy
 from app.models.schedules import OperationSchedule, ScheduleOccurrence
+from app.models.statement_reviews import (
+    StatementReview,
+    StatementReviewExpense,
+    StatementReviewRevision,
+    StatementReviewRule,
+    StatementReviewSource,
+)
 from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
 
 __all__ = [
+    "StatementReview",
+    "StatementReviewRevision",
+    "StatementReviewSource",
+    "StatementReviewExpense",
+    "StatementReviewRule",
     "FeeRule",
     "FeeRuleRevision",
     "StatementLine",

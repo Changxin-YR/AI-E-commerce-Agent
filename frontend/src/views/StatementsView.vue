@@ -10,6 +10,8 @@ import type { StatementReconciliation } from '@/types/statements'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import StatementResult from '@/components/StatementResult.vue'
 import FeeRules from '@/components/FeeRules.vue'
+import StatementReviews from '@/components/StatementReviews.vue'
+import { statementReviewsApi } from '@/api/statementReviews'
 
 const route = useRoute()
 const shops = ref<Shop[]>([])
@@ -25,31 +27,57 @@ const result = ref<StatementReconciliation | null>(null)
 const error = ref('')
 const busy = ref(false)
 const ruleBusy = ref(false)
+const reviewBusy = ref(false)
+const reviewFreshness = ref(0)
+const ready = ref(false)
+const initialReview = ref<number | undefined>()
 const importLink = computed(
   () =>
     `/imports?shop=${shopId.value}&kind=statements&identity=${scope.data_identity}&channel=${scope.channel}`,
 )
 let epoch = 0
+let initializeEpoch = 0
 let alive = true
 function invalidate(): void {
   epoch++
   result.value = null
 }
-watch(() => [shopId.value, ...Object.values(scope)], invalidate, { flush: 'sync' })
+watch(
+  () => [shopId.value, ...Object.values(scope)],
+  () => {
+    invalidate()
+    initialReview.value = undefined
+  },
+  { flush: 'sync' },
+)
 async function initialize(): Promise<void> {
+  const initializing = ++initializeEpoch
   busy.value = true
+  ready.value = false
   error.value = ''
   try {
     const response = await identityApi.shops()
-    if (!alive) return
+    if (!alive || initializing !== initializeEpoch) return
     shops.value = response
     shopId.value =
       response.find((s) => s.id === Number(route.query.shop))?.id ?? response[0]?.id ?? 0
     scope.timezone = response.find((s) => s.id === shopId.value)?.timezone ?? 'UTC'
+    initialReview.value = undefined
+    const reviewId = Number(route.query.review)
+    if (shopId.value && Number.isSafeInteger(reviewId) && reviewId > 0) {
+      const record = await statementReviewsApi.get(shopId.value, reviewId)
+      if (!alive || initializing !== initializeEpoch) return
+      if (record.snapshot) Object.assign(scope, record.snapshot.result.scope)
+      else Object.assign(scope, { data_identity: record.data_identity, channel: record.channel })
+      initialReview.value = reviewId
+    }
   } catch (cause) {
-    if (alive) error.value = errorMessage(cause)
+    if (alive && initializing === initializeEpoch) error.value = errorMessage(cause)
   } finally {
-    if (alive) busy.value = false
+    if (alive && initializing === initializeEpoch) {
+      busy.value = false
+      ready.value = true
+    }
   }
 }
 async function reconcile(): Promise<void> {
@@ -72,12 +100,23 @@ function focused(): void {
   // Hide a previous read after changes in another tab, including while a request is in flight.
   invalidate()
 }
+function rulesInvalidated(): void {
+  invalidate()
+  reviewFreshness.value++
+}
+watch(
+  () => [route.query.shop, route.query.review],
+  () => {
+    if (alive) void initialize()
+  },
+)
 onMounted(() => {
   void initialize()
   window.addEventListener('focus', focused)
 })
 onUnmounted(() => {
   alive = false
+  initializeEpoch++
   invalidate()
   window.removeEventListener('focus', focused)
 })
@@ -107,7 +146,7 @@ onUnmounted(() => {
   </p>
   <section v-if="shops.length" class="form-panel section-block">
     <form @submit.prevent="reconcile">
-      <fieldset :disabled="busy || ruleBusy">
+      <fieldset :disabled="busy || ruleBusy || reviewBusy">
         <legend>核对范围</legend>
         <div class="form-grid">
           <div class="form-field">
@@ -159,15 +198,26 @@ onUnmounted(() => {
     :key="[shopId, ...Object.values(scope)].join('|')"
     :shop-id="shopId"
     :scope="scope"
-    :disabled="busy"
+    :disabled="busy || reviewBusy"
     @busy="ruleBusy = $event"
-    @invalidated="invalidate"
+    @invalidated="rulesInvalidated"
     @changed="reconcile"
   />
   <StatementResult v-if="result" :result="result" :shop-id="shopId" />
   <p v-else-if="shops.length && !busy" class="section-block">
     选择范围后读取当前记录。数据修订、页面切换或返回后，请重新核对。
   </p>
+  <StatementReviews
+    v-if="shopId && ready"
+    :key="[shopId, ...Object.values(scope)].join('|')"
+    :shop-id="shopId"
+    :scope="scope"
+    :disabled="busy || ruleBusy"
+    :freshness="reviewFreshness"
+    :initial-id="initialReview"
+    @busy="reviewBusy = $event"
+    @invalidated="invalidate"
+  />
 </template>
 <style scoped>
 fieldset {

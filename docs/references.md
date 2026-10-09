@@ -241,3 +241,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 | [SQLAlchemy Populate Existing](https://docs.sqlalchemy.org/en/20/orm/queryguide/api.html#populate-existing) | 官方文档，源码 MIT；未复制实现 | 用户→店铺锁后的当前读同时刷新 ORM 身份缓存；预览、规则版本、账单来源及费用版本在保存时复验 |
 
 沿用已确认的 Firecrawl 402 限制，经官方网页读取。规则按店铺/身份/渠道、去首尾空白后区分大小写的完整收费名匹配，当前规则适用于全部日期与币种；时间窗口仅限制差异预览。持久化人工规则及调整理由，账单应用结果实时计算，规则保存不等于人工账单核对结论。
+
+## 人工核对结论存档（2026-10-09）
+
+| 资料 | 许可证/性质 | 借鉴与适配 |
+|---|---|---|
+| [SQLAlchemy Populate Existing](https://docs.sqlalchemy.org/en/20/orm/queryguide/api.html#populate-existing) | 官方文档，源码 MIT；未复制实现 | 锁后刷新 ORM 实体，保存时重新计算全部依据与版本；历史快照与当前回读分别呈现 |
+| [MySQL 8.4 Locking Reads](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html) | 官方数据库文档；仅参考事务语义 | 用户→店铺锁覆盖结论、全部历史依赖及审计；来源/费用/规则清除与结论正文清除同事务 |
+
+沿用 Firecrawl 已确认的 402 限制，经官方网页读取。窗口级结论限定为一致、差异已说明或待核，未知/重复/异币种/类别冲突不能确认一致。来源版本与费用/规则范围变更号防止恢复原值复活预览；本地结论不产生费用、付款或净利。

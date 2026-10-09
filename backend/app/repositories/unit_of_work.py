@@ -23,6 +23,7 @@ from app.repositories.product_edits import ProductEditRepository
 from app.repositories.product_quality import ProductQualityRepository
 from app.repositories.profit import ProfitRepository
 from app.repositories.schedules import SchedulesRepository
+from app.repositories.statement_reviews import StatementReviewRepository
 from app.repositories.statements import StatementRepository
 from app.repositories.support import SupportRepository
 from app.repositories.workbench import WorkbenchRepository
@@ -53,6 +54,7 @@ class UnitOfWork:
         self.product_edits = ProductEditRepository(session)
         self.schedules = SchedulesRepository(session)
         self.statements = StatementRepository(session)
+        self.statement_reviews = StatementReviewRepository(session)
         self.workbench = WorkbenchRepository(session)
 
     def commit(self) -> None:

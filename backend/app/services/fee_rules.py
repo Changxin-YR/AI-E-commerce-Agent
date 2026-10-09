@@ -201,6 +201,7 @@ class FeeRuleService:
         self.uow.record_event(
             owner, f"fee_rule.{action}", "fee_rule", rule.id, {"version": rule.version}
         )
+        self.uow.statement_reviews.invalidate(owner, shop, rule.data_identity, rule.channel)
         output = self._output(rule)
         self.uow.commit()
         return output
@@ -265,6 +266,7 @@ class FeeRuleService:
         self.uow.record_event(
             owner, f"fee_rule.{action}", "fee_rule", rule.id, {"version": rule.version}
         )
+        self.uow.statement_reviews.invalidate(owner, shop, rule.data_identity, rule.channel)
         output = self._output(rule)
         self.uow.commit()
         return output

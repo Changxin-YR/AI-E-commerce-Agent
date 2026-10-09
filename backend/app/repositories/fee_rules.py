@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.fee_rules import FeeRule, FeeRuleRevision
+from app.repositories.statement_reviews import StatementReviewRepository
 
 
 class FeeRuleRepository:
@@ -108,6 +109,7 @@ class FeeRuleRepository:
         self.session.flush()
 
     def clear(self, rule: FeeRule) -> None:
+        StatementReviewRepository(self.session).purge(rule.owner_id, rule.shop_id, "rule", rule.id)
         for revision in self.revisions(rule):
             revision.content = None
         rule.content = None

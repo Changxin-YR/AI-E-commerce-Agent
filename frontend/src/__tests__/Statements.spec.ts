@@ -155,7 +155,11 @@ it('filters comparisons and keeps zero differences visible', async () => {
   })
   wrappers.push(wrapper)
   expect(wrapper.text()).toContain('差额 USD 0.0000')
-  await wrapper.get('#statement-filter').setValue('amount_difference')
+  const filterId = wrapper
+    .findAll('label')
+    .find((label) => label.text() === '核对状态')!
+    .attributes('for')
+  await wrapper.get(`select[id="${filterId}"]`).setValue('amount_difference')
   expect(wrapper.findAll('article')).toHaveLength(0)
   expect(wrapper.text()).toContain('当前筛选无费用核对条目')
 })
