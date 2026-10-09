@@ -2,7 +2,7 @@
 
 需求基线：SoloOps V1.0（2026-10-08）。P0 23 项、P1 26 项、P2 25 项。状态描述当前交付切片，不代表整个长期模块完成。
 
-当前 SO-055/SO-056 人工核对结论已实现预览确认、历史依据、当前回读与撤销/清除，合成验证记录见 testing 第二十七。
+当前 SO-055 已增加结算周期与人工到账凭据预览、明确保存、当前回读、历史及撤销/清除，合成验证见 testing 第二十八；人工费用核对结论见第二十七。
 
 | SO | 模块 | 优先级 | P0 切片 / 后续范围 | 实现位置 | 测试证据 | 当前状态 |
 |---|---|---|---|---|---|---|
@@ -60,7 +60,7 @@
 | SO-052 | 销售、订单和经营报表 | P0 | 导入数据内单店与跨店分币种统计、日历区间对比 | services/profit_calculation.py、overview_calculation.py；AnalyticsView.vue、OverviewView.vue | test_analytics.py、test_overview.py；analytics.spec.ts、overview.spec.ts | 订单行销售/退款/来源、分店币种订单去重、前日/七日/三十日/自选对比与摘要合成本地通过；全量覆盖与实时统计须实际来源 |
 | SO-053 | 实际成本与商品/店铺利润 | P0 | 订单行、采购成本和缺失费用的已知毛利 | services/profit_calculation.py | Decimal、缺口、币种、退款、阈值与来源测试 | 当前采购成本估算历史已知毛利基础通过；费用归集和实际历史成本待继续 |
 | SO-054 | 独立新品利润计算器 | P0 | 单币种单件已知毛利、费用假设、情景对比与敏感性 | services/profit.py、profit_rules.py；ProfitView.vue | test_profit.py 18 项；profit.spec.ts 桌面/手机；ProfitScenarioEditor.spec.ts | P0 最小切片合成数据本地通过：九类未知/零费用、依据、最多五方案、条件保本价、存档与清除；多币种换算与复杂费率后续扩展 |
-| SO-055 | 渠道账单、结算与回款 | P1 | 通用渠道账单文件、原行/分类合计及窗口级人工费用核对存档 | services/imports.py、statements.py、statement_reviews.py；ImportsView.vue、StatementsView.vue、StatementReviews.vue | test_statements.py、test_statement_reviews.py；Statements.spec.ts、StatementReviews.spec.ts 及账单/存档桌面手机 E2E | 通用文件与人工结论合成本地通过：确认/覆盖、原行历史、范围隔离、UTC/Decimal、撤销恢复；人工结论预览确认、当前依据原子回读、历史、失效及全部依赖清除。回款到账、结算周期与余额核对、真实平台适配待实现 |
+| SO-055 | 渠道账单、结算与回款 | P1 | 通用渠道账单、人工费用结论、按原账单登记结算周期与人工到账凭据 | services/imports.py、statements.py、statement_reviews.py、settlements.py、settlement_calculation.py；ImportsView.vue、StatementsView.vue、SettlementsView.vue | test_statements.py、test_statement_reviews.py、test_settlements.py；Statements.spec.ts、StatementReviews.spec.ts、SettlementRecords.spec.ts 及桌面手机 E2E | 合成本地通过：通用文件、原行、费用结论；周期与回款凭据预览确认、同范围占用去重、Decimal 差额、原子当前回读、历史、失效及全部历史依赖清除。人工到账保持卖家声明，银行未核验；真实平台适配、多结算批号拆合、部分到账/冲正、余额与完整覆盖待继续 |
 | SO-056 | 平台费用映射、自定义费用与对账差异 | P1 | 人工费用台账、账单差异、人工收费类别规则与核对结论历史 | services/expenses.py、statements.py、fee_rules.py、fee_mapping.py、statement_reviews.py；ExpensesView.vue、StatementResult.vue、FeeRules.vue、StatementReviews.vue | test_expenses.py、test_statements.py、test_fee_rules.py、test_statement_reviews.py；FeeRules.spec.ts、StatementReviews.spec.ts 及桌面手机 E2E | 合成本地通过：费用/规则版本、凭据差异、结论预览确认→当前来源费用规则回读→历史→撤销/清除；未知/重复/币种/类别冲突仅存待核，恢复原值不激活旧确认。真实平台收费定义、多条件/生效日期规则、复杂分摊、物流/订单金额差异待继续 |
 | SO-057 | AI 自然语言经营问数和异常解释 | P0 | 销售/购买量前五/低毛利问题理解、匿名事实解释、来源与待办 | services/analysis_explanation.py、agent.py、analytics.py；AnalysisNarrative.vue | test_analysis_model.py 28 项；AnalysisNarrative.spec.ts、analysis-model.spec.ts | Responses 可配置适配、事实编号校验、确定性金额与来源、双重数据授权、费用/未知态、审批待办合成及协议替身通过；百炼通道已接入，问数真实模型理解质量待单独验证，精确净利润仍缺费用依据 |
 | SO-058 | 运营变更版本、A/B 测试与效果评估 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |

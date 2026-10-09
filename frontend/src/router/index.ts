@@ -21,6 +21,7 @@ const router = createRouter({
         { path: 'profit', component: () => import('@/views/ProfitView.vue') },
         { path: 'expenses', component: () => import('@/views/ExpensesView.vue') },
         { path: 'statements', component: () => import('@/views/StatementsView.vue') },
+        { path: 'settlements', component: () => import('@/views/SettlementsView.vue') },
         { path: 'rules', component: () => import('@/views/RulesView.vue') },
         { path: 'outbound', component: () => import('@/views/OutboundView.vue') },
         { path: 'overview', component: () => import('@/views/OverviewView.vue') },

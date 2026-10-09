@@ -28,6 +28,12 @@ from app.models.product_edits import ProductEdit, ProductEditSource
 from app.models.product_quality import ProductQualityReport, ProductQualitySource
 from app.models.profit import ProfitFee, ProfitScenario, ProfitStudy
 from app.models.schedules import OperationSchedule, ScheduleOccurrence
+from app.models.settlements import (
+    Settlement,
+    SettlementReceipt,
+    SettlementRevision,
+    SettlementSource,
+)
 from app.models.statement_reviews import (
     StatementReview,
     StatementReviewExpense,
@@ -38,6 +44,10 @@ from app.models.statement_reviews import (
 from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
 
 __all__ = [
+    "Settlement",
+    "SettlementReceipt",
+    "SettlementRevision",
+    "SettlementSource",
     "StatementReview",
     "StatementReviewRevision",
     "StatementReviewSource",

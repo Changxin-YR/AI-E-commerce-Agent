@@ -67,6 +67,8 @@ async function signOut(): Promise<void> {
           ><span class="nav-number">16</span>实际费用</RouterLink
         ><RouterLink to="/statements" active-class="active"
           ><span class="nav-number">17</span>账单核对</RouterLink
+        ><RouterLink to="/settlements" active-class="active"
+          ><span class="nav-number">18</span>结算与回款</RouterLink
         >
       </nav>
       <div class="sidebar-bottom">

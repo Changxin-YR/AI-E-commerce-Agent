@@ -408,3 +408,21 @@ Browser plugin not available，依 frontend-testing-debugging 使用项目 Playw
 桌面与手机预览/历史截图已实际查看，系统 Temp `soloops-statement-reviews-{preview,history}-{desktop,mobile}.png`，不提交。截图复核修正了复选框继承普通输入框尺寸的问题，采用既有绿色、18px 勾选框及同款文本框。首次新后端测试的 stale 分支重复创建相同店铺标识，修正测试准备后通过；首轮新 E2E 来源定位包含祖先 details，限定账单结果内的明细区域后通过。此前本机 Node24/Vite8 偶发中断根因仍未定位，本轮完整通过不代表该环境根因已修复。
 
 迁移 `9862c543a46b` 已在验证数据库名为 `_test` 的隔离库回退 `2d826d48220b` → 升级 head → check 通过，开发库正常 upgrade/check 通过；pytest、迁移回退与 E2E 严格串行。核实 API8000 子46968/父28892命令行后隐藏重启（本次 launcher54672），OpenAPI 回读包含核对路由及 ReviewCurrent，前端5173返回200。后续启停须重新核实监听进程身份。全部 **74 SO / 32 验收 / 7 长期 E2E** 保留，真实平台适配、复杂分摊、订单物流差异、结算周期及银行到账仍待后续。
+
+## 第二十八迭代：结算周期与人工回款凭据（2026-10-09）
+
+基线 `c108006` 的 [CI37936760400](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37936760400) 已核实 Success，verify 7m41s。新增 `test_settlements.py` **32 项 / 18.61 秒**通过，完整后端 **636 项 / 314.06 秒**通过。覆盖 Decimal/Numeric、UTC 微秒、IANA 偏移、未来时间、七类逐笔比较、覆盖/余额/银行状态、精确账单号与周期外行、迟到回款、显式确认、预览篡改、用户/店铺/身份/渠道/CSRF 隔离、UUID 回放、双会话竞争、凭据占用与释放、占用集合恢复阻断旧预览、当前状态与依据同事务回读、历史来源清除、独立记录保留、20 条分页/100 次修订/真实数据库 1001 行限制，以及创建、修订、撤销、主动清除、来源清除的末尾审计失败回滚。所有数据为合成数据，正常测试关闭真实模型、邮件与常规调度。
+
+最终 Ruff 规则与格式 **212 文件（含 scripts）**、mypy **154 app 文件**通过；Vue lint/type-check/生产构建通过。完整 Vitest **24 文件 80 项 / 4.21 秒**通过，新增 7 项包括文本转义、编辑撤确认、原 UUID 回查、focus/范围变化丢弃迟到响应并清跨范围请求、失败隐藏旧正文、历史范围回填、原子当前回读、清除正文及处理确认门禁。后续仅调整文本按钮样式和导航序号，最终 lint/type-check 及浏览器流程复验通过。
+
+新桌面/手机 Playwright 首轮 **2 项 / 12.5 秒**通过；最终样式与入口截图补充后，Agent/问数/结算/经营资料定向 **11 项 / 31.7 秒**通过。Browser plugin not available，依 frontend-testing-debugging 使用项目 Playwright，环境为 Chromium、`http://127.0.0.1:5174/settlements`、1440×1000 与 390×844；`npm run test:e2e` 自动构建，并管理隔离 API8001 与 preview5174。实际路径为账单导入→范围与周期→人工凭据→预览/编辑撤确认→金额差异→保存→固定链接刷新→原始结算批号→当前依据→修订→历史版本→撤销/清除→历史来源清除→切换范围。URL/标题、非空页面、无框架错误层、登录后 console/pageerror、交互结果、390px 无横溢均通过。六张入口/预览/历史截图在系统 Temp `soloops-settlements-{entry,preview,history}-{desktop,mobile}.png`，已实际查看，未提交。
+
+迁移 `7e7851694067` 在确认名称为 `_test` 的隔离库 **downgrade 9862c543a46b → upgrade head → alembic check** 通过，开发库正常 upgrade/check 通过；pytest、迁移回退、浏览器测试严格串行。核对原 API8000 父54672/子41272的命令行后隐藏重启（本次 launcher54736），OpenAPI 已含结算路由与 SettlementCurrent，开发前端5173返回200。后续启停重新核实进程身份。
+
+验证修正记录：首轮新增后端用例因测试草稿浅拷贝共享数据而失败，改为独立草稿后 32 项通过；前端测试 Array.at 与当前 TS 目标不兼容，改用数组索引。沙箱本机 MySQL socket10013 使用允许执行环境验证，既有 Starlette/httpx、NO_COLOR 提示保留。
+
+Windows Node24.15.0 下首次完整 E2E 为 **52 通过/2 失败，2.4 分钟**：最后经营资料 PUT /api/profile 出现连接重置，随后 preview5174 拒连。第二次为 **3 通过/51 失败，1.2 分钟**，捕获 Playwright worker 原生退出码 **3221226505（0xC0000409）**，随后预览服务中断；近期标准 Node 应用错误事件未提供堆栈。官方 [Node #63620](https://github.com/nodejs/node/issues/63620) 描述相近 Windows TCP 短连接崩溃，维护者确认 24.16.0 相关修复。由官方发行页下载 24.16.0 Windows x64 zip，SHA256 `edaca9bd58ec8e92037dac4e877d52f6b8f430b81c18b57e264b4e2fb111cd56` 校验一致，放入被忽略的 `.local/runtimes/node-v24.16.0-win-x64`，仅测试命令临时加入 PATH。这是运行时版本对照，本机具体崩溃调用栈尚未采集。
+
+隔离 Node24.16.0 下最终完整 Playwright **54 项 / 2.5 分钟**通过，退出码0；同一份业务代码在这轮完整运行中未再出现进程退出或连接中断。Windows 后续本地验证使用 24.16+，本次版本对照证据不等于已取得本机原生堆栈。未修改全局安装、依赖锁或 CI 配置。
+
+完整 **74 SO / 32 验收 / 7 长期 E2E** 保留；SO-055 增加本地周期与人工到账凭据闭环，文件覆盖、期初期末余额、真实银行证据、跨结算批次拆合及部分到账仍待后续验证与实现。

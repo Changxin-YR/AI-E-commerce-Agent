@@ -278,3 +278,12 @@
 - **怎么避免历史数据泄漏？** 三类依赖表累计登记账单批次、费用和规则，费用再展开全部历史批次。`StatementReviewRepository.purge/clear` 清全部快照，导入/费用/规则清除与最后审计处于同一事务；跨窗口修订也不能丢失旧依赖。
 - **有界历史怎么读取？** 清单每页 20 条元数据；历史摘要只取 JSON conclusion；完整依据按版本读取，每版本最多 2 MiB，避免一次返回全部历史快照。金额原数据仍用 Numeric，计算用 Decimal。
 - **如何证明页面可用？** `StatementReviews.spec.ts` 验证确认绑定、文本转义、迟到请求丢弃、失败隐藏正文及原 UUID 重试；`statement-reviews.spec.ts` 从导入到结论、当前回读、历史、撤销/清除与来源清除，在桌面和 390px 手机验证。
+
+## 结算周期：声明、来源和到账凭据（2026-10-09）
+
+- **为什么周期不是回款日期过滤器？** `StatementRepository.by_statement` 精确绑定原账单号，保留周期之后的回款；`SettlementService._calculate` 单独标识周期外非回款行。结算归属依据源标识和卖家周期说明，日期相同不能证明归属。
+- **金额一致为什么仍待银行核验？** `ManualReceipt` 记录卖家声明，`compare_payouts` 只比较引用、币种和 Decimal 金额。coverage/balance/bank 三个状态分别保留未知；缺登记不能推断没到账，重复拆分不能加总抵销。
+- **如何阻断重复使用凭据？** `SettlementReceipt.receipt_key` 仅最新版本持有规范化占用，同范围唯一约束和用户锁防并发。修订释放旧占用但保留历史 Numeric 值；清除删除全部历史数值。原账单号采用精确字符键，语义与凭据键不同。
+- **为什么当前占用恢复原样仍不能使用旧预览？** `SettlementRepository.scope_revision` 取同身份渠道全部修订变更号，包含撤销和清除。来源版本和该变更号共同绑定预览，`test_registry_restoration_invalidates_old_preview` 验证创建再撤销的恢复场景。
+- **历史清除如何跨修订生效？** `SettlementSource` 累计全部版本的批次。`purge` 擦除整份登记快照、Numeric 到账历史和依赖，导入末尾审计失败整笔回滚。`test_clear_after_receipt_revision_erases_every_numeric_history` 及历史换账单用例验证。
+- **前端如何处理原确认和未知写入？** `SettlementRecords.vue` 绑定全部周期/凭据输入；`SettlementRecords.spec.ts` 验证 epoch、原 UUID 回查、范围切换、原子当前回读和清除正文。桌面/手机 `settlements.spec.ts` 走实际 API 与原始行。
