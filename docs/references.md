@@ -1,5 +1,12 @@
 # 公开实现与借鉴记录
 
+## R2 A3 异常复核与处理证据（2026-10-10）
+
+- Shopify官方[订单状态](https://help.shopify.com/en/manual/fulfillment/managing-orders/order-status)及[库存状态](https://help.shopify.com/en/manual/inventory-and-locations/fundamentals/inventory-states)：区分来源履约状态、可售库存与人工核对；平台资料按站点版权条款作语义参考，不复制正文或业务实现。文件中的状态只证明卖家提供的来源，不能充当本系统外部操作回执。
+- SQLAlchemy官方[版本计数](https://docs.sqlalchemy.org/en/20/orm/versioning.html)：MIT / 官方文档；借鉴并发旧版本检测，沿用现有用户→店铺锁与显式版本条件，不依赖ORM版本计数自动保护批量更新。
+- 适配：复用OperationTask/Event，保存独立人工凭据和复检快照；同对象、新数据时间、原规则、原范围共同限定解决结论，历史来源加入既有隐私清除链。消息通用导入的可选回复字段不声称兼容平台原生CSV，也不增加外发。
+- Firecrawl状态检查已认证但fetch失败，改用内置web核实上述官方页面；本包只使用合成数据。
+
 ## R2 A1-3 渠道字段预设（2026-10-10）
 
 - Shopify官方[商品CSV说明](https://help.shopify.com/en/manual/products/import-export/using-csv)：当前表头SKU、Title、Price、Cost per item分别作为SKU、名称、销售单价、单位采购成本候选。URL handle仅用于格式识别；币种由卖家另行确认；国际售价、比较价及描述不自动加入商品事实。官方页面同时提示旧版列名不同，故按本次核实日期限定字段签名，允许维护者停用预设。
