@@ -76,12 +76,13 @@ async function changeShop(): Promise<void> {
   await recordLink.write({ shop: shopId.value })
   await restoreRoute()
 }
-function canNavigate(): boolean {
-  if (!busy.value && !controlling.value && !driving.value) return true
+function canNavigate(allowReading = false): boolean {
+  if (!starting.value && !controlling.value && !driving.value && (allowReading || !busy.value))
+    return true
   error.value = '任务正在请求处理中，请等待当前步骤结束或先暂停任务。'
   return false
 }
-onBeforeRouteLeave(canNavigate)
+onBeforeRouteLeave(() => canNavigate(true))
 onBeforeRouteUpdate((to) => recordLink.isOwn(to.fullPath, false) || canNavigate())
 const focusGrant = ref<number | undefined>()
 const focusShop = ref(0)
@@ -105,6 +106,7 @@ function rulesLoaded(rule: BusinessRule): void {
 }
 const error = ref('')
 const busy = ref(false)
+const starting = ref(false)
 const controlling = ref(false)
 const driving = ref(false)
 let alive = true
@@ -194,7 +196,7 @@ async function readOptions(): Promise<void> {
       listingsApi.products(shop, query.value, 0),
       supportApi.messages(shop, query.value),
     ])
-    if (shopId.value === shop) {
+    if (alive && shopId.value === shop) {
       products.value = p
       messages.value = m
     }
@@ -300,6 +302,7 @@ async function drive(): Promise<void> {
 }
 async function start(): Promise<void> {
   if (busy.value || !shopId.value || rulesPending.value) return
+  starting.value = true
   busy.value = true
   error.value = ''
   selected.value = null
@@ -321,6 +324,7 @@ async function start(): Promise<void> {
     error.value = errorMessage(cause)
     driving.value = false
   } finally {
+    starting.value = false
     busy.value = false
   }
 }
@@ -353,6 +357,7 @@ async function act(
 }
 async function startAuthorized(grant: InternalAuthorization): Promise<void> {
   if (busy.value || controlling.value || grant.shop_id !== shopId.value) return
+  starting.value = true
   busy.value = true
   error.value = ''
   selected.value = null
@@ -374,6 +379,7 @@ async function startAuthorized(grant: InternalAuthorization): Promise<void> {
     error.value = errorMessage(cause)
     driving.value = false
   } finally {
+    starting.value = false
     busy.value = false
     await refresh()
   }
@@ -385,6 +391,7 @@ async function restoreRoute(): Promise<void> {
     const id = linkedId(route.query.execution ?? route.query.run)
     const grantId = linkedId(route.query.authorization)
     await loadShop()
+    if (!alive) return
     applyLinkedScope(form.scope, route.query)
     if (
       route.query.mode !== undefined &&
@@ -423,6 +430,7 @@ async function restoreRoute(): Promise<void> {
       const messageId = linkedId(route.query.message)
       if (messageId) {
         const workspace = await supportApi.workspace(shopId.value, messageId)
+        if (!alive) return
         if (!messages.value.some((m) => m.id === messageId)) messages.value.push(workspace.message)
         form.scope.data_identity =
           workspace.message.source.data_identity === 'synthetic' ? 'synthetic' : 'user_import'
@@ -435,6 +443,7 @@ async function restoreRoute(): Promise<void> {
       const productId = linkedId(route.query.product)
       if (productId) {
         const workspace = await listingsApi.workspace(shopId.value, productId)
+        if (!alive) return
         if (!products.value.some((p) => p.product_id === productId))
           products.value.push(workspace.product)
         form.scope.data_identity =
@@ -445,12 +454,13 @@ async function restoreRoute(): Promise<void> {
     if (id || grantId) selected.value = null
     if (id) {
       await inspect(id, false)
-      await revealRecord('linked-agent')
+      if (alive) await revealRecord('linked-agent')
     } else if (!grantId && !route.query.mode && runs.value[0]) {
       await inspect(runs.value[0].id)
     }
     if (grantId) {
       const grant = await authorizationsApi.get(shopId.value, grantId)
+      if (!alive) return
       focusShop.value = shopId.value
       focusGrant.value = grant.id
       await inspect(grant.origin_execution_id, false)
@@ -473,7 +483,7 @@ onMounted(async () => {
   window.addEventListener('focus', refresh)
   try {
     shops.value = await identityApi.shops()
-    await restoreRoute()
+    if (alive) await restoreRoute()
   } catch (cause) {
     error.value = errorMessage(cause)
   }

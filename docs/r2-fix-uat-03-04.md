@@ -1,6 +1,6 @@
 # R2 修复包2：日期输入与任务连续性
 
-日期：2026-10-10。包1准确 SHA CI 成功后开始。本包本地验证通过，等待独立提交的准确 SHA CI。测试使用新隔离库 `127.0.0.1:3313/soloops_r2_fixes_test`，全部资料为合成数据。
+日期：2026-10-10。包1准确 SHA CI 成功后开始。首轮完整CI发现导航守卫问题，已定点修复，当前等待修复提交的准确 SHA CI。测试使用新隔离库 `127.0.0.1:3313/soloops_r2_fixes_test`，全部资料为合成数据。
 
 ## 修改与理由
 
@@ -27,7 +27,11 @@
 
 独立进程只读回查 `uat34-readback.json`：店铺543/546、任务406/407，各3个实际执行节点，最后清除后 blocked/cleared/input NULL；对应草稿66/67和68/69均cleared、snapshot NULL，保留human_review状态及版本。业务测试在清除前已断言任务succeeded、正文保存回读和外部未提交。迁移仍d93f6b210ac4。
 
-初轮发现旧测试定位ID已被公共日期组件替换、旧URL断言未包含新增shop参数、B1旧run参数兼容、当前店铺重复选择及手机恢复表单溢出，均按真实输入/导航行为修正，保留业务断言。历史导航须等待当前读取完成，忙碌时守卫给出提示；未保存编辑须保存或明确放弃。原137全量前端之外最后只复验受影响模块；失败运行不计作整轮通过。
+初轮发现旧测试定位ID已被公共日期组件替换、旧URL断言未包含新增shop参数、B1旧run参数兼容、当前店铺重复选择及手机恢复表单溢出，均按真实输入/导航行为修正，保留业务断言。同一页面的历史导航须等待当前读取完成；未保存编辑须保存或明确放弃。失败运行不计作整轮通过。
+
+首轮准确提交 `b23a5a6a6265447ec30c7ab43b98e0702a4d893f` 的 [CI38049335893](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38049335893) 为 failure：880后端/361.87秒、138前端单元和静态构建通过，浏览器81通过、1失败。原19入口导航测试在Agent读取中跳转被拦截。修复后仅任务写入/推进及未保存草稿阻止离页，读取中允许菜单离页；组件卸载后停止恢复和URL写入。新增1440/390受控延迟读取测试及任务恢复请求延迟期间的导航保护断言，保留原导航测试全部断言。
+
+导航修复本地复验：前端全量138项通过（`20261010-205549-npm-78a18c.log`），ESLint/TypeScript/生产构建通过。`npm run test:e2e -- seller-navigation.spec.ts continuity.spec.ts agent.spec.ts margin-review.spec.ts support-model.spec.ts listing-model.spec.ts operations-model.spec.ts analysis-model.spec.ts` 为22 passed / 1.1分钟（`20261010-205707-npm-00ec77.log`）。初次复验因专用3313容器已停止而未启动测试，恢复该容器至healthy后取得以上结果；没有使用其他数据库。
 
 ## 数据与回退
 

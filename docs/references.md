@@ -367,6 +367,7 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 
 - MDN 官方 [datetime-local](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/datetime-local) 与 [HTML 时间格式](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Date_and_time_formats)（文档 CC BY-SA）：原生日期时间值不含时区，而且允许输入夏令时不存在的当地时间。采用原生选择器、显式 IANA 业务时区与 Intl 往返匹配；不采用浏览器系统时区推断。歧义要求用户在原精确 ISO 入口选择明确偏移；原始微秒表达式不因显示切换被改写。
 - Vue Router 官方 [Composition API](https://router.vuejs.org/guide/advanced/composition-api.html) 与 [导航守卫](https://router.vuejs.org/guide/advanced/navigation-guards.html)（MIT）：参考查询参数响应和路由离开/更新守卫。仅对 Agent/客服复用当前视图并观察 URL；自身保存 URL 不重挂载编辑器。通过服务端权限查询恢复对象；查询参数不携带授权、客户正文、目标文本或密钥。
+- Vue 官方 [生命周期钩子](https://vuejs.org/api/composition-api-lifecycle.html)（MIT）：卸载后停止页面恢复和地址写入。读取数据时允许离开页面，任务启动/推进、草稿保存及未保存编辑仍受保护；延迟读取回包不能把用户带回旧页面。实现由项目自行编写。
 - Firecrawl 状态返回 `fetch failed`，使用官方 web 检索作为回退。上述资料作接口与设计依据，自行实现组件和导航处理，不增加第三方依赖。
 
 ## R2 C：API内调度与部署边界（2026-10-10）

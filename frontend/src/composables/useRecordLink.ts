@@ -1,9 +1,15 @@
+import { onBeforeUnmount } from 'vue'
 import { useRoute, useRouter, type LocationQueryRaw } from 'vue-router'
 
 // The caller handles external navigation; its own URL updates preserve live edits.
 export function useRecordLink() {
   const route = useRoute()
   const router = useRouter()
+  const ownerPath = route.path
+  let active = true
+  onBeforeUnmount(() => {
+    active = false
+  })
   let ownPath = ''
   function isOwn(path: string, consume = true): boolean {
     if (path !== ownPath) return false
@@ -11,7 +17,8 @@ export function useRecordLink() {
     return true
   }
   async function write(query: LocationQueryRaw, replace = false): Promise<void> {
-    const target = { path: route.path, query }
+    if (!active || route.path !== ownerPath) return
+    const target = { path: ownerPath, query }
     ownPath = router.resolve(target).fullPath
     if (ownPath === route.fullPath) {
       ownPath = ''

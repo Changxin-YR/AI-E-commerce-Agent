@@ -30,6 +30,45 @@ async function setup(page: Page, width: number, tag: string) {
 }
 
 for (const width of [1440, 390]) {
+  test(`read-only loading allows leaving without a late redirect ${width}`, async ({ page }) => {
+    const { shop } = await setup(page, width, 'read-navigation')
+    for (const [view, endpoint] of [
+      ['agent', 'agent/runs'],
+      ['support', 'support/messages*'],
+    ]) {
+      let release!: () => void
+      let entered!: () => void
+      let finished!: () => void
+      const pending = new Promise<void>((resolve) => (release = resolve))
+      const reading = new Promise<void>((resolve) => (entered = resolve))
+      const done = new Promise<void>((resolve) => (finished = resolve))
+      const pattern = `**/api/shops/${shop}/${endpoint}`
+      await page.route(pattern, async (route) => {
+        const response = await route.fetch()
+        entered()
+        await pending
+        await route.fulfill({ response })
+        finished()
+      })
+      try {
+        await page.goto(`/${view}?shop=${shop}`)
+        await reading
+        const nav = page.getByRole('navigation', { name: '主导航' })
+        await nav.getByRole('button', { name: '展开全部功能', exact: true }).click()
+        await nav.getByRole('link', { name: '经营资料', exact: true }).click()
+        await expect(page).toHaveURL(/\/settings$/)
+        release()
+        await done
+        await expect(page.getByLabel('经营名称')).toBeVisible()
+        await page.evaluate(() => new Promise(requestAnimationFrame))
+        await expect(page).toHaveURL(/\/settings$/)
+      } finally {
+        release()
+        await page.unroute(pattern)
+      }
+    }
+  })
+
   test(`business native dates and explicit DST choice ${width}`, async ({ page }) => {
     const { shop } = await setup(page, width, 'dates')
     await page.goto(`/analytics?shop=${shop}`)
@@ -146,8 +185,32 @@ for (const width of [1440, 390]) {
     expect(after.steps).toEqual(paused.steps)
     expect(after.steps_used).toBe(0)
     expect(await (await page.request.get(`${base}/agent/runs`)).json()).toHaveLength(1)
-    await review.getByRole('button', { name: '确认预算并恢复' }).click()
+    let releaseResume!: () => void
+    let resumeEntered!: () => void
+    const resumePending = new Promise<void>((resolve) => (releaseResume = resolve))
+    const resuming = new Promise<void>((resolve) => (resumeEntered = resolve))
+    const resumeUrl = `**${base}/agent/runs/${run.id}`
+    await page.route(resumeUrl, async (route) => {
+      if (route.request().method() !== 'POST') return route.continue()
+      const response = await route.fetch()
+      resumeEntered()
+      await resumePending
+      await route.fulfill({ response })
+    })
+    try {
+      await review.getByRole('button', { name: '确认预算并恢复' }).click()
+      await resuming
+      const nav = page.getByRole('navigation', { name: '主导航' })
+      await nav.getByRole('button', { name: '展开全部功能', exact: true }).click()
+      await nav.getByRole('link', { name: '经营资料', exact: true }).click()
+      await expect(page).toHaveURL(new RegExp(`/agent\\?shop=${shop}&execution=${run.id}$`))
+      await expect(page.getByRole('alert')).toContainText('等待当前步骤结束')
+      await nav.getByRole('button', { name: '收起全部功能', exact: true }).click()
+    } finally {
+      releaseResume()
+    }
     await expect(review).toContainText('等待审批')
+    await page.unroute(resumeUrl)
     await page.getByLabel('任务店铺').selectOption(String(other.id))
     await expect(review).toHaveCount(0)
     await expect(page.getByLabel('任务店铺')).toBeEnabled()

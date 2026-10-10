@@ -26,18 +26,19 @@ const route = useRoute()
 const recordLink = useRecordLink()
 const editorKey = ref(0)
 let navigationEpoch = 0
+let alive = true
 let writingLink = false
-function canNavigate(): boolean {
-  if (!dirty.value && !busy.value) return true
+function canNavigate(allowReading = false): boolean {
+  if (!dirty.value && !(allowReading ? saving.value || deliveryBusy.value : busy.value)) return true
   error.value = dirty.value
     ? '正文或人工记录尚未保存，请先保存或放弃修改，再离开当前草稿。'
     : '正在保存或读取，请等待操作完成。'
   return false
 }
-onBeforeRouteLeave(canNavigate)
+onBeforeRouteLeave(() => canNavigate(true))
 onBeforeRouteUpdate(() => writingLink || canNavigate())
 function beforeUnload(event: BeforeUnloadEvent): void {
-  if (dirty.value || busy.value) {
+  if (dirty.value || saving.value || deliveryBusy.value) {
     event.preventDefault()
     event.returnValue = ''
   }
@@ -74,14 +75,16 @@ const selectedPolicies = ref<number[]>([])
 const query = ref('')
 const offset = ref(0)
 const actionBusy = ref(false)
+const saving = ref(false)
 const deliveryBusy = ref(false)
 const busy = computed(() => actionBusy.value || deliveryBusy.value)
 const dirty = ref(false)
 const error = ref('')
 const success = ref('')
-async function perform(work: () => Promise<void>): Promise<void> {
+async function perform(work: () => Promise<void>, writes = false): Promise<void> {
   if (busy.value) return
   actionBusy.value = true
+  saving.value = writes
   error.value = ''
   success.value = ''
   try {
@@ -93,6 +96,7 @@ async function perform(work: () => Promise<void>): Promise<void> {
         : errorMessage(cause)
   } finally {
     actionBusy.value = false
+    saving.value = false
   }
 }
 async function load(): Promise<void> {
@@ -162,7 +166,7 @@ async function generate(): Promise<void> {
     await load()
     await remember(selected.value.id)
     success.value = '草稿与接管摘要已保存，请核对全部诉求和证据。'
-  })
+  }, true)
 }
 async function edit(text: string): Promise<void> {
   if (!selected.value) return
@@ -171,7 +175,7 @@ async function edit(text: string): Promise<void> {
     dirty.value = false
     await load()
     success.value = '正文已保存。'
-  })
+  }, true)
 }
 async function act(action: 'handoff' | 'archive' | 'reopen'): Promise<void> {
   if (!selected.value) return
@@ -179,7 +183,7 @@ async function act(action: 'handoff' | 'archive' | 'reopen'): Promise<void> {
     selected.value = await supportApi.act(shopId.value, selected.value!, action)
     await load()
     success.value = '处理状态已保存。'
-  })
+  }, true)
 }
 function deliveryUpdated(item: ReplyDraft): void {
   if (selected.value?.id !== item.id) return
@@ -201,7 +205,7 @@ async function restoreRoute(): Promise<void> {
     const id = linkedId(route.query.draft)
     if (id) {
       await show(id, false)
-      await revealRecord('linked-reply')
+      if (alive) await revealRecord('linked-reply')
     } else {
       const messageId = linkedId(route.query.message)
       if (messageId) await choose(messageId, false)
@@ -223,9 +227,10 @@ onMounted(async () => {
   await perform(async () => {
     shops.value = await identityApi.shops()
   })
-  await restoreRoute()
+  if (alive) await restoreRoute()
 })
 onUnmounted(() => {
+  alive = false
   navigationEpoch++
   window.removeEventListener('focus', onFocus)
   window.removeEventListener('beforeunload', beforeUnload)
