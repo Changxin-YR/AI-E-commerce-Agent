@@ -931,3 +931,7 @@ G-06使用生产QQMailProvider、R2服务及真实HTTP会话，对保留的3309�
 ## R2 B2：Listing人工交付（2026-10-10）
 
 现有Listing审批可产生有效本地版本，B2在该服务上增加只读delivery门禁与小型格式服务manual_delivery。每次操作在用户/店铺锁下校验状态版本、active ID及完整来源快照；格式函数只处理已校验数据。通用CSV逐格文本前缀与标准引号转义，原文可通过纯文本取得。ReviewedDelivery集中处理异步交付、剪贴板回退、下载及上下文失效；ListingReview提供来源/状态/未保存编辑门禁。无迁移，外部未提交保持。实现和验证详见r2-b2-acceptance.md。
+
+## R2 B3：客服审阅与人工操作记录（2026-10-10）
+
+SupportService新增delivery_context作为唯一当前事实核验入口；SupportDeliveryService单独处理审阅、格式组装和人工自报，SupportRepository继续承担归属/锁/分页/清除查询。reviewed_version与状态版本精确匹配，编辑或存档后失效。独立ReplyManualAction保存操作时间与登记时间，UUID+请求指纹和用户锁保证重复请求不重复写入，源清除同时擦除证据payload；审计只记录编号。SupportDelivery组件向SupportReply/SupportView传播dirty/working并丢弃过期响应，父层共享忙状态避免跨对象结果。迁移和验证见r2-b3-acceptance.md。

@@ -138,6 +138,9 @@ class ReplyOutput(OutputModel):
     created_at: str
     updated_at: str
     external_status: Literal["not_submitted"] = "not_submitted"
+    reviewed_version: int | None = None
+    reviewed_at: str | None = None
+    reviewed_language: str | None = None
 
 
 class EditReply(InputModel):

@@ -62,6 +62,9 @@ export interface ReplyDraft {
   created_at: string
   updated_at: string
   external_status: 'not_submitted'
+  reviewed_version?: number | null
+  reviewed_at?: string | null
+  reviewed_language?: string | null
 }
 export interface SupportContext {
   expected_source_row_id: number
@@ -100,4 +103,24 @@ export const intentLabels: Record<string, string> = {
 }
 export function supportTime(value: string, timezone: string): string {
   return `${new Intl.DateTimeFormat('zh-CN', { timeZone: timezone, dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))} (${timezone})`
+}
+
+export interface ManualActionInput {
+  request_id: string
+  expected_version: number
+  occurred_at: string
+  method: string
+  evidence_ref: string
+  note: string
+  confirmed: boolean
+}
+export interface ManualActionRecord {
+  id: number
+  draft_id: number
+  draft_version: number
+  occurred_at: string
+  recorded_at: string
+  details: { method: string; evidence_ref: string; note: string } | null
+  provenance: 'seller_reported'
+  external_status: 'not_submitted'
 }

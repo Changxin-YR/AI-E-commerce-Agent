@@ -3,7 +3,13 @@ from sqlalchemy.orm import Session
 
 from app.core.time import utc_now
 from app.models.imports import CustomerMessage, ImportBatch, ImportRow, OrderLine
-from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
+from app.models.support import (
+    ReplyDraft,
+    ReplyManualAction,
+    ReplyPolicy,
+    ReplySource,
+    SupportPolicy,
+)
 from app.repositories.analytics import OrderEvidence
 
 MessageEvidence = tuple[CustomerMessage, ImportRow, ImportBatch]
@@ -286,11 +292,23 @@ class SupportRepository:
             )
             .values(
                 snapshot=None,
+                reviewed_version=None,
+                reviewed_at=None,
+                reviewed_language=None,
                 source_row_id=None,
                 source_status="cleared",
                 version=ReplyDraft.version + 1,
                 updated_at=utc_now(),
             )
+        )
+        self.session.execute(
+            update(ReplyManualAction)
+            .where(
+                ReplyManualAction.owner_id == owner,
+                ReplyManualAction.shop_id == shop,
+                ReplyManualAction.draft_id.in_(ids),
+            )
+            .values(payload=None)
         )
         self.session.execute(delete(ReplySource).where(ReplySource.draft_id.in_(ids)))
         self.session.execute(delete(ReplyPolicy).where(ReplyPolicy.draft_id.in_(ids)))
@@ -324,3 +342,34 @@ class SupportRepository:
             )
         )
         self._purge(owner, shop, ids)
+
+    def manual_actions(
+        self, owner: int, shop: int, draft: int, before: int | None
+    ) -> list[ReplyManualAction]:
+        query = select(ReplyManualAction).where(
+            ReplyManualAction.owner_id == owner,
+            ReplyManualAction.shop_id == shop,
+            ReplyManualAction.draft_id == draft,
+        )
+        if before is not None:
+            query = query.where(ReplyManualAction.id < before)
+        return list(self.session.scalars(query.order_by(ReplyManualAction.id.desc()).limit(50)))
+
+    def manual_request(
+        self, owner: int, shop: int, draft: int, key: str
+    ) -> ReplyManualAction | None:
+        return self.session.scalar(
+            select(ReplyManualAction)
+            .where(
+                ReplyManualAction.owner_id == owner,
+                ReplyManualAction.shop_id == shop,
+                ReplyManualAction.draft_id == draft,
+                ReplyManualAction.request_key == key,
+            )
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+
+    def add_manual_action(self, item: ReplyManualAction) -> None:
+        self.session.add(item)
+        self.session.flush()

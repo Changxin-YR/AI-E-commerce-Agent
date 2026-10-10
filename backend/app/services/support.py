@@ -72,6 +72,9 @@ def reply_output(item: ReplyDraft) -> ReplyOutput:
         snapshot=ReplySnapshot.model_validate(item.snapshot) if item.snapshot else None,
         created_at=utc_text(item.created_at),
         updated_at=utc_text(item.updated_at),
+        reviewed_version=item.reviewed_version,
+        reviewed_at=utc_text(item.reviewed_at) if item.reviewed_at else None,
+        reviewed_language=item.reviewed_language,
     )
 
 
@@ -103,6 +106,26 @@ class SupportService:
         if item is None:
             raise BusinessError("not_found", "草稿不存在", 404)
         return item
+
+    def delivery_context(
+        self, owner: int, shop: int, draft_id: int
+    ) -> tuple[Shop, ReplyDraft, ReplySnapshot]:
+        store = self._shop(owner, shop)
+        item = self._draft(owner, shop, draft_id)
+        if item.source_status != "current" or not item.snapshot:
+            raise ConflictError("草稿来源已失效，请从当前消息重新核验并建稿")
+        snapshot = ReplySnapshot.model_validate(item.snapshot)
+        message = self._message(owner, shop, snapshot.message.id)
+        if message != snapshot.message or message.source.row_id != item.source_row_id:
+            raise ConflictError("消息事实已变化，请重新生成草稿")
+        if snapshot.order_verified and self._orders(owner, shop, message) != snapshot.orders:
+            raise ConflictError("订单事实已变化，请重新核验并建稿")
+        policies = {p.id: p for p in self._policies(owner, store, message)}
+        if any(policies.get(p.id) != p for p in snapshot.policies):
+            raise ConflictError("政策已变化或不再适用，请重新核验并建稿")
+        if not snapshot.reply.strip():
+            raise ConflictError("请先保存完整回复正文并核对目标语言")
+        return store, item, snapshot
 
     def messages(self, owner: int, shop: int, query: str, offset: int) -> list[MessageFacts]:
         self._shop(owner, shop)

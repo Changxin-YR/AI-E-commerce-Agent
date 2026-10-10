@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -188,3 +189,61 @@ test('mobile message escaping and unverified language handoff', async ({ page })
   })
   expect(errors).toEqual([])
 })
+
+for (const width of [1440, 390]) {
+  test(`reviewed support manual delivery and evidence ${width}`, async ({ page, context }) => {
+    await page.setViewportSize({ width, height: 900 })
+    const { shop } = await prepare(page)
+    await manual(page, '物流到哪里了？我还要退款。', 'zh', 'UNVERIFIED-ORDER')
+    await page.getByRole('button', { name: /M1 ·/ }).click()
+    await page.getByRole('button', { name: '生成本地回复草稿' }).click()
+    const draft = page.getByRole('region', { name: '客服草稿详情' })
+    const delivery = draft.getByRole('region', { name: '客服审阅与人工交付' })
+    await expect(delivery.getByRole('button', { name: '复制通用草稿' })).toBeDisabled()
+    await draft.getByLabel('我已审阅回复全文、目标语言与全部接管提示').check()
+    await delivery.getByRole('button', { name: '确认当前版本已审阅' }).click()
+    await expect(delivery).toContainText('本版本已审阅')
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await delivery.getByRole('button', { name: '复制通用草稿' }).click()
+    await expect(delivery).toContainText('已复制通用草稿')
+    const copied = await page.evaluate(() => navigator.clipboard.readText())
+    expect(copied).toContain('尚未确认退款')
+    expect(copied).toContain('客户与订单尚未核验')
+    expect(copied).not.toContain('UNVERIFIED-ORDER')
+    const downloading = page.waitForEvent('download')
+    await delivery.getByRole('button', { name: '下载通用 CSV' }).click()
+    const download = await downloading
+    expect(download.suggestedFilename()).toMatch(/^reply-\d+-v2\.csv$/)
+    const downloaded = await readFile((await download.path())!, 'utf8')
+    expect(downloaded.charCodeAt(0)).toBe(0xfeff)
+    expect(downloaded).toContain('尚未确认退款')
+    await delivery.getByLabel('人工操作时间（含时区）').fill('2026-10-09T18:00:00+08:00')
+    await delivery.getByLabel('原渠道操作方式').fill('原平台消息中心人工回复')
+    await delivery.getByLabel('人工操作证据索引').fill('SYNTHETIC-REPLY-001')
+    await expect(page.getByLabel('客服店铺')).toBeDisabled()
+    await expect(draft.getByRole('button', { name: '存档处理记录' })).toBeDisabled()
+    await delivery.getByLabel('我确认已在原渠道人工操作，此记录为本人自报').check()
+    await delivery.getByRole('button', { name: '登记人工操作', exact: true }).click()
+    await expect(delivery).toContainText('人工操作自报已登记')
+    await expect(delivery.getByRole('region', { name: '人工操作自报记录' })).toContainText(
+      'SYNTHETIC-REPLY-001',
+    )
+    await delivery.screenshot({
+      path: path.join(tmpdir(), `soloops-r2-support-delivery-${width}.png`),
+    })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await page.reload()
+    await page.getByLabel('客服店铺').selectOption(String(shop))
+    await page.getByRole('button', { name: /查看草稿 #.*M1/ }).click()
+    await expect(delivery).toContainText('本版本已审阅')
+    await delivery.getByRole('button', { name: '刷新人工操作记录' }).click()
+    await expect(delivery.getByRole('article')).toHaveCount(1)
+    await expect(delivery.getByRole('article')).toContainText('SYNTHETIC-REPLY-001')
+    await expect(draft).toContainText('外部未提交')
+    await draft.getByLabel('回复正文（仅草稿）').fill('人工修改，需要重新审阅。')
+    await expect(delivery.getByRole('button', { name: '复制通用草稿' })).toBeDisabled()
+    await draft.getByRole('button', { name: '保存修改' }).click()
+    await expect(delivery.getByRole('button', { name: '复制通用草稿' })).toBeDisabled()
+    await expect(delivery).not.toContainText('本版本已审阅')
+  })
+}

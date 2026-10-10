@@ -35,13 +35,15 @@ const verified = ref(false)
 const selectedPolicies = ref<number[]>([])
 const query = ref('')
 const offset = ref(0)
-const busy = ref(false)
+const actionBusy = ref(false)
+const deliveryBusy = ref(false)
+const busy = computed(() => actionBusy.value || deliveryBusy.value)
 const dirty = ref(false)
 const error = ref('')
 const success = ref('')
 async function perform(work: () => Promise<void>): Promise<void> {
   if (busy.value) return
-  busy.value = true
+  actionBusy.value = true
   error.value = ''
   success.value = ''
   try {
@@ -49,7 +51,7 @@ async function perform(work: () => Promise<void>): Promise<void> {
   } catch (cause) {
     error.value = errorMessage(cause)
   } finally {
-    busy.value = false
+    actionBusy.value = false
   }
 }
 async function load(): Promise<void> {
@@ -128,6 +130,11 @@ async function act(action: 'handoff' | 'archive' | 'reopen'): Promise<void> {
     await load()
     success.value = '处理状态已保存。'
   })
+}
+function deliveryUpdated(item: ReplyDraft): void {
+  if (selected.value?.id !== item.id) return
+  selected.value = item
+  history.value = history.value.map((existing) => (existing.id === item.id ? item : existing))
 }
 function onFocus(): void {
   void refresh()
@@ -319,10 +326,12 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
       :item="selected"
       :shop-id="shopId"
       :timezone="timezone"
-      :busy="busy"
+      :busy="actionBusy"
       @edit="edit"
       @action="act"
       @dirty="dirty = $event"
+      @working="deliveryBusy = $event"
+      @updated="deliveryUpdated"
     />
     <section class="section-block" aria-label="客服处理历史">
       <h2>处理记录</h2>

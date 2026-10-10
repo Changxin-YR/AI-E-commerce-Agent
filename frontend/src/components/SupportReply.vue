@@ -3,13 +3,19 @@ import { computed, ref, watch } from 'vue'
 import { intentLabels, replyStatus, supportTime, type ReplyDraft } from '@/types/support'
 import { sourceStatus } from '@/types/listings'
 import SupportSource from './SupportSource.vue'
+import SupportDelivery from './SupportDelivery.vue'
 import { agentLabels } from '@/types/agent'
 const props = defineProps<{ item: ReplyDraft; shopId: number; timezone: string; busy: boolean }>()
 const emit = defineEmits<{
   edit: [text: string]
   action: [action: 'handoff' | 'archive' | 'reopen']
   dirty: [value: boolean]
+  working: [value: boolean]
+  updated: [item: ReplyDraft]
 }>()
+const deliveryBusy = ref(false)
+const deliveryDirty = ref(false)
+const locked = computed(() => props.busy || deliveryBusy.value)
 const text = ref('')
 const dirty = computed(() => text.value !== (props.item.snapshot?.reply ?? ''))
 watch(
@@ -19,7 +25,14 @@ watch(
   },
   { immediate: true },
 )
-watch(dirty, (value) => emit('dirty', value))
+watch(
+  () => dirty.value || deliveryDirty.value,
+  (value) => emit('dirty', value),
+)
+function deliveryWorking(value: boolean): void {
+  deliveryBusy.value = value
+  emit('working', value)
+}
 const editable = computed(
   () => props.item.source_status === 'current' && props.item.status !== 'archived',
 )
@@ -88,18 +101,23 @@ const editable = computed(
             v-model="text"
             rows="8"
             maxlength="6000"
-            :disabled="busy || !editable"
+            :disabled="locked || deliveryDirty || !editable"
           />
         </div>
         <p v-if="dirty">有未保存修改，请先保存正文。</p>
-        <button class="button secondary" :disabled="busy || !editable || !dirty || !text.trim()">
+        <button
+          class="button secondary"
+          :disabled="locked || deliveryDirty || !editable || !dirty || !text.trim()"
+        >
           保存修改
         </button>
       </form>
       <div class="button-row">
         <button
           class="button secondary"
-          :disabled="busy || dirty || !editable || item.status === 'human_review'"
+          :disabled="
+            locked || deliveryDirty || dirty || !editable || item.status === 'human_review'
+          "
           @click="emit('action', 'handoff')"
         >
           标记需要人工
@@ -107,7 +125,7 @@ const editable = computed(
         <button
           v-if="item.status !== 'archived'"
           class="button primary"
-          :disabled="busy || dirty"
+          :disabled="locked || deliveryDirty || dirty"
           @click="emit('action', 'archive')"
         >
           存档处理记录
@@ -115,12 +133,21 @@ const editable = computed(
         <button
           v-else
           class="button secondary"
-          :disabled="busy || item.source_status !== 'current'"
+          :disabled="locked || deliveryDirty || item.source_status !== 'current'"
           @click="emit('action', 'reopen')"
         >
           重新打开并转人工
         </button>
       </div>
+      <SupportDelivery
+        :item="item"
+        :shop-id="shopId"
+        :timezone="timezone"
+        :disabled="busy || dirty"
+        @updated="emit('updated', $event)"
+        @dirty="deliveryDirty = $event"
+        @working="deliveryWorking"
+      />
       <p v-if="item.source_status === 'stale'">
         依据已失效。请刷新消息与政策，重新核验后生成新草稿。
       </p>

@@ -380,3 +380,9 @@ A3新复检必须比较shop revision、规则和有效期，原异常来源过�
 - 为什么已批准内容仍需在复制前请求后端？ListingService.delivery用expected_version和active ID检查页面看到的批准是否仍有效，并比对当前商品与快照；下载不能绕过来源撤销和用户/店铺隔离。
 - 如何处理异步复制的错误与迟到响应？ReviewedDelivery用epoch绑定对象、版本及编辑状态，过期响应不触发剪贴板或下载；writeText拒绝则显示只读全文，不记录复制成功。
 - CSV引号足够吗？引号只保证字段结构，manual_delivery对每个数据单元格额外加文本前缀，覆盖公式和控制字符；电子表格再次保存需重新核对，纯文本保留原始文案。
+
+## R2 B3：审核状态、系统事实与人工陈述
+
+- 为什么客服“已存档”不等于“已审阅”？ReplyDraft的status只表示处理进度，reviewed_version单独绑定全文版本/时间/语言；正文或状态变动后再审，SupportDeliveryService在每次交付时重核消息、订单及政策。
+- 如何记录人工发送而不伪造平台回执？ReplyManualAction保存seller_reported的方式/时间/证据，系统external_status保持not_submitted；同UUID重试精确回读，来源清除擦除payload，审计不含客户正文。
+- 如何保护正在录入的证据？SupportDelivery清除被修改表单的确认，SupportReply合并正文与证据dirty，SupportView合并写入busy；上下文epoch抑制迟到结果。独立进程回读与51条分页测试验证持久结果。

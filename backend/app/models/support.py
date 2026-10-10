@@ -34,6 +34,9 @@ class ReplyDraft(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     shop_id: Mapped[int] = mapped_column(ForeignKey("shops.id"), index=True)
+    reviewed_version: Mapped[int | None]
+    reviewed_at: Mapped[datetime | None] = mapped_column(DATETIME(fsp=6))
+    reviewed_language: Mapped[str | None] = mapped_column(String(10))
     message_key: Mapped[str] = mapped_column(String(64))
     source_row_id: Mapped[int | None] = mapped_column(ForeignKey("import_rows.id"))
     request_key: Mapped[str] = mapped_column(String(64))
@@ -44,6 +47,21 @@ class ReplyDraft(Base):
     snapshot: Mapped[dict[str, Any] | None] = mapped_column(JSON(none_as_null=True))
     created_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6), default=utc_now)
+
+
+class ReplyManualAction(Base):
+    __tablename__ = "reply_manual_actions"
+    __table_args__ = (UniqueConstraint("draft_id", "request_key", name="uq_reply_manual_request"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    shop_id: Mapped[int] = mapped_column(ForeignKey("shops.id"), index=True)
+    draft_id: Mapped[int] = mapped_column(ForeignKey("reply_drafts.id"), index=True)
+    draft_version: Mapped[int]
+    request_key: Mapped[str] = mapped_column(String(36))
+    request_hash: Mapped[str] = mapped_column(String(64))
+    occurred_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6))
+    recorded_at: Mapped[datetime] = mapped_column(DATETIME(fsp=6), default=utc_now)
+    payload: Mapped[dict[str, Any] | None] = mapped_column(JSON(none_as_null=True))
 
 
 class ReplySource(Base):

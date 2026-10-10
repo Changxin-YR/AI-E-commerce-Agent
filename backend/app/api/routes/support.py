@@ -13,7 +13,14 @@ from app.schemas.support import (
     ReplyOutput,
     SupportWorkspace,
 )
+from app.schemas.support_delivery import (
+    ManualActionOutput,
+    RecordManualAction,
+    ReviewReply,
+    SupportDelivery,
+)
 from app.services.support import SupportService
+from app.services.support_delivery import SupportDeliveryService
 
 router = APIRouter(prefix="/shops/{shop_id}/support", tags=["客服消息与草稿"])
 Search = Annotated[str, Query(max_length=120)]
@@ -84,3 +91,45 @@ def action(
     shop_id: int, draft_id: int, data: ReplyAction, current: CurrentSession, uow: UowDependency
 ) -> ReplyOutput:
     return SupportService(uow).act(current.user_id, shop_id, draft_id, data)
+
+
+@router.post("/drafts/{draft_id}/review")
+def review(
+    shop_id: int, draft_id: int, data: ReviewReply, current: CurrentSession, uow: UowDependency
+) -> ReplyOutput:
+    return SupportDeliveryService(uow).review(current.user_id, shop_id, draft_id, data)
+
+
+@router.get("/drafts/{draft_id}/delivery")
+def delivery(
+    shop_id: int,
+    draft_id: int,
+    expected_version: Annotated[int, Query(gt=0)],
+    current: CurrentSession,
+    uow: UowDependency,
+) -> SupportDelivery:
+    return SupportDeliveryService(uow).delivery(
+        current.user_id, shop_id, draft_id, expected_version
+    )
+
+
+@router.get("/drafts/{draft_id}/manual-actions")
+def manual_actions(
+    shop_id: int,
+    draft_id: int,
+    current: CurrentSession,
+    uow: UowDependency,
+    before: Annotated[int | None, Query(gt=0)] = None,
+) -> list[ManualActionOutput]:
+    return SupportDeliveryService(uow).history(current.user_id, shop_id, draft_id, before)
+
+
+@router.post("/drafts/{draft_id}/manual-actions", status_code=201)
+def record_manual_action(
+    shop_id: int,
+    draft_id: int,
+    data: RecordManualAction,
+    current: CurrentSession,
+    uow: UowDependency,
+) -> ManualActionOutput:
+    return SupportDeliveryService(uow).record(current.user_id, shop_id, draft_id, data)

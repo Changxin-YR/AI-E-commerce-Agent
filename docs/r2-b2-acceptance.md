@@ -1,6 +1,6 @@
 # R2 B2：Listing 人工交付验收
 
-日期：2026-10-10。前置 B1 代码 e0a6540 的 CI38036657470 已成功。B2 设计提交于11596d6。本包完成。准确代码5acfa3dd6b60cd07dcf6774abece686c92ccb95a的[CI38038015572](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38038015572)已于16:41回读确认同SHA、completed/success。
+日期：2026-10-10。前置 B1 代码 e0a6540 的 CI38036657470 已成功。B2 设计提交于11596d6。本包完成。准确代码5acfa3dd6b60cd07dcf6774abece686c92ccb95a的[CI38038015572](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38038015572)已于16:41回读确认同SHA、completed/success：851后端/360.51秒、122前端、76浏览器/4.0分钟、全部静态构建通过。
 
 - 服务：`ListingService.delivery`按用户→店铺→版本锁核对 expected_version、本地已批准、当前 active ID、来源状态及完整商品快照。只读 API 继续由统一中间件设置 no-store，交付保持外部未提交。
 - 成果：店铺/市场/SKU/文案编号与状态版本、全部继承来源批次及当前源文件/行/身份/导出导入时间、核对时间、完整标题/说明/缺失提示。GTIN、认证和平台必填属性明确待人工核对。

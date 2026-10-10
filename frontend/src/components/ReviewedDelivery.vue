@@ -6,6 +6,7 @@ import FeedbackBanner from './FeedbackBanner.vue'
 
 const props = defineProps<{
   contextKey: string
+  eligibility?: string
   allowed: boolean
   disabled: boolean
   loadArtifact: () => Promise<ManualDelivery>
@@ -65,7 +66,9 @@ async function deliver(action: 'copy' | 'download'): Promise<void> {
   <section class="manual-delivery source-detail" aria-label="人工使用草稿">
     <h3>人工使用草稿</h3>
     <p>包含完整文案、版本和来源，供你在原渠道核对后使用。外部状态保持未提交。</p>
-    <p v-if="!allowed" class="muted">仅当前已批准且来源有效的版本可复制或下载。</p>
+    <p v-if="!allowed" class="muted">
+      {{ eligibility ?? '仅当前已批准且来源有效的版本可复制或下载。' }}
+    </p>
     <p v-else-if="disabled" class="muted">请先完成当前操作；有修改时须保存并审批新版本。</p>
     <div class="button-row">
       <button

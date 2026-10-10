@@ -1,6 +1,9 @@
+import type { ManualDelivery } from '@/types/manualDelivery'
 import { request } from './client'
 import type {
   MessageFacts,
+  ManualActionInput,
+  ManualActionRecord,
   Policy,
   PolicyData,
   ReplyDraft,
@@ -11,6 +14,22 @@ const root = (shop: number) => `/shops/${shop}/support`
 const post = <T>(url: string, data: unknown) =>
   request<T>(url, { method: 'POST', body: JSON.stringify(data) })
 export const supportApi = {
+  review: (shop: number, item: ReplyDraft, language: string) =>
+    post<ReplyDraft>(`${root(shop)}/drafts/${item.id}/review`, {
+      expected_version: item.version,
+      target_language: language,
+      confirmed: true,
+    }),
+  delivery: (shop: number, item: ReplyDraft) =>
+    request<ManualDelivery>(
+      `${root(shop)}/drafts/${item.id}/delivery?expected_version=${item.version}`,
+    ),
+  manualActions: (shop: number, id: number, before?: number) =>
+    request<ManualActionRecord[]>(
+      `${root(shop)}/drafts/${id}/manual-actions${before ? `?before=${before}` : ''}`,
+    ),
+  recordManualAction: (shop: number, id: number, data: ManualActionInput) =>
+    post<ManualActionRecord>(`${root(shop)}/drafts/${id}/manual-actions`, data),
   messages: (shop: number, q = '', offset = 0) =>
     request<MessageFacts[]>(
       `${root(shop)}/messages?${new URLSearchParams({ q, offset: String(offset) })}`,
