@@ -935,3 +935,5 @@ G-06使用生产QQMailProvider、R2服务及真实HTTP会话，对保留的3309�
 ## R2 B3：客服审阅与人工操作记录（2026-10-10）
 
 SupportService新增delivery_context作为唯一当前事实核验入口；SupportDeliveryService单独处理审阅、格式组装和人工自报，SupportRepository继续承担归属/锁/分页/清除查询。reviewed_version与状态版本精确匹配，编辑或存档后失效。独立ReplyManualAction保存操作时间与登记时间，UUID+请求指纹和用户锁保证重复请求不重复写入，源清除同时擦除证据payload；审计只记录编号。SupportDelivery组件向SupportReply/SupportView传播dirty/working并丢弃过期响应，父层共享忙状态避免跨对象结果。迁移和验证见r2-b3-acceptance.md。
+
+B3完整CI补充：MySQL DDL不随后续旧迁移保护异常整体回滚。所有触发旧降级门禁的测试必须在finally恢复head；A3两条预期拒绝路径漏恢复已修复，B3同样覆盖，保留业务拒绝断言。见r2-b3-acceptance.md。

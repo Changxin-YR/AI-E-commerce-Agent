@@ -145,9 +145,14 @@ engine.dispose()
         timeout=30,
     )
     assert json.loads(reread.stdout) == [item]
-    with pytest.raises(RuntimeError, match="存在客服审阅"), pytest.MonkeyPatch.context() as env:
+    with pytest.MonkeyPatch.context() as env:
         env.setenv("SOLOOPS_DATABASE_URL", settings.database_url.get_secret_value())
-        command.downgrade(Config("alembic.ini"), "c84a06e31bd2")
+        try:
+            with pytest.raises(RuntimeError, match="存在客服审阅"):
+                command.downgrade(Config("alembic.ini"), "c84a06e31bd2")
+        finally:
+            command.upgrade(Config("alembic.ini"), "head")
+        command.check(Config("alembic.ini"))
 
 
 @pytest.mark.parametrize("change", ["edit", "archive", "policy", "expiry", "message", "order"])

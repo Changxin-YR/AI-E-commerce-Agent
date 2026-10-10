@@ -305,8 +305,12 @@ def test_legacy_snapshot_no_scope_and_migration_guard(
         result["business_state"] == "awaiting_source"
         and "旧事项" in result["review"]["recheck"]["reason"]
     )
-    with pytest.raises(RuntimeError, match="事项复核"):
-        command.downgrade(Config("alembic.ini"), "b37e820ca491")
+    try:
+        with pytest.raises(RuntimeError, match="事项复核"):
+            command.downgrade(Config("alembic.ini"), "b37e820ca491")
+    finally:
+        # MySQL DDL in newer revisions can commit before this older guard refuses.
+        command.upgrade(Config("alembic.ini"), "head")
     with session_factory() as session:
         record = session.get(OperationTask, task["id"])
         record.review = None
@@ -315,8 +319,12 @@ def test_legacy_snapshot_no_scope_and_migration_guard(
         ):
             event.details = None
         session.commit()
-    with pytest.raises(RuntimeError, match="事项复核"):
-        command.downgrade(Config("alembic.ini"), "b37e820ca491")
+    try:
+        with pytest.raises(RuntimeError, match="事项复核"):
+            command.downgrade(Config("alembic.ini"), "b37e820ca491")
+    finally:
+        # MySQL DDL in newer revisions can commit before this older guard refuses.
+        command.upgrade(Config("alembic.ini"), "head")
 
 
 def test_review_dependencies_deduplicate(logged_in, session_factory):
