@@ -4,6 +4,187 @@ import { readFileSync } from 'node:fs'
 import type { ImportBatch } from '../src/types/imports'
 import type { ImportGroup } from '../src/types/imports'
 
+for (const width of [1440, 390]) {
+  for (const count of [2001, 10001]) {
+    const unique = count === 2001 ? 2000 : count
+
+    test(`browser CSV source imports ${count} records and resumes at ${width}px`, async ({
+      page,
+    }) => {
+      test.setTimeout(120000)
+      await page.setViewportSize({ width, height: 900 })
+      const shop = await openImports(page)
+      await page.getByLabel('报表类型').selectOption('orders')
+      const header =
+        'order_id,line_id,sku,quantity,unit_price,currency,ordered_at,status,discount,refund\r\n'
+      const row = (i: number) => `SYN-${i},1,SYN-SKU,1,2,USD,2026-10-07T00:00:00Z,paid,0,0\r\n`
+      const buffer = Buffer.from(
+        '\ufeff' +
+          header +
+          Array.from({ length: count }, (_, i) => row(count === 2001 && i === 2000 ? 0 : i)).join(
+            '',
+          ),
+      )
+      const source = { name: 'synthetic-browser.csv', mimeType: 'text/csv', buffer }
+      await page.getByLabel('选择原始大报表 CSV').setInputFiles(source)
+      await expect(page.getByText(`本机文件已就绪：${count}个源记录`)).toBeVisible()
+      await page.getByRole('button', { name: '按当前来源建立导入组' }).click()
+      await expect(page.getByTestId('group-coverage')).toContainText(`源记录 0/${count}`)
+      const group = (
+        (await (await page.request.get(`/api/shops/${shop}/import-groups`)).json()) as ImportGroup[]
+      )[0]!
+      expect(group.manifest.source_sha256).toBe(createHash('sha256').update(buffer).digest('hex'))
+      expect(group.manifest.total_rows).toBe(count)
+      await commitBrowserPart(page, 1, group.manifest.parts.length)
+      await page.reload()
+      await page.getByLabel('所属店铺').selectOption(String(shop))
+      await page.getByLabel('继续导入组').selectOption(String(group.id))
+      await page
+        .getByLabel('选择原始大报表 CSV')
+        .setInputFiles({ ...source, buffer: Buffer.concat([buffer, Buffer.from(row(99999))]) })
+      await expect(
+        page.getByText('原文件与当前组的文件名、指纹或分片清单不一致。', { exact: false }),
+      ).toBeVisible()
+      await page.getByLabel('选择原始大报表 CSV').setInputFiles(source)
+      await expect(page.getByText(`本机文件已就绪：${count}个源记录`)).toBeVisible()
+      await page.route('**/api/shops/*/imports?**', async (route) => {
+        await route.abort()
+      })
+      await page.getByRole('button', { name: '上传／恢复第 2 片' }).click()
+      await expect(page.getByText('请重试同一片；若服务端已收到', { exact: false })).toBeVisible()
+      await page.unroute('**/api/shops/*/imports?**')
+      for (const part of Array.from({ length: group.manifest.parts.length - 1 }, (_, i) => i + 2)) {
+        await commitBrowserPart(page, part, group.manifest.parts.length)
+      }
+      await expect(page.getByTestId('group-coverage')).toContainText('分片全部完成')
+      await expect(page.getByTestId('group-coverage')).toContainText(
+        `去重后 ${unique}；跨片重叠 ${count - unique}`,
+      )
+      // Retry a committed part: persistent batch ID/counts and amounts must stay unchanged.
+      const before = (await (
+        await page.request.get(`/api/import-groups/${group.id}`)
+      ).json()) as ImportGroup
+      await page.getByRole('button', { name: '上传／恢复第 1 片' }).click()
+      await expect(
+        page.getByRole('heading', {
+          name: `批次 #${before.batches.find((batch) => batch.group_part === 1)!.id} · part-001.csv`,
+        }),
+      ).toBeVisible()
+      const after = await (await page.request.get(`/api/import-groups/${group.id}`)).json()
+      expect(after).toEqual(before)
+      const session = await (await page.request.get('/api/auth/session')).json()
+      const analysis = await page.request.post(`/api/shops/${shop}/analytics/calculate`, {
+        headers: { 'X-SoloOps-Client': 'web', 'X-CSRF-Token': session.csrf_token },
+        data: {
+          start_at: '2026-10-07T00:00:00Z',
+          end_at: '2026-10-08T00:00:00Z',
+          timezone: 'UTC',
+          currency: 'USD',
+          data_identity: 'synthetic',
+        },
+      })
+      expect(analysis.status()).toBe(count === 10001 ? 422 : 200)
+      const result = await analysis.json()
+      expect(count === 10001 ? result.error.code : Number(result.summary.sales)).toBe(
+        count === 10001 ? 'range_too_large' : 4000,
+      )
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(
+        false,
+      )
+      await page.getByTestId('group-coverage').scrollIntoViewIfNeeded()
+      await page.getByRole('region', { name: '大报表分批导入' }).screenshot({
+        path: `test-results/browser-import-${count}-${width}.png`,
+      })
+      await page.getByRole('button', { name: '结束本次本机处理' }).click()
+      await expect(page.getByRole('button', { name: '上传／恢复第 1 片' })).toHaveCount(0)
+      await expect(page.getByTestId('group-coverage')).toContainText('分片全部完成')
+      await page.getByRole('button', { name: '撤销整组', exact: true }).click()
+      const revoked = page.waitForResponse(
+        (response) => response.url().endsWith(`/import-groups/${group.id}/revoke`),
+        { timeout: 60000 },
+      )
+      await page.getByRole('button', { name: '确认撤销整组' }).click()
+      const revokeResponse = await revoked
+      expect(revokeResponse.ok(), await revokeResponse.text()).toBeTruthy()
+      expect((await revokeResponse.json()).status).toBe('revoked')
+      await expect(page.getByTestId('group-coverage')).toContainText('已整组撤销')
+    })
+  }
+}
+
+test('browser source preserves refunds and currencies while requiring unsafe cell and date corrections', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 900 })
+  const shop = await openImports(page)
+  await page.getByLabel('报表类型').selectOption('orders')
+  await page.getByLabel('选择原始大报表 CSV').setInputFiles({
+    name: 'synthetic-refunds.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(
+      'order_id,line_id,sku,quantity,unit_price,currency,ordered_at,status,discount,refund\n' +
+        'SYN-R,1,A,1,10,USD,2026-10-07T00:00:00Z,refunded,0,10\n' +
+        'SYN-E,1,B,2,5,EUR,2026-10-07T00:00:00Z,paid,0,0\n' +
+        'SYN-X,1,=1+1,1,2,ZZZ,bad-date,paid,0,0\n',
+    ),
+  })
+  await expect(page.getByText('本机文件已就绪：3个源记录')).toBeVisible()
+  await page.getByRole('button', { name: '按当前来源建立导入组' }).click()
+  await page.getByRole('button', { name: '上传／恢复第 1 片' }).click()
+  const previewResponse = page.waitForResponse((response) => response.url().endsWith('/preview'))
+  await page.getByRole('button', { name: '校验并预览' }).click()
+  const preview = (await (await previewResponse).json()) as ImportBatch
+  expect(preview.rows[2]!.errors.map((item) => item.field)).toEqual(
+    expect.arrayContaining(['sku', 'ordered_at']),
+  )
+  await expect(page.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled()
+  await page.getByLabel('源行 4 SKU 修正值', { exact: true }).fill('C')
+  await page.getByLabel('源行 4 订单时间 修正值', { exact: true }).fill('2026-10-07T00:00:00Z')
+  // Field-schema checks run after unsafe input and date parsing have succeeded.
+  const currencyPreview = page.waitForResponse((response) => response.url().endsWith('/preview'))
+  await page.getByRole('button', { name: '校验并预览' }).click()
+  const currencyErrors = (await (await currencyPreview).json()) as ImportBatch
+  expect(currencyErrors.rows[2]!.errors.map((item) => item.field)).toContain('currency')
+  await expect(page.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled()
+  await page.getByLabel('源行 4 币种 修正值', { exact: true }).fill('USD')
+  await page.getByRole('button', { name: '校验并预览' }).click()
+  const committed = page.waitForResponse((response) => response.url().endsWith('/commit'))
+  await page.getByRole('button', { name: '确认导入', exact: true }).click()
+  const saved = (await (await committed).json()) as ImportBatch
+  expect(saved.currencies).toEqual(['EUR', 'USD'])
+  expect(Number(saved.rows[0]!.normalized.refund)).toBe(10)
+  expect(saved.rows[2]!.raw.sku).toBe('=1+1')
+  expect(saved.rows[2]!.corrections.sku).toBe('C')
+  expect((await (await page.request.get(`/api/imports/${saved.id}`)).json()).rows).toEqual(
+    saved.rows,
+  )
+  const session = await (await page.request.get('/api/auth/session')).json()
+  for (const [currency, expected] of [
+    ['USD', 2],
+    ['EUR', 10],
+  ] as const) {
+    const response = await page.request.post(`/api/shops/${shop}/analytics/calculate`, {
+      headers: { 'X-SoloOps-Client': 'web', 'X-CSRF-Token': session.csrf_token },
+      data: {
+        start_at: '2026-10-07T00:00:00Z',
+        end_at: '2026-10-08T00:00:00Z',
+        timezone: 'UTC',
+        currency,
+        data_identity: 'synthetic',
+      },
+    })
+    expect(response.ok(), await response.text()).toBeTruthy()
+    expect(Number((await response.json()).summary.sales)).toBe(expected)
+  }
+})
+
+async function commitBrowserPart(page: Page, part: number, total: number): Promise<void> {
+  await page.getByRole('button', { name: `上传／恢复第 ${part} 片` }).click()
+  await page.getByRole('button', { name: '校验并预览' }).click()
+  await page.getByRole('button', { name: '确认导入', exact: true }).click()
+  await expect(page.getByTestId('group-coverage')).toContainText(`已提交 ${part}/${total}`)
+}
+
 async function openImports(page: Page): Promise<number> {
   await page.goto('/imports')
   await page.getByLabel('账号', { exact: true }).fill('e2e_seller')

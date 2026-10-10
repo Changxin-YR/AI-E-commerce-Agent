@@ -403,3 +403,7 @@ Vue Router的query更新与组件重建如何影响编辑？`AppShell`只让Agen
 为什么不以worker_enabled证明持续运行？它只是配置，进程关闭/主机休眠时不执行，空周期没有记录；ScheduleRuntime展示已保存最近自动周期及实际时间，后续审批从execution_id回查。为什么独立查询？未读筛选、免打扰和分页会隐藏最新记录，manual也不能冒充timer；SchedulesRepository.latest_timer显式owner/shop/trigger约束，created_at/id稳定排序，test_schedules验证同刻/手动/已读/跨店边界。
 
 为什么升级后旧迁移保护测试会影响后续测试？MySQL DDL已提交，跨多版本降级可先删除无数据的新结构，再被旧结构证据保护拒绝；测试必须finally恢复head，B3完整CI定位并回归92项。业务门禁不能因测试方便而放宽。公网就绪判断则见r2-deployment-gates：源码有保护不等于实际代理、Cookie、留存、恢复环境已验收。
+
+## R2 浏览器CSV与导入恢复
+
+为什么不按换行split？`csvSplit.CsvRecords`须跨字节块保留引号/转义/CRLF状态，字段内换行是业务值；UTF-8严格解码也要保留多字节尾部。`csvSplit.spec.ts`实际调用现有Python工具比较输出字节、行数与SHA256，验证跨语言契约。为什么文件哈希不叫流式？Web Crypto digest需要全部输入，所以先限制40MiB，解析另外分块并放Worker；取消由主页面terminate完成。恢复为什么不只比文件名？`sameManifest`核验原件指纹和各片完整描述，服务端再次验证实际上传；重试回读原批次。40000导入与10000分析的边界独立，完整导入不代表可以无限范围计算。

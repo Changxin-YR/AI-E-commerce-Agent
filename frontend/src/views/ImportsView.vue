@@ -178,11 +178,16 @@ async function changeShop(): Promise<void> {
 function chooseFile(event: Event): void {
   file.value = (event.target as HTMLInputElement).files?.[0] ?? null
 }
+function showLargeImport(): void {
+  document.getElementById('large-import')?.scrollIntoView({ behavior: 'smooth' })
+}
 async function upload(): Promise<void> {
   await perform(async () => {
     if (!file.value) throw new Error('请选择文件')
     if (file.value.size > (catalog.value?.max_bytes ?? 2097152))
-      throw new Error('文件超过 2 MiB，请使用页面中的“大报表分批导入”步骤')
+      throw new Error(
+        '文件超过 2 MiB，请在下方“大报表分批导入”选择原始CSV；Excel先将目标工作表另存为CSV UTF-8。',
+      )
     const options = {
       filename: file.value.name,
       kind: kind.value,
@@ -304,6 +309,12 @@ onMounted(initialize)
     <span class="outline-label">业务文件导入</span>
   </div>
   <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
+  <a
+    v-if="error && /2000|2 MiB|拆分/.test(error)"
+    href="#large-import"
+    @click.prevent="showLargeImport"
+    >前往大报表分批导入，选择原文件并继续</a
+  >
   <button v-if="error && !catalog" class="button secondary" @click="initialize">重新加载</button>
   <section class="data-note import-note">
     <span class="note-symbol" aria-hidden="true">i</span>
@@ -443,6 +454,7 @@ onMounted(initialize)
       </form>
     </section>
     <ImportGroups
+      id="large-import"
       :shop-id="shopId"
       :options="groupOptions"
       :refresh="groupRefresh"

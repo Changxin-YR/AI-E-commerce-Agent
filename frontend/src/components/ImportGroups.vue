@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { importsApi } from '@/api/imports'
 import { errorMessage } from '@/api/client'
 import type { ImportBatch, ImportGroup, ImportManifest } from '@/types/imports'
 import FeedbackBanner from './FeedbackBanner.vue'
+import BrowserImportSource from './BrowserImportSource.vue'
+import { sameManifest, type PreparedImport } from '@/lib/csvSplit'
 
 const props = defineProps<{
   shopId: number
@@ -20,7 +22,44 @@ const file = ref<File | null>(null)
 const error = ref('')
 const working = ref(false)
 const confirmRevoke = ref(false)
+const prepared = shallowRef<PreparedImport | null>(null)
+const sourceKey = ref(0)
+const activity = ref('')
 const selected = computed(() => groups.value.find((group) => group.id === selectedId.value))
+const readyFiles = computed(() =>
+  prepared.value && selected.value && sameManifest(prepared.value.manifest, selected.value.manifest)
+    ? prepared.value.files
+    : [],
+)
+function acceptPrepared(value: PreparedImport | null): void {
+  prepared.value = null
+  if (!selected.value) manifest.value = null
+  if (!value) return
+  error.value = ''
+  if (selected.value && !sameManifest(value.manifest, selected.value.manifest)) {
+    error.value =
+      '原文件与当前组的文件名、指纹或分片清单不一致。请选择建组时的原文件；来源有变化时须重新建组。'
+    return
+  }
+  prepared.value = value
+  manifest.value = value.manifest
+}
+function releaseSource(): void {
+  prepared.value = null
+  manifest.value = null
+  sourceKey.value++
+}
+function newGroup(): void {
+  selectedId.value = 0
+  releaseSource()
+}
+function recordStart(index: number): number {
+  return (
+    1 +
+    (selected.value?.manifest.parts.slice(0, index).reduce((total, part) => total + part.rows, 0) ??
+      0)
+  )
+}
 const status = (group: ImportGroup) =>
   group.status === 'revoked' ? '已整组撤销' : group.complete ? '分片全部完成' : '部分覆盖／数据不足'
 let loadSequence = 0
@@ -61,6 +100,7 @@ async function perform(action: () => Promise<void>): Promise<void> {
   }
 }
 async function readManifest(event: Event): Promise<void> {
+  newGroup()
   manifest.value = null
   const value = (event.target as HTMLInputElement).files?.[0]
   if (!value) return
@@ -89,12 +129,16 @@ async function create(): Promise<void> {
   })
 }
 async function uploadPart(): Promise<void> {
+  if (file.value) await uploadFile(file.value)
+}
+async function uploadFile(value: File): Promise<void> {
   await perform(async () => {
     const group = selected.value
-    if (!group || !file.value) return
-    const part = group.manifest.parts.findIndex((item) => item.filename === file.value?.name)
+    if (!group) return
+    const part = group.manifest.parts.findIndex((item) => item.filename === value.name)
     if (part < 0) throw new Error('文件名不在当前组清单中，请选择原分片')
-    if (file.value.size > 2097152) throw new Error('分片不能超过 2 MiB')
+    if (value.size > 2097152) throw new Error('分片不能超过 2 MiB')
+    activity.value = `正在上传第${part + 1}/${group.manifest.parts.length}片；等待服务端确认。`
     const options = Object.fromEntries(
       Object.entries(group.options)
         .filter(([, value]) => value != null)
@@ -102,9 +146,9 @@ async function uploadPart(): Promise<void> {
     )
     emit(
       'batch',
-      await importsApi.upload(props.shopId, file.value, {
+      await importsApi.upload(props.shopId, value, {
         ...options,
-        filename: file.value.name,
+        filename: value.name,
         group_id: String(group.id),
         group_part: String(part + 1),
       }),
@@ -112,6 +156,13 @@ async function uploadPart(): Promise<void> {
     await reload()
     emit('changed')
   })
+  activity.value = ''
+  if (error.value)
+    error.value += ' 请重试同一片；若服务端已收到，会回到原批次。已确认的其他片保留。'
+}
+async function uploadPrepared(index: number): Promise<void> {
+  const value = readyFiles.value[index]
+  if (value) await uploadFile(value)
 }
 async function openBatch(id: number): Promise<void> {
   await perform(async () => {
@@ -119,6 +170,7 @@ async function openBatch(id: number): Promise<void> {
   })
 }
 async function revoke(): Promise<void> {
+  activity.value = '正在整组撤销并核对剩余来源，记录较多时需要等待；完成前请勿重复操作。'
   await perform(async () => {
     if (!selected.value) return
     await importsApi.revokeGroup(selected.value.id, selected.value.version)
@@ -126,10 +178,12 @@ async function revoke(): Promise<void> {
     await reload()
     emit('changed')
   })
+  activity.value = ''
 }
 watch(
   () => props.shopId,
   () => {
+    releaseSource()
     selectedId.value = 0
     file.value = null
     confirmRevoke.value = false
@@ -153,7 +207,34 @@ watch(selectedId, () => {
 <template>
   <section class="section-block form-panel import-groups" aria-label="大报表分批导入">
     <h2>大报表分批导入</h2>
-    <p>超过 2000 行或 2 MiB 时，先在本机拆分 UTF-8 CSV。Excel 请将目标工作表另存为 CSV UTF-8。</p>
+    <p>
+      先在上方确认店铺、类型、渠道、数据身份与时区，再选择原文件。拆分完成后建组，逐片上传并在下方核对、确认。
+    </p>
+    <p class="data-note">
+      导入组最多40000行。经营分析、今日运营和总览的单次范围最多10000行，部分账单／商品核对最多1000行。请按明确日期或业务范围导出与查询；单日仍超限时，当前不能生成完整该日汇总。
+    </p>
+    <BrowserImportSource
+      :key="`${shopId}-${sourceKey}`"
+      :disabled="disabled || working"
+      @prepared="acceptPrepared"
+      @busy="emit('busy', $event)"
+    />
+    <p v-if="prepared" role="status">
+      本机文件已就绪：{{ prepared.manifest.total_rows }}个源记录，{{
+        prepared.files.length
+      }}片。未确认导入的记录尚未生效。
+    </p>
+    <button
+      v-if="prepared"
+      class="button secondary"
+      :disabled="disabled || working"
+      @click="releaseSource"
+    >
+      结束本次本机处理
+    </button>
+    <p>
+      刷新或结束本机处理会释放本机文件，已保存的导入组仍保留。恢复时选择下方原组和同一原文件；不再导入时，请确认撤销整组。
+    </p>
     <details>
       <summary>查看本地拆分步骤</summary>
       <p>在项目的 backend 目录运行以下命令，将路径换成自己的文件和一个尚不存在的输出目录：</p>
@@ -167,6 +248,7 @@ watch(selectedId, () => {
       </p>
     </details>
     <FeedbackBanner :message="error" />
+    <p v-if="activity" role="status">{{ activity }}</p>
     <div class="form-field">
       <label for="group-manifest">拆分清单 manifest.json</label>
       <input
@@ -181,8 +263,16 @@ watch(selectedId, () => {
       {{ manifest.source_filename }} · {{ manifest.total_rows }} 个源记录 ·
       {{ manifest.parts.length }} 片
     </p>
-    <button class="button secondary" :disabled="!manifest || disabled || working" @click="create">
+    <button
+      v-if="!selectedId"
+      class="button secondary"
+      :disabled="!manifest || disabled || working"
+      @click="create"
+    >
       按当前来源建立导入组
+    </button>
+    <button v-else class="button secondary" :disabled="disabled || working" @click="newGroup">
+      准备新的导入组
     </button>
     <div v-if="groups.length" class="form-field">
       <label for="import-group">继续导入组</label>
@@ -209,6 +299,22 @@ watch(selectedId, () => {
         片；源记录 {{ selected.committed_rows }}/{{ selected.manifest.total_rows }}；去重后
         {{ selected.unique_rows }}；跨片重叠 {{ selected.overlap_rows }}。
       </p>
+      <progress
+        :value="selected.committed_rows"
+        :max="selected.manifest.total_rows"
+        aria-label="导入确认进度"
+      />
+      <details>
+        <summary>查看来源与完整性</summary>
+        <p>
+          原文件：{{ selected.manifest.source_filename }}；SHA-256：{{
+            selected.manifest.source_sha256
+          }}
+        </p>
+        <p>
+          下方范围是原文件的数据记录序号，不含表头。多行字段算一条记录；批次明细的源行号为分片内物理行号。分片统一编码，指纹与原文件分别核验。
+        </p>
+      </details>
       <p>
         {{ selected.options.kind }} · {{ selected.options.source_channel }} ·
         {{ selected.options.data_identity }} · {{ selected.options.timezone }}
@@ -218,7 +324,21 @@ watch(selectedId, () => {
       </p>
       <ol class="part-list">
         <li v-for="(part, index) in selected.manifest.parts" :key="part.filename">
-          {{ part.filename }} · {{ part.rows }} 行
+          {{ part.filename }} · {{ part.rows }} 行 · 原数据记录{{ recordStart(index) }}–{{
+            recordStart(index) + part.rows - 1
+          }}
+          <small> · {{ part.bytes }}字节</small>
+          <span v-if="!selected.batches.some((batch) => batch.group_part === index + 1)"
+            >尚未上传</span
+          >
+          <button
+            v-if="readyFiles[index] && selected.status === 'active'"
+            class="button secondary small"
+            :disabled="disabled || working"
+            @click="uploadPrepared(index)"
+          >
+            上传／恢复第 {{ index + 1 }} 片
+          </button>
           <template
             v-for="batch in selected.batches.filter((item) => item.group_part === index + 1)"
             :key="batch.id"
@@ -296,6 +416,9 @@ watch(selectedId, () => {
 .import-groups select {
   max-width: 100%;
   min-width: 0;
+}
+.import-groups progress {
+  width: 100%;
 }
 .import-groups code {
   display: block;

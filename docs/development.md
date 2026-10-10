@@ -956,3 +956,7 @@ Agent/客服路由从每次query变化重挂载改为观察已验证的记录链
 schedules/status保留worker_enabled并增加latest_timer，接口→SchedulesService→SchedulesRepository按当前用户/店铺只取timer记录，created_at倒序、id打破同刻平局。摘要独立于历史未读筛选/游标和manual记录；ScheduleRuntime显式区分配置开关、保存记录与当前在线状态，并保留实际执行/报表入口。原30秒扫描、最近一期合并、24小时窗口、暂停/恢复、唯一时间槽机制保持，没有新增队列或迁移。
 
 局部可维护性沿用import_groups、margin_review、manual_delivery、support_delivery等职责拆分。上线门禁逐项记录源码/合成证据与部署待验内容，见[r2-deployment-gates](r2-deployment-gates.md)。统一卖家演示扩展原foundation浏览器测试，保留全部金额和旧路径断言；修订商品须填写新导出时间，原事项复检保持完成历史并如实显示新来源仍异常。具体证据见[r2-c-acceptance](r2-c-acceptance.md)。
+
+## R2 修复包3：浏览器文件准备与持久导入
+
+`frontend/src/lib/csvSplit.ts`将UTF-8解码、CSV记录状态与分片编码独立成小函数；原文件哈希受40MiB约束，解析以64KiB块推进。Worker只准备数据，API→ImportGroupService→仓库仍独立验证manifest、安全、映射、去重和事务。`sameManifest`比较原件及全部分片字段，刷新恢复不能拼接不同源文件。`BrowserImportSource`管理Worker生命周期，父页只接收完整结果；取消/卸载终止计算。逐片上传继续原映射/语义/覆盖确认，不引入自动业务批准。UI区分本机准备、服务端上传、已确认记录与整组撤销，容量差异在建组前可见。设计与验证见r2-fix-uat-02-plan.md和r2-fix-uat-02.md。
