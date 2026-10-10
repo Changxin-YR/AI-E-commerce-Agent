@@ -1,16 +1,16 @@
 # SoloOps 接续上下文
 
-更新：2026-10-10。G-01至G-05已完成；QQ邮箱适配已完成，本人真实邮件验收仍待。一个开发聊天独占主工作区，不启用子代理或并行开发聊天。上下文近上限时先落盘提交推送，再创建新聊天接续，旧聊天停止写入。
+更新：2026-10-10。基础版本B-01至B-14已全部通过；G-01至G-06完成，本人QQ摘要已真实收件并保存声明。后续长期扩展等待用户启动。一个开发聊天独占主工作区，不启用子代理或并行开发聊天。
 
 ## 当前目标与提交
 
-- 交付foundation-release可运行基础版，四流程与B-01至B-14；长期扩展按foundation-backlog等用户启动。74SO、32原验收、7长期E2E保留。
-- main **2a431ebbed147f78c43d559b2e36cdaaf77007e2** 已正常推送：G-06真实QQ SMTP登录及配置/备份升级证据，应用代码仍为383ca25。383ca25的CI38010808357已核实completed/success；本次仅文档提交未回读新CI。
+- foundation-release约定四流程及B-01至B-14已完成；A-13本人邮件实发与收件已通过。保留全部74SO/32原验收/7长期E2E，27个已有模块和47个后续模块范围不变；按foundation-backlog等用户启动后续。真实经营数据及平台接口尚未验收。
+- main **adddb19b58eb5772ff7ff04c029bca791fa7676b** 已正常推送：基础版最终验收/真实QQ收件/维护文档收尾，14文件仅文档。应用代码与383ca25完全一致（backend/frontend/scripts/.github diff为空），其CI38010808357已核实completed/success。最新文档提交CI尚未回读，不谎报最终head的CI。
 - 完整后端 **719 passed / 289.98秒**，Ruff规则/226文件格式、mypy159通过；前端26文件98单元/4.68秒、lint/type-check/build通过。最终邮件桌面/手机2流程/10.1秒通过，组件定向3项/1.51秒通过；已查看最终截图，390px无横溢。
 - 3308迁移回退/升级及模型一致性已通过。3309保留验收库于本次先备份再升级至92c7ea53bd10，64表记录数与未改结构表CHECKSUM一致。3307开发库仍未升级，启用新API前须迁移。绝不对3309运行pytest/seed/清库。
-- 主工作区干净；真实邮件新增0，真实模型新增0。用户已填backend/.env授权码，QQ TLS/SMTP AUTH实际成功；backend/.env仍enabled=false、主库未绑定。实际验收API用忽略g06_server.py合并QQ配置与3309数据库，仅绑定owner1/shop2、外发启用，模型和调度关闭。
+- 主工作区干净；本次真实邮件总共2封（验证码1、经营摘要1），无重试。新增模型调用0。用户QQ地址/授权码在被忽略backend/.env，enabled=false，主3307库owner/shop仍未绑定；3309验收已关闭外发，模型/调度也关闭。
 
-## QQ邮件改动与下一步
+## QQ邮件已实现与已验收能力
 
 - 用户明确要QQ邮箱发件和收件，且可发给其他人。QQ SMTP固定smtp.qq.com:465+证书校验，登录用客户端授权码。MailProvider.verify_sender替代verify_domain；固定本人账号/店铺和验证收件箱，生成摘要前可输入其他单个纯邮箱地址。
 - 每封收件人保存在OutboundMessage.recipient，进入content_hash和按run/收发地址的dedupe_key，另一地址需新预览/独立审批；已有Resend通道仍只发已验证本人地址。provider随TestMailChannel持久化，旧消息recipient为空时回读原通道地址。
@@ -27,21 +27,27 @@
 - 成功的5个执行重放相同request_id和advance仍原id/succeeded，付费数保持7。停付费API后用全关闭配置实际重启，原会话与6个执行+旧分析+旧Listing+当前检查共9份快照精确一致。
 - 完整逐次token/时间/费用/审阅事实在docs/foundation-model-evidence.md，B-02至B-06通过。G-05不需要重复跑或再建新付费执行。
 
-## G-06/B-07当前阻塞与准备
+## G-06/A-13/B-07/B-08已完成
 
-- 用户最新“填好了”，本机QQ授权码存在且真实SMTP登录已成功，2026-10-10 01:01:41 UTC，只执行AUTH/QUIT，未执行DATA。不打印凭据。用户选择QQ收发、默认本人、可填其他收件人，尚无任何一封真实发送许可。
-- 已通过request_user_input_async展示真实本人收发地址、主题及模板，请求“现在发送1封验证邮件”的许可，**尚未收到回复**。不要重复问已有配置，也不要将填写授权码视为本封发送许可。按foundation-release第7节，验证码与摘要各自审批。
-- 主代码+保留3309库API8002已就绪，模型/scheduler禁用。SQL查归属及实际登录会话验证owner1/shop2；通道provider=qq_smtp/configured=true/status=disconnected，无邮件记录。QQ实际地址仅在忽略backend/.env及本机HTTP预览中，勿提交文档。
-- 验证邮件主题“SoloOps 测试邮箱验证”；正文“SoloOps 测试邮箱验证。验证码：{8 位随机码}。15 分钟内有效。此邮件仅验证本人测试邮箱，不含经营数据。”独立获准后调用实际POST /api/shops/2/outbound/channel/connect，json confirmed=true，一次提交。之后用户读QQ邮件给8位验证代码或在UI填写，POST /channel/{id}/verify；不要把邮箱客户端授权码当验证码。
-- 本机.local/foundation-g06/http-state.json已有新登录cookies/csrf/通道预览；本机会话不能输出。g06_http.py只登录及读配置，当前断言disconnected，发信后不要原样重跑。g06_prepare.py包含一次性备份升级/只读SMTP核验，拒绝已有邮件记录，不能反复重跑。g06_server.py启动主代码API8002；实际secret仅运行时从本机.env读取。
-- .local/foundation-g06/migration.json记录新备份foundation-qq-before-20261010-010136（.local/backups），旧head7e7851694067、新head92c7ea53bd10、64表行数一致/未改结构表CHECKSUM一致。smtp-login.json保存安全核验结果，verification-review.md是实际地址+模板。G-05账本哈希相同，新增模型调用0。
-- 本人验证通过后，重新读取同组资料operation_run #4的当前来源/时效，必要时以本地规则重检，使用R2生成实际摘要并展示地址和全文，取得单次许可再提交。不能将overview_report当R2输入。已有docs/foundation-mail-review.md仅原稿，可能需按当前库存时效更新。
-- B07须SMTP接受及实际收件两份证据，B08邮件段依赖B07。QQ未知仅人工核对原收件箱，不能重发或虚构回执；人工声明独立。完整当前证据docs/foundation-mail-evidence.md；基础版本仍未全部完成。完成后关闭验收API或外发开关。
+- 用户明确使用QQ发件、默认本人收件并可填写其他单个地址。本次本人真实邮箱地址仅在本机，不写到版本库或接续分支。未来新邮件仍按该封地址/全文独立许可；本次两封许可均已使用，不可沿用。
+- 09:01生产TLS/SMTP AUTH核验成功；3309保留G04/G05库先备份foundation-qq-before-20261010-010136后升级92c7ea53bd10，64表行数一致/未改结构表CHECKSUM一致。实际SQL归属与HTTP登录确认owner1/shop2。
+- 用户明示同意1封验证码：09:07:48（Asia/Shanghai）POST /api/shops/2/outbound/channel/connect一次，通道1为verifying且有SMTP接受标识；用户读取本人邮箱提供8位码，09:09:47 POST /channel/1/verify成功，active并清空验证码哈希。不要再请求验证码，不保存原码。
+- 运营检查4来源current，R2预览1/version1，发件/收件同为本人QQ，主题“SoloOps 测试经营摘要 · 检查 #4”。实际地址/主题/完整正文已在确认卡展示；用户明确“已核对，同意发送这1封摘要”。09:12:48单次approve得到审批1，09:12:49 send一次，结果accepted/smtp_accepted/version3，审批used/max_uses1/used_count1。随后GET完全一致。
+- 用户明确“已在收件箱收到，地址和正文一致”。09:15:25通过原receipt接口保存声明，证据位置为本人QQ收件箱按上述主题及09:12提交时间定位。received_at是声明保存时间，不能当精确送达时间。未另行核验邮箱原文头，Message-ID不等于远端送达证明。数据库1通道/1摘要/1审批、仅消耗1次，无重发。
+- 完成后g06_server.py改外发false，实际停本次API子进程52496（父42808）再重启launcher43068。原会话、已接受摘要/全文/标识/人工收件声明/单次审批持久一致；仅channel_status按关闭配置变not_configured。6真实模型执行+分析历史+Listing历史+运营检查9快照与G05结果一致，账本仍7次/0.0007750元/未知0。after-restart.json是最后证据。
+- 已完成docs/foundation-mail-evidence.md最终报告，foundation-mail-review.md为实际已获批发送正文。B-07/B-08/A-13关闭，B-01至B-14共14项通过；全部74SO、32原验收表行保留，敏感字段扫描和diff-check通过。应用代码未修改，常规719/98及原CI通过证据继续对应代码，不重复扩测。
+- 日常邮件路径：启用并绑定实际运行实例→测试外发→选择运营检查→填单个收件人→生成预览→核对地址和全文→单次批准并提交→在QQ查看收件→记录收件证据。应用不做QQ收件箱同步。主3307库未升级/未绑定，不要将3309编号照抄到主配置；用户要求日常启用时先核对实际库、账号和店铺。
+
+## G-06本机证据与辅助脚本
+
+- .local/foundation-g06：migration.json、smtp-login.json、http-state.json（会话敏感）、verification-consent/result、mailbox-verified、summary-preview/consent/approved/result/readback/receipt、receipt-statement、database-audit、before-restart/after-restart。verification-review和summary-review为实际地址全文，仅本机。
+- .local/g06_prepare.py为一次性备份/迁移/登录核验，拒绝已有邮件记录，不重跑；g06_http.py和g06_verify_and_preview.py已过其前置状态，不原样重跑。g06_send_verification.py、g06_send_summary.py使用独占本机许可文件防重跑，不删文件绕过保护。g06_closeout.py receipt仅供首次声明，after-restart可只读核对但业务来源随时间过期后原快照可能不再完全一致。g06_server.py现三开关false。
+- g06_finalize_docs.py、g06_context.py等本轮整理脚本不要重跑，避免覆盖最终文档或恢复旧“待许可”状态。优先直接读当前文件与只读API，遵循真实时间与来源失效。
 
 ## 环境及证据保留
 
 - 主目录C:\Users\27363\Desktop\AI E-commerce Agent；Windows PowerShell，Vue3/TS/FastAPI/Python3.11/MySQL8.4，三层服务，Decimal/Numeric、UTC和显式时区/用户店铺隔离。
-- **当前MySQL3309与QQ验收API8002运行，前端5175未启动。** API启动器PID记录在.local/foundation-g06/api-launch-pid.txt（本次42808），实际子进程需按g06_server.py命令行确认后停止。主开发3307、测试3308和旧API8000未操作。
+- **当前MySQL3309与验收只读配置API8002运行，前端5175未启动。** g06_server.py已outbound/model/scheduler全部false；本次重启launcher43068，PID文件.local/foundation-g06/api-launch-pid.txt，停进程前按g06_server.py与父进程路径重新核实。主3307/3308及旧API8000未操作。
 - G-04副本.local/foundation-g04，Compose项目soloops-foundation-g04，卷soloops-foundation-g04_mysql-data，库soloops_foundation_g04_test。启动保留库：在副本根`docker compose -p soloops-foundation-g04 --env-file .env -f compose.yaml -f compose.g04.yaml up -d --wait mysql`。不要重跑setup/bootstrap/seed，不要向该库运行pytest。
 - G-04本机脚本.local/g04_prepare.py、g04_bootstrap.py、g04_http.py、g04_control.ps1、g04_browser.mjs、g04_audit.py；副本.local中initial/bootstrap/http-state/final-audit/samples/account，账号/会话严禁打印。副本.env真实模型/邮件关闭；常规scheduler原true，复用时须关闭。
 - G-05本机.local/foundation-g05/ledger.json含7次usage及规范化合成响应，http-state.json含阶段快照，audit.json有合计。辅助脚本g05_server.py临时审计子类、g05_http.py、g05_closeout.py、g05_readback_server.py。不要直接重跑付费脚本，不要删除账本。readback-server为主代码+副本DB配置，模型/邮件/调度全关闭。
@@ -50,5 +56,5 @@
 - G-03备份.local/backups/foundation-20261009-2304，64表head/行数/CHECKSUM一致，历史代表回读通过；恢复副本位于mysql-test(tmpfs停止丢失)，文件备份保留。
 - 本地静态/测试用backend/.venv；pytest/迁移/E2E共享3308须严格串行。浏览器使用.local/runtimes/node-v24.16.0-win-x64与npm run test:e2e，禁用真实模型/邮件。全局24.15曾Windows原生崩溃，不复用。
 - 普通开发、定向测试与正常提交推送已授权，不强推；沙箱Docker/MySQL/Git写索引受限时按权限机制升级。本轮无自动审批拒绝。gh未安装；GitHub fetch工具可读REST actions/runs?head_sha=...&event=push，正文在structuredContent.content里，返回时只输出必要字段，避免整份仓库元数据。Firecrawl已402，官方web工具fallback，不反复消耗接口，不编HTTP抓取脚本。
-- docs/development38、testing33、interview、README、矩阵、foundation证据/维护已同步。context-memory独立分支只存本文重点，不合并main，不提交完整聊天/本机日志。
+- docs/development39、testing34、interview、README、功能/原验收矩阵和foundation规格/验收/后续/维护/实发证据全部同步。context-memory独立分支只存重点，不合并main。
 - 接续先读AGENTS.md与foundation-release/acceptance/backlog、runtime/model evidence。项目ID1c274a7b-2f1e-45ca-bf1b-10475766545b，换聊天用local同项目，单开发聊天独占。
