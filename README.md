@@ -10,7 +10,7 @@ Vue 3 + TypeScript / Python FastAPI / MySQL 的个人卖家运营项目。后端
 
 统一演练可用 [基础合成样本](examples/foundation/README.md)；运营事项可直接定位库存、同范围分析、商品或消息，并返回原事项。独立空库安装及实际进程恢复已完成[G-04验收](docs/foundation-runtime-evidence.md)；安装、调度启停和隔离备份恢复命令见 [使用维护](docs/foundation-user-guide.md)。
 
-基础G-05真实模型验收：7次百炼请求，目录估算人民币0.0007750元，无未知费用；事实、敏感接管、审批及来源变化均有[证据](docs/foundation-model-evidence.md)。QQ通道配置与SMTP登录已通过，[B-07本人邮件](docs/foundation-mail-evidence.md)仍待邮箱验证、单次发送许可和实际收件；[摘要审阅稿](docs/foundation-mail-review.md)已准备。
+基础G-05真实模型验收：7次百炼请求，目录估算人民币0.0007750元，无未知费用；事实、敏感接管、审批及来源变化均有[证据](docs/foundation-model-evidence.md)。QQ通道配置、SMTP登录及真实验证码收件验证已通过，[B-07本人邮件](docs/foundation-mail-evidence.md)仍待经营摘要单次发送许可和实际收件；[摘要审阅稿](docs/foundation-mail-review.md)已准备。
 
 ## 文档入口
 
