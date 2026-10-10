@@ -13,6 +13,7 @@ from app.repositories.business_rules import BusinessRulesRepository
 from app.repositories.expenses import ExpenseRepository
 from app.repositories.fee_rules import FeeRuleRepository
 from app.repositories.identity import IdentityRepository
+from app.repositories.import_groups import ImportGroupRepository
 from app.repositories.imports import ImportRepository
 from app.repositories.inventory import InventoryRepository
 from app.repositories.listings import ListingRepository
@@ -44,6 +45,7 @@ class UnitOfWork:
         self.fee_rules = FeeRuleRepository(session)
         self.identity = IdentityRepository(session)
         self.imports = ImportRepository(session)
+        self.import_groups = ImportGroupRepository(session)
         self.inventory = InventoryRepository(session)
         self.operations = OperationsRepository(session)
         self.order_reconciliation = OrderReconciliationRepository(session)

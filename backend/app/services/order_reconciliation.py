@@ -7,6 +7,7 @@ from app.schemas.order_reconciliation import (
     ReconciliationOrder,
     ReconciliationStatement,
 )
+from app.services.import_groups import require_import_coverage
 from app.services.order_comparison import compare_orders
 from app.services.profit_calculation import reference, utc_text
 
@@ -32,6 +33,9 @@ class OrderReconciliationService:
         store = self.uow.identity.get_shop(owner, shop, lock=True)
         if store is None:
             raise NotFoundError()
+        require_import_coverage(
+            self.uow, owner, shop, scope.data_identity, {"orders", "statements"}, scope.channel
+        )
         repo = self.uow.order_reconciliation
         window_orders = repo.orders(owner, shop, scope)
         window_statements = repo.statements(owner, shop, scope)

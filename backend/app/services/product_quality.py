@@ -17,6 +17,7 @@ from app.schemas.product_quality import (
     QualitySaved,
     QualityScope,
 )
+from app.services.import_groups import require_import_coverage
 from app.services.product_quality_rules import (
     LIMITATIONS,
     RULE_VERSION,
@@ -48,6 +49,7 @@ class ProductQualityService:
         return shop
 
     def _calculate(self, owner: int, shop: Shop, scope: QualityScope) -> QualityResult:
+        require_import_coverage(self.uow, owner, shop.id, scope.data_identity, {"products"})
         rows = self.repo.products(owner, shop.id, scope)
         if len(rows) > MAX_PRODUCTS:
             raise BusinessError(

@@ -34,6 +34,8 @@ export interface ImportRow {
   action: 'new' | 'update' | 'unchanged' | 'error'
 }
 export interface BatchSummary {
+  group_id?: number | null
+  group_part?: number | null
   origin?: 'file_import' | 'manual_edit'
   id: number
   shop_id: number
@@ -77,3 +79,25 @@ export interface MappingReview {
   meaning: string
 }
 export type Corrections = Record<number, Record<string, string>>
+
+export interface ImportManifest {
+  format: 'soloops-split-v1'
+  source_filename: string
+  source_sha256: string
+  total_rows: number
+  parts: { filename: string; sha256: string; rows: number; bytes: number }[]
+}
+export interface ImportGroup {
+  id: number
+  shop_id: number
+  version: number
+  status: string
+  complete: boolean
+  options: Record<string, string | number | null>
+  manifest: ImportManifest
+  batches: BatchSummary[]
+  committed_parts: number
+  committed_rows: number
+  unique_rows: number
+  overlap_rows: number
+}

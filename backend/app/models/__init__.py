@@ -4,6 +4,7 @@ from app.models.business_rules import BusinessRuleRevision
 from app.models.expenses import Expense, ExpenseRevision, ExpenseSource
 from app.models.fee_rules import FeeRule, FeeRuleRevision
 from app.models.identity import AuditEvent, LoginSession, SellerProfile, Shop, User
+from app.models.import_groups import ImportGroup
 from app.models.imports import (
     CustomerMessage,
     ImportBatch,
@@ -44,6 +45,7 @@ from app.models.statement_reviews import (
 from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
 
 __all__ = [
+    "ImportGroup",
     "Settlement",
     "SettlementReceipt",
     "SettlementRevision",

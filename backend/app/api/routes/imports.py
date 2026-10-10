@@ -8,6 +8,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.api.dependencies import CurrentSession, UowDependency
 from app.core.errors import BusinessError
+from app.schemas.import_groups import GroupInput, GroupOutput
 from app.schemas.imports import (
     BatchOutput,
     BatchSummary,
@@ -21,6 +22,7 @@ from app.schemas.imports import (
     VersionInput,
 )
 from app.services.import_catalog import FIELDS
+from app.services.import_groups import ImportGroupService
 from app.services.import_parser import MAX_BYTES, MAX_ROWS
 from app.services.imports import ImportService
 
@@ -155,3 +157,32 @@ def error_report(batch_id: int, current: CurrentSession, uow: UowDependency) -> 
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="import-{batch_id}-errors.csv"'},
     )
+
+
+@router.post("/shops/{shop_id}/import-groups", status_code=201)
+def create_group(
+    shop_id: int, data: GroupInput, current: CurrentSession, uow: UowDependency
+) -> GroupOutput:
+    return ImportGroupService(uow).create(current.user_id, shop_id, data)
+
+
+@router.get("/shops/{shop_id}/import-groups")
+def groups(
+    shop_id: int,
+    current: CurrentSession,
+    uow: UowDependency,
+    before: Annotated[int | None, Query(ge=1)] = None,
+) -> list[GroupOutput]:
+    return ImportGroupService(uow).list(current.user_id, shop_id, before)
+
+
+@router.get("/import-groups/{group_id}")
+def group(group_id: int, current: CurrentSession, uow: UowDependency) -> GroupOutput:
+    return ImportGroupService(uow).get(current.user_id, group_id)
+
+
+@router.post("/import-groups/{group_id}/revoke")
+def revoke_group(
+    group_id: int, data: VersionInput, current: CurrentSession, uow: UowDependency
+) -> GroupOutput:
+    return ImportGroupService(uow).withdraw(current.user_id, group_id, data.version)

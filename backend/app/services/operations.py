@@ -24,6 +24,7 @@ from app.schemas.operations import (
     TaskQuery,
 )
 from app.services.business_rules import BusinessRulesService
+from app.services.import_groups import require_import_coverage
 from app.services.listings import digest
 from app.services.operation_checks import CheckResult, check_data
 from app.services.profit_calculation import utc_text
@@ -271,6 +272,14 @@ class OperationsService:
             raise BusinessError(
                 "range_too_large", "单项检查超过 10000 行，请缩小范围；本次未保存", 422
             )
+        require_import_coverage(
+            self.uow,
+            owner,
+            shop.id,
+            scope.data_identity,
+            {"orders", "products", "inventory", "messages"},
+            scope.channel,
+        )
         result = check_data(orders, products, inventory, messages, scope, shop.data_revision, now)
         for finding in result.findings:
             finding.rule_revision_id = scope.rule_revision_id

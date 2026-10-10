@@ -18,6 +18,7 @@ import type {
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import ImportMapping from '@/components/ImportMapping.vue'
 import ImportRows from '@/components/ImportRows.vue'
+import ImportGroups from '@/components/ImportGroups.vue'
 import ImportSemanticsReview from '@/components/ImportSemanticsReview.vue'
 
 const route = useRoute()
@@ -34,6 +35,14 @@ const shopId = ref(0)
 const catalog = ref<ImportCatalog | null>(null)
 const templates = ref<MappingTemplate[]>([])
 const history = ref<BatchSummary[]>([])
+const groupRefresh = ref(0)
+const groupOptions = computed(() => ({
+  kind: kind.value,
+  source_channel: channel.value,
+  data_identity: identity.value,
+  timezone: timezone.value,
+  ...(exportedAt.value ? { exported_at: exportedAt.value } : {}),
+}))
 const batch = ref<ImportBatch | null>(null)
 const mapping = ref<Record<string, string>>({})
 const corrections = ref<Corrections>({})
@@ -101,6 +110,7 @@ async function perform(action: () => Promise<void>): Promise<void> {
 }
 async function loadHistory(): Promise<void> {
   history.value = shopId.value ? await importsApi.list(shopId.value) : []
+  groupRefresh.value++
 }
 function adopt(value: ImportBatch): void {
   batch.value = value
@@ -112,6 +122,14 @@ function adopt(value: ImportBatch): void {
   allowUpdates.value = false
   reviewedFields.value = []
   pendingAction.value = null
+}
+async function groupChanged(): Promise<void> {
+  try {
+    await loadHistory()
+    if (batch.value?.group_id) adopt(await importsApi.get(batch.value.id))
+  } catch (cause) {
+    error.value = errorMessage(cause)
+  }
 }
 async function initialize(): Promise<void> {
   await perform(async () => {
@@ -162,7 +180,7 @@ async function upload(): Promise<void> {
   await perform(async () => {
     if (!file.value) throw new Error('请选择文件')
     if (file.value.size > (catalog.value?.max_bytes ?? 2097152))
-      throw new Error('文件不能超过 2 MiB')
+      throw new Error('文件超过 2 MiB，请使用页面中的“大报表分批导入”步骤')
     const options = {
       filename: file.value.name,
       kind: kind.value,
@@ -419,9 +437,19 @@ onMounted(initialize)
         </div>
       </form>
     </section>
+    <ImportGroups
+      :shop-id="shopId"
+      :options="groupOptions"
+      :refresh="groupRefresh"
+      :disabled="busy"
+      @batch="adopt"
+      @changed="groupChanged"
+      @busy="busy = $event"
+    />
     <section v-if="batch" class="section-block form-panel" aria-labelledby="batch-title">
       <div class="section-title">
         <h2 id="batch-title">批次 #{{ batch.id }} · {{ batch.filename }}</h2>
+        <p v-if="batch.group_id">导入组 #{{ batch.group_id }} · 第 {{ batch.group_part }} 片</p>
         <span class="status-tag" :class="{ complete: batch.status === 'committed' }">{{
           statusLabels[batch.status]
         }}</span>

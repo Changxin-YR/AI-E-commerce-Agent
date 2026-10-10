@@ -15,6 +15,7 @@ from app.schemas.statements import (
 from app.services.evidence import evidence_key
 from app.services.expenses import naive_utc
 from app.services.fee_mapping import map_fees
+from app.services.import_groups import require_import_coverage
 from app.services.profit_calculation import reference, utc_text
 
 
@@ -65,6 +66,9 @@ class StatementService:
         store = self.uow.identity.get_shop(owner, shop, lock=True)
         if store is None:
             raise NotFoundError()
+        require_import_coverage(
+            self.uow, owner, shop, scope.data_identity, {"statements"}, scope.channel
+        )
         args = (
             owner,
             shop,

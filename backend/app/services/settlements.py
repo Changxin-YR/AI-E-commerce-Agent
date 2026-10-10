@@ -19,6 +19,7 @@ from app.schemas.settlements import (
 from app.schemas.statements import StatementItem
 from app.services.evidence import evidence_key
 from app.services.expenses import naive_utc
+from app.services.import_groups import require_import_coverage
 from app.services.product_quality import digest
 from app.services.profit_calculation import reference, utc_text
 from app.services.settlement_calculation import compare_payouts, settlement_totals
@@ -130,6 +131,9 @@ class SettlementService:
 
     def _calculate(self, owner: int, shop: int, data: SettlementDraft) -> SettlementSnapshot:
         scope = data.scope
+        require_import_coverage(
+            self.uow, owner, shop, scope.data_identity, {"statements"}, scope.channel
+        )
         if any(
             naive_utc(r.received_at) > utc_now() + timedelta(minutes=5)
             for r in data.content.receipts

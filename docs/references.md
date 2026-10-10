@@ -1,5 +1,13 @@
 # 公开实现与借鉴记录
 
+## R2 A1-2 安全分批与原子撤销（2026-10-10）
+
+- Python 官方 [csv](https://docs.python.org/3/library/csv.html)：按 CSV 记录迭代，使用 `newline=""` 保留引号内换行，重写时由 csv.writer 转义。PSF 标准库与文档，仅参考接口自行实现；复用项目现有解析器逐片核验，未新增依赖。
+- SQLAlchemy 官方 [Transactions and Connection Management](https://docs.sqlalchemy.org/en/20/orm/session_transaction.html)：参考一次事务的提交/回滚边界。SQLAlchemy MIT，官方文档仅作接口依据；沿用 UnitOfWork.defer_commits 将整组撤销和原批次服务组合在一个事务内，故障回滚后全部分片与版本保持。
+- 适配：本地 UTF-8 CSV 拆分最大40MiB/40000行/20片，单片仍为2MiB/2000行/64列/2000字符；清单只保存指纹、行数与文件名。导入组绑定店铺与来源语义，跨片同键冲突阻断、同值去重、未完成组返回partial_coverage；组历史20项游标分页，汇总不加载全部原始单元格。
+- Firecrawl状态检查返回网络失败；本包采用内置web检索上述官方资料。原始大Excel需先人工选工作表另存CSV UTF-8，不扩大原Excel安全边界。
+
+
 ## R2 A1-1 通用导入审阅（2026-10-10）
 
 - [Python csv](https://docs.python.org/3/library/csv.html)：PSF文档许可，借鉴明确编码、newline与csv.writer处理边界，复用既有解析器并增加GB18030/GBK转换指引。未复制实现。

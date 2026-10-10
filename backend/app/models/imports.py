@@ -13,6 +13,8 @@ from app.models.base import Base
 class ImportBatch(Base):
     __tablename__ = "import_batches"
     id: Mapped[int] = mapped_column(primary_key=True)
+    group_id: Mapped[int | None] = mapped_column(ForeignKey("import_groups.id"), index=True)
+    group_part: Mapped[int | None]
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     shop_id: Mapped[int] = mapped_column(ForeignKey("shops.id"), index=True)
     kind: Mapped[str] = mapped_column(String(16))

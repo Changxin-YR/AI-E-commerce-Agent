@@ -17,6 +17,7 @@ from app.schemas.analytics import (
     TodoAction,
     TodoOutput,
 )
+from app.services.import_groups import require_import_coverage
 from app.services.profit_calculation import calculate, reference, utc_text
 
 QUESTIONS: dict[str, Intent] = {
@@ -41,6 +42,9 @@ class AnalyticsService:
 
     def run(self, owner_id: int, shop_id: int, scope: AnalysisInput) -> AnalysisResult:
         shop = self._shop(owner_id, shop_id)
+        require_import_coverage(
+            self.uow, owner_id, shop_id, scope.data_identity, {"orders", "products"}, scope.channel
+        )
         orders = self.repo.orders(
             owner_id,
             shop_id,

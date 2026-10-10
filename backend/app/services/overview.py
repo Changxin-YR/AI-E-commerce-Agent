@@ -21,6 +21,7 @@ from app.schemas.overview import (
     ShopOverview,
     TaskLink,
 )
+from app.services.import_groups import require_import_coverage
 from app.services.inventory import assess_snapshot
 from app.services.overview_calculation import change, midnight, period, totals
 from app.services.profit_calculation import reference, utc_text
@@ -114,6 +115,13 @@ class OverviewService:
         prior_start, prior_end = (
             midnight(scope.comparison_start, scope.timezone),
             midnight(scope.comparison_end, scope.timezone),
+        )
+        require_import_coverage(
+            self.uow,
+            owner,
+            shop.id,
+            scope.data_identity,
+            {"orders", "products", "inventory", "messages"},
         )
         orders = self.uow.analytics.orders(
             owner,

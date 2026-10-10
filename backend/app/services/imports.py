@@ -20,6 +20,7 @@ from app.schemas.imports import (
     UploadOptions,
 )
 from app.services.import_catalog import FIELDS, guess_kind, mapping_reviews, suggest_mapping
+from app.services.import_groups import ImportGroupService
 from app.services.import_parser import parse_file
 from app.services.import_validation import business_key, normalize_row
 
@@ -65,7 +66,13 @@ class ImportService:
         self.uow.identity.lock_user(owner_id)
         self._shop(owner_id, shop_id)
         self._expire(owner_id)
+        existing = ImportGroupService(self.uow).attach(owner_id, shop_id, options, data, len(rows))
+        if existing is not None:
+            self.uow.commit()
+            return self._output(owner_id, existing)
         batch = ImportBatch(
+            group_id=options.group_id,
+            group_part=options.group_part,
             owner_id=owner_id,
             shop_id=shop_id,
             kind=options.kind,
@@ -85,6 +92,7 @@ class ImportService:
             mapping={item.field: item.column for item in suggest_mapping(options.kind, headers)},
         )
         self.repo.add_batch(batch)
+        ImportGroupService(self.uow).changed(owner_id, batch)
         self.uow.record_event(
             owner_id, "import.uploaded", "import_batch", batch.id, {"rows": len(rows)}
         )
@@ -140,6 +148,7 @@ class ImportService:
         for correction in data.corrections.values():
             if set(correction) - allowed or any(len(value) > 2000 for value in correction.values()):
                 raise BusinessError("invalid_correction", "修正包含未知字段或过长内容", 422)
+        ImportGroupService(self.uow).validate_mapping(owner_id, batch, mapping)
         batch.mapping = mapping
         batch.errors = [
             f"请映射必填字段：{field.label}"
@@ -147,6 +156,14 @@ class ImportService:
             if field.required and field.key not in mapping
         ]
         current = self.repo.current_entries(owner_id, shop.id, batch.kind)
+        group_rows = (
+            {
+                row.business_key: row
+                for row in self.uow.import_groups.committed_rows(owner_id, batch.group_id)
+            }
+            if batch.group_id
+            else {}
+        )
         results: list[ImportRow] = []
         seen: dict[str, list[ImportRow]] = {}
         for raw in source_rows:
@@ -192,6 +209,14 @@ class ImportService:
                     result.action = (
                         "unchanged" if result.normalized == result.previous else "update"
                     )
+            if key in group_rows and result.normalized != group_rows[key].normalized:
+                result.errors.append(
+                    RowIssue(
+                        field="group_key",
+                        message="同组跨分片业务键冲突；请核对并统一该记录，不能用覆盖更新改变同组口径",
+                    )
+                )
+                result.action = "error"
             record = ImportRow(
                 batch_id=batch.id, business_key=key, **result.model_dump(mode="json")
             )
@@ -237,6 +262,18 @@ class ImportService:
         self.uow.commit()
         return self._output(owner_id, batch)
 
+    def invalidate(self, owner_id: int, shop_id: int, kind: str) -> None:
+        self.uow.analytics.invalidate(owner_id, shop_id)
+        self.uow.overview.invalidate(owner_id, shop_id)
+        self.uow.product_quality.invalidate(owner_id, shop_id)
+        self.uow.expenses.invalidate(owner_id, shop_id)
+        self.uow.statement_reviews.invalidate(owner_id, shop_id)
+        self.uow.settlements.invalidate(owner_id, shop_id)
+        self.uow.listings.invalidate(owner_id, shop_id)
+        self.uow.support.invalidate(owner_id, shop_id, kind)
+        self.uow.operations.invalidate(owner_id, shop_id, kind)
+        self.uow.agent.invalidate(owner_id, shop_id)
+
     def commit(self, owner_id: int, batch_id: int, data: CommitInput) -> BatchOutput:
         self.uow.identity.lock_user(owner_id)
         batch = self._batch(owner_id, batch_id)
@@ -258,19 +295,11 @@ class ImportService:
             existing = current.get(row.business_key or "")
             self.repo.apply_row(shop.id, batch.kind, row, existing[0] if existing else None)
         shop.data_revision += 1
-        self.uow.analytics.invalidate(owner_id, shop.id)
-        self.uow.overview.invalidate(owner_id, shop.id)
-        self.uow.product_quality.invalidate(owner_id, shop.id)
-        self.uow.expenses.invalidate(owner_id, shop.id)
-        self.uow.statement_reviews.invalidate(owner_id, shop.id)
-        self.uow.settlements.invalidate(owner_id, shop.id)
-        self.uow.listings.invalidate(owner_id, shop.id)
-        self.uow.support.invalidate(owner_id, shop.id, batch.kind)
-        self.uow.operations.invalidate(owner_id, shop.id, batch.kind)
-        self.uow.agent.invalidate(owner_id, shop.id)
+        self.invalidate(owner_id, shop.id, batch.kind)
         batch.applied_revision = shop.data_revision
         batch.status = "committed"
         batch.committed_at = utc_now()
+        ImportGroupService(self.uow).changed(owner_id, batch)
         batch.raw_data = (
             None  # Unmapped source cells (e.g. customer contact details) are discarded.
         )
@@ -347,6 +376,7 @@ class ImportService:
             shop.data_revision += 1
             self.uow.analytics.invalidate(owner_id, shop.id)
             self.repo.flush()
+        ImportGroupService(self.uow).changed(owner_id, batch)
         batch.raw_data = None
         self.uow.overview.invalidate(owner_id, shop.id)
         self.uow.product_quality.invalidate(owner_id, shop.id)

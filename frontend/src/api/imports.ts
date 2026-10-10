@@ -5,9 +5,27 @@ import type {
   ImportBatch,
   ImportCatalog,
   MappingTemplate,
+  ImportGroup,
+  ImportManifest,
 } from '@/types/imports'
 
 export const importsApi = {
+  groups: (shop: number, before?: number) =>
+    request<ImportGroup[]>(`/shops/${shop}/import-groups${before ? `?before=${before}` : ''}`),
+  group: (id: number) => request<ImportGroup>(`/import-groups/${id}`),
+  createGroup: (
+    shop: number,
+    data: { options: Record<string, string>; manifest: ImportManifest },
+  ) =>
+    request<ImportGroup>(`/shops/${shop}/import-groups`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  revokeGroup: (id: number, version: number) =>
+    request<ImportGroup>(`/import-groups/${id}/revoke`, {
+      method: 'POST',
+      body: JSON.stringify({ version }),
+    }),
   catalog: () => request<ImportCatalog>('/imports/catalog'),
   mappings: () => request<MappingTemplate[]>('/imports/mappings'),
   saveMapping: (data: Omit<MappingTemplate, 'id'>) =>

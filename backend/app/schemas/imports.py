@@ -80,6 +80,8 @@ class StatementData(InputModel):
 
 
 class UploadOptions(InputModel):
+    group_id: Annotated[int, Field(ge=1)] | None = None
+    group_part: Annotated[int, Field(ge=1, le=20)] | None = None
     filename: Annotated[str, Field(min_length=1, max_length=240)]
     kind: ImportKind
     source_channel: SourceChannel = "generic"
@@ -168,6 +170,8 @@ class RowOutput(OutputModel):
 
 
 class BatchSummary(OutputModel):
+    group_id: int | None = None
+    group_part: int | None = None
     origin: str
     id: int
     shop_id: int

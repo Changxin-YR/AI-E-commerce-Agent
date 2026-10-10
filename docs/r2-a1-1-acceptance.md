@@ -1,10 +1,10 @@
 # R2 A1-1 通用导入验收
 
-日期：2026-10-10。状态：本地完整验证通过，目标提交CI待核对。输入全部为项目生成的合成数据。
+日期：2026-10-10。状态：本地完整验证及目标提交CI通过。输入全部为项目生成的合成数据。
 
 ## 差异与兼容性
 
-基线`adddb19b58eb5772ff7ff04c029bca791fa7676b`。本包代码提交SHA以Git历史及接续记录为准，提交后在本报告补充明确CI链接。
+基线`adddb19b58eb5772ff7ff04c029bca791fa7676b`。本包代码提交`14e6663cb3b57d40681c030bb129153a3e01b4c4`；[CI38017748444](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38017748444)已回读 completed/success，A1-1完成，进入A1-2。
 
 - 复用五类报表、人工映射、逐行纠错、个人模板、版本/去重/事务提交、撤销/清除及错误CSV。
 - 增加非标准关键字段审阅。标准模板沿用字段契约，别名和人工关键映射需显式确认；未知/未审字段不能通过API提交。修改或重新预览后再次核对，审计保存字段及预览版本。
@@ -31,7 +31,7 @@
 - 静态：Ruff规则、227文件格式、mypy159 app文件、前端lint/type-check与构建通过。
 - 初次默认沙箱因本机MySQL WinError10013及Vitest缓存rename EPERM未进入业务测试；使用正常测试权限后同用例通过，没有改业务断言规避失败。已有Starlette/httpx弃用与Node颜色提示保留。
 - 完整后端：`python -m pytest -q --tb=short --maxfail=2 --basetemp=../.local/pytest-r2-a11-full`，**725 passed / 313.11秒**。
-- 最终全站浏览器：`npm run test:e2e`，**61 passed / 3.1分钟**，包含原四流程、全部旧入口/深链和桌面手机导入。手机新增95字符列名审阅、纠错清空确认和字段折行检查；已查看`r2-review-390.png`。最终前端lint/type-check再次通过。目标提交CI待推送后核对，不能用基线CI代替。
+- 最终全站浏览器：`npm run test:e2e`，**61 passed / 3.1分钟**，包含原四流程、全部旧入口/深链和桌面手机导入。手机新增95字符列名审阅、纠错清空确认和字段折行检查；已查看`r2-review-390.png`。最终前端lint/type-check再次通过。目标代码14e6663的CI38017748444已回读completed/success。
 
 ## 数据保护、回退与限制
 
