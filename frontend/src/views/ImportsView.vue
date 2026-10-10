@@ -330,7 +330,7 @@ onMounted(initialize)
   <section v-if="catalog && !shops.length" class="form-panel section-block empty-state">
     <h2>先为文件选择一个归属</h2>
     <p>添加店铺记录后即可导入。</p>
-    <RouterLink to="/settings" class="button primary">添加店铺</RouterLink>
+    <RouterLink to="/settings#shops" class="button primary">添加店铺</RouterLink>
   </section>
   <template v-if="catalog && shops.length">
     <section class="section-block form-panel">
@@ -364,6 +364,10 @@ onMounted(initialize)
           >
         </div>
       </div>
+      <p v-if="!history.length" class="panel-footnote">
+        第一份文件：下载对应模板，填写已有资料；核对所属店铺、报表类型、渠道和数据身份，
+        上传后检查映射与预览，再确认导入。可以先导入一类数据。演练样本请选择“合成测试数据”。
+      </p>
       <p v-if="kind === 'statements'" class="data-note">
         账单模板按 sale 销售款、refund 退款、fee 费用、payout 平台记载回款分别录入正数金额。
         费用行须提供凭据费用行编号和原始收费项名称；到账与结算周期完整性待核。

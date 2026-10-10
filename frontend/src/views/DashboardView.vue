@@ -42,9 +42,20 @@ onMounted(load)
   </button>
   <p v-if="loading" role="status">正在读取工作空间…</p>
   <template v-else-if="status">
+    <section
+      v-if="!status.shop_count"
+      class="welcome-panel section-block"
+      aria-labelledby="first-shop"
+    >
+      <div>
+        <h2 id="first-shop">从第一家店铺开始</h2>
+        <p>账号已开通。添加店铺后即可导入商品或订单文件，经营档案可以稍后完善。</p>
+        <RouterLink class="button primary" to="/settings#shops">添加第一家店铺</RouterLink>
+      </div>
+    </section>
     <WorkInbox />
     <div id="operations"><OperationsInbox /></div>
-    <details class="section-block" :open="!status.profile_complete">
+    <details class="section-block" :open="!status.profile_complete || !status.shop_count">
       <summary>经营资料与首次使用引导</summary>
       <section class="welcome-panel">
         <div>
@@ -66,7 +77,7 @@ onMounted(load)
             <span class="step-index">01</span>
             <div>
               <h3>建立经营档案</h3>
-              <p>目标市场、经营类目、默认币种和时区。</p>
+              <p>目标市场、经营类目、默认币种和时区，可稍后完善。</p>
             </div>
             <span class="status-tag" :class="{ complete: status.profile_complete }">{{
               status.profile_complete ? '已完成' : '待完善'
@@ -77,6 +88,7 @@ onMounted(load)
             <div>
               <h3>添加店铺记录</h3>
               <p>用于归属导入数据，按店铺分别管理。</p>
+              <RouterLink to="/settings#shops">管理店铺与导入入口</RouterLink>
             </div>
             <span class="status-tag" :class="{ complete: status.shop_count > 0 }">{{
               status.shop_count > 0 ? `${status.shop_count} 个店铺` : '待添加'

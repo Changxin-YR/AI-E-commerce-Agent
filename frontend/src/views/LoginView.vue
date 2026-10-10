@@ -45,7 +45,7 @@ async function submit(): Promise<void> {
     <section class="login-form-panel" aria-labelledby="login-heading">
       <form class="login-form" @submit.prevent="submit">
         <h2 id="login-heading">回到你的工作台</h2>
-        <p class="muted">使用你的本地账号登录。</p>
+        <p class="muted">使用管理员为你开通的账号登录。</p>
         <FeedbackBanner :message="error || connectionError" /><FormField
           label="账号"
           for-id="username"
@@ -71,12 +71,13 @@ async function submit(): Promise<void> {
         <details class="login-help">
           <summary>首次使用或忘记密码？</summary>
           <p>
-            由本机管理员通过账号管理命令创建账号或重置密码。具体操作见项目 README
-            的“账号管理”；重置后旧会话会失效。
+            首次使用，请向为你部署 SoloOps 的管理员领取工作台网址、账号和密码，并确认求助方式。
+            登录后可在网页添加店铺、导入文件，开始经营操作。
           </p>
+          <p>忘记密码或无法登录时，请联系管理员核对网址和账号、重置密码；重置后需重新登录。</p>
         </details>
       </form>
-      <p class="login-footnote">经营数据保存在你的 MySQL 数据库中</p>
+      <p class="login-footnote">经营数据保存在管理员为你部署的工作空间中</p>
     </section>
   </main>
 </template>

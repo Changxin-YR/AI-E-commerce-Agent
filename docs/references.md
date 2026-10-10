@@ -381,3 +381,9 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - Python 3.11官方[csv](https://docs.python.org/3.11/library/csv.html)（PSF）：参考strict、newline与默认writer规则，以项目import_split.py作为逐字节对照基准，自行实现有界浏览器子集，不复制源码。
 - MDN [digest](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest)、[Blob.slice](https://developer.mozilla.org/en-US/docs/Web/API/Blob/slice)、[TextDecoder.decode](https://developer.mozilla.org/en-US/docs/Web/API/TextDecoder/decode)与[Worker.terminate](https://developer.mozilla.org/en-US/docs/Web/API/Worker/terminate)（文档CC BY-SA）：digest必须整块读入，故保留40MiB上限；解析按64KiB严格解码；Worker终止实现取消。只参考API和限制，自行实现，无新依赖。方案见r2-fix-uat-02-plan.md。
 - Firecrawl状态再次为fetch failed，本次使用内置web检索并读取上述官方资料。
+
+## R2 修复包4：管理员交付后的网页起步（2026-10-10）
+
+- Vue Router官方[导航](https://router.vuejs.org/guide/essentials/navigation.html)与Vue官方[nextTick](https://vuejs.org/api/general.html#nexttick)（MIT）：参考显式query/hash和异步数据渲染后的定位。建店后只传shop编号到既有导入页；设置页等待店铺渲染再定位。入口不恢复权限、不自动提交业务。
+- MDN [autocomplete](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/autocomplete)（文档CC BY-SA）：保留username/current-password，继续支持浏览器密码管理；登录帮助说明向管理员领取网址/账号及求助，不把安装或数据库操作放入卖家步骤。
+- Firecrawl已知fetch failed，使用官方web读取作为回退。文档仅供接口/设计参考，代码自行实现，无新依赖；管理员正式CLI及安全门禁沿用原实现。

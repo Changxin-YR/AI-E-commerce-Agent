@@ -407,3 +407,7 @@ Vue Router的query更新与组件重建如何影响编辑？`AppShell`只让Agen
 ## R2 浏览器CSV与导入恢复
 
 为什么不按换行split？`csvSplit.CsvRecords`须跨字节块保留引号/转义/CRLF状态，字段内换行是业务值；UTF-8严格解码也要保留多字节尾部。`csvSplit.spec.ts`实际调用现有Python工具比较输出字节、行数与SHA256，验证跨语言契约。为什么文件哈希不叫流式？Web Crypto digest需要全部输入，所以先限制40MiB，解析另外分块并放Worker；取消由主页面terminate完成。恢复为什么不只比文件名？`sameManifest`核验原件指纹和各片完整描述，服务端再次验证实际上传；重试回读原批次。40000导入与10000分析的边界独立，完整导入不代表可以无限范围计算。
+
+## R2 管理员预部署与卖家首次操作
+
+账号开通与业务建店分属不同职责。`app.cli`由管理员经AuthService执行；网页首次使用从已认证会话开始，Dashboard的shop_count控制入口，Settings按shop编号连接ImportsView。引导不会自动提交数据，深链不替代服务端店铺授权。为什么测试另建账号？first-use.spec.ts使用正式CLI提前建号，避免已有档案/店铺掩盖空状态，再由真实UI完成模板、预览确认与刷新；桌面有档案但无店铺、手机无档案都覆盖。

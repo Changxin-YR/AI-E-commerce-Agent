@@ -960,3 +960,7 @@ schedules/status保留worker_enabled并增加latest_timer，接口→SchedulesSe
 ## R2 修复包3：浏览器文件准备与持久导入
 
 `frontend/src/lib/csvSplit.ts`将UTF-8解码、CSV记录状态与分片编码独立成小函数；原文件哈希受40MiB约束，解析以64KiB块推进。Worker只准备数据，API→ImportGroupService→仓库仍独立验证manifest、安全、映射、去重和事务。`sameManifest`比较原件及全部分片字段，刷新恢复不能拼接不同源文件。`BrowserImportSource`管理Worker生命周期，父页只接收完整结果；取消/卸载终止计算。逐片上传继续原映射/语义/覆盖确认，不引入自动业务批准。UI区分本机准备、服务端上传、已确认记录与整组撤销，容量差异在建组前可见。设计与验证见r2-fix-uat-02-plan.md和r2-fix-uat-02.md。
+
+## R2 修复包4：首次使用与管理员边界
+
+LoginView把账号获取与求助写成卖家可执行步骤；管理员CLI仍是创建/重置的正式入口。Dashboard按shop_count显示第一家店铺入口，profile_complete只表示档案状态；Settings等待nextTick后定位店铺区，每行使用RouterLink传shop到现有导入页，由服务端继续限定归属。档案可后补沿用ProfileService.create_shop原契约，没有增加授权旁路。first-use浏览器在正式CLI预建账号后全程操作页面，验证可选档案、店铺持久化、模板下载、实际导入和刷新来源回读。详见r2-fix-uat-01.md。

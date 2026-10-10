@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { identityApi } from '@/api/identity'
 import { errorMessage } from '@/api/client'
 import type { SellerProfile, Shop } from '@/types/identity'
@@ -13,6 +14,7 @@ const loading = ref(true)
 const showShopForm = ref(false)
 const error = ref('')
 const notice = ref('')
+const route = useRoute()
 async function load(): Promise<void> {
   loading.value = true
   error.value = ''
@@ -22,6 +24,10 @@ async function load(): Promise<void> {
     error.value = errorMessage(cause)
   } finally {
     loading.value = false
+    if (!error.value && route.hash === '#shops') {
+      await nextTick()
+      document.getElementById('shops')?.scrollIntoView({ block: 'start' })
+    }
   }
 }
 function onShopCreated(shop: Shop): void {
@@ -47,15 +53,15 @@ onMounted(load)
       <div class="section-description">
         <span class="section-index">01 / PROFILE</span>
         <h2>经营档案</h2>
-        <p>记录你的经营方向。<br />币种与时区用于后续分析的默认口径。</p>
+        <p>记录你的经营方向，可稍后完善。<br />币种与时区用于后续分析的默认口径。</p>
       </div>
       <div class="form-panel"><ProfileForm :profile="profile" @saved="profile = $event" /></div>
     </section>
-    <section class="settings-section">
+    <section id="shops" class="settings-section" aria-labelledby="shops-heading">
       <div class="section-description">
         <span class="section-index">02 / STORES</span>
-        <h2>店铺记录</h2>
-        <p>每份业务数据归属到具体店铺。创建记录后，即可为文件导入做准备。</p>
+        <h2 id="shops-heading">店铺记录</h2>
+        <p>每份业务数据归属到具体店铺。添加后点击该店铺的“导入文件”，核对模板并上传第一份资料。</p>
       </div>
       <div class="form-panel">
         <div class="section-title">
@@ -74,6 +80,11 @@ onMounted(load)
               <h4>{{ shop.name }}</h4>
               <p>{{ shop.code }} · {{ shop.market }} · {{ shop.currency }}</p>
               <small>{{ shop.timezone }}</small>
+              <div>
+                <RouterLink :to="{ path: '/imports', query: { shop: shop.id } }"
+                  >导入文件</RouterLink
+                >
+              </div>
             </div>
             <span class="status-tag">文件模式</span>
           </article>
