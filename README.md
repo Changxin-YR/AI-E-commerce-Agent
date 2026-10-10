@@ -55,7 +55,7 @@
 - G-04在新配置/venv/独立容器空库0→64表，CLI创建账号及实际HTTP五文件导入75/62/13，14响应精确恢复。真实23:36停机到期，worker关闭不运行、启用恢复一期waiting_approval，批准后再重启1周期1执行6待办不变。详见foundation-runtime-evidence。
 - G-03备份.local/backups/foundation-20261009-2304，64表head/行数/CHECKSUM一致，历史代表回读通过；恢复副本位于mysql-test(tmpfs停止丢失)，文件备份保留。
 - 本地静态/测试用backend/.venv；pytest/迁移/E2E共享3308须严格串行。浏览器使用.local/runtimes/node-v24.16.0-win-x64与npm run test:e2e，禁用真实模型/邮件。全局24.15曾Windows原生崩溃，不复用。
-- 普通开发、定向测试与正常提交推送已授权，不强推；沙箱Docker/MySQL/Git写索引受限时按权限机制升级。本轮无自动审批拒绝。gh未安装；GitHub fetch工具可读REST actions/runs?head_sha=...&event=push，正文在structuredContent.content里，返回时只输出必要字段，避免整份仓库元数据。Firecrawl已402，官方web工具fallback，不反复消耗接口，不编HTTP抓取脚本。
+- 普通开发、定向测试与正常提交推送已授权，不强推；沙箱Docker/MySQL/Git写索引受限时按权限机制升级。账号更新后的context-memory推送曾因远端所有权未核实被自动审批拒绝；已通过GitHub connector确认当前用户与仓库所有者均为Changxin-YR、ID163823480，拥有admin/push权限，重试获准并推送成功。gh未安装；GitHub fetch工具可读REST actions/runs?head_sha=...&event=push，正文在structuredContent.content里，返回时只输出必要字段，避免整份仓库元数据。Firecrawl已402，官方web工具fallback，不反复消耗接口，不编HTTP抓取脚本。
 - docs/development39、testing34、interview、README、功能/原验收矩阵和foundation规格/验收/后续/维护/实发证据全部同步。context-memory独立分支只存重点，不合并main。
 - 接续先读AGENTS.md与foundation-release/acceptance/backlog、runtime/model evidence。项目ID1c274a7b-2f1e-45ca-bf1b-10475766545b，换聊天用local同项目，单开发聊天独占。
 
