@@ -20,7 +20,9 @@ import AnalysisEvidence from '@/components/AnalysisEvidence.vue'
 const shops = ref<Shop[]>([])
 const route = useRoute()
 const shopId = ref(0)
-const busy = ref(false)
+const actionBusy = ref(false)
+const costsWorking = ref(false)
+const busy = computed(() => actionBusy.value || costsWorking.value)
 const error = ref('')
 const success = ref('')
 const result = ref<AnalysisResult | null>(null)
@@ -60,7 +62,8 @@ function resetResult(): void {
 watch(scope, resetResult)
 watch(question, resetResult)
 async function action(work: () => Promise<void>): Promise<void> {
-  busy.value = true
+  if (actionBusy.value) return
+  actionBusy.value = true
   error.value = ''
   success.value = ''
   try {
@@ -68,7 +71,7 @@ async function action(work: () => Promise<void>): Promise<void> {
   } catch (cause) {
     error.value = errorMessage(cause)
   } finally {
-    busy.value = false
+    actionBusy.value = false
   }
 }
 async function selectShop(): Promise<void> {
@@ -105,6 +108,7 @@ function checkFreshness(): void {
   if (!busy.value && shopId.value) void refreshHistory()
 }
 async function run(): Promise<void> {
+  if (busy.value) return
   await action(async () => {
     resetResult()
     result.value = await analyticsApi.ask(shopId.value, { ...scope }, question.value)
@@ -462,6 +466,7 @@ function time(value: string, timezone: string): string {
       edit-costs
       :stale="stale || busy"
       @costs-changed="costsChanged"
+      @costs-working="costsWorking = $event"
     />
   </template>
   <section v-if="shopId" class="section-block">

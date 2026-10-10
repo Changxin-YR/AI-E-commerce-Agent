@@ -53,6 +53,7 @@ it('requires evidence and renewed confirmation, preserves UUID after unknown fai
   expect(calls[0]![2]).toEqual(calls[1]![2])
   expect(calls[0]![2].content?.unit_cost).toBe('4.5')
   expect(wrapper.emitted('changed')).toHaveLength(1)
+  expect(wrapper.emitted('working')).toEqual([[true], [false], [true], [false]])
 })
 
 it('shows historical evidence as text and blocks editing a changed source', async () => {

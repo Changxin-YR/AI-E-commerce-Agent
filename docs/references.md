@@ -320,3 +320,7 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - Shopify 官方[利润报告](https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/profit-reports)：商品成本、净销售额和毛利有明确区别，折扣/退款影响利润，成本的记录时点影响覆盖。资料版权归 Shopify；仅参考业务含义，自行实现。SoloOps 保留自身已支付订单/退款归原订单窗规则，历史成本由卖家按订单源行确认，不将当前商品成本或平台报表口径视为独立核实的会计事实。
 - SQLAlchemy 2.0 官方[版本计数](https://docs.sqlalchemy.org/en/20/orm/versioning.html)与[Numeric](https://docs.sqlalchemy.org/en/20/core/type_basics.html#sqlalchemy.types.Numeric)：MIT；参考并发版本与 Decimal 存取机制。项目已有用户→店铺锁与显式 expected_version，沿用该协议追加凭据版本；金额列 Numeric(18,4)，不引入依赖或自动浮点转换。
 - Firecrawl CLI 状态再次返回 fetch failed，未能取得账户信息；本次通过内置 web 读取上述官方页面。借鉴限于语义/接口说明，没有复制实现。差异计划见 r2-a2-plan.md，开发须以前包目标 CI 成功为前置。
+
+### A2 成本写入与重算时序补充
+
+- Vue官方[组件事件](https://vuejs.org/guide/components/events.html)（MIT）与Playwright官方[操作等待](https://playwright.dev/docs/actionability)（Apache-2.0）：参考显式组件事件传播和按钮enabled检查，不复制实现。成本写入的working状态经证据组件传给分析页，写入及随后来源刷新期间禁止重算/切店；通过受控延迟写入回包验证禁用和完成后的实际重算结果，保持原金额与历史断言。

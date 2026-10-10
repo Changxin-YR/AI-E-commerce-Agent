@@ -6,7 +6,7 @@ import type { CostHistory, CostWrite } from '@/types/analytics'
 import FeedbackBanner from './FeedbackBanner.vue'
 
 const props = defineProps<{ shopId: number; rowId: number; timezone: string; disabled?: boolean }>()
-const emit = defineEmits<{ changed: [] }>()
+const emit = defineEmits<{ changed: []; working: [boolean] }>()
 const page = ref<CostHistory | null>(null)
 const busy = ref(false)
 const error = ref('')
@@ -74,6 +74,7 @@ async function save(action: 'upsert' | 'revoke'): Promise<void> {
   if (pending?.fingerprint !== fingerprint)
     pending = { fingerprint, data: { ...body, request_id: crypto.randomUUID() } }
   busy.value = true
+  emit('working', true)
   error.value = ''
   const shop = props.shopId,
     row = props.rowId
@@ -89,6 +90,7 @@ async function save(action: 'upsert' | 'revoke'): Promise<void> {
     error.value = errorMessage(cause)
   } finally {
     busy.value = false
+    emit('working', false)
   }
 }
 </script>

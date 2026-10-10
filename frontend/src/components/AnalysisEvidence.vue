@@ -12,7 +12,7 @@ const props = defineProps<{
   editCosts?: boolean
   stale?: boolean
 }>()
-const emit = defineEmits<{ costsChanged: [] }>()
+const emit = defineEmits<{ costsChanged: []; costsWorking: [boolean] }>()
 const page = ref(0)
 const source = ref<SourceDetail | null>(null)
 const error = ref('')
@@ -111,6 +111,7 @@ async function inspect(ref: SourceReference): Promise<void> {
         :timezone="result.scope.timezone"
         :disabled="stale"
         @changed="emit('costsChanged')"
+        @working="emit('costsWorking', $event)"
       />
     </details>
     <div v-if="result.lines.length > 20" class="pagination">

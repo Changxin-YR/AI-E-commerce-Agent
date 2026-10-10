@@ -202,7 +202,22 @@ for (const width of [1440, 390]) {
     ).toBe(false)
     await page.screenshot({ path: `test-results/r2-costs-${width}.png`, fullPage: true })
     await history.getByRole('checkbox').check()
-    await history.getByRole('button', { name: '撤销当前成本凭据' }).click()
+    let releaseRevoke: () => void = () => undefined
+    const revokeGate = new Promise<void>((resolve) => {
+      releaseRevoke = resolve
+    })
+    await page.route('**/analytics/order-costs/*', async (route) => {
+      if (route.request().method() === 'POST') await revokeGate
+      await route.continue()
+    })
+    try {
+      await history.getByRole('button', { name: '撤销当前成本凭据' }).click()
+      await expect(page.getByRole('button', { name: '处理中…', exact: true })).toBeDisabled()
+      await expect(page.getByRole('button', { name: '按此范围重算' })).toBeDisabled()
+      await expect(page.getByLabel('分析店铺')).toBeDisabled()
+    } finally {
+      releaseRevoke()
+    }
     await page.getByRole('button', { name: '计算并查看证据' }).click()
     await expect(result).toContainText('未知 / 缺数据')
     await page.getByRole('button', { name: /查看分析 #/ }).click()
