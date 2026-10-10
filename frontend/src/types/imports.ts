@@ -71,6 +71,17 @@ export interface ImportBatch extends BatchSummary {
   rows: ImportRow[]
   required_reviews?: MappingReview[]
   duplicate_rows?: number
+  presets?: ImportPreset[]
+}
+export interface ImportPreset {
+  id: string
+  name: string
+  kind: ImportKind
+  source_channel: SourceChannel
+  verified_on: string
+  reference_url: string
+  mapping: Record<string, string>
+  notes: string[]
 }
 export interface MappingReview {
   field: string

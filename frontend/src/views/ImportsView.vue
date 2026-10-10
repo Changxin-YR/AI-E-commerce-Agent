@@ -20,6 +20,7 @@ import ImportMapping from '@/components/ImportMapping.vue'
 import ImportRows from '@/components/ImportRows.vue'
 import ImportGroups from '@/components/ImportGroups.vue'
 import ImportSemanticsReview from '@/components/ImportSemanticsReview.vue'
+import ImportPresets from '@/components/ImportPresets.vue'
 
 const route = useRoute()
 const kindLabels = {
@@ -267,6 +268,17 @@ function applyTemplate(): void {
   dirty.value = true
   allowUpdates.value = false
 }
+function applyPreset(id: string): void {
+  const preset = batch.value?.presets?.find((item) => item.id === id)
+  if (!preset || !editable.value || busy.value) return
+  mapping.value = { ...preset.mapping }
+  corrections.value = {}
+  reviewedFields.value = []
+  selectedTemplate.value = ''
+  dirty.value = true
+  allowUpdates.value = false
+  success.value = '已应用候选映射，请校验预览并按来源补齐币种及空白商品名。'
+}
 async function saveTemplate(): Promise<void> {
   await perform(async () => {
     if (!batch.value || !templateName.value.trim()) throw new Error('请填写映射模板名称')
@@ -474,6 +486,7 @@ onMounted(initialize)
             kindLabels[batch.suggested_kind]
           }}。请核对已选报表类型；若不符，可重新上传并选择类型。
         </p>
+        <ImportPresets :presets="batch.presets ?? []" :disabled="busy" @apply="applyPreset" />
         <div class="template-controls">
           <label for="saved-mapping">复用个人映射</label
           ><select

@@ -158,6 +158,17 @@ class MappingReview(OutputModel):
     meaning: str
 
 
+class ImportPreset(OutputModel):
+    id: str
+    name: str
+    kind: ImportKind
+    source_channel: SourceChannel
+    verified_on: str
+    reference_url: str
+    mapping: dict[str, str]
+    notes: list[str]
+
+
 class RowOutput(OutputModel):
     row_number: int
     raw: dict[str, str]
@@ -208,6 +219,7 @@ class BatchOutput(BatchSummary):
     rows: list[RowOutput]
     required_reviews: list[MappingReview] = Field(default_factory=list)
     duplicate_rows: int = 0
+    presets: list[ImportPreset] = Field(default_factory=list)
 
 
 class CatalogOutput(OutputModel):

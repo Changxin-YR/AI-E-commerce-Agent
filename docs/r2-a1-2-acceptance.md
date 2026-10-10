@@ -1,10 +1,10 @@
 # R2 A1-2 安全分批导入验收
 
-日期：2026-10-10。输入全部为合成资料。状态：本地完整验收通过，目标提交CI待核对。
+日期：2026-10-10。输入全部为合成资料。状态：本地完整验收及目标提交CI通过。
 
 ## 基线与实现
 
-A1-1代码`14e6663cb3b57d40681c030bb129153a3e01b4c4`的[CI38017748444](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38017748444) completed/success后开始。本包代码SHA及CI在提交后补齐。
+A1-1代码`14e6663cb3b57d40681c030bb129153a3e01b4c4`的[CI38017748444](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38017748444) completed/success后开始。本包代码`81ee5f6b14dd8121ce61c03a3b57e76b5b18d205`的[CI38022485965](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38022485965)已于2026-10-10回读为completed/success，head_sha一致。
 
 - 本地工具：在backend目录执行`.venv\Scripts\python.exe -m scripts.split_import "源文件.csv" "新目录"`。UTF-8 CSV最大40MiB/40000行/20片，逐记录和编码字节划片。每片仍为2MiB/2000行/64列/每格2000字符，经现有解析器复核后生成manifest.json。Excel先选工作表另存CSV UTF-8。
 - 导入组：选定店铺、报表类型、渠道、数据身份、时区和导出时间后上传清单建组。原有批次预览、逐行纠错、语义确认、覆盖批准与来源撤销复用。分片文件名、字节、行数、指纹及来源选项都须与清单一致。
@@ -34,7 +34,7 @@ A1-1代码`14e6663cb3b57d40681c030bb129153a3e01b4c4`的[CI38017748444](https://g
 - 隔离迁移：`92c7ea53bd10 → a12c4b907e61 → 92c7ea53bd10 → a12c4b907e61`及Alembic模型差异检查通过；新增import_groups与批次可空分组字段。未新增依赖。
 - 首次数据库测试因3308容器停止而WinError10061；核实Docker状态后仅启动原soloops-mysql-test-1，再执行。首次新E2E末尾断言使用错误字段known_sales，改按现有known_sales_subtotal与line_count核验。
 - 完整后端737项通过，301.60秒；之后仅增加迁移降级保护及哈希读取上限，相关13项均有最终通过覆盖。
-- 最终Ruff规则、235文件格式、mypy164 app文件、前端lint/type-check和生产构建通过。最终全站浏览器63项通过（3.3分钟），含原四流程、旧入口/深链及大报表桌面/手机流程；目标提交CI待回读。
+- 最终Ruff规则、235文件格式、mypy164 app文件、前端lint/type-check和生产构建通过。最终全站浏览器63项通过（3.3分钟），含原四流程、旧入口/深链及大报表桌面/手机流程；目标提交CI已回读成功。
 - 已查看本次桌面与手机截图`frontend/test-results/r2-groups-1440.png`及`r2-groups-390.png`，分组状态/计数/动作可读且无横向溢出；原模板按钮折行继续归入A4。截图及测试报告不提交。
 
 ## 数据保护与上线限制

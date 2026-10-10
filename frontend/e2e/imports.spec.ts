@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import type { ImportBatch } from '../src/types/imports'
 import type { ImportGroup } from '../src/types/imports'
 
@@ -38,6 +39,66 @@ async function uploadCsv(page: Page, contents: string): Promise<void> {
     .setInputFiles({ name: 'synthetic.csv', mimeType: 'text/csv', buffer: Buffer.from(contents) })
   await page.getByRole('button', { name: '上传并查看映射' }).click()
   await expect(page.getByRole('heading', { name: '02 / 核对字段映射' })).toBeVisible()
+}
+
+for (const width of [1440, 390]) {
+  test(`Shopify candidate requires evidence corrections and persists at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 })
+    const shop = await openImports(page)
+    await page.getByLabel('来源渠道').selectOption('shopify')
+    await uploadCsv(
+      page,
+      readFileSync('../examples/imports/shopify-products-2026-10-10-synthetic.csv', 'utf8'),
+    )
+    const preset = page.getByRole('region', { name: '渠道字段预设' })
+    await expect(preset).toContainText('2026-10-10')
+    await expect(preset.getByRole('link', { name: '官方格式依据' })).toHaveAttribute(
+      'href',
+      'https://help.shopify.com/en/manual/products/import-export/using-csv',
+    )
+    await preset.getByRole('button', { name: '应用此候选映射' }).click()
+    await page.getByRole('button', { name: '校验并预览' }).click()
+    await expect(page.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled()
+    await expect(page.getByText('需修正', { exact: true })).toHaveCount(2)
+    for (const row of [2, 3]) {
+      await page.getByLabel(`源行 ${row} 销售币种 修正值`).fill('USD')
+      await page.getByLabel(`源行 ${row} 成本币种 修正值`).fill('USD')
+    }
+    await page.getByLabel('源行 3 商品名 修正值').fill('Synthetic cup large')
+    await page.getByRole('button', { name: '校验并预览' }).click()
+    await expect(page.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled()
+    for (const checkbox of await page
+      .getByRole('group', { name: '确认关键字段含义' })
+      .getByRole('checkbox')
+      .all())
+      await checkbox.check()
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
+    ).toBe(false)
+    await preset.screenshot({ path: `test-results/r2-presets-${width}.png` })
+    const response = page.waitForResponse(
+      (r) => r.url().endsWith('/commit') && r.request().method() === 'POST',
+    )
+    await page.getByRole('button', { name: '确认导入', exact: true }).click()
+    const saved = (await (await response).json()) as ImportBatch
+    expect(saved.valid_rows).toBe(2)
+    expect(saved.rows.map((r) => r.normalized.price)).toEqual(['10.0000', '12.5000'])
+    expect(saved.rows.map((r) => r.normalized.unit_cost)).toEqual(['3.2500', '4.5000'])
+    expect(saved.rows[1]?.raw.name).toBe('')
+    await page.reload()
+    await page.getByLabel('所属店铺').selectOption(String(shop))
+    await page.getByRole('button', { name: `查看批次 #${saved.id}` }).click()
+    await expect(page.getByText('已导入', { exact: true })).toBeVisible()
+    const readback = (await (
+      await page.request.get(`/api/imports/${saved.id}`)
+    ).json()) as ImportBatch
+    expect(readback.rows).toEqual(saved.rows)
+    await page.getByRole('button', { name: '撤销此批次' }).click()
+    await page.getByRole('button', { name: '确认撤销' }).click()
+    await expect(page.getByText('已撤销', { exact: true })).toBeVisible()
+  })
 }
 
 test('seller maps unknown columns, corrects a row, imports, reloads, revokes and clears', async ({

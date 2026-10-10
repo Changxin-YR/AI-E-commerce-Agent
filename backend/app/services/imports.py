@@ -22,6 +22,7 @@ from app.schemas.imports import (
 from app.services.import_catalog import FIELDS, guess_kind, mapping_reviews, suggest_mapping
 from app.services.import_groups import ImportGroupService
 from app.services.import_parser import parse_file
+from app.services.import_presets import matching_presets
 from app.services.import_validation import business_key, normalize_row
 
 
@@ -129,6 +130,7 @@ class ImportService:
             rows=rows,
             required_reviews=mapping_reviews(batch.kind, batch.mapping),
             duplicate_rows=sum(any(issue.field == "key" for issue in row.errors) for row in rows),
+            presets=matching_presets(batch.kind, batch.source_channel, batch.headers),
         )
 
     def preview(self, owner_id: int, batch_id: int, data: PreviewInput) -> BatchOutput:

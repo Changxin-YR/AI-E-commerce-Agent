@@ -1,5 +1,12 @@
 # 公开实现与借鉴记录
 
+## R2 A1-3 渠道字段预设（2026-10-10）
+
+- Shopify官方[商品CSV说明](https://help.shopify.com/en/manual/products/import-export/using-csv)：当前表头SKU、Title、Price、Cost per item分别作为SKU、名称、销售单价、单位采购成本候选。URL handle仅用于格式识别；币种由卖家另行确认；国际售价、比较价及描述不自动加入商品事实。官方页面同时提示旧版列名不同，故按本次核实日期限定字段签名，允许维护者停用预设。
+- Shopify官方[订单CSV说明](https://help.shopify.com/en/manual/fulfillment/managing-orders/exporting-orders)：多行订单部分字段空白，退款为整单金额，公开字段表没有稳定订单行ID；缺完整行级依据时暂不提供订单预设。Amazon官方[Order Reports](https://developer-docs.amazon/sp-api/docs/report-type-values-order)按报告类型列出不同字段，本次核对的Flat File Orders By Order Date Report为制表符分隔；目前未取得能核对单价/行总额及状态转换的实际样本，Amazon订单预设条件延期。
+- 资料版权分别归Shopify/Amazon，按官方站点条款参考字段语义，未复制正文、样本或实现。Firecrawl状态检查网络失败，使用内置web读取官方文档。自行制作合成字段子集验证；不将官方文档核实等同真实卖家文件验证。
+- 实现选择：派生候选不改变批次映射。用户显式应用后复用预览、逐行修正、语义确认和保存；字段签名不符/预设停用时仍可手工映射。无新解析器、依赖或迁移。
+
 ## R2 A1-2 安全分批与原子撤销（2026-10-10）
 
 - Python 官方 [csv](https://docs.python.org/3/library/csv.html)：按 CSV 记录迭代，使用 `newline=""` 保留引号内换行，重写时由 csv.writer 转义。PSF 标准库与文档，仅参考接口自行实现；复用项目现有解析器逐片核验，未新增依赖。
