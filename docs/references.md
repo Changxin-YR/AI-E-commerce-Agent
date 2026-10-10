@@ -1,5 +1,12 @@
 # 公开实现与借鉴记录
 
+## R2 A4 卖家任务入口与分组导航（2026-10-10）
+
+- W3C官方[Disclosure Navigation](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/)：按W3C permissive文档/示例许可参考原生按钮、列表、`aria-expanded`、`aria-controls`及当前页面语义；自行实现五组导航，展开入口和子页均可键盘操作。
+- Vue Router官方[Active links](https://router.vuejs.org/guide/essentials/active-links.html)与[Navigation guards](https://router.vuejs.org/guide/advanced/navigation-guards.html)：MIT文档参考；沿用RouterLink、现有登录守卫和对象query，分组只改变入口显示，不更改业务URL或审批权限。
+- 适配：复用AppShell/WorkInbox及Workbench只读投影，新增明确业务视图与全范围计数，保留旧筛选、历史和19个业务页面；人工核对、内部任务完成、来源支持解决分别表达。前端遵循项目现有深绿与浅色纸面样式，无新依赖。只读UTC查询验证兼容整秒和微秒时效，实施须再覆盖详情与列表一致性。
+- Firecrawl在本轮认证状态下无法fetch，使用官方网页fallback核实；不复制整套组件或引入菜单框架。
+
 ## R2 A3 异常复核与处理证据（2026-10-10）
 
 - Shopify官方[订单状态](https://help.shopify.com/en/manual/fulfillment/managing-orders/order-status)及[库存状态](https://help.shopify.com/en/manual/inventory-and-locations/fundamentals/inventory-states)：区分来源履约状态、可售库存与人工核对；平台资料按站点版权条款作语义参考，不复制正文或业务实现。文件中的状态只证明卖家提供的来源，不能充当本系统外部操作回执。
