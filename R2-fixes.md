@@ -1,33 +1,34 @@
-# R2 修复最终交付接续
+# SoloOps R2 修复已完成
 
-2026-10-10 21:57 Asia/Shanghai。主目录 C:/Users/27363/Desktop/AI E-commerce Agent，项目电商智能体。按docs/r2-fix-scope.md连续做完四包与最终报告后停止。当前聊天独占工作区，无子代理授权。
+2026-10-10。本轮用户授权的P2-01、UAT-03/04、UAT-02、UAT-01四包及最终回归报告全部完成，按约定停止开发。新的工作须来自用户新的范围；原AGENTS执行顺序的实际完成状态以docs/r2-fix-progress.md和最终报告为准。
 
-## 最新状态
+## 最终提交与CI
 
-- 包1：90cc92903f4d7828e1857ac6d84bf436fbbaa321 / CI38046803979 success，880后端/128单元/78浏览器。P2-01首次首页B1来源失效、只读/计数/分页/权限/恢复/清除通过。
-- 包2：5216da4cb2728988d4c1424a155afcff70f5e5db / CI38053971553 success，880/138/84。日期与Agent/客服深链/未保存保护，读取离页和写入保护分开。
-- 包3：69ba42a38ee95f31315c98c5f888de6a35a78e74 / CI38055976730 / job114224496845 success：880后端384.29秒、158单元39文件、89浏览器6分钟。有界浏览器CSV/Worker/原件manifest匹配恢复、跨片完整性/重复/退款及撤销；本地59后端/158单元/13浏览器及独立SQL回读。闭合文档a0f8071已推送。
-- **包4业务提交a84ffa3e88abc66ad45df3740591a206115ade15已推送；准确CI38057461269 / job114228754736仍运行，head_sha一致。880/158/91仅预期，须读完整日志。** 当前主工作区只剩用户原未跟踪输入，无本轮代码未提交。
-- 包4登录账号领取/求助，首页无店铺首店入口，档案可后补，Settings#shops定位及每店导入链接，Imports首份文件说明。README和使用手册明确管理员预部署；正式CLI不改。无后端/迁移/依赖改变。新first-use.spec.ts先用正式CLI开合成账号，然后全程UI；桌面先填档案再建店，手机无档案直接建店。
-- 包4本地first-use/workspace/seller-navigation 7 passed/17.8秒（20261010-215015-npm-3bf3a5.log），158单元39文件/9.25秒（20261010-215037-npm-d39545.log），ESLint/TS/build通过，最终build日志215214-npm-208556。初次源行折叠断言/worker重建账号错误已修测试保留业务断言。沙箱build Worker realpath EPERM经原命令权限后成功，未改配置。
-- 包4SQL回读uat1-readback.json：shop1416/batch1916档案version1、shop1417/batch1917档案NULL，均1商品FIRST-CUP，10.0000售价/3.0000成本/USD、committed/synthetic。日志215120-python-fce36f，1440/390截图first-use-*.png已目视。
+- 主目录 C:/Users/27363/Desktop/AI E-commerce Agent，项目电商智能体。
+- main最终文档提交 **0a49a37dcd7f1ccf0acc2c0a225bfdc8d8bee686** 已推送，新增docs/r2-fixes-final-report.md并同步README/验收/进度/部署门禁/testing。相对最后业务提交仅7份文档变更，业务源码/测试/构建配置相同。
+- 最后业务提交 **a84ffa3e88abc66ad45df3740591a206115ade15**，准确[CI38057461269](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38057461269)已核实head_sha一致、completed/success。job114228754736实际：880后端/433.76秒、158单元/39文件、91浏览器/6.6分钟，Ruff258格式/规则、mypy176及ESLint/TS/build全部通过。不要把业务CI说成其他文档SHA的CI。
+- 包1 90cc929 / CI38046803979 success，880/128/78；包2 5216da4 / CI38053971553 success，880/138/84；包3 69ba42a / CI38055976730 success，880/158/89；各包验收在docs/r2-fix-*.md。
 
-## 当前运行及收尾
+## 已交付行为
 
-- 完整后端已完成880 passed/455.81秒，日志.local/r2-fixes/20261010-213416-pytest-9e8a85.log；Ruff258格式/规则、mypy176通过。独立只读回查head d93f6b210ac4及容器hostname189d09af3aee正确。后端业务在包3/4未变。
-- **完整本地Playwright正运行，exec会话33614，日志20261010-215325-npm-ff1418.log。** 共91项，当前已过四流程桌面手机及2001/10001大文件部分场景，不能提前记整套成功。结束后先读结果，若失败定位修复新提交/CI。
-- 结束后串行运行启动器python ../.local/r2-fixes/final_readback.py final与python ../.local/r2-fixes/final_b1_readback.py。新脚本复用原专项readback，只连接3313，输出readback-final.json/summary和final-b1-readback.json。前者经实际API回读两家foundation主店所有保存对象并断言not_submitted；后者只读B1 SQL+WorkbenchRepository，保持首次首页派生stale且stored_source_status仍current。不要覆盖原包1/3/4证据。
-- 报告草稿在.local/r2-fixes/report-draft.md，待CI和全回归结果填写后保存docs/r2-fixes-final-report.md。目标标题《SoloOps R2 基础版缺陷修复与用户体验收敛报告》。应含包1–4分类、准确提交/CI、原P2失败复验、四MVP/B1记录、最终本地计数、迁移回退、真人/真实报表/公网边界。报告仍有待补字段，不可直接交付。
-- 核实包4准确CI成功后更新r2-fix-uat-01、r2-fix-progress、testing；最终报告、README当前状态、AGENTS完成状态、acceptance-matrix补充、r2-deployment-gates恢复证据，提交推送；context-memory仅更新此文件。最终停止开发。精确业务SHA/CI和最终文档提交要区分，不能引用旧CI冒充新应用结果。
-- 已只读核对原专项恢复：.local/backups/r2-final-20261010/backup.sql哈希与manifest相同，manifest与.local/r2-final/restore-verification.json的67表COUNT/CHECKSUM相同，临时恢复账号0/拒绝覆盖后不变；readback-source.json和readback-restored.json完全相同，38个API。迁移同d93f6b210ac4。属于原专项3311→3312证据，本轮没有启动/写这些库。部署门禁中的当前结构恢复待验可更新为历史合成恢复已验；生产灾备条件保持。
-- 已与起点ef3eaa6逐集合核对feature-matrix 74SO、acceptance-matrix 32A、foundation-backlog74SO不变，47长期模块未扩展。
+P2-01：首页/详情共用B1来源判断，首次GET识别依赖Listing变化，GET只读、列表/计数/分页一致。UAT03/04：原生业务日期/IANA/DST门禁、高级ISO与7/30天；Agent/客服URL和刷新历史恢复，新任务重核许可、未保存编辑保护、读取离页及迟到回包隔离。UAT02：有界浏览器CSV Worker准备/取消、manifest原件匹配恢复、逐片上传/预览/确认/撤销及容量提示，Python字节契约保持。UAT01：管理员预部署/正式CLI建号，网页领取说明/首店/每店导入链接/首份文件说明，档案可后补。
 
-## 环境与保护
+无新增依赖、表或迁移，head d93f6b210ac4。74SO、32原验收编号集合与起点ef3eaa6一致，47长期模块保持。真实报表、独立真人和实际公网条件继续待后续，不阻塞本轮代码交付。报告明确修复与体验改善、容量/平台预设延期，不宣称真实平台执行或真人验收。
 
-- 仅127.0.0.1:3313/soloops_r2_fixes_test，容器soloops-r2-fixes-20261010-mysql-test-1。保护3307/3308/3309、3311/3312、33312、用户8002/5175。模型/外发/调度false，合成数据及替身；历史真实模型/邮件许可不复用。
-- 启动器backend/.venv/Scripts/python.exe .local/r2-fixes/run.py；pytest/npm/python/docker模式，Node24.16，TEMP本轮忽略目录。后端与E2E串行，npm run test:e2e自动先构建，独占8001/5174。数据库/网络和git写require_escalated。
-- 用户输入docs/r2-final-special-acceptance.md、docs/uat/未跟踪，原样保留。**独立context-memory工作树的README.md是用户MM，禁止提交/覆盖/回滚。** 上下文用git -C .context-memory commit --only -m ... -- R2-fixes.md。根README本轮起点干净，包4改动已提交。
-- 曾自动审批将根README与.context-memory/README混淆而拒绝包4提交；已读取两个路径状态和根diff证明仅本轮9增1删，重新审批获准，受保护README仍MM。不是待用户批准的阻塞。
-- 已用firecrawl/no-negative-echo。Firecrawl状态fetch failed，用web官方资料回退，包4Vue Router/nextTick/MDN autocomplete已记references。无新框架，不做无关扩展。
-- GitHub tools.mcp__codex_apps__github_fetch({url:REST URL}) JSON在structuredContent.content；runs/{run}/jobs取job；fetch_workflow_job_logs({repo_full_name:'Changxin-YR/AI-E-commerce-Agent',job_id:...})完成后读取实际计数。未安装gh。
-- 需要近上下文上限接续时用户已授权create_thread同项目local，项目ID1c274a7b-2f1e-45ca-bf1b-10475766545b。先落盘推送，交接后旧聊天停止写。不发消息启动其他旧聊天。
+## 最终本地证据
+
+- 完整后端880 passed/455.81秒：.local/r2-fixes/20261010-213416-pytest-9e8a85.log；Ruff258/mypy176通过。
+- 完整单元158/39文件/9.25秒：215037-npm-d39545；ESLint215036-npm-f97246、最终build含TS215214-npm-208556。
+- 完整浏览器91 passed/6.4分钟/0重试：20261010-215325-npm-ff1418.log。四MVP、B1、全部修复与原路径均保留断言。
+- 独立四流程回读readback-final.json/summary：桌面店1448、手机1450，共38份API。旧分析86/87 stale；旧Listing327/328、330/331 stale/superseded，新329/332 approved/current。客服124/125 archived/current、version与reviewed_version4，人工记录56/57 seller_reported/not_submitted；原事项393/399 completed/stale并保留复检。
+- B1 final-b1-readback.json：shop1472/run712，analysis88/todo68/listing344；shop1473/run713，analysis89/todo69/listing347。均succeeded/7步，两次verify实际内部ID；stored_source_status仍current而首页派生stale/update_data=1。回读日志220026-python-83de41、220032-python-f024f5。
+- 包3uat2-readback.json与browser-import-*.png、包4uat1-readback.json与first-use-*.png均保留。后者shop1416/batch1916档案version1，shop1417/batch1917档案NULL，各1商品10/3 USD/committed/synthetic。
+- 原专项恢复证据只读核对：.local/backups/r2-final-20261010/backup.sql哈希、manifest与.local/r2-final/restore-verification.json的67表校验相同；源/恢复38份API快照完全相同，拒绝覆盖/临时账号0。这是原3311→3312证据，不是本轮重新恢复；部署门禁已准确更新。
+
+## 环境与用户文件保护
+
+本轮只使用127.0.0.1:3313/soloops_r2_fixes_test，容器soloops-r2-fixes-20261010-mysql-test-1 / hostname189d09af3aee；测试后已停止，仅保留卷和取证文件，日志20261010-220216-docker-0729bd.log。保护3307/3308/3309、3311/3312、33312和用户8002/5175。无新增付费模型/真实邮件/平台写入；历史许可不复用。
+
+主目录剩余未跟踪docs/r2-final-special-acceptance.md、docs/uat/是用户输入，保持原样。**.context-memory/README.md有用户MM（暂存及工作区改动），不得提交、覆盖或回滚。** 本轮上下文仅R2-fixes.md，提交用git -C .context-memory commit --only -m ... -- R2-fixes.md；主仓库AGENTS.md保持原文。
+
+需要后续新任务才启动隔离测试，启动器backend/.venv/Scripts/python.exe .local/r2-fixes/run.py固定3313/关闭模型邮件调度；pytest/E2E串行，npm run test:e2e先build并独占8001/5174。GitHub读取用github_fetch及fetch_workflow_job_logs，结构在structuredContent.content。Firecrawl曾fetch failed，官方web回退已记references。当前没有继续开发或接续新聊天的必要。
