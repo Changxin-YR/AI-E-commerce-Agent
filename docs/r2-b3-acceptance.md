@@ -36,3 +36,5 @@ SupportDelivery独立组件沿用深绿纸面风格。人工证据修改清除�
 保持原降级拒绝断言，为两条旧路径补finally升级head；B3保护测试也采用相同恢复方式并check schema，避免未来新增迁移后重复此问题。业务降级保护未放宽。恢复仅发生于已校验3308测试库。修复后独立顺序回归结果与最终准确CI见下方。
 
 修复顺序回归：test_import_groups.py→test_operation_rechecks.py→test_order_costs.py→test_support_delivery.py共92项/60.88秒通过；Ruff/format通过。准确修复提交CI待核对。
+
+修复提交6b1d550的CI38040184971：869后端/499.02秒、125前端单元及所有静态构建通过；78浏览器中67项已通过时达到工作流15分钟上限被取消，未出现测试失败。CI总时限调整为25分钟，保留全部串行测试，准确提交重新运行。
