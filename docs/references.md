@@ -1,5 +1,11 @@
 # 公开实现与借鉴记录
 
+## R2 B1：证据驱动的有限技能组合（2026-10-10）
+
+- Anthropic官方[Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)：借鉴可由确定性分类执行的routing、清楚的技能契约、基于实际工具结果继续和有限停止条件。文章版权归Anthropic，未复制代码；只在现有持久Agent中增加一个低毛利复核模板。
+- SQLAlchemy 2.0官方[Transactions and Connection Management](https://docs.sqlalchemy.org/en/20/orm/session_transaction.html)：MIT文档参考，沿用原begin_nested与defer_commits，业务写入和步骤在同一外层事务内提交，写失败不制造成功记录。
+- 适配：已有metrics/analysis_todo/product_context/listing_draft和verify复用；新的证据判定放在局部服务，以卖家历史成本、原分析缺口与明确商品参数为依据。无新依赖或平台写入。Firecrawl状态认证成功但剩余额度为-318，改用官方web页面，不触发新的收费任务。
+
 ## R2 A4 卖家任务入口与分组导航（2026-10-10）
 
 - W3C官方[Disclosure Navigation](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/)：按W3C permissive文档/示例许可参考原生按钮、列表、`aria-expanded`、`aria-controls`及当前页面语义；自行实现五组导航，展开入口和子页均可键盘操作。
