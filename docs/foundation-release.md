@@ -5,7 +5,7 @@
 适用项目：`C:\Users\27363\Desktop\AI E-commerce Agent`
 
 核对基线：`1763c405e61aa8710a5095167407f8cfee0e02ad`。实施前以实际工作区和最新提交为准。
-状态：开发执行规格；本文中的验收要求尚不能视为已通过。
+状态：本规格约定的基础版本已于2026-10-10完成B-01至B-14验收，逐项证据见[基础验收记录](foundation-acceptance.md)。原长期扩展继续按foundation-backlog管理。
 
 ## 1. 交付目标与优先级
 

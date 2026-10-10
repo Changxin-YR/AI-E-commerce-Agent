@@ -322,3 +322,5 @@
 - **SMTP250等于实际送达吗？** QQMailProvider只在send_message取得DATA最终250后记录smtp_accepted，表示服务器接受。Message-ID由已持久化dispatch_key生成，用于匹配原邮件；实际收件由人工证据单独记录。DATA响应丢失时保留unknown，不能仅凭本地标识推断成功。
 - **为何退出连接失败不能改写成功？** 邮件可能已接受，QUIT是清理动作。适配器finally安全关闭，避免把已知250误标未知；测试通过真实标准库send_message/sendmail和模拟底层命令覆盖该边界。
 - **允许任意收件地址如何保留审批约束？** OutboundService将单个recipient固化到预览、content_hash与dedupe_key；新收件地址产生新记录，不能挪用另一预览的approval_id。账号/店铺绑定、正文版本、来源时效和次数限制共同复验。
+
+真实外发验收：`QQMailProvider.send`的SMTP最终250证明服务器接受，`OutboundService.receipt`保存用户独立收件声明；两者分别回答提交结果与实际收件事实。G-06经原审批接口绑定地址/全文/来源、消耗一次授权后发1封摘要，再实际重启验证接受状态和声明保留。`received_at`是声明记录时间，不等于投递时间。证据见foundation-mail-evidence.md。
