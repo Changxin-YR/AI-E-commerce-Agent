@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateTime from '@/components/BusinessDateTime.vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { linkedShop } from '@/composables/deepLink'
@@ -414,15 +415,7 @@ onMounted(initialize)
               maxlength="64"
             /><small>用于无时区偏移的日期时间，例如 Asia/Shanghai。</small>
           </div>
-          <div class="form-field">
-            <label for="import-exported">导出时间（可选）</label
-            ><input
-              id="import-exported"
-              v-model="exportedAt"
-              :disabled="busy"
-              placeholder="2026-10-08T09:00:00+08:00"
-            /><small>包含明确时区偏移；未知可留空。</small>
-          </div>
+          <BusinessDateTime v-model="exportedAt" :timezone="timezone" label="导出时间（可选）" />
           <div class="form-field wide">
             <label for="import-file">CSV / Excel 文件</label
             ><input

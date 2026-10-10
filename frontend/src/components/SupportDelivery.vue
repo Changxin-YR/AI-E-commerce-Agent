@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateTime from './BusinessDateTime.vue'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { supportApi } from '@/api/support'
 import { errorMessage } from '@/api/client'
@@ -186,12 +187,13 @@ const loadDelivery = () => supportApi.delivery(props.shopId, props.item)
         <p>
           保存你在原渠道操作的自报记录。请使用证据编号或本机文件索引，避免填写客户地址等无关资料。自报记录不等于平台回执。
         </p>
-        <label class="form-field"
-          >人工操作时间（含时区）<input
-            v-model="occurredAt"
-            required
-            placeholder="2026-10-10T10:00:00+08:00"
-        /></label>
+        <BusinessDateTime
+          class="full-width"
+          v-model="occurredAt"
+          :timezone="timezone"
+          label="人工操作时间（含时区）"
+          required
+        />
         <label class="form-field"
           >原渠道操作方式<input
             v-model="method"

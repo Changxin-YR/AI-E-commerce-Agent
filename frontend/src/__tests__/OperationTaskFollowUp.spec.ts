@@ -44,7 +44,7 @@ it('requires renewed self-report confirmation, preserves input on failure and ga
   })
   await wrapper.get('#review-description').setValue('Synthetic external check')
   await wrapper.get('#review-reference').setValue('<script>receipt</script>')
-  await wrapper.get('#review-occurred').setValue('2026-10-10T01:00:00Z')
+  await wrapper.findAll('input[type=datetime-local]')[1]!.setValue('2026-10-10T09:00:00')
   expect(wrapper.emitted('dirty')?.slice(-1)[0]).toEqual([true])
   expect(button(wrapper, '标记完成').element.matches(':disabled')).toBe(true)
   await wrapper.get('input[type="checkbox"]').setValue(true)

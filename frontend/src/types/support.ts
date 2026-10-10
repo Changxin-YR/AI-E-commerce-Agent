@@ -102,7 +102,11 @@ export const intentLabels: Record<string, string> = {
   unknown: '意图待确认',
 }
 export function supportTime(value: string, timezone: string): string {
-  return `${new Intl.DateTimeFormat('zh-CN', { timeZone: timezone, dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))} (${timezone})`
+  try {
+    return `${new Intl.DateTimeFormat('zh-CN', { timeZone: timezone, dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))} (${timezone})`
+  } catch {
+    return '时间或时区待核对'
+  }
 }
 
 export interface ManualActionInput {

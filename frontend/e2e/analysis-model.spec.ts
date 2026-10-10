@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test, type Page } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -92,8 +93,8 @@ for (const mobile of [false, true]) {
     await page.getByLabel('数据身份').selectOption('synthetic')
     await page.getByLabel('运营目标').fill('哪些商品销量较高但已知毛利偏低，需要核对哪些数据？')
     await page.getByText('数据窗口、规则与任务预算', { exact: true }).click()
-    await page.getByLabel('订单起始时间（含时区）').fill('2026-10-07T00:00:00Z')
-    await page.getByLabel('订单结束时间（不包含）').fill('2026-10-08T00:00:00Z')
+    await fillExactTime(page.getByLabel('订单起始时间（含时区）'), '2026-10-07T00:00:00Z')
+    await fillExactTime(page.getByLabel('订单结束时间（不包含）'), '2026-10-08T00:00:00Z')
     await page.getByLabel('模型预算（USD）', { exact: true }).fill('0.03')
     await page.getByLabel(/同意将本次目标文本/).check()
     await page.getByLabel(/同意发送本次范围/).check()

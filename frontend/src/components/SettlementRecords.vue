@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import BusinessDateTime from './BusinessDateTime.vue'
+import BusinessDateRange from '@/components/BusinessDateRange.vue'
 import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { settlementsApi as api } from '@/api/settlements'
 import { ApiError, errorMessage } from '@/api/client'
@@ -313,14 +315,13 @@ onUnmounted(() => {
           }}）
         </p>
         <div class="form-grid">
-          <div class="form-field">
-            <label for="cycle-start">登记周期开始（含偏移）</label
-            ><input id="cycle-start" v-model="editing.scope.start_at" required />
-          </div>
-          <div class="form-field">
-            <label for="cycle-end">登记周期结束（含偏移）</label
-            ><input id="cycle-end" v-model="editing.scope.end_at" required />
-          </div>
+          <BusinessDateRange
+            v-model:start="editing.scope.start_at"
+            v-model:end="editing.scope.end_at"
+            :timezone="editing.scope.timezone"
+            start-label="登记周期开始（含偏移）"
+            end-label="登记周期结束（含偏移）"
+          />
           <div class="form-field">
             <label for="cycle-zone">登记周期时区</label
             ><input id="cycle-zone" v-model="editing.scope.timezone" required />
@@ -378,10 +379,12 @@ onUnmounted(() => {
                 </option>
               </select>
             </div>
-            <div class="form-field">
-              <label :for="`receipt-time-${i}`">到账时间（含偏移）{{ i + 1 }}</label
-              ><input :id="`receipt-time-${i}`" v-model="r.received_at" required />
-            </div>
+            <BusinessDateTime
+              v-model="r.received_at"
+              :timezone="r.timezone"
+              :label="`到账时间（含偏移）${i + 1}`"
+              required
+            />
             <div class="form-field">
               <label :for="`receipt-zone-${i}`">到账显示时区 {{ i + 1 }}</label
               ><input :id="`receipt-zone-${i}`" v-model="r.timezone" required />

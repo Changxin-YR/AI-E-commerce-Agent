@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test, type Page } from '@playwright/test'
 
 interface Batch {
@@ -66,8 +67,8 @@ async function prepare(
   await page.goto('/analytics')
   await page.getByLabel('分析店铺').selectOption(String(shop))
   await page.getByLabel('数据身份').selectOption('synthetic')
-  await page.getByLabel('起点（含时区，计入）').fill('2026-10-07T00:00:00+08:00')
-  await page.getByLabel('终点（含时区，不计入）').fill('2026-10-08T00:00:00+08:00')
+  await fillExactTime(page.getByLabel('起点（含时区，计入）'), '2026-10-07T00:00:00+08:00')
+  await fillExactTime(page.getByLabel('终点（含时区，不计入）'), '2026-10-08T00:00:00+08:00')
   return { shop, headers, orders }
 }
 
@@ -158,7 +159,7 @@ for (const width of [1440, 390]) {
       await form.getByLabel('历史单位采购成本', { exact: true }).fill(value)
       await form.getByLabel('凭据币种').selectOption('USD')
       await form.getByLabel('凭据来源与说明').fill(`Synthetic receipt ${index + 1}`)
-      await form.getByLabel('凭据时间（含时区）').fill('2026-10-06T08:00:00+08:00')
+      await fillExactTime(form.getByLabel('凭据时间（含时区）'), '2026-10-06T08:00:00+08:00')
       await expect(form.getByRole('button', { name: '确认保存成本凭据' })).toBeDisabled()
       await form.getByRole('checkbox').check()
       await form.getByRole('button', { name: '确认保存成本凭据' }).click()

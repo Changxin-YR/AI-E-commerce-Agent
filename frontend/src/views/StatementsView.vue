@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateRange from '@/components/BusinessDateRange.vue'
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { identityApi } from '@/api/identity'
@@ -181,14 +182,13 @@ onUnmounted(() => {
               </option>
             </select>
           </div>
-          <div class="form-field">
-            <label for="statement-start">开始时间（含偏移）</label
-            ><input id="statement-start" v-model="scope.start_at" required />
-          </div>
-          <div class="form-field">
-            <label for="statement-end">结束时间（含偏移）</label
-            ><input id="statement-end" v-model="scope.end_at" required />
-          </div>
+          <BusinessDateRange
+            v-model:start="scope.start_at"
+            v-model:end="scope.end_at"
+            :timezone="scope.timezone"
+            start-label="开始时间（含偏移）"
+            end-label="结束时间（含偏移）"
+          />
           <div class="form-field">
             <label for="statement-zone">核对显示时区（IANA）</label
             ><input id="statement-zone" v-model="scope.timezone" required />

@@ -111,6 +111,14 @@ for (const mobile of [false, true]) {
     })
     await page.reload()
     await expect(candidate).toContainText('cannot verify the current tracking')
+    await expect(page.getByLabel('执行流程')).toHaveValue('support_model')
+    await expect(page.getByLabel('数据身份')).toHaveValue('synthetic')
+    await expect(page.getByRole('combobox', { name: '目标消息', exact: true })).toHaveValue(
+      String(messages[0].id),
+    )
+    await expect(page.getByLabel(/同意将本次目标文本/)).not.toBeChecked()
+    await expect(page.getByLabel(/我已核对上述消息原文/)).not.toBeChecked()
+    await expect(page.getByRole('button', { name: '启动并运行', exact: true })).toBeDisabled()
     await review.getByRole('button', { name: '批准当前节点' }).click()
     const link = review.getByRole('link', { name: /到业务页面复查/ })
     await expect(link).toBeVisible()

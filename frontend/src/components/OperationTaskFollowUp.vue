@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateTime from '@/components/BusinessDateTime.vue'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { operationsApi } from '@/api/operations'
 import { errorMessage } from '@/api/client'
@@ -126,14 +127,11 @@ async function act(action: 'record_evidence' | 'wait_source' | 'recheck'): Promi
           <label for="review-reference">操作依据或凭据编号</label
           ><input id="review-reference" v-model="evidenceRef" maxlength="500" />
         </div>
-        <div class="form-field">
-          <label for="review-occurred">操作发生时间（含时区偏移）</label
-          ><input
-            id="review-occurred"
-            v-model="occurredAt"
-            placeholder="2026-10-10T18:00:00+08:00"
-          />
-        </div>
+        <BusinessDateTime
+          v-model="occurredAt"
+          :timezone="timezone"
+          label="操作发生时间（含时区偏移）"
+        />
         <label class="confirmation"
           ><input
             v-model="confirmed"

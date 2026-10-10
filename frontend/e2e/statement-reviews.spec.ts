@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test } from '@playwright/test'
 import path from 'node:path'
 import os from 'node:os'
@@ -110,8 +111,8 @@ for (const mobile of [false, true]) {
     await expect(page.getByRole('heading', { name: '账单与费用，逐行核对。' })).toBeVisible()
     await expect(page.locator('vite-error-overlay')).toHaveCount(0)
     await page.getByLabel('数据身份', { exact: true }).selectOption('synthetic')
-    await page.getByLabel('开始时间（含偏移）').fill(scope.start_at)
-    await page.getByLabel('结束时间（含偏移）').fill(scope.end_at)
+    await fillExactTime(page.getByLabel('开始时间（含偏移）'), scope.start_at)
+    await fillExactTime(page.getByLabel('结束时间（含偏移）'), scope.end_at)
     const reviews = page.getByRole('region', { name: '人工核对存档', exact: true })
     await reviews.getByRole('button', { name: '新建核对结论' }).click()
     await page.getByLabel('人工结论', { exact: true }).selectOption('consistent')

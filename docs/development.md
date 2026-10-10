@@ -943,6 +943,12 @@ B3完整CI补充：MySQL DDL不随后续旧迁移保护异常整体回滚。所�
 
 `repositories/margin_sources.py` 以关联 EXISTS 表达 B1 已读取的 Listing 依赖；工作台查询与 MarginReviewService 共用。列表分页之前派生状态，使计数和列表一致；无 Listing 依赖的成本任务保持独立。首页只读不更新任务版本/审计，详情及执行仍通过原用户/店铺锁和来源版本门禁。10 项新增回归包括 SQL 往返数、数据库前后快照、恢复及清除；证据见 [P2-01 验收](r2-fix-p2-01.md)。无迁移。
 
+## R2 UAT-03/04：业务时间与记录恢复
+
+日期输入集中在BusinessDateTime/BusinessDateRange，选择当地时间后用IANA候选偏移和Intl往返匹配UTC，拒绝DST不存在/歧义；高级ISO原文独立保留微秒与偏移。组件保持后端UTC、Decimal和窗口规则。共用显示函数允许表单中间无效状态显示“待核对”，避免日期输入过程中渲染失败。
+
+Agent/客服路由从每次query变化重挂载改为观察已验证的记录链接，自身写入URL保留编辑器。服务端查询仍按会话用户/店铺授权，记录恢复不触发执行或发送，也不恢复新任务许可。历史任务的只读范围与新任务表单分别展示；来源清除丢弃恢复副本。客服离开守卫和beforeunload保护未保存正文/人工记录，显式放弃才重建编辑器。相关实施、测试与回退见[r2-fix-uat-03-04](r2-fix-uat-03-04.md)。
+
 ## R2 C：调度证据与本地交付范围
 
 schedules/status保留worker_enabled并增加latest_timer，接口→SchedulesService→SchedulesRepository按当前用户/店铺只取timer记录，created_at倒序、id打破同刻平局。摘要独立于历史未读筛选/游标和manual记录；ScheduleRuntime显式区分配置开关、保存记录与当前在线状态，并保留实际执行/报表入口。原30秒扫描、最近一期合并、24小时窗口、暂停/恢复、唯一时间槽机制保持，没有新增队列或迁移。

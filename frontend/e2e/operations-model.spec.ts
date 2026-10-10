@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test, type Page } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -75,8 +76,8 @@ for (const mobile of [false, true]) {
     await page.getByLabel('数据身份').selectOption('synthetic')
     await page.getByLabel('运营目标').fill('检查导入数据并列出需要核对的事项。')
     await page.getByText('数据窗口、规则与任务预算', { exact: true }).click()
-    await page.getByLabel('订单起始时间（含时区）').fill('2026-10-07T00:00:00Z')
-    await page.getByLabel('订单结束时间（不包含）').fill('2026-10-08T00:00:00Z')
+    await fillExactTime(page.getByLabel('订单起始时间（含时区）'), '2026-10-07T00:00:00Z')
+    await fillExactTime(page.getByLabel('订单结束时间（不包含）'), '2026-10-08T00:00:00Z')
     await page.getByLabel('模型预算（USD）', { exact: true }).fill('0.03')
     const consent = page.getByLabel(/我已核对运营范围/)
     await expect(consent).toBeEnabled()
@@ -135,6 +136,19 @@ for (const mobile of [false, true]) {
     await expect(narrative).toHaveCount(0)
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      JSON.stringify(
+        await page.locator('main *').evaluateAll((elements) =>
+          elements
+            .filter((el) => el.getBoundingClientRect().right > innerWidth)
+            .slice(0, 12)
+            .map((el) => ({
+              tag: el.tagName,
+              class: el.className,
+              width: el.getBoundingClientRect().width,
+              text: el.textContent?.slice(0, 80),
+            })),
+        ),
+      ),
     ).toBeTruthy()
     expect(errors).toEqual([])
   })

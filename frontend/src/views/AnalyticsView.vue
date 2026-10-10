@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateRange from '@/components/BusinessDateRange.vue'
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
@@ -263,18 +264,13 @@ function time(value: string, timezone: string): string {
         </select></label
       >
       <label>显示时区<input v-model="scope.timezone" required placeholder="Asia/Shanghai" /></label>
-      <label
-        >起点（含时区，计入）<input
-          v-model="scope.start_at"
-          required
-          placeholder="2026-10-01T00:00:00+08:00"
-      /></label>
-      <label
-        >终点（含时区，不计入）<input
-          v-model="scope.end_at"
-          required
-          placeholder="2026-11-01T00:00:00+08:00"
-      /></label>
+      <BusinessDateRange
+        v-model:start="scope.start_at"
+        v-model:end="scope.end_at"
+        :timezone="scope.timezone"
+        start-label="起点（含时区，计入）"
+        end-label="终点（含时区，不计入）"
+      />
       <label class="full-width"
         >受控问题<input
           v-model="question"
@@ -313,7 +309,7 @@ function time(value: string, timezone: string): string {
       /></label>
     </fieldset>
     <p>
-      起止时间使用 ISO 8601 格式；Z 表示 UTC，也可填写 +08:00。最长 366 天、最多 10000
+      使用日期控件选择业务时间；高级输入支持 ISO 8601 的 Z 或明确偏移。最长 366 天、最多 10000
       行。本页快捷计算支持上方三个问题；自由表述请使用 AI 经营问数。
     </p>
     <button class="button primary" :disabled="busy || !shopId">

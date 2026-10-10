@@ -154,6 +154,17 @@ const actionLabels: Record<string, string> = {
       启动于 {{ supportTime(run.created_at, run.input?.scope.timezone ?? 'Asia/Shanghai') }} ·
       来源版本 {{ run.source_revision }}
     </p>
+    <p v-if="run.input" aria-label="任务保存范围">
+      保存范围：店铺 #{{ run.shop_id }} ·
+      {{ run.input.scope.data_identity === 'synthetic' ? '合成测试' : '用户导入' }} ·
+      {{ run.input.scope.channel }} · {{ run.input.scope.currency }} ·
+      {{ supportTime(run.input.scope.start_at, run.input.scope.timezone) }} 至
+      {{ supportTime(run.input.scope.end_at, run.input.scope.timezone) }}（不含终点）。 商品 #{{
+        run.input.product_id ?? '未选择'
+      }}
+      · 消息 #{{ run.input.message_id ?? '未选择' }}。
+      此处为已保存任务依据，继续执行使用该任务自己的预算与审批状态。
+    </p>
     <p v-if="agentReasons[run.reason]" role="status">{{ agentReasons[run.reason] }}</p>
     <p v-if="run.source_status === 'stale'">
       来源、经营规则已变化或过期。保留历史结果，需使用当前数据和规则新建任务。

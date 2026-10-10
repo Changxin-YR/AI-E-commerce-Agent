@@ -363,6 +363,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - SQLAlchemy 2.0 官方 [EXISTS 子查询](https://docs.sqlalchemy.org/en/20/tutorial/data_select.html#exists-subqueries)及 [JSON 类型](https://docs.sqlalchemy.org/en/20/core/type_basics.html#sqlalchemy.types.JSON)（MIT）：参考关联子查询、JSON 标量与空值语义。自行实现按任务步骤索引、Listing/商品/来源主键定位的只读谓词，首页列表和分类统计与 B1 执行校验复用，不增加逐任务往返或读取副作用，无新依赖或迁移。
 - Firecrawl 状态检查返回 `fetch failed`，本次使用内置 web 查阅上述官方页面；没有复制文档实现。
 
+## R2 修复包2：日期与任务连续性（2026-10-10）
+
+- MDN 官方 [datetime-local](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/datetime-local) 与 [HTML 时间格式](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Date_and_time_formats)（文档 CC BY-SA）：原生日期时间值不含时区，而且允许输入夏令时不存在的当地时间。采用原生选择器、显式 IANA 业务时区与 Intl 往返匹配；不采用浏览器系统时区推断。歧义要求用户在原精确 ISO 入口选择明确偏移；原始微秒表达式不因显示切换被改写。
+- Vue Router 官方 [Composition API](https://router.vuejs.org/guide/advanced/composition-api.html) 与 [导航守卫](https://router.vuejs.org/guide/advanced/navigation-guards.html)（MIT）：参考查询参数响应和路由离开/更新守卫。仅对 Agent/客服复用当前视图并观察 URL；自身保存 URL 不重挂载编辑器。通过服务端权限查询恢复对象；查询参数不携带授权、客户正文、目标文本或密钥。
+- Firecrawl 状态返回 `fetch failed`，使用官方 web 检索作为回退。上述资料作接口与设计依据，自行实现组件和导航处理，不增加第三方依赖。
+
 ## R2 C：API内调度与部署边界（2026-10-10）
 
 - FastAPI官方[Lifespan](https://fastapi.tiangolo.com/advanced/events/)与[HTTPS部署](https://fastapi.tiangolo.com/deployment/https/)（MIT项目）：参考API生命周期资源启停、TLS代理和运行进程的职责。既有进程内调度保持，新增摘要只读取已保存自动周期，不当作进程心跳；没有引入任务队列。

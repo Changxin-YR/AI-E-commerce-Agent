@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateRange from './BusinessDateRange.vue'
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import {
@@ -266,14 +267,13 @@ onUnmounted(() => window.removeEventListener('focus', focus))
                 </option>
               </select>
             </div>
-            <div class="form-field">
-              <label for="ops-start">订单起始时间（含时区偏移）</label
-              ><input id="ops-start" v-model="scope.start_at" required />
-            </div>
-            <div class="form-field">
-              <label for="ops-end">订单结束时间（不含，含时区偏移）</label
-              ><input id="ops-end" v-model="scope.end_at" required />
-            </div>
+            <BusinessDateRange
+              v-model:start="scope.start_at"
+              v-model:end="scope.end_at"
+              :timezone="timezone"
+              start-label="订单起始时间（含时区偏移）"
+              end-label="订单结束时间（不含，含时区偏移）"
+            />
             <div class="form-field">
               <label for="ops-age">库存时效（小时）</label
               ><input

@@ -73,3 +73,10 @@ onUnmounted(() => {
     </button>
   </section>
 </template>
+<style scoped>
+.data-note {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+</style>

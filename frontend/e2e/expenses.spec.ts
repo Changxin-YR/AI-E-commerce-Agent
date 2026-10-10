@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test, type Page } from '@playwright/test'
 import path from 'node:path'
 import os from 'node:os'
@@ -45,7 +46,10 @@ async function fillFee(page: Page, reference: string): Promise<void> {
   await page.getByLabel('费用名称', { exact: true }).fill('合成尾程运费')
   await page.getByLabel('费用类别', { exact: true }).selectOption('shipping')
   await page.getByLabel('实际费用金额', { exact: true }).fill('12.3456')
-  await page.getByLabel('发生时间（含偏移）', { exact: true }).fill('2026-10-07T08:30:00+08:00')
+  await fillExactTime(
+    page.getByLabel('发生时间（含偏移）', { exact: true }),
+    '2026-10-07T08:30:00+08:00',
+  )
   await page.getByLabel('发生时区（IANA）', { exact: true }).fill('Asia/Shanghai')
   await page.getByLabel('凭据编号', { exact: true }).fill(reference)
   await page.getByLabel('事实依据', { exact: true }).fill('合成运费收据，确认归属该订单行')
@@ -143,8 +147,14 @@ for (const mobile of [false, true]) {
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBeTruthy()
-    await page.getByLabel('开始时间（含偏移）', { exact: true }).fill('2026-10-07T00:00:00+08:00')
-    await page.getByLabel('结束时间（含偏移）', { exact: true }).fill('2026-10-08T00:00:00+08:00')
+    await fillExactTime(
+      page.getByLabel('开始时间（含偏移）', { exact: true }),
+      '2026-10-07T00:00:00+08:00',
+    )
+    await fillExactTime(
+      page.getByLabel('结束时间（含偏移）', { exact: true }),
+      '2026-10-08T00:00:00+08:00',
+    )
     await page.getByRole('button', { name: '核对费用合计', exact: true }).click()
     await expect(page.getByLabel('费用合计结果', { exact: true })).toContainText('15.6789')
     await expect(page.getByLabel('费用合计结果', { exact: true })).toContainText('费用完整性未知')

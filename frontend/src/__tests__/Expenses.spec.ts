@@ -213,7 +213,7 @@ it('keeps unsaved fee inputs while reading a summary', async () => {
   )
   await wrapper
     .findAll('form')
-    .find((form) => form.find('#expense-start').exists())!
+    .find((form) => form.find('[aria-label="本次时间范围"]').exists())!
     .trigger('submit')
   await flushPromises()
   expect((wrapper.get('#fee-label').element as HTMLInputElement).value).toBe('unsaved fee')

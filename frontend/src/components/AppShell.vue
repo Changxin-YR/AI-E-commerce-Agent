@@ -50,7 +50,9 @@ async function signOut(): Promise<void> {
         <span>个人卖家工作空间</span><span class="local-label">本地数据 · 由你掌控</span>
       </header>
       <main id="main-content" tabindex="-1">
-        <FeedbackBanner :message="error" /><ReturnToTask /><RouterView :key="$route.fullPath" />
+        <FeedbackBanner :message="error" /><ReturnToTask /><RouterView
+          :key="['/agent', '/support'].includes($route.path) ? $route.path : $route.fullPath"
+        />
       </main>
     </div>
   </div>

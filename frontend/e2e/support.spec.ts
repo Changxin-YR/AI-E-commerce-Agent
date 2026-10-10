@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -35,7 +36,7 @@ async function prepare(page: Page): Promise<{ shop: number; headers: Record<stri
   await page.goto('/support')
   await page.getByLabel('客服店铺').selectOption(String(shop))
   await expect(page).toHaveTitle('SoloOps · 独立卖家工作台')
-  await expect(page).toHaveURL(/\/support$/)
+  await expect(page).toHaveURL(new RegExp(`/support\\?shop=${shop}$`))
   await expect(page.getByRole('heading', { name: '每条诉求，都有清楚的回应。' })).toBeVisible()
   await expect(page.locator('vite-error-overlay')).toHaveCount(0)
   return { shop, headers }
@@ -44,7 +45,7 @@ async function prepare(page: Page): Promise<{ shop: number; headers: Record<stri
 async function manual(page: Page, body: string, language = 'en', orderId = ''): Promise<void> {
   await page.getByText('手工录入客服消息', { exact: true }).click()
   await page.getByLabel('消息标识', { exact: true }).fill('M1')
-  await page.getByLabel('消息时间', { exact: true }).fill('2026-10-09T09:00:00+08:00')
+  await fillExactTime(page.getByLabel('消息时间', { exact: true }), '2026-10-09T09:00:00+08:00')
   await page.getByLabel('消息数据身份').selectOption('synthetic')
   await page.getByLabel('消息语言', { exact: true }).selectOption(language)
   await page.getByLabel('消息原文', { exact: true }).fill(body)
@@ -72,7 +73,10 @@ test('support policy, evidence, editable draft, archive and source cleanup', asy
   await page.getByLabel('政策数据身份').selectOption('synthetic')
   await page.getByLabel('政策出处', { exact: true }).fill('合成测试文档')
   await page.getByLabel('来源版本', { exact: true }).fill('2026.1')
-  await page.getByLabel('生效时间（含时区）', { exact: true }).fill('2026-01-01T00:00:00Z')
+  await fillExactTime(
+    page.getByLabel('生效时间（含时区）', { exact: true }),
+    '2026-01-01T00:00:00Z',
+  )
   await page.getByLabel('政策 / FAQ 原文').fill('Contact support to review return eligibility.')
   await page.getByLabel('我已核对政策出处、适用范围与有效期').check()
   await page.getByRole('button', { name: '保存政策版本', exact: true }).click()
@@ -217,7 +221,7 @@ for (const width of [1440, 390]) {
     const downloaded = await readFile((await download.path())!, 'utf8')
     expect(downloaded.charCodeAt(0)).toBe(0xfeff)
     expect(downloaded).toContain('尚未确认退款')
-    await delivery.getByLabel('人工操作时间（含时区）').fill('2026-10-09T18:00:00+08:00')
+    await fillExactTime(delivery.getByLabel('人工操作时间（含时区）'), '2026-10-09T18:00:00+08:00')
     await delivery.getByLabel('原渠道操作方式').fill('原平台消息中心人工回复')
     await delivery.getByLabel('人工操作证据索引').fill('SYNTHETIC-REPLY-001')
     await expect(page.getByLabel('客服店铺')).toBeDisabled()

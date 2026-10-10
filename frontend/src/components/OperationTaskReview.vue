@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateTime from '@/components/BusinessDateTime.vue'
 import { computed, ref, watch } from 'vue'
 import { operationsApi } from '@/api/operations'
 import { errorMessage } from '@/api/client'
@@ -134,10 +135,11 @@ function followUpWorking(value: boolean): void {
           <label for="task-note">处理备注</label
           ><textarea id="task-note" v-model="note" maxlength="1000" rows="3" />
         </div>
-        <div class="form-field">
-          <label for="task-due">截止时间（含时区偏移，可留空）</label
-          ><input id="task-due" v-model="due" placeholder="2026-10-10T18:00:00+08:00" />
-        </div>
+        <BusinessDateTime
+          v-model="due"
+          :timezone="timezone"
+          label="截止时间（含时区偏移，可留空）"
+        />
         <p v-if="task.due_at">
           已保存截止：{{ supportTime(task.due_at, timezone) }}；到期后保留当前状态，需卖家处理。
         </p>

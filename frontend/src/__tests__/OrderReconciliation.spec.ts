@@ -123,7 +123,7 @@ it('drops late reads after focus or scope changes and allows a fresh request', a
   resolve({ ...result, comparisons: [] })
   await flushPromises()
   expect(wrapper.text()).toContain('ZERO')
-  await wrapper.get('#order-check-end').setValue('2026-10-08T00:00:00Z')
+  await wrapper.findAll('input[type=datetime-local]')[1]!.setValue('2026-10-08T00:00:00')
   expect(wrapper.findComponent(OrderReconciliationResult).exists()).toBe(false)
 })
 it('invalidates visible evidence and declaration on focus', async () => {

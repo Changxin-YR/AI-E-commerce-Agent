@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateTime from './BusinessDateTime.vue'
 import { onMounted, reactive, ref } from 'vue'
 import { supportApi } from '@/api/support'
 import { errorMessage } from '@/api/client'
@@ -173,23 +174,19 @@ onMounted(() => load())
             <label for="policy-version">来源版本</label
             ><input id="policy-version" v-model="form.source_version" maxlength="80" required />
           </div>
-          <div class="form-field">
-            <label for="policy-from">生效时间（含时区）</label
-            ><input
-              id="policy-from"
-              v-model="form.valid_from"
-              placeholder="2026-10-09T00:00:00+08:00"
-              required
-            />
-          </div>
-          <div class="form-field">
-            <label for="policy-until">失效时间（可选，含时区）</label
-            ><input
-              id="policy-until"
-              v-model="form.valid_until"
-              placeholder="2027-01-01T00:00:00+08:00"
-            />
-          </div>
+          <BusinessDateTime
+            class="full-width"
+            v-model="form.valid_from"
+            :timezone="timezone"
+            label="生效时间（含时区）"
+            required
+          />
+          <BusinessDateTime
+            class="full-width"
+            v-model="form.valid_until"
+            :timezone="timezone"
+            label="失效时间（可选，含时区）"
+          />
         </div>
         <div class="form-field">
           <label for="policy-text">政策 / FAQ 原文</label

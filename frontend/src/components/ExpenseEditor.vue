@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateTime from '@/components/BusinessDateTime.vue'
 import { computed, onUnmounted, reactive, ref, watch } from 'vue'
 import { expensesApi } from '@/api/expenses'
 import { errorMessage } from '@/api/client'
@@ -146,15 +147,12 @@ onUnmounted(() => {
             </option>
           </select>
         </div>
-        <div class="form-field">
-          <label for="fee-occurred">发生时间（含偏移）</label
-          ><input
-            id="fee-occurred"
-            v-model="form.occurred_at"
-            required
-            placeholder="2026-10-09T16:00:00+08:00"
-          /><small>完整时间及偏移，例如 +08:00；UTC 使用 Z。</small>
-        </div>
+        <BusinessDateTime
+          v-model="form.occurred_at"
+          :timezone="form.timezone"
+          label="发生时间（含偏移）"
+          required
+        />
         <div class="form-field">
           <label for="fee-zone">发生时区（IANA）</label
           ><input id="fee-zone" v-model="form.timezone" required maxlength="64" /><small

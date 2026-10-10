@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test, type Page } from '@playwright/test'
 import path from 'node:path'
 import os from 'node:os'
@@ -19,8 +20,8 @@ const csv =
 
 async function loadResult(page: Page): Promise<void> {
   await page.getByLabel('数据身份', { exact: true }).selectOption('synthetic')
-  await page.getByLabel('开始时间（含偏移）').fill('2026-10-07T00:00:00+08:00')
-  await page.getByLabel('结束时间（含偏移）').fill('2026-10-08T00:00:00+08:00')
+  await fillExactTime(page.getByLabel('开始时间（含偏移）'), '2026-10-07T00:00:00+08:00')
+  await fillExactTime(page.getByLabel('结束时间（含偏移）'), '2026-10-08T00:00:00+08:00')
   await page.getByRole('button', { name: '读取并核对', exact: true }).click()
   await expect(page.getByRole('region', { name: '账单核对结果' })).toBeVisible()
 }

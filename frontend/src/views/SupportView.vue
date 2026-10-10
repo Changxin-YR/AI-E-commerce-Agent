@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import { useRecordLink } from '@/composables/useRecordLink'
 import { linkedId, linkedShop, revealRecord, returnTaskQuery } from '@/composables/deepLink'
 import { supportApi } from '@/api/support'
 import { identityApi } from '@/api/identity'
-import { errorMessage } from '@/api/client'
+import { ApiError, errorMessage } from '@/api/client'
 import type { Shop } from '@/types/identity'
 import {
   replyStatus,
@@ -22,6 +23,43 @@ import SupportSource from '@/components/SupportSource.vue'
 
 const shops = ref<Shop[]>([])
 const route = useRoute()
+const recordLink = useRecordLink()
+const editorKey = ref(0)
+let navigationEpoch = 0
+let writingLink = false
+function canNavigate(): boolean {
+  if (!dirty.value && !busy.value) return true
+  error.value = dirty.value
+    ? '正文或人工记录尚未保存，请先保存或放弃修改，再离开当前草稿。'
+    : '正在保存或读取，请等待操作完成。'
+  return false
+}
+onBeforeRouteLeave(canNavigate)
+onBeforeRouteUpdate(() => writingLink || canNavigate())
+function beforeUnload(event: BeforeUnloadEvent): void {
+  if (dirty.value || busy.value) {
+    event.preventDefault()
+    event.returnValue = ''
+  }
+}
+function discard(): void {
+  editorKey.value++
+  dirty.value = false
+  error.value = ''
+}
+async function remember(draft?: number, message?: number): Promise<void> {
+  writingLink = true
+  try {
+    await recordLink.write({
+      shop: shopId.value,
+      draft,
+      message,
+      ...returnTaskQuery(route.query, shopId.value),
+    })
+  } finally {
+    writingLink = false
+  }
+}
 const shopId = ref(0)
 const timezone = computed(
   () => shops.value.find((s) => s.id === shopId.value)?.timezone ?? 'Asia/Shanghai',
@@ -49,7 +87,10 @@ async function perform(work: () => Promise<void>): Promise<void> {
   try {
     await work()
   } catch (cause) {
-    error.value = errorMessage(cause)
+    error.value =
+      cause instanceof ApiError && cause.status === 404
+        ? '记录不存在、来源已撤销或当前店铺无权访问，请从本店消息或处理记录重新打开。'
+        : errorMessage(cause)
   } finally {
     actionBusy.value = false
   }
@@ -62,7 +103,7 @@ function resetEvidence(): void {
   verified.value = false
   selectedPolicies.value = []
 }
-async function changeShop(): Promise<void> {
+async function loadShop(): Promise<void> {
   workspace.value = null
   selected.value = null
   resetEvidence()
@@ -71,22 +112,30 @@ async function changeShop(): Promise<void> {
   history.value = []
   if (shopId.value) await perform(load)
 }
+async function changeShop(): Promise<void> {
+  if (Number(route.query.shop) === Number(shopId.value)) return
+  await remember()
+  await loadShop()
+}
 async function search(page = 0): Promise<void> {
   offset.value = page
   await perform(load)
 }
-async function choose(id: number): Promise<void> {
+async function choose(id: number, rememberLink = true): Promise<void> {
   await perform(async () => {
     workspace.value = await supportApi.workspace(shopId.value, id)
     resetEvidence()
     selected.value = null
+    if (rememberLink) await remember(undefined, id)
   })
 }
-async function show(id: number): Promise<void> {
+async function show(id: number, rememberLink = true): Promise<void> {
   await perform(async () => {
-    selected.value = await supportApi.get(shopId.value, id)
+    selected.value = null
     workspace.value = null
+    selected.value = await supportApi.get(shopId.value, id)
     resetEvidence()
+    if (rememberLink) await remember(id)
   })
 }
 async function refresh(): Promise<void> {
@@ -111,6 +160,7 @@ async function generate(): Promise<void> {
       selectedPolicies.value,
     )
     await load()
+    await remember(selected.value.id)
     success.value = '草稿与接管摘要已保存，请核对全部诉求和证据。'
   })
 }
@@ -139,27 +189,47 @@ function deliveryUpdated(item: ReplyDraft): void {
 function onFocus(): void {
   void refresh()
 }
-onMounted(async () => {
-  window.addEventListener('focus', onFocus)
-  await perform(async () => {
-    shops.value = await identityApi.shops()
-  })
+async function restoreRoute(): Promise<void> {
+  const epoch = ++navigationEpoch
+  workspace.value = null
+  selected.value = null
+  dirty.value = false
   try {
     shopId.value = linkedShop(shops.value, route.query.shop)
-    await changeShop()
+    await loadShop()
+    if (epoch !== navigationEpoch) return
     const id = linkedId(route.query.draft)
     if (id) {
-      await show(id)
+      await show(id, false)
       await revealRecord('linked-reply')
     } else {
       const messageId = linkedId(route.query.message)
-      if (messageId) await choose(messageId)
+      if (messageId) await choose(messageId, false)
     }
   } catch (cause) {
+    shopId.value = 0
     error.value = errorMessage(cause)
   }
+}
+watch(
+  () => route.fullPath,
+  (path) => {
+    if (route.path === '/support' && !recordLink.isOwn(path)) void restoreRoute()
+  },
+)
+onMounted(async () => {
+  window.addEventListener('focus', onFocus)
+  window.addEventListener('beforeunload', beforeUnload)
+  await perform(async () => {
+    shops.value = await identityApi.shops()
+  })
+  await restoreRoute()
 })
-onUnmounted(() => window.removeEventListener('focus', onFocus))
+onUnmounted(() => {
+  navigationEpoch++
+  window.removeEventListener('focus', onFocus)
+  window.removeEventListener('beforeunload', beforeUnload)
+})
 </script>
 <template>
   <div class="page-heading">
@@ -189,7 +259,12 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
       </button>
     </div>
     <p v-if="!shops.length">请先在<RouterLink to="/settings">经营资料</RouterLink>中添加店铺。</p>
-    <p v-if="dirty">正文尚未保存，保存后可切换消息或刷新依据。</p>
+    <p v-if="dirty">
+      正文或人工记录尚未保存，保存后可切换消息或刷新依据。
+      <button type="button" class="button secondary small" :disabled="busy" @click="discard">
+        放弃未保存修改
+      </button>
+    </p>
   </section>
   <template v-if="shopId">
     <ManualMessage
@@ -321,6 +396,7 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
       </section>
     </div>
     <SupportReply
+      :key="editorKey"
       id="linked-reply"
       v-if="selected"
       :item="selected"

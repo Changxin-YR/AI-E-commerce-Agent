@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test, type Page } from '@playwright/test'
 import path from 'node:path'
 import os from 'node:os'
@@ -37,8 +38,8 @@ async function importFile(page: Page, shop: number, kind: string, content: strin
   ).toBeVisible()
 }
 async function scope(page: Page): Promise<void> {
-  await page.getByLabel('开始时间（含偏移）').fill('2026-10-07T00:00:00+08:00')
-  await page.getByLabel('结束时间（含偏移）').fill('2026-10-08T00:00:00+08:00')
+  await fillExactTime(page.getByLabel('开始时间（含偏移）'), '2026-10-07T00:00:00+08:00')
+  await fillExactTime(page.getByLabel('结束时间（含偏移）'), '2026-10-08T00:00:00+08:00')
 }
 for (const mobile of [false, true]) {
   const size = mobile ? 'mobile' : 'desktop'

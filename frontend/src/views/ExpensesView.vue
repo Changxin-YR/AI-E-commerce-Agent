@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateRange from '@/components/BusinessDateRange.vue'
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { identityApi } from '@/api/identity'
@@ -384,14 +385,13 @@ onUnmounted(() => {
     <form @submit.prevent="summarize">
       <fieldset :disabled="busy">
         <div class="form-grid">
-          <div class="form-field">
-            <label for="expense-start">开始时间（含偏移）</label
-            ><input id="expense-start" v-model="period.start_at" required />
-          </div>
-          <div class="form-field">
-            <label for="expense-end">结束时间（含偏移）</label
-            ><input id="expense-end" v-model="period.end_at" required />
-          </div>
+          <BusinessDateRange
+            v-model:start="period.start_at"
+            v-model:end="period.end_at"
+            :timezone="period.timezone"
+            start-label="开始时间（含偏移）"
+            end-label="结束时间（含偏移）"
+          />
           <div class="form-field">
             <label for="expense-zone">核对显示时区（IANA）</label
             ><input id="expense-zone" v-model="period.timezone" required />

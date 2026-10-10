@@ -392,6 +392,12 @@ A3新复检必须比较shop revision、规则和有效期，原异常来源过�
 
 为什么不逐条调用 AgentService.get 修复首页？该服务有失效审计、版本更新及执行上下文读取，不适合只读聚合。`margin_sources.listing_current` 使用关联 EXISTS，工作台在筛选/计数前派生 stale，详情和写入门禁复用它；无任务依赖则不失效。`test_margin_workbench` 比较 1 与 22 个任务时的 SQL 次数及 GET 前后持久状态，验证分页和无副作用。任务恢复仍检查来源，来源回退不复活旧审批。
 
+## R2 日期与导航恢复
+
+`datetime-local`只含墙上时钟时间，不代表UTC。`businessTime.resolveLocalTime`枚举所选IANA区附近偏移，对每个候选UTC反向格式化；无匹配拒绝，不唯一要求显式偏移。高级输入保持原微秒字符串，展示不触发写回。测试覆盖纽约缺口/重叠、Lord Howe半小时和Apia跳日，以及不同电脑时区不会改变业务选择。
+
+Vue Router的query更新与组件重建如何影响编辑？`AppShell`只让Agent/客服按路径保留视图，`useRecordLink`区分本次保存的URL变化和浏览器历史导航；服务端回读仍验证用户/店铺。客服路由守卫和beforeunload保护未保存输入。Agent持久范围可恢复，新任务授权必须重新勾选，刷新只能读，恢复执行仍由按钮通过预算和审批门禁。
+
 ## R2 C：调度配置、历史证据与在线状态
 
 为什么不以worker_enabled证明持续运行？它只是配置，进程关闭/主机休眠时不执行，空周期没有记录；ScheduleRuntime展示已保存最近自动周期及实际时间，后续审批从execution_id回查。为什么独立查询？未读筛选、免打扰和分页会隐藏最新记录，manual也不能冒充timer；SchedulesRepository.latest_timer显式owner/shop/trigger约束，created_at/id稳定排序，test_schedules验证同刻/手动/已读/跨店边界。

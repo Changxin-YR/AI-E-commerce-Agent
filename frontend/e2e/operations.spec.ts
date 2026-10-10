@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test, type Page } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -92,9 +93,10 @@ test('operations source, approval, defer, completion, replay and source clearing
   await expect(page.getByRole('button', { name: '运行今日运营' })).toBeDisabled()
   await detail.getByRole('button', { name: '批准并创建待办' }).click()
   await expect(detail.getByRole('heading', { name: /事项 #.*待处理/ })).toBeVisible()
-  await detail
-    .getByLabel('截止时间（含时区偏移，可留空）')
-    .fill(new Date(Date.now() + 86400000).toISOString())
+  await fillExactTime(
+    detail.getByLabel('截止时间（含时区偏移，可留空）'),
+    new Date(Date.now() + 86400000).toISOString(),
+  )
   await detail.getByRole('button', { name: '延期至截止时间' }).click()
   await expect(detail.getByRole('heading', { name: /事项 #.*已延期/ })).toBeVisible()
   await detail.getByRole('button', { name: '标记完成' }).click()
@@ -172,9 +174,10 @@ for (const width of [1440, 390]) {
     await detail.getByRole('button', { name: '重新打开待办' }).click()
     await review.getByLabel('操作说明（卖家自报）').fill('合成补货人工说明')
     await review.getByLabel('操作依据或凭据编号').fill('Synthetic-receipt-1')
-    await review
-      .getByLabel('操作发生时间（含时区偏移）')
-      .fill(new Date(Date.now() - 1000).toISOString())
+    await fillExactTime(
+      review.getByLabel('操作发生时间（含时区偏移）'),
+      new Date(Date.now() - 1000).toISOString(),
+    )
     await expect(page.getByRole('button', { name: '运行今日运营' })).toBeDisabled()
     await review.getByRole('checkbox').check()
     await review.getByRole('button', { name: '登记操作证据' }).click()

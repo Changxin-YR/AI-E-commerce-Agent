@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateTime from './BusinessDateTime.vue'
 import { computed, reactive, ref, watch } from 'vue'
 import { importsApi } from '@/api/imports'
 import { errorMessage } from '@/api/client'
@@ -90,15 +91,13 @@ async function save(): Promise<void> {
             <label for="message-id">消息标识</label
             ><input id="message-id" v-model="form.message_id" maxlength="120" required />
           </div>
-          <div class="form-field">
-            <label for="message-time">消息时间</label
-            ><input
-              id="message-time"
-              v-model="form.sent_at"
-              placeholder="2026-10-09T09:00:00+08:00"
-              required
-            /><small>无偏移时按 {{ timezone }} 解析</small>
-          </div>
+          <BusinessDateTime
+            class="full-width"
+            v-model="form.sent_at"
+            :timezone="timezone"
+            label="消息时间"
+            required
+          />
           <div class="form-field">
             <label for="message-channel">消息来源渠道</label
             ><select id="message-channel" v-model="form.channel">

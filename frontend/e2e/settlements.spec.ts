@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test } from '@playwright/test'
 import path from 'node:path'
 import os from 'node:os'
@@ -56,8 +57,14 @@ for (const mobile of [false, true]) {
     await expect(page.getByRole('heading', { name: '结算周期，回款有据。' })).toBeVisible()
     await expect(page.locator('vite-error-overlay')).toHaveCount(0)
     await page.getByLabel('数据身份', { exact: true }).selectOption('synthetic')
-    await page.getByLabel('周期开始（含偏移）', { exact: true }).fill('2026-10-07T00:00:00+08:00')
-    await page.getByLabel('周期结束（含偏移）', { exact: true }).fill('2026-10-08T00:00:00+08:00')
+    await fillExactTime(
+      page.getByLabel('周期开始（含偏移）', { exact: true }),
+      '2026-10-07T00:00:00+08:00',
+    )
+    await fillExactTime(
+      page.getByLabel('周期结束（含偏移）', { exact: true }),
+      '2026-10-08T00:00:00+08:00',
+    )
     await page.screenshot({
       path: path.join(
         os.tmpdir(),
@@ -71,9 +78,10 @@ for (const mobile of [false, true]) {
     await page.getByLabel('平台回款凭据号 1', { exact: true }).fill('P1')
     await page.getByLabel('人工到账凭据号 1', { exact: true }).fill('BANK-1')
     await page.getByLabel('到账金额 1', { exact: true }).fill('80.1234')
-    await page
-      .getByLabel('到账时间（含偏移）1', { exact: true })
-      .fill('2026-10-08T01:30:00.123456Z')
+    await fillExactTime(
+      page.getByLabel('到账时间（含偏移）1', { exact: true }),
+      '2026-10-08T01:30:00.123456Z',
+    )
     await page
       .getByLabel('凭据核验说明 1', { exact: true })
       .fill('合成卖家声明，待银行原始凭据复核')

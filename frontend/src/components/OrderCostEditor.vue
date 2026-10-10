@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BusinessDateTime from './BusinessDateTime.vue'
 import { ref, reactive, watch } from 'vue'
 import { analyticsApi } from '@/api/analytics'
 import { errorMessage } from '@/api/client'
@@ -144,12 +145,13 @@ async function save(action: 'upsert' | 'revoke'): Promise<void> {
               required
               placeholder="采购凭据编号及适用此订单行的依据"
           /></label>
-          <label class="full-width"
-            >凭据时间（含时区）<input
-              v-model="draft.evidence_at"
-              required
-              placeholder="2026-10-06T08:00:00+08:00"
-          /></label>
+          <BusinessDateTime
+            class="full-width"
+            v-model="draft.evidence_at"
+            :timezone="timezone"
+            label="凭据时间（含时区）"
+            required
+          />
           <label class="check-label full-width"
             ><input
               v-model="confirmed"

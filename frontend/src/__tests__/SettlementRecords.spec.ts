@@ -113,7 +113,7 @@ it('escapes source text and invalidates confirmation after cycle or receipt chan
   expect(w.text()).toContain(content.note)
   expect(w.text()).toContain('银行证据未核验')
   await w.get('input[type=checkbox]').setValue(true)
-  await w.get('#cycle-end').setValue('2026-10-09T00:00:00Z')
+  await w.findAll('input[type=datetime-local]')[1]!.setValue('2026-10-09T00:00:00')
   expect(w.find('[aria-label="结算预览"]').exists()).toBe(false)
   await click(w, '添加人工到账凭据')
   await w.get('#receipt-amount-0').setValue('123.4567')

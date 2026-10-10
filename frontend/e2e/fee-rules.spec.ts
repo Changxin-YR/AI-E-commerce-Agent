@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test } from '@playwright/test'
 import path from 'node:path'
 import os from 'node:os'
@@ -64,8 +65,8 @@ for (const mobile of [false, true]) {
     await expect(page.getByRole('heading', { name: '账单与费用，逐行核对。' })).toBeVisible()
     await expect(page.locator('vite-error-overlay')).toHaveCount(0)
     await page.getByLabel('数据身份', { exact: true }).selectOption('synthetic')
-    await page.getByLabel('开始时间（含偏移）').fill('2026-10-07T00:00:00+08:00')
-    await page.getByLabel('结束时间（含偏移）').fill('2026-10-08T00:00:00+08:00')
+    await fillExactTime(page.getByLabel('开始时间（含偏移）'), '2026-10-07T00:00:00+08:00')
+    await fillExactTime(page.getByLabel('结束时间（含偏移）'), '2026-10-08T00:00:00+08:00')
     const rules = page.getByRole('region', { name: '收费映射规则', exact: true })
     await rules.getByRole('button', { name: '新建映射规则' }).click()
     await page.getByLabel('完整原始收费名').fill('Packaging')

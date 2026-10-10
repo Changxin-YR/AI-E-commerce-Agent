@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
@@ -44,7 +45,7 @@ async function upload(page: Page, shop: number, file: SampleFile, revise = false
   await expect(page.getByRole('combobox', { name: '数据身份', exact: true })).toHaveValue(
     'synthetic',
   )
-  if (revise) await page.getByLabel('导出时间（可选）').fill(new Date().toISOString())
+  if (revise) await fillExactTime(page.getByLabel('导出时间（可选）'), new Date().toISOString())
   await page.getByLabel('CSV / Excel 文件').setInputFiles({
     name: file.filename,
     mimeType: 'text/csv',
@@ -274,9 +275,10 @@ for (const mobile of [false, true]) {
     await delivery.getByRole('button', { name: '确认当前版本已审阅' }).click()
     await expect(delivery).toContainText('本版本已审阅')
     await exportDraft(page, delivery, 'No refund has been confirmed.')
-    await delivery
-      .getByLabel('人工操作时间（含时区）')
-      .fill(new Date(Date.now() - 1000).toISOString())
+    await fillExactTime(
+      delivery.getByLabel('人工操作时间（含时区）'),
+      new Date(Date.now() - 1000).toISOString(),
+    )
     await delivery.getByLabel('原渠道操作方式').fill('合成人工接管演练')
     await delivery.getByLabel('人工操作证据索引').fill(`SYNTHETIC-FOUNDATION-${stage}`)
     await delivery.getByLabel('我确认已在原渠道人工操作，此记录为本人自报').check()

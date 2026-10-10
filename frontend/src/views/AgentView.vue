@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import BusinessDateRange from '@/components/BusinessDateRange.vue'
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import { useRecordLink } from '@/composables/useRecordLink'
 import {
+  scopeQuery,
   linkedId,
   linkedShop,
   revealRecord,
@@ -12,7 +15,7 @@ import { identityApi } from '@/api/identity'
 import { agentApi } from '@/api/agent'
 import { listingsApi } from '@/api/listings'
 import { supportApi } from '@/api/support'
-import { errorMessage } from '@/api/client'
+import { ApiError, errorMessage } from '@/api/client'
 import type {
   AgentAction,
   AgentBudget,
@@ -34,6 +37,52 @@ import InternalAuthorizations from '@/components/InternalAuthorizations.vue'
 import { authorizationsApi, type InternalAuthorization } from '@/api/authorizations'
 
 const route = useRoute()
+const recordLink = useRecordLink()
+let restoring = true
+const rulesKey = ref(0)
+function resetConsent(): void {
+  form.allow_model = false
+  form.allow_analysis_data = false
+  form.allow_listing_data = false
+  form.allow_support_data = false
+  form.allow_operation_data = false
+  form.authorization_id = null
+}
+function restoreInput(run: AgentRun): void {
+  resetConsent()
+  if (!run.input) return
+  const input = run.input
+  form.template = input.template
+  form.goal = input.goal
+  form.product_id = input.product_id
+  form.message_id = input.message_id
+  form.margin_cost_mode = input.margin_cost_mode
+  Object.assign(form.scope, input.scope)
+  Object.assign(form.budget, run.budget)
+  form.support_context = null
+  form.expected_operation_hash = null
+  rulesKey.value++
+}
+async function rememberRun(): Promise<void> {
+  if (selected.value)
+    await recordLink.write({
+      shop: shopId.value,
+      execution: selected.value.id,
+      ...returnTaskQuery(route.query, shopId.value),
+    })
+}
+async function changeShop(): Promise<void> {
+  if (Number(route.query.shop) === shopId.value) return
+  await recordLink.write({ shop: shopId.value })
+  await restoreRoute()
+}
+function canNavigate(): boolean {
+  if (!busy.value && !controlling.value && !driving.value) return true
+  error.value = '任务正在请求处理中，请等待当前步骤结束或先暂停任务。'
+  return false
+}
+onBeforeRouteLeave(canNavigate)
+onBeforeRouteUpdate((to) => recordLink.isOwn(to.fullPath, false) || canNavigate())
 const focusGrant = ref<number | undefined>()
 const focusShop = ref(0)
 import AppliedRules from '@/components/AppliedRules.vue'
@@ -89,6 +138,14 @@ const form = reactive<AgentInput>({
     max_margin_percent: '20',
   },
 })
+const initialInput = JSON.parse(JSON.stringify(form)) as AgentInput
+function resetForm(): void {
+  Object.assign(form, {
+    ...initialInput,
+    scope: { ...initialInput.scope },
+    budget: { ...initialInput.budget },
+  })
+}
 const marginStart = computed(() => {
   const end = Date.parse(form.scope.end_at)
   return Number.isFinite(end) ? new Date(end - 7 * 86400000).toISOString() : ''
@@ -107,11 +164,7 @@ watch(
     JSON.stringify(form.budget),
   ],
   () => {
-    form.allow_model = false
-    form.allow_analysis_data = false
-    form.allow_listing_data = false
-    form.allow_support_data = false
-    form.allow_operation_data = false
+    resetConsent()
   },
 )
 const productOptions = computed(() =>
@@ -128,8 +181,10 @@ const messageOptions = computed(() =>
 
 function accept(run: AgentRun): void {
   if (!alive || shopId.value !== run.shop_id) return
-  if (!selected.value || (selected.value.id === run.id && run.version >= selected.value.version))
+  if (!selected.value || (selected.value.id === run.id && run.version >= selected.value.version)) {
     selected.value = run
+    if (!run.input) resetForm()
+  }
 }
 async function readOptions(): Promise<void> {
   if (!shopId.value) return
@@ -152,6 +207,12 @@ async function loadShop(): Promise<void> {
   const epoch = ++loadEpoch
   inspectEpoch++
   selected.value = null
+  resetForm()
+  products.value = []
+  messages.value = []
+  form.product_id = null
+  form.message_id = null
+  resetConsent()
   model.value = null
   runs.value = []
   const shop = shops.value.find((s) => s.id === shopId.value)
@@ -172,11 +233,6 @@ async function loadShop(): Promise<void> {
     runs.value = history
     skills.value = registry
     model.value = status
-    if (history[0]) {
-      const run = await agentApi.get(id, history[0].id)
-      if (!alive || epoch !== loadEpoch || id !== shopId.value) return
-      selected.value = run
-    }
     await readOptions()
   } catch (cause) {
     if (alive && epoch === loadEpoch) error.value = errorMessage(cause)
@@ -196,15 +252,42 @@ async function refresh(): Promise<void> {
     error.value = errorMessage(cause)
   }
 }
-async function inspect(id: number): Promise<void> {
+async function inspect(id: number, remember = true): Promise<void> {
   if (busy.value) return
   const epoch = ++inspectEpoch
   const shop = shopId.value
   try {
     const run = await agentApi.get(shop, id)
-    if (alive && epoch === inspectEpoch && shop === shopId.value) selected.value = run
+    if (alive && epoch === inspectEpoch && shop === shopId.value) {
+      selected.value = run
+      restoreInput(run)
+      if (
+        run.input?.product_id &&
+        !products.value.some((p) => p.product_id === run.input?.product_id)
+      ) {
+        try {
+          products.value.push((await listingsApi.workspace(shop, run.input.product_id)).product)
+        } catch {
+          error.value = '任务商品已不可用；历史依据可在执行记录中查看，重新运行前请重新选择。'
+        }
+      }
+      if (run.input?.message_id && !messages.value.some((m) => m.id === run.input?.message_id)) {
+        try {
+          messages.value.push((await supportApi.workspace(shop, run.input.message_id)).message)
+        } catch {
+          error.value = '任务消息已不可用；历史依据可在执行记录中查看，重新运行前请重新选择。'
+        }
+      }
+      if (remember) await rememberRun()
+    }
   } catch (cause) {
-    if (alive && epoch === inspectEpoch && shop === shopId.value) error.value = errorMessage(cause)
+    if (alive && epoch === inspectEpoch && shop === shopId.value) {
+      selected.value = null
+      error.value =
+        cause instanceof ApiError && cause.status === 404
+          ? '任务不存在或当前店铺无权访问，请从本店执行记录重新打开。'
+          : errorMessage(cause)
+    }
   }
 }
 async function drive(): Promise<void> {
@@ -231,6 +314,7 @@ async function start(): Promise<void> {
         form.template === 'listing_model' ? selectedProduct.value?.source.row_id : undefined,
       request_id: crypto.randomUUID(),
     })
+    await rememberRun()
     await drive()
     await refresh()
   } catch (cause) {
@@ -284,6 +368,7 @@ async function startAuthorized(grant: InternalAuthorization): Promise<void> {
       product_id: null,
       message_id: null,
     })
+    await rememberRun()
     await drive()
   } catch (cause) {
     error.value = errorMessage(cause)
@@ -293,19 +378,48 @@ async function startAuthorized(grant: InternalAuthorization): Promise<void> {
     await refresh()
   }
 }
-onMounted(async () => {
-  window.addEventListener('focus', refresh)
+async function restoreRoute(): Promise<void> {
+  restoring = true
   try {
-    shops.value = await identityApi.shops()
     shopId.value = linkedShop(shops.value, route.query.shop)
-    const id = linkedId(route.query.execution)
+    const id = linkedId(route.query.execution ?? route.query.run)
     const grantId = linkedId(route.query.authorization)
     await loadShop()
     applyLinkedScope(form.scope, route.query)
-    if (route.query.mode === 'question') form.template = 'question'
-    if (route.query.mode === 'daily_model') form.template = 'daily_model'
-    if (route.query.mode === 'support_model') {
-      form.template = 'support_model'
+    if (
+      route.query.mode !== undefined &&
+      (typeof route.query.mode !== 'string' ||
+        ![
+          'daily',
+          'analysis',
+          'listing',
+          'support',
+          'natural',
+          'question',
+          'listing_model',
+          'support_model',
+          'daily_model',
+          'margin_review',
+        ].includes(route.query.mode))
+    )
+      throw new Error('链接中的执行流程无效，请从当前业务页面重新打开。')
+    if (
+      typeof route.query.mode === 'string' &&
+      [
+        'daily',
+        'analysis',
+        'listing',
+        'support',
+        'natural',
+        'question',
+        'listing_model',
+        'support_model',
+        'daily_model',
+        'margin_review',
+      ].includes(route.query.mode)
+    )
+      form.template = route.query.mode as AgentInput['template']
+    if (['support', 'support_model'].includes(String(route.query.mode))) {
       const messageId = linkedId(route.query.message)
       if (messageId) {
         const workspace = await supportApi.workspace(shopId.value, messageId)
@@ -317,8 +431,7 @@ onMounted(async () => {
         form.message_id = messageId
       }
     }
-    if (route.query.mode === 'listing_model') {
-      form.template = 'listing_model'
+    if (['listing', 'listing_model', 'margin_review'].includes(String(route.query.mode))) {
       const productId = linkedId(route.query.product)
       if (productId) {
         const workspace = await listingsApi.workspace(shopId.value, productId)
@@ -331,20 +444,62 @@ onMounted(async () => {
     }
     if (id || grantId) selected.value = null
     if (id) {
-      await inspect(id)
+      await inspect(id, false)
       await revealRecord('linked-agent')
+    } else if (!grantId && !route.query.mode && runs.value[0]) {
+      await inspect(runs.value[0].id)
     }
     if (grantId) {
       const grant = await authorizationsApi.get(shopId.value, grantId)
       focusShop.value = shopId.value
       focusGrant.value = grant.id
-      await inspect(grant.origin_execution_id)
+      await inspect(grant.origin_execution_id, false)
     }
   } catch (cause) {
     selected.value = null
+    shopId.value = 0
+    error.value = errorMessage(cause)
+  } finally {
+    restoring = false
+  }
+}
+watch(
+  () => route.fullPath,
+  (path) => {
+    if (route.path === '/agent' && !recordLink.isOwn(path)) void restoreRoute()
+  },
+)
+onMounted(async () => {
+  window.addEventListener('focus', refresh)
+  try {
+    shops.value = await identityApi.shops()
+    await restoreRoute()
+  } catch (cause) {
     error.value = errorMessage(cause)
   }
 })
+watch(
+  () => [JSON.stringify(form.scope), form.template, form.product_id, form.message_id],
+  () => {
+    if (restoring || busy.value || controlling.value || selected.value || !shopId.value) return
+    try {
+      applyLinkedScope({}, scopeQuery(form.scope))
+    } catch {
+      return
+    }
+    void recordLink.write(
+      {
+        shop: shopId.value,
+        ...scopeQuery(form.scope),
+        mode: form.template,
+        product: form.product_id ?? undefined,
+        message: form.message_id ?? undefined,
+        ...returnTaskQuery(route.query, shopId.value),
+      },
+      true,
+    )
+  },
+)
 onUnmounted(() => {
   alive = false
   driving.value = false
@@ -364,7 +519,7 @@ onUnmounted(() => {
   <p v-if="!shops.length">先在经营资料中添加店铺，再导入商品、订单或消息。</p>
   <template v-else>
     <label class="agent-shop"
-      >任务店铺<select v-model.number="shopId" :disabled="busy || controlling" @change="loadShop">
+      >任务店铺<select v-model.number="shopId" :disabled="busy || controlling" @change="changeShop">
         <option v-for="shop in shops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
       </select></label
     >
@@ -377,8 +532,14 @@ onUnmounted(() => {
             : '模型待配置 · 固定流程可用'
         }}</span>
       </div>
+      <p v-if="selected">
+        已定位任务 #{{
+          selected.id
+        }}。下方表单用于新任务；历史授权不自动沿用，请重新核对范围、预算和数据许可。原任务可在执行记录中继续处理。
+      </p>
       <form @submit.prevent="start">
         <AppliedRules
+          :key="rulesKey"
           :shop="shopId"
           :scope="form.scope"
           @loaded="rulesLoaded"
@@ -410,6 +571,7 @@ onUnmounted(() => {
               <option value="generic">通用</option>
               <option value="amazon">Amazon</option>
               <option value="shopify">Shopify</option>
+              <option value="other">其他来源</option>
             </select></label
           >
           <label>币种<input v-model="form.scope.currency" required maxlength="3" /></label>
@@ -584,10 +746,15 @@ onUnmounted(() => {
         <details>
           <summary>数据窗口、规则与任务预算</summary>
           <fieldset class="analysis-fields" :disabled="busy || controlling">
-            <label v-if="form.template !== 'margin_review'"
-              >订单起始时间（含时区）<input v-model="form.scope.start_at" required
-            /></label>
-            <label>订单结束时间（不包含）<input v-model="form.scope.end_at" required /></label>
+            <label>业务时区（IANA）<input v-model="form.scope.timezone" required /></label>
+            <BusinessDateRange
+              v-model:start="form.scope.start_at"
+              v-model:end="form.scope.end_at"
+              :timezone="form.scope.timezone"
+              start-label="订单起始时间（含时区）"
+              end-label="订单结束时间（不包含）"
+              :fixed-days="form.template === 'margin_review' ? 7 : undefined"
+            />
             <label
               >库存时效（小时）<input
                 v-model.number="form.scope.max_age_hours"
@@ -649,6 +816,7 @@ onUnmounted(() => {
           class="button primary"
           :disabled="
             busy ||
+            !shopId ||
             controlling ||
             rulesPending ||
             (form.template === 'support_model' &&
@@ -714,6 +882,13 @@ onUnmounted(() => {
   </template>
 </template>
 <style scoped>
+.analysis-fields > * {
+  min-width: 0;
+}
+.analysis-fields select {
+  max-width: 100%;
+  min-width: 0;
+}
 .agent-shop {
   display: grid;
   gap: 8px;

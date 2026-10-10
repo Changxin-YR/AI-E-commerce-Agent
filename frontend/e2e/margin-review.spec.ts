@@ -1,3 +1,4 @@
+import { fillExactTime } from './date-input'
 import { expect, test } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -86,11 +87,12 @@ for (const width of [1440, 390]) {
       .selectOption(String(product.product_id))
     await expect(page.getByLabel('复核成本口径')).toHaveValue('seller_history')
     await page.getByText('数据窗口、规则与任务预算', { exact: true }).click()
-    await page.getByLabel('订单结束时间（不包含）', { exact: true }).fill('')
+    await fillExactTime(page.getByLabel('订单结束时间（不包含）', { exact: true }), '')
     await expect(page.getByText(/请填写有效结束时间/)).toBeVisible()
-    await page
-      .getByLabel('订单结束时间（不包含）', { exact: true })
-      .fill('2026-10-08T00:00:00+08:00')
+    await fillExactTime(
+      page.getByLabel('订单结束时间（不包含）', { exact: true }),
+      '2026-10-08T00:00:00+08:00',
+    )
     await page.getByRole('button', { name: '启动并运行', exact: true }).click()
     const review = page.getByRole('region', { name: '任务执行详情' })
     const evidence = review.getByRole('region', { name: '低毛利复核依据与建议' })
