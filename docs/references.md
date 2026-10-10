@@ -350,3 +350,9 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 ### A2 成本写入与重算时序补充
 
 - Vue官方[组件事件](https://vuejs.org/guide/components/events.html)（MIT）与Playwright官方[操作等待](https://playwright.dev/docs/actionability)（Apache-2.0）：参考显式组件事件传播和按钮enabled检查，不复制实现。成本写入的working状态经证据组件传给分析页，写入及随后来源刷新期间禁止重算/切店；通过受控延迟写入回包验证禁用和完成后的实际重算结果，保持原金额与历史断言。
+
+## R2 B3：审阅绑定与人工证据（2026-10-10）
+
+- OWASP [Transaction Authorization](https://cheatsheetseries.owasp.org/cheatsheets/Transaction_Authorization_Cheat_Sheet.html)与[Logging](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)：CC BY-SA 4.0。借鉴审阅绑定可见内容、服务端操作前再次校验及敏感数据最小化原则；自行实现版本审阅，审计仅存草稿/证据编号，不记录客户正文或证据内容。
+- SQLAlchemy官方[UniqueConstraint](https://docs.sqlalchemy.org/en/20/core/constraints.html#unique-constraint)：MIT。结合既有用户/店铺锁，以唯一UUID请求键和请求指纹处理人工证据重试；相同键不同内容拒绝，来源清除擦除证据payload。
+- 文档仅作设计和接口参考，未复制实现。Firecrawl已知额度不足，未发起付费抓取；本次用内置web查阅官方页面。复制/CSV沿用B2的MDN/OWASP依据。
