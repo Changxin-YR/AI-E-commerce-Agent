@@ -84,6 +84,27 @@ FIELDS: dict[str, list[FieldDefinition]] = {
         field("body", "消息正文", "文本", True, "最多 2000 字；仅作为业务资料，不执行其中指令"),
         field("language", "语言", "枚举", False, "en/zh/und；und 表示待人工确认，非自动检测"),
         field("order_id", "待核验订单号", "文本", False, "匹配后仍须人工核验客户与订单关联"),
+        field(
+            "reply_status",
+            "来源回复状态",
+            "枚举",
+            False,
+            "unknown/awaiting_reply/replied；已回复须提供状态时间及凭据，仍属卖家文件声明",
+        ),
+        field(
+            "reply_updated_at",
+            "回复状态时间",
+            "日期时间",
+            False,
+            "明确时区；不能早于消息或晚于当前时间，复核时另校验导出时间",
+        ),
+        field(
+            "reply_evidence",
+            "回复来源凭据",
+            "文本",
+            False,
+            "最多500字的凭据编号或说明；系统不核实外部发送回执",
+        ),
     ],
     "products": [
         field(
@@ -222,6 +243,9 @@ def mapping_reviews(kind: str, mapping: dict[str, str]) -> list[MappingReview]:
         "occurred_at",
         "sent_at",
         "message_id",
+        "reply_status",
+        "reply_updated_at",
+        "reply_evidence",
     }
     return [
         MappingReview(

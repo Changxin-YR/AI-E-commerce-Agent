@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 from uuid import UUID
 
-from pydantic import Field, field_validator
+from pydantic import Field, StrictBool, field_validator, model_validator
 
 from app.schemas.analytics import AnalysisInput, SourceReference
 from app.schemas.common import InputModel, OutputModel
@@ -29,7 +29,74 @@ class TaskQuery(InputModel):
     offset: Annotated[int, Field(ge=0, le=1000000)] = 0
 
 
-TaskAction = Literal["approve", "reject", "ignore", "defer", "complete", "reopen", "edit"]
+TaskAction = Literal[
+    "approve",
+    "reject",
+    "ignore",
+    "defer",
+    "complete",
+    "reopen",
+    "edit",
+    "record_evidence",
+    "wait_source",
+    "recheck",
+]
+BusinessState = Literal[
+    "pending_review",
+    "checked_pending",
+    "evidence_recorded",
+    "awaiting_source",
+    "resolved",
+    "still_anomalous",
+    "ignored",
+    "cleared",
+]
+
+
+class TaskEvidenceInput(InputModel):
+    description: Annotated[str, Field(min_length=1, max_length=1000)]
+    evidence_ref: Annotated[str, Field(min_length=1, max_length=500)]
+    occurred_at: datetime
+    confirmed: StrictBool
+
+    @field_validator("occurred_at")
+    @classmethod
+    def aware_occurred(cls, value: datetime) -> datetime:
+        if value.utcoffset() is None or not 2000 <= value.year <= 2100:
+            raise ValueError("操作时间须包含时区且在2000—2100年之间")
+        return value.astimezone(UTC)
+
+    @field_validator("confirmed")
+    @classmethod
+    def require_confirmation(cls, value: bool) -> bool:
+        if not value:
+            raise ValueError("请确认这是卖家自报的操作记录")
+        return value
+
+
+class TaskEvidence(OutputModel):
+    description: str
+    evidence_ref: str
+    occurred_at: str
+    recorded_at: str
+    recorded_by: int
+    provenance: Literal["seller_reported"] = "seller_reported"
+
+
+class TaskRecheck(OutputModel):
+    state: Literal["awaiting_source", "resolved", "still_anomalous"]
+    reason: str
+    checked_at: str
+    source_revision: int
+    valid_until: str | None = None
+    facts: dict[str, str] = Field(default_factory=dict)
+    sources: list[SourceReference] = Field(default_factory=list)
+
+
+class TaskReview(OutputModel):
+    state: BusinessState
+    evidence: TaskEvidence | None = None
+    recheck: TaskRecheck | None = None
 
 
 class TaskInput(InputModel):
@@ -37,6 +104,13 @@ class TaskInput(InputModel):
     action: TaskAction
     note: Annotated[str, Field(max_length=1000)] = ""
     due_at: datetime | None = None
+    evidence: TaskEvidenceInput | None = None
+
+    @model_validator(mode="after")
+    def evidence_action(self) -> Self:
+        if (self.action == "record_evidence") != (self.evidence is not None):
+            raise ValueError("登记操作证据须提供凭据，其他操作不接受凭据字段")
+        return self
 
     @field_validator("due_at")
     @classmethod
@@ -113,6 +187,7 @@ class TaskEventOutput(OutputModel):
     created_at: str
     note: str | None
     due_at: str | None
+    review: TaskReview | None = None
 
 
 class TaskDestination(OutputModel):
@@ -130,6 +205,9 @@ class TaskOutput(OutputModel):
     kind: str
     status: str
     source_status: str
+    business_state: BusinessState = "pending_review"
+    review: TaskReview | None = None
+    review_current: bool = False
     version: int
     snapshot: Finding | None
     note: str

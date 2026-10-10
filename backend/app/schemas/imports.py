@@ -44,6 +44,22 @@ class MessageData(InputModel):
     body: Annotated[str, Field(min_length=1, max_length=2000)]
     language: Literal["en", "zh", "und"] = "und"
     order_id: Annotated[str, Field(max_length=120)] = ""
+    reply_status: Literal["unknown", "awaiting_reply", "replied"] = "unknown"
+    reply_updated_at: datetime | None = None
+    reply_evidence: Annotated[str, Field(max_length=500)] = ""
+
+    @model_validator(mode="after")
+    def reply_semantics(self) -> Self:
+        if self.reply_status != "unknown" and self.reply_updated_at is None:
+            raise ValueError("回复状态须提供带时区的更新时间")
+        if self.reply_status == "replied" and not self.reply_evidence:
+            raise ValueError("已回复状态须提供来源凭据说明")
+        if self.reply_updated_at is not None:
+            if self.reply_updated_at.utcoffset() is None or self.sent_at.utcoffset() is None:
+                raise ValueError("回复时间须有明确时区")
+            if self.reply_updated_at < self.sent_at:
+                raise ValueError("回复状态时间不能早于消息时间")
+        return self
 
 
 class InventoryData(InputModel):

@@ -255,8 +255,11 @@ def test_old_snapshot_contract_and_migration_protection(
     assert calculate(logged_in, shop)["summary"] == old["summary"]
     command.check(Config("alembic.ini"))
     record(logged_in, shop, order_rows(logged_in, shop)[0])
-    with pytest.raises(RuntimeError, match="成本凭据历史"):
-        command.downgrade(Config("alembic.ini"), "a12c4b907e61")
+    try:
+        with pytest.raises(RuntimeError, match="成本凭据历史"):
+            command.downgrade(Config("alembic.ini"), "a12c4b907e61")
+    finally:
+        command.upgrade(Config("alembic.ini"), "head")
     assert logged_in.get(endpoint(shop, order_rows(logged_in, shop)[0])).json()["history"]
 
 

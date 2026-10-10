@@ -139,7 +139,9 @@ class ImportRepository:
             values["channel"] = batch.source_channel
             model = InventorySnapshot
         else:
-            values = MessageData.model_validate(row.normalized).model_dump()
+            values = MessageData.model_validate(row.normalized).model_dump(
+                exclude={"reply_status", "reply_updated_at", "reply_evidence"}
+            )
             values["sent_at"] = values["sent_at"].astimezone(UTC).replace(tzinfo=None)
             batch = self.session.get(ImportBatch, row.batch_id)
             assert batch is not None

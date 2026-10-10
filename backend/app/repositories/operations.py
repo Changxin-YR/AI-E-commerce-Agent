@@ -93,9 +93,36 @@ class OperationsRepository:
         self.session.add_all([OperationRunSource(run_id=run_id, batch_id=b) for b in batches])
 
     def task_sources(self, task_id: int, sources: dict[int, int]) -> None:
-        self.session.add_all(
-            [OperationTaskSource(task_id=task_id, row_id=r, batch_id=b) for r, b in sources.items()]
+        existing = set(
+            self.session.scalars(
+                select(OperationTaskSource.row_id).where(OperationTaskSource.task_id == task_id)
+            )
         )
+        self.session.add_all(
+            [
+                OperationTaskSource(task_id=task_id, row_id=r, batch_id=b)
+                for r, b in sources.items()
+                if r not in existing
+            ]
+        )
+
+    def original_rows(
+        self, task: OperationTask, row_ids: list[int]
+    ) -> list[tuple[ImportRow, ImportBatch]]:
+        rows = self.session.execute(
+            select(ImportRow, ImportBatch)
+            .join(ImportBatch)
+            .where(
+                ImportRow.id.in_(row_ids),
+                ImportBatch.owner_id == task.owner_id,
+                ImportBatch.shop_id == task.shop_id,
+                ImportBatch.data_identity == task.data_identity,
+                ImportBatch.status != "cleared",
+            )
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        return [(row, batch) for row, batch in rows]
 
     def task_by_key(self, owner: int, key: str) -> OperationTask | None:
         return self.session.scalar(
@@ -298,6 +325,7 @@ class OperationsRepository:
                 .where(OperationTask.id.in_(tasks))
                 .values(
                     snapshot=None,
+                    review=None,
                     source_status="cleared",
                     note="",
                     due_at=None,

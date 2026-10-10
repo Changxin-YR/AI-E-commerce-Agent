@@ -9,6 +9,7 @@ from app.models.imports import CustomerMessage, InventorySnapshot, OrderLine, Pr
 from app.models.operations import OperationRun, OperationTask, OperationTaskEvent
 from app.repositories.unit_of_work import UnitOfWork
 from app.schemas.operations import (
+    BusinessState,
     CheckPreview,
     Finding,
     OperationContext,
@@ -18,15 +19,18 @@ from app.schemas.operations import (
     RunSnapshot,
     TaskDestination,
     TaskEventOutput,
+    TaskEvidence,
     TaskInput,
     TaskOutput,
     TaskPage,
     TaskQuery,
+    TaskReview,
 )
 from app.services.business_rules import BusinessRulesService
 from app.services.import_groups import require_import_coverage
 from app.services.listings import digest
 from app.services.operation_checks import CheckResult, check_data
+from app.services.operation_rechecks import OperationRechecks, normalized_time
 from app.services.profit_calculation import utc_text
 
 
@@ -85,8 +89,32 @@ class OperationsService:
             snapshot=RunSnapshot.model_validate(run.snapshot) if detail and run.snapshot else None,
         )
 
-    def _task_output(self, task: OperationTask, detail: bool = True) -> TaskOutput:
+    def _task_output(
+        self, task: OperationTask, detail: bool = True, source_revision: int | None = None
+    ) -> TaskOutput:
         rule_current = self._task_rule_current(task)
+        if source_revision is None:
+            shop = self.uow.identity.get_shop(task.owner_id, task.shop_id)
+            assert shop is not None
+            source_revision = shop.data_revision
+        review = TaskReview.model_validate(task.review) if task.review else None
+        result = review.recheck if review else None
+        expiry = normalized_time(result.valid_until) if result else None
+        review_current = bool(
+            result
+            and rule_current
+            and result.source_revision == source_revision
+            and (expiry is None or expiry > utc_now())
+        )
+        business_state: BusinessState = (
+            "checked_pending" if task.status == "completed" else "pending_review"
+        )
+        if review:
+            business_state = "awaiting_source" if result and not review_current else review.state
+        if task.status in {"ignored", "rejected"}:
+            business_state = "ignored"
+        if task.source_status == "cleared":
+            business_state = "cleared"
         return TaskOutput(
             id=task.id,
             shop_id=task.shop_id,
@@ -102,6 +130,9 @@ class OperationsService:
             if task.source_status == "current" and not rule_current
             else task.source_status,
             version=task.version,
+            business_state=business_state,
+            review=review,
+            review_current=review_current,
             snapshot=Finding.model_validate(task.snapshot) if task.snapshot else None,
             note=task.note,
             due_at=utc_text(task.due_at) if task.due_at else None,
@@ -115,6 +146,9 @@ class OperationsService:
                     created_at=utc_text(e.created_at),
                     note=e.details.get("note") if e.details else None,
                     due_at=e.details.get("due_at") if e.details else None,
+                    review=TaskReview.model_validate(e.details["review"])
+                    if e.details and e.details.get("review")
+                    else None,
                 )
                 for e in self.repo.history(task.id)
             ]
@@ -237,6 +271,9 @@ class OperationsService:
                 details={
                     "note": task.note,
                     "due_at": utc_text(task.due_at) if task.due_at else None,
+                    "review": TaskReview.model_validate(task.review).model_dump(mode="json")
+                    if task.review
+                    else None,
                 },
             )
         )
@@ -347,6 +384,7 @@ class OperationsService:
                     data_identity=scope.data_identity,
                     channel=scope.channel,
                     snapshot=finding.model_dump(mode="json"),
+                    created_at=now,
                     valid_until=datetime.fromisoformat(finding.valid_until).replace(tzinfo=None)
                     if finding.valid_until
                     else None,
@@ -428,11 +466,12 @@ class OperationsService:
         return output
 
     def tasks(self, owner: int, shop: int, scope: TaskQuery) -> TaskPage:
-        self._shop(owner, shop)
+        shop_record = self._shop(owner, shop)
         self.repo.expire(owner, shop, utc_now())
         tasks = self.repo.tasks(owner, shop, scope.data_identity, scope.channel, scope.offset)
         output = TaskPage(
-            items=[self._task_output(t, False) for t in tasks[:50]], has_more=len(tasks) > 50
+            items=[self._task_output(t, False, shop_record.data_revision) for t in tasks[:50]],
+            has_more=len(tasks) > 50,
         )
         self.uow.commit()
         return output
@@ -448,16 +487,20 @@ class OperationsService:
         return output
 
     def change_task(self, owner: int, shop: int, task_id: int, data: TaskInput) -> TaskOutput:
-        self._shop(owner, shop)
+        shop_record = self._shop(owner, shop)
         now = utc_now()
         self.repo.expire(owner, shop, now)
         task = self.repo.task(owner, shop, task_id)
         if task is None:
             raise NotFoundError()
-        if data.action not in {"reject", "ignore"} and not self._task_rule_current(task):
+        if task.source_status == "cleared":
+            raise ConflictError("来源已清除，不能恢复正文或新增处理证据")
+        if data.action in {"record_evidence", "wait_source", "recheck"}:
+            return self._follow_up(task, shop_record, data, now)
+        if data.action not in {"reject", "ignore", "reopen"} and not self._task_rule_current(task):
             raise ConflictError("经营规则已变化，请重新检查后处理")
         if task.source_status == "cleared" or (
-            task.source_status != "current" and data.action not in {"reject", "ignore"}
+            task.source_status != "current" and data.action not in {"reject", "ignore", "reopen"}
         ):
             raise ConflictError("来源已变化、过期或清除，请重新巡检后处理")
         targets = {
@@ -491,8 +534,72 @@ class OperationsService:
             raise ConflictError("当前状态不支持此操作")
         previous = task.status
         task.status, task.note, task.due_at = targets[data.action], data.note, due
+        if data.action == "reopen":
+            task.review = None
         task.version += 1
         self._event(task, data.action, previous)
+        output = self._task_output(task)
+        self.uow.commit()
+        return output
+
+    def _follow_up(
+        self, task: OperationTask, shop: Shop, data: TaskInput, now: datetime
+    ) -> TaskOutput:
+        if task.snapshot is None or task.status not in {"open", "deferred", "completed"}:
+            raise ConflictError("请先批准或重新打开此事项，再登记或复检")
+        request_hash = digest(data.model_dump(mode="json"))
+        previous_review = dict(task.review or {})
+        previous_request = previous_review.get("last_request", {})
+        if (
+            previous_request.get("hash") == request_hash
+            and previous_request.get("version") == task.version
+        ):
+            output = self._task_output(task)
+            self.uow.commit()
+            return output
+        if task.version != data.version:
+            raise ConflictError("待办已被其他操作更新，请刷新后重试")
+        review = (
+            TaskReview.model_validate(previous_review)
+            if previous_review
+            else TaskReview(state="pending_review")
+        )
+        if data.action == "record_evidence":
+            assert data.evidence is not None
+            if data.evidence.occurred_at.replace(tzinfo=None) > now:
+                raise BusinessError("future_evidence", "人工操作时间不能在未来", 422)
+            review = TaskReview(
+                state="evidence_recorded",
+                evidence=TaskEvidence(
+                    description=data.evidence.description,
+                    evidence_ref=data.evidence.evidence_ref,
+                    occurred_at=data.evidence.occurred_at.isoformat(),
+                    recorded_at=utc_text(now),
+                    recorded_by=task.owner_id,
+                ),
+            )
+        elif data.action == "wait_source":
+            review = TaskReview(state="awaiting_source", evidence=review.evidence)
+        else:
+            if not self._task_rule_current(task):
+                raise ConflictError("经营规则已变化，请按新规则重新检查；原事项历史保留")
+            result = OperationRechecks(self.uow, task, shop.data_revision, now).run()
+            if review.recheck and review.recheck.model_dump(
+                exclude={"checked_at"}
+            ) == result.model_dump(exclude={"checked_at"}):
+                output = self._task_output(task)
+                self.uow.commit()
+                return output
+            review = TaskReview(state=result.state, evidence=review.evidence, recheck=result)
+            self.repo.task_sources(
+                task.id, {source.row_id: source.batch_id for source in result.sources}
+            )
+        task.version += 1
+        task.review = {
+            **review.model_dump(mode="json"),
+            "last_request": {"hash": request_hash, "version": task.version},
+        }
+        self._event(task, data.action, task.status)
         output = self._task_output(task)
         self.uow.commit()
         return output

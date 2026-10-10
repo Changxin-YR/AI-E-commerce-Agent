@@ -1,5 +1,7 @@
 # 功能实现矩阵
 
+R2 A3补充（2026-10-10）：SO-004/005/030/068沿用OperationTask/Event，新增人工自报证据、同对象新来源复检及独立业务状态；旧完成仅显示已完成核对。库存/履约/低毛利/客服四类的无新来源、仍异常、证据支持解除、重开、幂等、撤销恢复及隐私清除经合成测试验证。实现见operation_rechecks.py、operations.py、OperationTaskFollowUp.vue；验证见test_operation_rechecks.py与operations.spec.ts，完整回归及CI状态见[r2-a3-acceptance](r2-a3-acceptance.md)。原74SO/32验收及长期模块范围保持。
+
 R2 A1-3补充（2026-10-10）：SO-001/008增加Shopify当前商品CSV字段子集候选，带官方依据/核实日期/人工补录指引，复用导入审批与撤销。格式不符或预设停用后仍可手工映射。合成验证及订单预设条件延期见[r2-a1-3-acceptance](r2-a1-3-acceptance.md)，74项SO与长期范围保持。
 
 R2 A1-2补充（2026-10-10）：SO-001/008/027/041/052/055/057/067的现有导入及来源判断增加本地受限CSV拆分、持久导入组、同源分片校验、跨批去重、失败恢复、单批/整组撤销及未完整组的部分覆盖门禁。独立SO数量保持74，合成验收与CI状态见[r2-a1-2-acceptance](r2-a1-2-acceptance.md)。

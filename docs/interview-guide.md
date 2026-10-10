@@ -1,5 +1,13 @@
 # 项目理解与面试知识点
 
+## R2：人工完成为何不能证明异常已解决？
+
+- `OperationsService._task_output`将持久人工status和派生business_state分开。完成核对不会改写来源事实；只有`OperationRechecks`对同对象的新有效来源计算后，才显示证据支持解决。
+- 状态新鲜度不仅取决于时间：保存shop.data_revision、规则和有效期，来源撤销再恢复仍会改变revision。显式复检才能产生新的可用结论，避免旧resolved自动复活。
+- `OperationTaskSource`保留历次复检依赖而非只保留最新来源。否则清除旧凭据时，事件中的副本会残留。清除正文后仍保留无正文审计，迁移降级据此拒绝丢失结构。
+- 相同版本请求的摘要支持未知结果重试，用户/店铺锁保证两个并发请求回读同一事件。相同revision、事实和来源的再次复检忽略检查时间差异，不追加重复事件。
+- 前端页面刷新与详情写入是两条异步路径。`OperationsInbox`组合pageBusy与taskBusy，刷新时显式禁用详情；E2E挂起来源回读并验证按钮禁用，覆盖仅靠快请求不易发现的竞态。
+
 ## R2：如何补历史成本而保持历史报告可解释？
 
 - `OrderCostService.write`把卖家凭据绑定到确定的订单源行，追加Numeric金额与UTC时间版本；请求UUID重放与expected_version解决不同问题，分别防重复提交和旧界面覆盖。用户/店铺锁让并发请求按相同顺序执行。

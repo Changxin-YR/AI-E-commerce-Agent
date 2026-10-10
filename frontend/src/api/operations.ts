@@ -5,6 +5,7 @@ import type {
   OperationScope,
   OperationTask,
   TaskAction,
+  TaskEvidenceInput,
 } from '@/types/operations'
 
 export const operationsApi = {
@@ -37,9 +38,10 @@ export const operationsApi = {
     action: TaskAction,
     note: string,
     due_at: string | null,
+    evidence?: TaskEvidenceInput,
   ) =>
     request<OperationTask>(`/shops/${shop}/operations/tasks/${id}`, {
       method: 'POST',
-      body: JSON.stringify({ version, action, note, due_at }),
+      body: JSON.stringify({ version, action, note, due_at, evidence }),
     }),
 }

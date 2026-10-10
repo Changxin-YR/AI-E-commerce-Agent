@@ -7,6 +7,7 @@ from app.repositories.inventory import InventoryEvidence
 from app.schemas.analytics import SourceReference
 from app.schemas.operations import Branch, Finding, OperationScope
 from app.services.inventory import assess_snapshot
+from app.services.operation_rechecks import message_reply_time
 from app.services.profit_calculation import PAID_STATUSES, calculate, reference, utc_text
 
 
@@ -118,19 +119,31 @@ def check_inventory(
     return BranchResult(branch, findings, min(expiries) if expiries else None)
 
 
-def check_messages(messages: list[tuple[CustomerMessage, ImportRow, ImportBatch]]) -> BranchResult:
+def check_messages(
+    messages: list[tuple[CustomerMessage, ImportRow, ImportBatch]],
+    scope: OperationScope,
+    now: datetime,
+) -> BranchResult:
     findings: list[Finding] = []
     for msg, row, batch in messages:
+        if row.normalized.get("reply_status") == "replied" and message_reply_time(
+            row, batch, now, scope.max_age_hours
+        ):
+            continue
         findings.append(
             Finding(
                 kind="message_review",
                 object_label=msg.message_id,
                 title="核对消息是否仍需回复",
                 severity="review",
-                basis="已导入客户消息；文件没有外部回复状态。",
+                basis="已导入客户消息；来源尚不能有效证明已回复。",
                 advice="在客服工作台查看原文并核对是否需要回复；敏感请求转人工。",
                 impact="需要卖家核对回复进度；本地草稿和存档均不能证明已发送。",
-                facts={"来源语言": msg.language, "渠道": msg.channel},
+                facts={
+                    "来源语言": msg.language,
+                    "渠道": msg.channel,
+                    "来源回复状态": str(row.normalized.get("reply_status", "unknown")),
+                },
                 sources=[reference(row, batch)],
             )
         )
@@ -138,7 +151,10 @@ def check_messages(messages: list[tuple[CustomerMessage, ImportRow, ImportBatch]
         name="消息回复核对",
         status="partial" if messages else "not_checked",
         count=len(messages),
-        reason=f"读取 {len(messages)} 条消息；外部是否已回复未知，形成核对候选。"
+        reason=(
+            f"读取 {len(messages)} 条消息；{len(findings)} 条需核对回复状态，"
+            "其余仅为有效来源声明已回复。"
+        )
         if messages
         else "缺消息，未检查；可导入或手工录入。",
     )
@@ -212,7 +228,7 @@ def check_data(
     results = [
         check_orders(orders),
         stock,
-        check_messages(messages),
+        check_messages(messages, scope, now),
         check_profit(orders, products, scope, revision, now),
     ]
     branches = [check_products(products), *(result.branch for result in results)]

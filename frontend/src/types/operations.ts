@@ -33,7 +33,43 @@ export interface OperationRun {
     reused_candidates: number
   } | null
 }
-export type TaskAction = 'approve' | 'reject' | 'ignore' | 'defer' | 'complete' | 'reopen' | 'edit'
+export type TaskAction =
+  | 'approve'
+  | 'reject'
+  | 'ignore'
+  | 'defer'
+  | 'complete'
+  | 'reopen'
+  | 'edit'
+  | 'record_evidence'
+  | 'wait_source'
+  | 'recheck'
+export interface TaskEvidenceInput {
+  description: string
+  evidence_ref: string
+  occurred_at: string
+  confirmed: boolean
+}
+export interface TaskReview {
+  state: string
+  evidence: {
+    description: string
+    evidence_ref: string
+    occurred_at: string
+    recorded_at: string
+    recorded_by: number
+    provenance: 'seller_reported'
+  } | null
+  recheck: {
+    state: string
+    reason: string
+    checked_at: string
+    source_revision: number
+    valid_until: string | null
+    facts: Record<string, string>
+    sources: SourceReference[]
+  } | null
+}
 export interface OperationTask {
   id: number
   shop_id: number
@@ -43,6 +79,9 @@ export interface OperationTask {
   kind: string
   status: string
   source_status: string
+  business_state?: string
+  review?: TaskReview | null
+  review_current?: boolean
   version: number
   owner_id: number
   risk: 'R1'
@@ -69,16 +108,27 @@ export interface OperationTask {
     created_at: string
     note: string | null
     due_at: string | null
+    review?: TaskReview | null
   }[]
 }
 export const taskLabels: Record<string, string> = {
   pending_approval: '待审批',
   open: '待处理',
   deferred: '已延期',
-  completed: '已完成',
+  completed: '已完成核对',
   ignored: '已忽略',
   rejected: '已拒绝',
   none: '尚未创建',
+}
+export const businessLabels: Record<string, string> = {
+  pending_review: '待核对',
+  checked_pending: '已核对待外部处理',
+  evidence_recorded: '已登记操作证据',
+  awaiting_source: '待来源更新复检',
+  resolved: '新有效证据支持已解决',
+  still_anomalous: '新来源仍显示异常',
+  ignored: '已忽略或不适用',
+  cleared: '来源已清除',
 }
 export const sourceLabels: Record<string, string> = {
   current: '来源有效',

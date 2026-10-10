@@ -13,7 +13,7 @@ import { operationsApi } from '@/api/operations'
 import { errorMessage } from '@/api/client'
 import type { Shop } from '@/types/identity'
 import type { OperationRun, OperationScope, OperationTask } from '@/types/operations'
-import { sourceLabels, taskLabels } from '@/types/operations'
+import { sourceLabels, taskLabels, businessLabels } from '@/types/operations'
 import { supportTime } from '@/types/support'
 import FeedbackBanner from './FeedbackBanner.vue'
 import OperationTaskReview from './OperationTaskReview.vue'
@@ -42,7 +42,9 @@ const tasks = ref<OperationTask[]>([])
 const selected = ref<OperationTask | null>(null)
 const offset = ref(0)
 const hasMore = ref(false)
-const busy = ref(false)
+const pageBusy = ref(false)
+const taskBusy = ref(false)
+const busy = computed(() => pageBusy.value || taskBusy.value)
 const dirty = ref(false)
 const error = ref('')
 const info = ref('')
@@ -72,7 +74,7 @@ async function readLists(): Promise<void> {
 }
 async function refresh(reset = false): Promise<void> {
   if (busy.value || dirty.value || !shopId.value) return
-  busy.value = true
+  pageBusy.value = true
   error.value = ''
   if (reset) {
     selected.value = null
@@ -90,7 +92,7 @@ async function refresh(reset = false): Promise<void> {
     run.value = null
     selected.value = null
   } finally {
-    busy.value = false
+    pageBusy.value = false
   }
 }
 function changeShop(): void {
@@ -103,7 +105,7 @@ function changeShop(): void {
 }
 async function start(): Promise<void> {
   if (busy.value || dirty.value || rulesPending.value) return
-  busy.value = true
+  pageBusy.value = true
   error.value = ''
   info.value = ''
   selected.value = null
@@ -115,12 +117,12 @@ async function start(): Promise<void> {
   } catch (cause) {
     error.value = errorMessage(cause)
   } finally {
-    busy.value = false
+    pageBusy.value = false
   }
 }
 async function inspect(id: number, kind: 'task' | 'run'): Promise<void> {
   if (busy.value || dirty.value) return
-  busy.value = true
+  pageBusy.value = true
   error.value = ''
   try {
     if (kind === 'task') {
@@ -139,7 +141,7 @@ async function inspect(id: number, kind: 'task' | 'run'): Promise<void> {
   } catch (cause) {
     error.value = errorMessage(cause)
   } finally {
-    busy.value = false
+    pageBusy.value = false
   }
 }
 function updated(task: OperationTask): void {
@@ -424,7 +426,12 @@ onUnmounted(() => window.removeEventListener('focus', focus))
               >#{{ task.id }} · {{ task.snapshot?.object_label }} ·
               {{ sourceLabels[task.source_status] }}</small
             ></span
-          ><span class="status-tag">{{ taskLabels[task.status] }}</span>
+          ><span class="status-tag"
+            >{{ taskLabels[task.status]
+            }}<small v-if="task.business_state">{{
+              businessLabels[task.business_state]
+            }}</small></span
+          >
         </button>
       </div>
       <div class="form-actions">
@@ -440,9 +447,10 @@ onUnmounted(() => window.removeEventListener('focus', focus))
       v-if="selected"
       :task="selected"
       :timezone="timezone"
+      :disabled="pageBusy"
       @updated="updated"
       @dirty="dirty = $event"
-      @working="busy = $event"
+      @working="taskBusy = $event"
     />
     <details class="form-panel section-block">
       <summary>检查历史（最近 50 次）</summary>

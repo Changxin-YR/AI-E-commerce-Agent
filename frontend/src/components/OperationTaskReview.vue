@@ -7,13 +7,18 @@ import { taskLabels, sourceLabels } from '@/types/operations'
 import { supportTime } from '@/types/support'
 import SourceEvidence from './SupportSource.vue'
 import FeedbackBanner from './FeedbackBanner.vue'
+import OperationTaskFollowUp from './OperationTaskFollowUp.vue'
+import TaskReviewEvidence from './TaskReviewEvidence.vue'
 
-const props = defineProps<{ task: OperationTask; timezone: string }>()
+const props = defineProps<{ task: OperationTask; timezone: string; disabled?: boolean }>()
 const emit = defineEmits<{ updated: [OperationTask]; dirty: [boolean]; working: [boolean] }>()
 const note = ref('')
 const due = ref('')
 const error = ref('')
-const busy = ref(false)
+const actionBusy = ref(false)
+const followUpBusy = ref(false)
+const followUpDirty = ref(false)
+const busy = computed(() => actionBusy.value || followUpBusy.value || props.disabled)
 const kindLabels: Record<string, string> = {
   order_review: '订单履约核对',
   low_inventory: '库存阈值',
@@ -29,33 +34,43 @@ watch(
   },
   { immediate: true },
 )
-const dirty = computed(
+const noteDirty = computed(
   () => note.value !== props.task.note || due.value !== (props.task.due_at ?? ''),
 )
+const dirty = computed(() => noteDirty.value || followUpDirty.value)
 watch(dirty, (v) => emit('dirty', v))
 const available = computed(() => props.task.source_status === 'current' && !!props.task.snapshot)
 async function act(action: TaskAction): Promise<void> {
-  busy.value = true
+  if (busy.value || followUpDirty.value) return
+  const target = props.task
+  actionBusy.value = true
   emit('working', true)
   error.value = ''
   try {
-    emit(
-      'updated',
-      await operationsApi.change(
-        props.task.shop_id,
-        props.task.id,
-        props.task.version,
-        action,
-        note.value,
-        due.value || null,
-      ),
+    const result = await operationsApi.change(
+      target.shop_id,
+      target.id,
+      target.version,
+      action,
+      note.value,
+      due.value || null,
     )
+    if (
+      props.task.shop_id === target.shop_id &&
+      props.task.id === target.id &&
+      props.task.version === target.version
+    )
+      emit('updated', result)
   } catch (cause) {
     error.value = errorMessage(cause)
   } finally {
-    busy.value = false
+    actionBusy.value = false
     emit('working', false)
   }
+}
+function followUpWorking(value: boolean): void {
+  followUpBusy.value = value
+  emit('working', actionBusy.value || followUpBusy.value)
 }
 </script>
 
@@ -63,7 +78,7 @@ async function act(action: TaskAction): Promise<void> {
   <section class="form-panel section-block task-review" aria-label="待办审批详情">
     <div class="section-title">
       <h2>事项 #{{ task.id }} · {{ taskLabels[task.status] }}</h2>
-      <span class="status-tag">{{ sourceLabels[task.source_status] }}</span>
+      <span class="status-tag">原异常依据：{{ sourceLabels[task.source_status] }}</span>
     </div>
     <p>负责人：当前卖家 · {{ task.risk }} 内部操作 · 外部未提交</p>
     <template v-if="task.snapshot">
@@ -96,7 +111,7 @@ async function act(action: TaskAction): Promise<void> {
         证据有效至 {{ supportTime(task.snapshot.valid_until, timezone) }}
       </p>
       <p v-if="!available" role="status">
-        来源、经营规则已变化或过期，请重新运行今日运营后核对。历史处理状态保留。
+        原异常依据已变化或过期，历史处理状态保留；可在下方按原事项复检。经营规则改变时需重新运行今日运营。
       </p>
       <details>
         <summary>查看依据（{{ task.snapshot.sources.length }} 行）</summary>
@@ -113,7 +128,7 @@ async function act(action: TaskAction): Promise<void> {
         >
         本地操作费用 0，可忽略、完成后重新打开；不更改来源订单、库存或外部消息。
       </p>
-      <fieldset :disabled="busy || !available">
+      <fieldset :disabled="busy || followUpDirty || !available">
         <legend>处理记录</legend>
         <div class="form-field">
           <label for="task-note">处理备注</label
@@ -145,7 +160,9 @@ async function act(action: TaskAction): Promise<void> {
             忽略此事项
           </button>
           <button
-            v-if="['completed', 'ignored', 'rejected', 'deferred'].includes(task.status)"
+            v-if="
+              available && ['completed', 'ignored', 'rejected', 'deferred'].includes(task.status)
+            "
             class="button secondary"
             @click="act('reopen')"
           >
@@ -159,14 +176,30 @@ async function act(action: TaskAction): Promise<void> {
       <button
         v-if="!available && ['pending_approval', 'open', 'deferred'].includes(task.status)"
         class="button secondary"
-        :disabled="busy"
+        :disabled="busy || followUpDirty"
         @click="act('ignore')"
       >
         忽略此历史事项
       </button>
+      <button
+        v-if="!available && ['completed', 'ignored', 'rejected', 'deferred'].includes(task.status)"
+        class="button secondary"
+        :disabled="busy || followUpDirty"
+        @click="act('reopen')"
+      >
+        重新打开待办
+      </button>
     </template>
     <p v-else>来源已清除，相关证据和处理备注已擦除，仅保留状态历史。</p>
     <FeedbackBanner :message="error" />
+    <OperationTaskFollowUp
+      :task="task"
+      :timezone="timezone"
+      :disabled="actionBusy || noteDirty || !!disabled"
+      @updated="emit('updated', $event)"
+      @dirty="followUpDirty = $event"
+      @working="followUpWorking"
+    />
     <details>
       <summary>操作历史（最近 50 条）</summary>
       <ol>
@@ -176,6 +209,12 @@ async function act(action: TaskAction): Promise<void> {
           <span v-if="event.action === 'revalidated'"> · 已重新核对来源</span>
           <p v-if="event.note">{{ event.note }}</p>
           <p v-if="event.due_at">截止 {{ supportTime(event.due_at, timezone) }}</p>
+          <TaskReviewEvidence
+            v-if="event.review"
+            :review="event.review"
+            :shop-id="task.shop_id"
+            :timezone="timezone"
+          />
         </li>
       </ol>
     </details>

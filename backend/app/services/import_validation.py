@@ -137,6 +137,17 @@ def normalize_row(
             values["sent_at"] = parse_time(values.get("sent_at", ""), timezone)
         except ValueError as error:
             issue("sent_at", str(error))
+        values["reply_status"] = values.get("reply_status", "").lower() or "unknown"
+        if values.get("reply_updated_at"):
+            try:
+                stamp = parse_time(values["reply_updated_at"], timezone)
+                if stamp.replace(tzinfo=None) > utc_now():
+                    raise ValueError("回复状态时间不能在未来")
+                values["reply_updated_at"] = stamp
+            except ValueError as error:
+                issue("reply_updated_at", str(error))
+        else:
+            values["reply_updated_at"] = None
     for key in money_fields:
         value = values.get(key, "")
         if not value:
@@ -178,13 +189,25 @@ def normalize_row(
             schema = schemas[kind]
             model = schema.model_validate(values)
             normalized = model.model_dump(mode="json")
+            if (
+                kind == "messages"
+                and normalized["reply_status"] == "unknown"
+                and not (normalized["reply_updated_at"] or normalized["reply_evidence"])
+            ):
+                # Preserve the original normalized contract and unchanged-file deduplication.
+                for key in ("reply_status", "reply_updated_at", "reply_evidence"):
+                    normalized.pop(key)
             for key in money_fields:
                 if normalized.get(key) is not None:
                     normalized[key] = format(Decimal(normalized[key]), ".4f")
         except ValidationError as error:
             labels = {field.key: field for field in FIELDS[kind]}
             for item in error.errors(include_input=False, include_context=False):
-                key = str(item["loc"][0]) if item["loc"] else "entry_type"
+                key = (
+                    str(item["loc"][0])
+                    if item["loc"]
+                    else ("reply_status" if kind == "messages" else "entry_type")
+                )
                 field = labels.get(key)
                 issue(
                     key, f"{field.label if field else key}无效或缺失；{field.help if field else ''}"

@@ -44,6 +44,7 @@ class OperationTask(Base):
     source_status: Mapped[str] = mapped_column(String(16), default="current")
     version: Mapped[int] = mapped_column(default=1)
     snapshot: Mapped[dict[str, Any] | None] = mapped_column(JSON(none_as_null=True))
+    review: Mapped[dict[str, Any] | None] = mapped_column(JSON(none_as_null=True))
     note: Mapped[str] = mapped_column(Text, default="")
     due_at: Mapped[datetime | None] = mapped_column(DATETIME(fsp=6))
     valid_until: Mapped[datetime | None] = mapped_column(DATETIME(fsp=6))
