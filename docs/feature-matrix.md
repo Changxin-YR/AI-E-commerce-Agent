@@ -91,4 +91,4 @@ SO-001/006/067/068/074的既有能力通过G-04独立空库首次安装和真实
 
 2026-10-10基础验收更新：G-05为SO-003/004/005/018/031/032/057/060/062/067/068补充真实百炼同组合成资料证据，详见foundation-model-evidence.md；7次调用目录估算0.0007750元，无未知费用。R2摘要检查记录数标签已修正，真实本人邮件仍待B-07。全部74项SO及后续长期范围保留。
 
-2026-10-10 QQ外发补充：SO-031/SO-067/SO-068的R2经营摘要支持QQ SMTP、本人邮箱验证和逐封填写单个收件地址；地址/全文/来源绑定审批，未知结果保留并记录独立人工收件声明。实现见qq_mail_provider.py、outbound.py及OutboundView.vue，验证见test_qq_mail.py、test_outbound.py及outbound.spec.ts。此状态不表示真实邮箱已送达，A-13/B-07仍待授权码、发送确认与实际收件。
+2026-10-10 QQ外发补充：SO-031/SO-067/SO-068的R2经营摘要支持QQ SMTP、本人邮箱验证和逐封填写单个收件地址；地址/全文/来源绑定审批，未知结果保留并记录独立人工收件声明。实现见qq_mail_provider.py、outbound.py及OutboundView.vue，验证见test_qq_mail.py、test_outbound.py及outbound.spec.ts。本机授权码已填、真实SMTP登录与配置回读通过，见foundation-mail-evidence.md；A-13/B-07仍待验证码与摘要的发送确认及实际收件。
