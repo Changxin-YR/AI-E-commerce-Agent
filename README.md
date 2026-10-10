@@ -5,7 +5,7 @@
 ## 当前目标与提交
 
 - foundation-release约定四流程及B-01至B-14已完成；A-13本人邮件实发与收件已通过。保留全部74SO/32原验收/7长期E2E，27个已有模块和47个后续模块范围不变；按foundation-backlog等用户启动后续。真实经营数据及平台接口尚未验收。
-- main **adddb19b58eb5772ff7ff04c029bca791fa7676b** 已正常推送：基础版最终验收/真实QQ收件/维护文档收尾，14文件仅文档。应用代码与383ca25完全一致（backend/frontend/scripts/.github diff为空），其CI38010808357已核实completed/success。最终文档提交CI38012735098本次回读为in_progress，正在Check frontend；功能代码CI38010808357已成功，不能将文档CI写为成功。
+- main **adddb19b58eb5772ff7ff04c029bca791fa7676b** 已正常推送：基础版最终验收/真实QQ收件/维护文档收尾，14文件仅文档。应用代码与383ca25完全一致（backend/frontend/scripts/.github diff为空），其CI38010808357已核实completed/success。最终文档提交CI38012735098亦已回读completed/success。
 - 完整后端 **719 passed / 289.98秒**，Ruff规则/226文件格式、mypy159通过；前端26文件98单元/4.68秒、lint/type-check/build通过。最终邮件桌面/手机2流程/10.1秒通过，组件定向3项/1.51秒通过；已查看最终截图，390px无横溢。
 - 3308迁移回退/升级及模型一致性已通过。3309保留验收库于本次先备份再升级至92c7ea53bd10，64表记录数与未改结构表CHECKSUM一致。3307开发库仍未升级，启用新API前须迁移。绝不对3309运行pytest/seed/清库。
 - 主工作区干净；本次真实邮件总共2封（验证码1、经营摘要1），无重试。新增模型调用0。用户QQ地址/授权码在被忽略backend/.env，enabled=false，主3307库owner/shop仍未绑定；3309验收已关闭外发，模型/调度也关闭。
@@ -62,5 +62,7 @@
 ## 已交付用户测试入口（2026-10-10）
 
 - 用户要求已完成则提供测试链接；基础B01-B14已全部验收，未另建聊天。启动主代码Vite前端127.0.0.1:5175，连接保留的3309库/API8002，模型/真实邮件/调度仍关闭。用户可浏览合成历史与测试本地业务，不能据此宣称全部外部功能已启用。
-- .local/TEST-ACCESS.md包含本机测试账号登录资料（密码不进版本库），账号foundation_g04，选择店铺2「合成真实模型四流程验收 · foundation-g05」，必要时选合成测试数据与Amazon。已提供本机链接和本机登录文件路径，不是公网链接。
+- .local/TEST-ACCESS.md包含本机测试账号登录资料（密码不进版本库），当前账号test，选择店铺2「合成真实模型四流程验收 · foundation-g05」，必要时选合成测试数据与Amazon。已提供本机链接和本机登录文件路径，不是公网链接。
 - 项目Playwright实际浏览器检查：登录成功、刷新会话有效、选店、摘要1 accepted及received_at回读、页面错误0、390px横溢0；test-link-check.json及test-link-desktop.png在.local/foundation-g06。应用代码没有修改，主工作区干净。
+- 2026-10-10 09:32按用户要求简化本机账号：同一user1从foundation_g04改为test，使用既有AuthService重置12位密码并撤销7个旧会话，保留店铺1/2及邮件/收件记录。实际HTTP验证旧会话401、新登录成功，店铺列表和邮件完整响应保持一致；实际浏览器再验登录、刷新、原记录通过。只改3309本机数据和忽略文件，未修改应用代码；明文密码仅保留.local/foundation-g04/.local/account.json及.local/TEST-ACCESS.md等本机资料，禁止提交。安全结果在.local/foundation-g06/account-update.json。
+- .local/foundation-g06/http-state.json已更新为新会话；G04/G05历史状态文件内会话均失效，历史证据保留，后续脚本需从当前account.json安全重新登录。不要重跑simplify_test_login.py或恢复旧凭据。当前范围只做简化账号及功能说明，长期扩展尚未启动。
