@@ -358,6 +358,11 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - 文档仅作设计和接口参考，未复制实现。Firecrawl已知额度不足，未发起付费抓取；本次用内置web查阅官方页面。复制/CSV沿用B2的MDN/OWASP依据。
 
 
+## R2 专项 P2-01：来源一致性（2026-10-10）
+
+- SQLAlchemy 2.0 官方 [EXISTS 子查询](https://docs.sqlalchemy.org/en/20/tutorial/data_select.html#exists-subqueries)及 [JSON 类型](https://docs.sqlalchemy.org/en/20/core/type_basics.html#sqlalchemy.types.JSON)（MIT）：参考关联子查询、JSON 标量与空值语义。自行实现按任务步骤索引、Listing/商品/来源主键定位的只读谓词，首页列表和分类统计与 B1 执行校验复用，不增加逐任务往返或读取副作用，无新依赖或迁移。
+- Firecrawl 状态检查返回 `fetch failed`，本次使用内置 web 查阅上述官方页面；没有复制文档实现。
+
 ## R2 C：API内调度与部署边界（2026-10-10）
 
 - FastAPI官方[Lifespan](https://fastapi.tiangolo.com/advanced/events/)与[HTTPS部署](https://fastapi.tiangolo.com/deployment/https/)（MIT项目）：参考API生命周期资源启停、TLS代理和运行进程的职责。既有进程内调度保持，新增摘要只读取已保存自动周期，不当作进程心跳；没有引入任务队列。

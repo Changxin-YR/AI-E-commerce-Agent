@@ -388,6 +388,10 @@ A3新复检必须比较shop revision、规则和有效期，原异常来源过�
 - 如何保护正在录入的证据？SupportDelivery清除被修改表单的确认，SupportReply合并正文与证据dirty，SupportView合并写入busy；上下文epoch抑制迟到结果。独立进程回读与51条分页测试验证持久结果。
 
 
+## R2 P2-01：一致的只读来源投影
+
+为什么不逐条调用 AgentService.get 修复首页？该服务有失效审计、版本更新及执行上下文读取，不适合只读聚合。`margin_sources.listing_current` 使用关联 EXISTS，工作台在筛选/计数前派生 stale，详情和写入门禁复用它；无任务依赖则不失效。`test_margin_workbench` 比较 1 与 22 个任务时的 SQL 次数及 GET 前后持久状态，验证分页和无副作用。任务恢复仍检查来源，来源回退不复活旧审批。
+
 ## R2 C：调度配置、历史证据与在线状态
 
 为什么不以worker_enabled证明持续运行？它只是配置，进程关闭/主机休眠时不执行，空周期没有记录；ScheduleRuntime展示已保存最近自动周期及实际时间，后续审批从execution_id回查。为什么独立查询？未读筛选、免打扰和分页会隐藏最新记录，manual也不能冒充timer；SchedulesRepository.latest_timer显式owner/shop/trigger约束，created_at/id稳定排序，test_schedules验证同刻/手动/已读/跨店边界。

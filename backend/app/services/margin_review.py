@@ -134,15 +134,5 @@ class MarginReviewService:
     def require_current(self, owner: int, shop: int, plan: MarginEvidence) -> None:
         if plan.listing is None:
             return
-        target = plan.listing
-        current = ListingService(self.uow).workspace(owner, shop, target.product.product_id)
-        active = current.active_version
-        if (
-            current.product != target.product
-            or current.active_id != target.active_id
-            or not active
-            or active.source_status != "current"
-            or not active.snapshot
-            or active.snapshot.proposed != target.before
-        ):
+        if not self.uow.listings.margin_current(owner, shop, plan.listing):
             raise ConflictError("本地Listing基线或商品来源已变化，请重新复核")

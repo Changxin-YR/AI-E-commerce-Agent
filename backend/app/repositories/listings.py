@@ -1,14 +1,27 @@
-from sqlalchemy import delete, exists, func, select, update
+from sqlalchemy import JSON, delete, exists, func, literal, select, update
 from sqlalchemy.orm import Session
 
 from app.models.imports import ImportBatch, ImportRow, Product
 from app.models.listings import ListingSource, ListingVersion
 from app.repositories.analytics import ProductEvidence
+from app.repositories.margin_sources import listing_current
+from app.schemas.margin_review import MarginListing
 
 
 class ListingRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
+
+    def margin_current(self, owner: int, shop: int, target: MarginListing) -> bool:
+        return bool(
+            self.session.scalar(
+                select(
+                    listing_current(
+                        literal(owner), literal(shop), literal(target.model_dump(mode="json"), JSON)
+                    )
+                )
+            )
+        )
 
     def products(self, owner: int, shop: int, query: str, offset: int) -> list[ProductEvidence]:
         statement = (

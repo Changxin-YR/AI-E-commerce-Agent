@@ -137,6 +137,28 @@ for (const width of [1440, 390]) {
     expect(listing.status).toBe('draft')
     expect(listing.snapshot?.proposed.description).toBe(product.facts)
     expect(listing.external_status).toBe('not_submitted')
+    // The completed task also depends on its old baseline. Visit home first:
+    // neither a detail read nor opening the Agent page may be needed to detect it.
+    await post(`${base}/listings/versions/${listing.id}/decision`, {
+      expected_version: listing.version,
+      decision: 'approve',
+      facts_confirmed: true,
+    })
+    await page.goto(`/?shop=${shop.id}&identity=synthetic`)
+    const inbox = page.getByRole('region', { name: '统一工作收件箱' })
+    await inbox.getByLabel('事项类型').selectOption('agent')
+    const update = inbox.getByRole('button', { name: /需要更新数据/ })
+    await expect(update).toContainText('1')
+    await update.click()
+    const task = inbox.locator('li[data-kind="agent"]')
+    await expect(task).toHaveCount(1)
+    await expect(task).toContainText('需重新检查')
+    await inbox.getByRole('button', { name: '刷新收件箱', exact: true }).click()
+    await expect(task).toContainText('需重新检查')
+    await page.reload()
+    await inbox.getByLabel('事项类型').selectOption('agent')
+    await expect(inbox.getByRole('button', { name: /需要更新数据/ })).toContainText('1')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     expect(errors).toEqual([])
   })
 }

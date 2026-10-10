@@ -939,6 +939,10 @@ SupportService新增delivery_context作为唯一当前事实核验入口；Suppo
 B3完整CI补充：MySQL DDL不随后续旧迁移保护异常整体回滚。所有触发旧降级门禁的测试必须在finally恢复head；A3两条预期拒绝路径漏恢复已修复，B3同样覆盖，保留业务拒绝断言。见r2-b3-acceptance.md。
 
 
+## R2 P2-01：首页与执行门禁的来源一致性
+
+`repositories/margin_sources.py` 以关联 EXISTS 表达 B1 已读取的 Listing 依赖；工作台查询与 MarginReviewService 共用。列表分页之前派生状态，使计数和列表一致；无 Listing 依赖的成本任务保持独立。首页只读不更新任务版本/审计，详情及执行仍通过原用户/店铺锁和来源版本门禁。10 项新增回归包括 SQL 往返数、数据库前后快照、恢复及清除；证据见 [P2-01 验收](r2-fix-p2-01.md)。无迁移。
+
 ## R2 C：调度证据与本地交付范围
 
 schedules/status保留worker_enabled并增加latest_timer，接口→SchedulesService→SchedulesRepository按当前用户/店铺只取timer记录，created_at倒序、id打破同刻平局。摘要独立于历史未读筛选/游标和manual记录；ScheduleRuntime显式区分配置开关、保存记录与当前在线状态，并保留实际执行/报表入口。原30秒扫描、最近一期合并、24小时窗口、暂停/恢复、唯一时间槽机制保持，没有新增队列或迁移。

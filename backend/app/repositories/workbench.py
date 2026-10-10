@@ -19,6 +19,7 @@ from app.models.operations import OperationRun, OperationTask
 from app.models.outbound import OutboundMessage
 from app.models.overview import OverviewReport, OverviewShop
 from app.models.support import ReplyDraft, ReplyPolicy, SupportPolicy
+from app.repositories.margin_sources import margin_listing_changed
 from app.schemas.workbench import WorkQuery
 
 Expr = ColumnElement[Any] | InstrumentedAttribute[Any]
@@ -148,6 +149,7 @@ def agent_statement(owner: int, now: datetime) -> Select[Any]:
         scope["data_identity"].as_string(),
         scope["rule_revision_id"].as_integer(),
     ) | (agent.valid_until <= now)
+    invalid = invalid | (and_(agent.template == "margin_review", margin_listing_changed()))
     state = case(
         (and_(agent.status == "running", agent.lease_until <= now), "result_unknown"),
         else_=agent.status,
