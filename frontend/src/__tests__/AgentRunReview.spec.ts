@@ -84,3 +84,38 @@ it('does not offer retry for model result unknown', () => {
     wrapper.findAll('button').some((b) => b.text().includes('恢复') || b.text().includes('继续')),
   ).toBe(false)
 })
+
+it('keeps each verified artifact visible when a later margin step is rejected and clears erased links', async () => {
+  const current = run()
+  current.template = 'margin_review'
+  current.status = 'rejected'
+  current.next_node = 'listing_draft'
+  current.result = { active_id: 4 }
+  current.steps = [
+    {
+      ...current.steps[0]!,
+      node: 'verify',
+      skill: '',
+      output: { record_type: 'analysis', record_id: 11 },
+    },
+  ]
+  const wrapper = mount(AgentRunReview, {
+    props: { run: current, busy: false },
+    global: { stubs: ['RouterLink'], renderStubDefaultSlot: true },
+  })
+  expect(wrapper.text()).toContain('到业务页面复查经营分析 #11')
+  await wrapper.setProps({
+    run: {
+      ...current,
+      status: 'succeeded',
+      steps: [
+        ...current.steps,
+        { ...current.steps[0]!, id: 2, output: { record_type: 'listing', record_id: 12 } },
+      ],
+    },
+  })
+  expect(wrapper.findAll('router-link-stub')).toHaveLength(2)
+  expect(wrapper.text()).toContain('到业务页面复查Listing 草稿 #12')
+  await wrapper.setProps({ run: { ...current, source_status: 'cleared', result: null, steps: [] } })
+  expect(wrapper.findAll('router-link-stub')).toHaveLength(0)
+})

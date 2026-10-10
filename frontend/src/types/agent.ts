@@ -1,5 +1,5 @@
 import type { OperationScope } from './operations'
-import type { SourceReference } from './analytics'
+import type { SourceReference, AnalysisScope } from './analytics'
 import type { ListingContent, ProductFacts } from './listings'
 import type { ReplyDraft, SupportContext } from './support'
 
@@ -13,6 +13,7 @@ export type AgentTemplate =
   | 'listing_model'
   | 'support_model'
   | 'daily_model'
+  | 'margin_review'
 export type AgentAction =
   'advance' | 'pause' | 'resume' | 'cancel' | 'approve' | 'reject' | 'use_authorization'
 export interface AgentBudget {
@@ -24,6 +25,7 @@ export interface AgentInput {
   authorization_id?: number | null
   request_id: string
   template: AgentTemplate
+  margin_cost_mode?: 'current_estimate' | 'seller_history'
   scope: OperationScope
   goal: string
   product_id: number | null
@@ -109,6 +111,27 @@ export interface AnalysisExplanation {
   composition: string
   sku_fact_limit: number
 }
+export interface MarginEvidence {
+  scope: AnalysisScope
+  source_revision: number
+  included_lines: number
+  ranking_available: boolean
+  candidate_count: number
+  candidates: string[]
+  candidate_limit: number
+  cost_basis: string
+  fee_gaps: string[]
+  data_gaps: string[]
+  recommendations: { kind: string; title: string; evidence: string; action: string; risk: string }[]
+  save_analysis: boolean
+  listing: {
+    product: ProductFacts
+    active_id: number
+    before: ListingContent
+    missing_parameters: string[]
+  } | null
+  listing_note: string
+}
 export interface ListingCandidate {
   preparation: { product: ProductFacts; active_id: number | null; before: ListingContent | null }
   candidate: ListingContent
@@ -126,6 +149,8 @@ export interface SupportCandidate {
   engine: string
 }
 export const agentLabels: Record<string, string> = {
+  margin_review: '最近7天低毛利复核',
+  margin_evidence: '核对成本与独立内容证据',
   daily_model: 'AI 今日运营',
   explain_operations: '组织运营检查概览',
   support_model: 'AI 客服候选',
@@ -176,6 +201,9 @@ export const agentLabels: Record<string, string> = {
   test_double: '测试替身',
 }
 export const agentReasons: Record<string, string> = {
+  margin_missing_orders: '没有符合范围的已支付订单。补录或核对范围后，请新建任务。',
+  margin_review_ready: '请核对成本口径、费用缺口及以下独立建议，再批准当前分析存档。',
+  margin_no_action: '本次未发现符合条件的低毛利或独立内容写入建议。可查看完整分析和人工核对提示。',
   operation_consent_required: '请核对运营概览的数据范围，并同意目标和聚合检查数据发送后新建任务。',
   operations_explained: '运营概览已保存。请审阅全部候选与来源，再批准保存到工作台。',
   support_consent_required: '请核对消息、所选政策与发送范围，并同意目标和客服数据发送后新建任务。',

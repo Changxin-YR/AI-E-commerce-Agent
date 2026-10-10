@@ -23,6 +23,7 @@ from app.schemas.agent import (
     StepOutput,
 )
 from app.schemas.analytics import AnalysisResult
+from app.schemas.margin_review import MarginEvidence
 from app.schemas.operations import CheckPreview
 from app.schemas.support import SupportPreparation, SupportSelection
 from app.services.agent_model import DecisionModel, GenerationReply, ModelReply
@@ -44,6 +45,7 @@ from app.services.authorizations import AuthorizationsService
 from app.services.business_rules import BusinessRulesService
 from app.services.listing_composition import compose_listing, listing_request
 from app.services.listings import ListingService, digest
+from app.services.margin_review import MarginReviewService
 from app.services.operation_explanation import compose_operations, operation_request
 from app.services.operations import OperationsService
 from app.services.profit_calculation import utc_text
@@ -60,6 +62,7 @@ FIRST_NODE = {
     "listing_model": "product_context",
     "support_model": "support_context",
     "daily_model": "data_check",
+    "margin_review": "metrics",
 }
 TERMINAL = {"succeeded", "cancelled", "rejected", "blocked", "result_unknown", "circuit_open"}
 
@@ -124,6 +127,15 @@ class AgentService:
                 run.source_status = "stale"
                 run.version += 1
                 self._event(run, "source_changed", run.status)
+        if run.template == "margin_review" and run.source_status == "current":
+            plan = self._margin_plan(run)
+            if plan:
+                try:
+                    MarginReviewService(self.uow).require_current(owner, shop, plan)
+                except BusinessError:
+                    run.source_status = "stale"
+                    run.version += 1
+                    self._event(run, "source_changed", run.status)
         if (
             run.template == "daily_model"
             and run.input
@@ -232,6 +244,8 @@ class AgentService:
     def start(self, owner: int, shop_id: int, data: StartAgent) -> AgentOutput:
         shop = self._shop(owner, shop_id)
         canonical = data.model_dump(mode="json")
+        if data.template != "margin_review":
+            canonical.pop("margin_cost_mode")  # Preserve original template request hashes.
         if canonical["authorization_id"] is None:
             canonical.pop("authorization_id")  # Preserve hashes for existing unbound requests.
         if not canonical["allow_analysis_data"]:
@@ -496,6 +510,10 @@ class AgentService:
     def _dependencies(self, run: AgentExecution, node: str, result: dict[str, Any]) -> None:
         batches, policies = evidence(result)
         self.repo.sources(run.id, batches, policies)
+        if node == "margin_evidence" and result.get("listing"):
+            self.repo.listing_sources(
+                run.id, result["listing"]["active_id"], run.owner_id, run.shop_id
+            )
         if node in {"listing_draft", "listing_candidate", "product_context"}:
             listing_id = result.get("active_id") if node == "product_context" else result.get("id")
             if listing_id:
@@ -511,8 +529,53 @@ class AgentService:
             if dates:
                 run.valid_until = min(datetime.fromisoformat(d).replace(tzinfo=None) for d in dates)
 
+    def _margin_plan(self, run: AgentExecution) -> MarginEvidence | None:
+        result = next(
+            (
+                s.output
+                for s in self.repo.steps(run.id)
+                if s.skill == "margin_evidence" and s.status == "completed" and s.output
+            ),
+            None,
+        )
+        return MarginEvidence.model_validate(result) if result else None
+
+    def _margin_next(self, run: AgentExecution, node: str, result: dict[str, Any]) -> bool:
+        if node == "metrics":
+            run.next_node, run.status = "margin_evidence", "ready"
+        elif node == "margin_evidence":
+            plan = MarginEvidence.model_validate(result)
+            if not plan.included_lines:
+                run.next_node, run.status, run.reason = (
+                    "end",
+                    "waiting_input",
+                    "margin_missing_orders",
+                )
+            elif plan.save_analysis:
+                run.next_node, run.status, run.reason = (
+                    "analysis_todo",
+                    "waiting_approval",
+                    "margin_review_ready",
+                )
+            elif plan.listing:
+                run.next_node, run.status = "product_context", "ready"
+            else:
+                run.next_node, run.status, run.reason = "end", "succeeded", "margin_no_action"
+        elif node == "verify" and result.get("record_type") == "analysis":
+            saved_plan = self._margin_plan(run)
+            run.next_node, run.status = (
+                ("product_context", "ready")
+                if saved_plan and saved_plan.listing
+                else ("end", "succeeded")
+            )
+        else:
+            return False
+        return True
+
     def _choose_next(self, run: AgentExecution, node: str, result: dict[str, Any]) -> None:
         run.result, run.reason = result, ""
+        if run.template == "margin_review" and self._margin_next(run, node, result):
+            return
         if node == "data_check":
             if run.template == "daily_model":
                 run.next_node, run.status = "explain_operations", "ready"

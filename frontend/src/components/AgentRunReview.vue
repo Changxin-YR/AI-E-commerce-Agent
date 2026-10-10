@@ -9,6 +9,7 @@ import type {
   ListingCandidate,
   SupportCandidate,
   OperationExplanation,
+  MarginEvidence,
 } from '@/types/agent'
 import { agentLabels, agentReasons, sourcesIn } from '@/types/agent'
 import { sourceLabels } from '@/types/operations'
@@ -16,6 +17,7 @@ import type { OperationTask } from '@/types/operations'
 import type { AnalysisResult } from '@/types/analytics'
 import AnalysisEvidence from './AnalysisEvidence.vue'
 import AnalysisNarrative from './AnalysisNarrative.vue'
+import MarginReviewEvidence from './MarginReviewEvidence.vue'
 import ListingCandidatePreview from './ListingCandidatePreview.vue'
 import SupportCandidatePreview from './SupportCandidatePreview.vue'
 import OperationNarrative from './OperationNarrative.vue'
@@ -54,6 +56,11 @@ const explanation = computed(
     props.run.steps.find((step) => step.node === 'explain_analysis' && step.status === 'completed')
       ?.output?.explanation as AnalysisExplanation | undefined,
 )
+const marginEvidence = computed(
+  () =>
+    props.run.steps.find((s) => s.skill === 'margin_evidence' && s.status === 'completed')
+      ?.output as unknown as MarginEvidence | undefined,
+)
 const resumable = computed(() => ['paused', 'waiting_configuration'].includes(props.run.status))
 const operationExplanation = computed(
   () =>
@@ -82,26 +89,41 @@ const stoppable = computed(() =>
     'waiting_input',
   ].includes(props.run.status),
 )
-const recordLink = computed(() => {
-  const kind = String(props.run.result?.record_type)
-  const entry = (
-    {
-      operations: ['/', 'run'],
-      listing: ['/listings', 'listing'],
-      support: ['/support', 'draft'],
-      analysis: ['/analytics', 'analysis'],
-    } as Record<string, string[]>
-  )[kind]
-  if (!entry) return undefined
-  return {
-    path: entry[0]!,
-    query: {
-      shop: props.run.shop_id,
-      ...props.returnContext,
-      ...scopeQuery(props.run.input?.scope ?? {}),
-      [entry[1]!]: String(props.run.result?.record_id),
-    },
-  }
+const recordLinks = computed(() => {
+  const records =
+    props.run.template === 'margin_review'
+      ? props.run.steps
+          .filter((s) => s.node === 'verify' && s.status === 'completed')
+          .map((s) => s.output)
+      : [props.run.result]
+  return records.flatMap((record) => {
+    const kind = String(record?.record_type)
+    const entry = (
+      {
+        operations: ['/', 'run'],
+        listing: ['/listings', 'listing'],
+        support: ['/support', 'draft'],
+        analysis: ['/analytics', 'analysis'],
+      } as Record<string, string[]>
+    )[kind]
+    if (!entry || !record?.record_id) return []
+    return [
+      {
+        key: `${kind}-${record.record_id}`,
+        id: record.record_id,
+        kind,
+        to: {
+          path: entry[0]!,
+          query: {
+            shop: props.run.shop_id,
+            ...props.returnContext,
+            ...scopeQuery(props.run.input?.scope ?? {}),
+            [entry[1]!]: String(record.record_id),
+          },
+        },
+      },
+    ]
+  })
 })
 const actionLabels: Record<string, string> = {
   business_rules_changed: '经营规则已变化',
@@ -176,6 +198,7 @@ const actionLabels: Record<string, string> = {
       :analysis="analysis"
       :explanation="explanation"
     />
+    <MarginReviewEvidence v-if="marginEvidence" :value="marginEvidence" />
     <ListingCandidatePreview v-if="listingCandidate" :value="listingCandidate" />
     <SupportCandidatePreview v-if="supportCandidate" :value="supportCandidate" />
     <OperationNarrative v-if="operationExplanation" :value="operationExplanation" />
@@ -255,8 +278,15 @@ const actionLabels: Record<string, string> = {
       <button v-if="stoppable" class="button secondary" @click="emit('action', 'cancel')">
         取消任务
       </button>
-      <RouterLink v-if="recordLink" :to="recordLink" class="button secondary"
-        >到业务页面复查 #{{ run.result?.record_id }}</RouterLink
+      <RouterLink
+        v-for="record in recordLinks"
+        :key="record.key"
+        :to="record.to"
+        class="button secondary"
+        >到业务页面复查<span v-if="run.template === 'margin_review'">{{
+          agentLabels[record.kind]
+        }}</span>
+        #{{ record.id }}</RouterLink
       >
     </div>
     <form v-if="resumable" @submit.prevent="emit('action', 'resume', { ...budget })">

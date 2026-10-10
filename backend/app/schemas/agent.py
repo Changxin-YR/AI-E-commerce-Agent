@@ -1,8 +1,9 @@
+from datetime import timedelta
 from decimal import Decimal
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Self
 from uuid import UUID
 
-from pydantic import Field, StrictBool
+from pydantic import Field, StrictBool, model_validator
 
 from app.schemas.common import InputModel, OutputModel
 from app.schemas.operations import OperationScope
@@ -18,6 +19,7 @@ Template = Literal[
     "listing_model",
     "support_model",
     "daily_model",
+    "margin_review",
 ]
 Money = Annotated[Decimal, Field(ge=0, le=10, decimal_places=6)]
 
@@ -32,6 +34,7 @@ class StartAgent(InputModel):
     request_id: UUID
     authorization_id: Annotated[int, Field(gt=0)] | None = None
     template: Template = "daily"
+    margin_cost_mode: Literal["current_estimate", "seller_history"] = "seller_history"
     scope: OperationScope
     goal: Annotated[str, Field(max_length=500)] = ""
     product_id: Annotated[int, Field(gt=0)] | None = None
@@ -45,6 +48,15 @@ class StartAgent(InputModel):
     support_context: GenerateReply | None = None
     expected_product_source_row_id: Annotated[int, Field(gt=0)] | None = None
     budget: Budget = Field(default_factory=Budget)
+
+    @model_validator(mode="after")
+    def margin_window(self) -> Self:
+        if (
+            self.template == "margin_review"
+            and self.scope.end_at - self.scope.start_at != timedelta(days=7)
+        ):
+            raise ValueError("低毛利复核须使用截至结束时间的精确7天窗口")
+        return self
 
 
 class AgentAction(InputModel):

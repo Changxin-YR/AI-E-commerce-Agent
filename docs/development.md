@@ -1,5 +1,15 @@
 # SoloOps 开发文档
 
+## R2 B1：证据驱动的有限技能组合（2026-10-10）
+
+`margin_review`复用AgentExecution/Step、原审批、预算、SAVEPOINT和幂等请求。新增margin_evidence是R0受控业务服务，输入是metrics的已验证AnalysisResult；按完整性、历史成本和独立本地参数证据提出至多两条内部建议。完整双写路径为metrics→margin_evidence→analysis_todo→verify→product_context→listing_draft→verify，共7个执行节点，每个写节点单独批准。无符合口径订单时等待补录，完整且无可执行建议时结束。
+
+StartAgent校验精确7天窗口；独立margin_cost_mode默认seller_history，原OperationScope及旧模板请求摘要保持。金额和低毛利候选来自原AnalyticsService的Decimal计算；候选摘要最多20项并保留全范围总数，完整明细留在metrics。成本/费用不完整时只生成核对分析，费用和净利润未知始终明示。
+
+MarginReviewService只核对卖家选定的同店/身份/渠道且在订单范围内的一个商品。明确“参数名:值”来源行与当前有效已批准版本逐行比较，缺少基线或事实则保留补证提示；生成使用FactTemplateGenerator的完整已知事实。每次回读/审批/继续都重新核对商品和active_id/正文，基线变化使旧任务stale；新增AgentSource同时继承该Listing历次来源，清除旧批次也擦除步骤副本。
+
+AgentRunReview从各已完成verify步骤展示分析和Listing两个链接；第二节点拒绝后第一记录仍可回查。MarginReviewEvidence单独呈现建议、风险、依据、前后参数；CSS显式纵向排列，避免通用data-note的横排样式挤压正文。前端生成精确7天起点，空结束日期保留待填写提示。实现和验收边界见r2-b1-acceptance.md。
+
 ## R2 A4：卖家导航与业务视图（2026-10-10）
 
 SellerNavigation用原生展开按钮与列表组织19个业务页面，保留全部URL、RouterLink当前页语义和AppShell登录守卫。当前路由所在组自动展开，全功能入口支持键盘；手机子入口自然折行。WorkInbox默认已有店铺及明确数据身份，合法深链优先；筛选保留在组件内，避免每次筛选重挂载原事项详情。快捷导入、检查与Agent入口携带店铺/身份/渠道；检查链接由Dashboard在挂载后定位到检查区域。

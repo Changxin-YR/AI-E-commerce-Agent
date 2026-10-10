@@ -17,6 +17,7 @@ from app.schemas.listings import (
     ListingOutput,
     ProductFacts,
 )
+from app.schemas.margin_review import MarginEvidence, MarginInput
 from app.schemas.operations import CheckPreview, OperationScope, RunInput, RunOutput
 from app.schemas.support import (
     GenerateReply,
@@ -31,6 +32,7 @@ from app.schemas.support import (
 from app.services.analytics import AnalyticsService
 from app.services.listing_generation import FactTemplateGenerator
 from app.services.listings import ListingService, digest
+from app.services.margin_review import MarginReviewService
 from app.services.operations import OperationsService
 from app.services.support import SupportService
 
@@ -78,6 +80,12 @@ CONTRACTS = {
         SaveInput,
         SavedOutput,
         True,
+    ),
+    "margin_evidence": Contract(
+        "按成本与独立商品证据选择有限内部建议",
+        "margin_review.prepare",
+        MarginInput,
+        MarginEvidence,
     ),
     "propose_tasks": Contract(
         "将已审阅异常保存为待审批候选", "operations.run", RunInput, RunOutput, True
@@ -191,9 +199,26 @@ class ControlledSkills:
                     }
                 )
                 .model_copy(
-                    update={"intent": prior["intent"] if data.template == "question" else "summary"}
+                    update=(
+                        {"intent": "low_margin", "cost_mode": data.margin_cost_mode}
+                        if data.template == "margin_review"
+                        else {
+                            "intent": prior["intent"] if data.template == "question" else "summary"
+                        }
+                    )
                 )
                 .model_dump(mode="json")
+            )
+        if name == "margin_evidence":
+            return MarginInput(
+                analysis=AnalysisResult.model_validate(prior), product_id=data.product_id
+            ).model_dump(mode="json")
+        if name == "analysis_todo" and data.template == "margin_review":
+            plan = MarginEvidence.model_validate(prior)
+            if not plan.save_analysis:
+                raise BusinessError("policy_denied", "当前证据未提出分析存档建议", 403)
+            return SaveInput(scope=plan.scope, expected_revision=plan.source_revision).model_dump(
+                mode="json"
             )
         if name == "analysis_todo":
             result = AnalysisResult.model_validate(prior["analysis"])
@@ -273,6 +298,10 @@ class ControlledSkills:
         elif name == "analysis_todo":
             result = AnalyticsService(self.uow).save_and_create_todo(
                 self.owner, self.shop, SaveInput.model_validate(args)
+            )
+        elif name == "margin_evidence":
+            result = MarginReviewService(self.uow).prepare(
+                self.owner, self.shop, MarginInput.model_validate(args)
             )
         elif name == "propose_tasks":
             result = OperationsService(self.uow).run(

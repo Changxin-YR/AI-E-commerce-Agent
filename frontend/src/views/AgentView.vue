@@ -25,6 +25,7 @@ import { agentLabels } from '@/types/agent'
 import type { Shop } from '@/types/identity'
 import type { ProductFacts } from '@/types/listings'
 import type { MessageFacts } from '@/types/support'
+import { supportTime } from '@/types/support'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import AgentRunReview from '@/components/AgentRunReview.vue'
 import SupportModelContext from '@/components/SupportModelContext.vue'
@@ -63,6 +64,7 @@ let inspectEpoch = 0
 const form = reactive<AgentInput>({
   request_id: '',
   template: 'daily',
+  margin_cost_mode: 'seller_history',
   goal: '',
   product_id: null,
   message_id: null,
@@ -86,6 +88,10 @@ const form = reactive<AgentInput>({
     min_quantity: 1,
     max_margin_percent: '20',
   },
+})
+const marginStart = computed(() => {
+  const end = Date.parse(form.scope.end_at)
+  return Number.isFinite(end) ? new Date(end - 7 * 86400000).toISOString() : ''
 })
 watch(
   () => [
@@ -217,6 +223,10 @@ async function start(): Promise<void> {
   try {
     selected.value = await agentApi.start(shopId.value, {
       ...form,
+      scope:
+        form.template === 'margin_review'
+          ? { ...form.scope, start_at: marginStart.value }
+          : form.scope,
       expected_product_source_row_id:
         form.template === 'listing_model' ? selectedProduct.value?.source.row_id : undefined,
       request_id: crypto.randomUUID(),
@@ -380,6 +390,7 @@ onUnmounted(() => {
               <option value="daily">今日运营：检查 → 异常候选 → 核验</option>
               <option value="daily_model">AI 今日运营：检查 → 概览解释 → 审批候选</option>
               <option value="analysis">销售与已知毛利（所选身份与渠道）</option>
+              <option value="margin_review">最近7天低毛利：核对依据 → 分别审批 → 内部结果</option>
               <option value="question">AI 经营问数：理解 → 计算 → 解释 → 核对待办</option>
               <option value="listing">商品事实 → Listing 模板草稿</option>
               <option value="listing_model">AI Listing：事实 → 模型候选 → 审批保存</option>
@@ -402,11 +413,35 @@ onUnmounted(() => {
             </select></label
           >
           <label>币种<input v-model="form.scope.currency" required maxlength="3" /></label>
+          <template v-if="form.template === 'margin_review'">
+            <label
+              >复核成本口径<select v-model="form.margin_cost_mode">
+                <option value="seller_history">卖家确认的订单行历史成本</option>
+                <option value="current_estimate">当前商品成本回推估算</option>
+              </select></label
+            >
+            <p class="full-width">
+              截至下方结束时间的最近7天：{{
+                marginStart ? supportTime(marginStart, form.scope.timezone) : '请填写有效结束时间'
+              }}
+              至
+              {{
+                marginStart ? supportTime(form.scope.end_at, form.scope.timezone) : '待填写'
+              }}（结束不含，{{
+                form.scope.timezone
+              }}）。按数据完整性选择核对分析；可选一个商品核对独立内容遗漏。各内部写入分别审批，使用本地计算。
+            </p>
+          </template>
           <template
             v-if="
-              ['listing', 'listing_model', 'support', 'support_model', 'natural'].includes(
-                form.template,
-              )
+              [
+                'listing',
+                'listing_model',
+                'support',
+                'support_model',
+                'natural',
+                'margin_review',
+              ].includes(form.template)
             "
           >
             <label
@@ -427,7 +462,7 @@ onUnmounted(() => {
                 </option>
               </select></label
             >
-            <label v-if="!['listing', 'listing_model'].includes(form.template)"
+            <label v-if="!['listing', 'listing_model', 'margin_review'].includes(form.template)"
               >目标消息<select v-model="form.message_id">
                 <option :value="null">未选择</option>
                 <option v-for="message in messageOptions" :key="message.id" :value="message.id">
@@ -549,8 +584,10 @@ onUnmounted(() => {
         <details>
           <summary>数据窗口、规则与任务预算</summary>
           <fieldset class="analysis-fields" :disabled="busy || controlling">
-            <label>订单起始时间（含时区）<input v-model="form.scope.start_at" required /></label
-            ><label>订单结束时间（不包含）<input v-model="form.scope.end_at" required /></label>
+            <label v-if="form.template !== 'margin_review'"
+              >订单起始时间（含时区）<input v-model="form.scope.start_at" required
+            /></label>
+            <label>订单结束时间（不包含）<input v-model="form.scope.end_at" required /></label>
             <label
               >库存时效（小时）<input
                 v-model.number="form.scope.max_age_hours"
