@@ -17,6 +17,11 @@ const page = ref(0)
 const source = ref<SourceDetail | null>(null)
 const error = ref('')
 const busy = ref(false)
+const costsWorking = ref(false)
+function setCostsWorking(value: boolean): void {
+  costsWorking.value = value
+  emit('costsWorking', value)
+}
 const rows = computed(() => props.result.lines.slice(page.value * 20, (page.value + 1) * 20))
 watch(
   () => props.result,
@@ -111,15 +116,17 @@ async function inspect(ref: SourceReference): Promise<void> {
         :timezone="result.scope.timezone"
         :disabled="stale"
         @changed="emit('costsChanged')"
-        @working="emit('costsWorking', $event)"
+        @working="setCostsWorking"
       />
     </details>
     <div v-if="result.lines.length > 20" class="pagination">
-      <button class="button secondary small" :disabled="page === 0" @click="page--">上一页</button>
+      <button class="button secondary small" :disabled="costsWorking || page === 0" @click="page--">
+        上一页
+      </button>
       <span>{{ page + 1 }} / {{ Math.ceil(result.lines.length / 20) }}</span>
       <button
         class="button secondary small"
-        :disabled="(page + 1) * 20 >= result.lines.length"
+        :disabled="costsWorking || (page + 1) * 20 >= result.lines.length"
         @click="page++"
       >
         下一页

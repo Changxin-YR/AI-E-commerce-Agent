@@ -1,8 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, expect, it, vi } from 'vitest'
 import OrderCostEditor from '@/components/OrderCostEditor.vue'
+import AnalysisEvidence from '@/components/AnalysisEvidence.vue'
 import { analyticsApi } from '@/api/analytics'
-import type { CostHistory } from '@/types/analytics'
+import type { AnalysisResult, CostHistory } from '@/types/analytics'
 
 vi.mock('@/api/analytics', () => ({ analyticsApi: { costHistory: vi.fn(), writeCost: vi.fn() } }))
 const history: CostHistory = {
@@ -101,4 +102,104 @@ it('ignores evidence arriving after switching shop', async () => {
   release(history)
   await flushPromises()
   expect(wrapper.find('section').exists()).toBe(false)
+})
+
+it('keeps a pending cost editor mounted until its write finishes, then permits historical paging', async () => {
+  const result: AnalysisResult = {
+    scope: {
+      cost_mode: 'seller_history',
+      start_at: '2026-10-07T00:00:00Z',
+      end_at: '2026-10-08T00:00:00Z',
+      timezone: 'UTC',
+      currency: 'USD',
+      data_identity: 'synthetic',
+      intent: 'summary',
+      min_quantity: 1,
+      max_margin_percent: '20',
+    },
+    source_revision: 4,
+    calculated_at: '2026-10-10T00:00:00Z',
+    engine: 'local_rules',
+    formula: '',
+    cost_basis: '',
+    fee_gaps: [],
+    warnings: [],
+    skus: [],
+    ranking_available: false,
+    answer: '',
+    candidates: [],
+    summary: {
+      sku: null,
+      line_count: 21,
+      purchased_quantity: 21,
+      sales: '21',
+      cost: null,
+      gross_profit: null,
+      margin_percent: null,
+      known_sales_subtotal: '21',
+      sales_known_lines: 21,
+      known_cost_subtotal: '0',
+      cost_known_lines: 0,
+      known_gross_subtotal: '0',
+      gross_known_lines: 0,
+    },
+    lines: Array.from({ length: 21 }, (_, i) => ({
+      order_id: `O${i + 1}`,
+      line_id: '1',
+      sku: 'SYN',
+      status: 'paid',
+      ordered_at: '2026-10-07T00:00:00Z',
+      currency: 'USD',
+      quantity: 1,
+      included: true,
+      unit_price: '1',
+      discount: '0',
+      refund: '0',
+      sales: '1',
+      cost: null,
+      gross_profit: null,
+      gaps: [],
+      cost_source: null,
+      source: {
+        row_id: 9 + i,
+        batch_id: 2,
+        row_number: i + 2,
+        filename: 'synthetic.csv',
+        sheet_name: '',
+        exported_at: null,
+        imported_at: '2026-10-07T00:00:00Z',
+        data_identity: 'synthetic',
+      },
+    })),
+  }
+  const wrapper = mount(AnalysisEvidence, { props: { shopId: 1, result, editCosts: true } })
+  const editor = wrapper.findAllComponents(OrderCostEditor)[0]!
+  await editor.get('button').trigger('click')
+  await flushPromises()
+  const fields = editor.findAll('input')
+  await fields[0]!.setValue('3.25')
+  await editor.get('select').setValue('USD')
+  await fields[1]!.setValue('Synthetic receipt')
+  await fields[2]!.setValue('2026-10-06T08:00:00+08:00')
+  await editor.get('input[type="checkbox"]').setValue(true)
+  let release: (value: CostHistory) => void = () => undefined
+  vi.mocked(analyticsApi.writeCost).mockReturnValue(
+    new Promise((resolve) => {
+      release = resolve
+    }),
+  )
+  await editor.get('form').trigger('submit')
+  const next = wrapper.get('.pagination button:last-child')
+  expect(next.attributes('disabled')).toBeDefined()
+  await next.trigger('click')
+  expect(wrapper.findAllComponents(OrderCostEditor)[0]!.props('rowId')).toBe(9)
+  release({ ...history, version: 1 })
+  await flushPromises()
+  expect(wrapper.emitted('costsWorking')).toEqual([[true], [false]])
+  expect(wrapper.emitted('costsChanged')).toHaveLength(1)
+  await wrapper.setProps({ stale: true })
+  expect(next.attributes('disabled')).toBeUndefined()
+  await next.trigger('click')
+  expect(wrapper.findAllComponents(OrderCostEditor)).toHaveLength(1)
+  expect(wrapper.findComponent(OrderCostEditor).props('rowId')).toBe(29)
 })
