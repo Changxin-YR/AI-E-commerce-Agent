@@ -20,11 +20,14 @@ from app.schemas.outbound import (
 from app.services.outbound import OutboundService
 from app.services.outbound_channels import OutboundChannels
 from app.services.outbound_provider import MailProvider, ResendMailProvider
+from app.services.qq_mail_provider import QQMailProvider
 
 router = APIRouter(prefix="/shops/{shop_id}/outbound", tags=["R2 测试外发"])
 
 
 def get_provider(settings: SettingsDependency) -> MailProvider:
+    if settings.outbound_provider == "qq_smtp":
+        return QQMailProvider(settings)
     return ResendMailProvider(settings)
 
 
@@ -85,7 +88,7 @@ def messages(
 
 @router.post("/messages")
 def create(shop_id: int, data: CreateMail, current: CurrentSession, svc: Service) -> MailOutput:
-    return svc.create(current.user_id, shop_id, data.run_id)
+    return svc.create(current.user_id, shop_id, data.run_id, data.recipient)
 
 
 @router.get("/messages/{message_id}")

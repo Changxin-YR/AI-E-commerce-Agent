@@ -25,6 +25,7 @@ class VerifyMailbox(InputModel):
 
 class ChannelOutput(OutputModel):
     configured: bool
+    provider: str = "resend"
     id: int | None = None
     status: str
     sender: str = ""
@@ -41,6 +42,23 @@ class ChannelOutput(OutputModel):
 
 class CreateMail(InputModel):
     run_id: PositiveId
+    recipient: (
+        Annotated[
+            str,
+            Field(
+                max_length=254,
+                pattern=r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$",
+            ),
+        ]
+        | None
+    ) = None
+
+    @field_validator("recipient", mode="before")
+    @classmethod
+    def no_address_controls(cls, value: object) -> object:
+        if isinstance(value, str) and any(ord(c) < 32 or ord(c) == 127 for c in value):
+            raise ValueError("收件地址不能包含控制字符或换行")
+        return value
 
 
 class MailVersion(InputModel):
@@ -90,6 +108,8 @@ class MailOutput(OutputModel):
     id: int
     shop_id: int
     channel_id: int
+    provider: str = "resend"
+    smtp_message_id: str | None = None
     run_id: int
     sender: str
     recipient: str

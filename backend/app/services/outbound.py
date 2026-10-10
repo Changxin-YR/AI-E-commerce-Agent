@@ -19,6 +19,7 @@ from app.services.operations import OperationsService
 from app.services.outbound_channels import OutboundChannels
 from app.services.outbound_provider import MailEnvelope, MailProvider, MailResult
 from app.services.profit_calculation import utc_text
+from app.services.qq_mail_provider import smtp_message_id
 
 
 class OutboundService:
@@ -66,7 +67,11 @@ class OutboundService:
         if item.subject is None or item.body is None:
             raise ConflictError("正文已清除，无法按全文核对或发送")
         return MailEnvelope(
-            channel.sender, channel.recipient, item.subject, item.body, item.dispatch_key
+            channel.sender,
+            item.recipient or channel.recipient,
+            item.subject,
+            item.body,
+            item.dispatch_key,
         )
 
     def _approval_status(self, grant: OutboundApproval, item: OutboundMessage) -> str:
@@ -92,9 +97,13 @@ class OutboundService:
             id=item.id,
             shop_id=item.shop_id,
             channel_id=item.channel_id,
+            provider=channel.provider,
+            smtp_message_id=smtp_message_id(item.dispatch_key)
+            if channel.provider == "qq_smtp" and item.dispatch_at
+            else None,
             run_id=item.run_id,
             sender=channel.sender,
-            recipient=channel.recipient,
+            recipient=item.recipient or channel.recipient,
             subject=item.subject,
             body=item.body,
             content_hash=item.content_hash,
@@ -128,11 +137,16 @@ class OutboundService:
         self.uow.commit()
         return output
 
-    def create(self, owner: int, shop: int, run_id: int) -> MailOutput:
+    def create(
+        self, owner: int, shop: int, run_id: int, recipient: str | None = None
+    ) -> MailOutput:
         self.channels.shop(owner, shop)
         channel = self.channels.active(owner, shop)
+        recipient = recipient or channel.recipient
+        if channel.provider != "qq_smtp" and recipient != channel.recipient:
+            raise ConflictError("此通道仅支持已验证的本人测试收件人")
         # Approval, content edits and credential rotation cannot create a second effect.
-        key = digest([owner, shop, run_id, channel.sender, channel.recipient, "daily-summary-v1"])
+        key = digest([owner, shop, run_id, channel.sender, recipient, "daily-summary-v1"])
         prior = self.repo.by_key(owner, key)
         if prior:
             self._source(prior)
@@ -151,7 +165,9 @@ class OutboundService:
         title = f"SoloOps 测试经营摘要 · 检查 #{run.id}"
         body = "\n".join(
             [
-                "这是一份发往本人测试邮箱的经营检查摘要。",
+                "这是一份发往本人测试邮箱的经营检查摘要。"
+                if recipient == channel.recipient
+                else "这是一份经营检查摘要。",
                 f"店铺 #{shop}；检查 #{run.id}；数据身份 {scope.data_identity}；"
                 f"渠道 {scope.channel}",
                 f"UTC 窗口 [{scope.start_at.astimezone(UTC).isoformat()}, "
@@ -168,11 +184,12 @@ class OutboundService:
                 "以上为保存时的本地规则结果。待办的当前处理状态请在工作台核对。",
             ]
         )
-        envelope = MailEnvelope(channel.sender, channel.recipient, title, body, str(uuid4()))
+        envelope = MailEnvelope(channel.sender, recipient, title, body, str(uuid4()))
         item = OutboundMessage(
             owner_id=owner,
             shop_id=shop,
             channel_id=channel.id,
+            recipient=recipient,
             run_id=run_id,
             dedupe_key=key,
             dispatch_key=envelope.key,
@@ -298,13 +315,13 @@ class OutboundService:
             return self._finish(item)
         self._grant(item, data)
         self.uow.commit()
-        domain_verified = self.provider.verify_domain()
+        sender_verified = self.provider.verify_sender()
         item = self._get(owner, shop, message)
         if item.dispatch_at:
             return self._finish(item)
         grant = self._grant(item, data)
-        if not domain_verified:
-            raise ConflictError("通道域验证未通过或暂不可核对，未提交发送")
+        if not sender_verified:
+            raise ConflictError("发送账号验证未通过或暂不可核对，请检查通道配置与凭据")
         now = utc_now()
         recent = self.repo.recent_dispatches(owner, now - timedelta(days=1))
         if len(recent) >= 10 or any(t > now - timedelta(seconds=60) for t in recent):
@@ -319,7 +336,7 @@ class OutboundService:
             item.id,
             {"approval_id": grant.id, "max_submissions": 1},
         )
-        # Durable consent consumption: a timeout or process crash cannot permit another POST.
+        # Durable consent consumption: a timeout or crash cannot permit another submission.
         self.uow.commit()
         result = self.provider.send(envelope)
         item = self._get(owner, shop, message)
@@ -346,6 +363,10 @@ class OutboundService:
         if not item.dispatch_at or item.status == "sending":
             raise ConflictError("尚未提交或仍在提交中，请稍后只读回查")
         channel = self.channels.get(owner, shop, item.channel_id)
+        if channel.provider == "qq_smtp":
+            raise ConflictError(
+                "QQ SMTP 无回执查询接口，请核对收件箱并记录实际收件证据；勿重复发送"
+            )
         # Read-back can continue after consent revocation, with the same configured credentials.
         from app.services.outbound_provider import config_hash, configured
 
@@ -374,8 +395,14 @@ class OutboundService:
 
     def receipt(self, owner: int, shop: int, message: int, evidence: str) -> MailOutput:
         item = self._get(owner, shop, message)
-        if item.status != "accepted" or not item.receipt_id or item.source_status == "cleared":
-            raise ConflictError("须先取得匹配的通道回执，正文清除后不可追加收件证据")
+        channel = self.channels.get(owner, shop, item.channel_id)
+        accepted = item.status == "accepted" and bool(item.receipt_id)
+        smtp_unknown = (
+            channel.provider == "qq_smtp" and item.status == "unknown" and bool(item.dispatch_at)
+        )
+        if not (accepted or smtp_unknown) or item.source_status == "cleared":
+            raise ConflictError("须先提交邮件并取得可核对的记录，正文清除后不可追加收件证据")
+        # A manual receipt statement never manufactures a provider response.
         item.received_at, item.receipt_evidence = utc_now(), evidence
         self.uow.record_event(owner, "outbound.receipt_attested", "outbound_message", item.id)
         return self._finish(item)

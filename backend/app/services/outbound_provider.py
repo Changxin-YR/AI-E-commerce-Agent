@@ -51,27 +51,58 @@ class MailResult:
 
 
 class MailProvider(Protocol):
-    def verify_domain(self) -> bool: ...
+    def verify_sender(self) -> bool: ...
     def send(self, envelope: MailEnvelope) -> MailResult: ...
     def reconcile(self, envelope: MailEnvelope, receipt_id: str | None) -> MailResult: ...
 
 
 def configured(settings: Settings, owner: int, shop: int) -> bool:
-    return bool(
+    addresses_ready = bool(
         settings.outbound_enabled
-        and settings.outbound_api_key
-        and settings.outbound_api_key.get_secret_value()
+        and owner > 0
+        and shop > 0
         and settings.outbound_owner_id == owner
         and settings.outbound_shop_id == shop
         and ADDRESS.fullmatch(settings.outbound_sender)
         and ADDRESS.fullmatch(settings.outbound_test_recipient)
         and len(settings.outbound_sender) <= 254
         and len(settings.outbound_test_recipient) <= 254
+    )
+    if settings.outbound_provider == "qq_smtp":
+        credential = settings.outbound_smtp_authorization_code
+        secret = credential.get_secret_value() if credential else ""
+        return bool(
+            addresses_ready
+            and settings.outbound_sender.lower().endswith("@qq.com")
+            and secret
+            and secret.isascii()
+            and secret.isprintable()
+            and secret == secret.strip()
+        )
+    return bool(
+        addresses_ready
+        and settings.outbound_api_key
+        and settings.outbound_api_key.get_secret_value()
         and settings.outbound_domain_id
     )
 
 
 def config_hash(settings: Settings) -> str:
+    if settings.outbound_provider == "qq_smtp":
+        credential = settings.outbound_smtp_authorization_code
+        return digest(
+            [
+                "qq_smtp",
+                settings.outbound_owner_id,
+                settings.outbound_shop_id,
+                settings.outbound_sender,
+                settings.outbound_test_recipient,
+                hashlib.sha256(
+                    (credential.get_secret_value() if credential else "").encode()
+                ).hexdigest(),
+            ]
+        )
+    # Preserve existing Resend channel fingerprints when upgrading.
     secret = settings.outbound_api_key.get_secret_value() if settings.outbound_api_key else ""
     return digest(
         [
@@ -117,7 +148,7 @@ class ResendMailProvider:
         except (httpx.HTTPError, ValueError):
             return 0, {}
 
-    def verify_domain(self) -> bool:
+    def verify_sender(self) -> bool:
         code, data = self._request("GET", f"/domains/{self.settings.outbound_domain_id}")
         capabilities = data.get("capabilities")
         return bool(

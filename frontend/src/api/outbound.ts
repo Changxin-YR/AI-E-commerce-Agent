@@ -14,8 +14,8 @@ export const outboundApi = {
     request<{ items: OutboundMail[]; next_before_id: number | null }>(
       `${root(shop)}/messages${before ? `?before_id=${before}` : ''}`,
     ),
-  create: (shop: number, run: number) =>
-    post<OutboundMail>(`${root(shop)}/messages`, { run_id: run }),
+  create: (shop: number, run: number, recipient?: string) =>
+    post<OutboundMail>(`${root(shop)}/messages`, { run_id: run, recipient }),
   get: (shop: number, id: number) => request<OutboundMail>(`${root(shop)}/messages/${id}`),
   edit: (mail: OutboundMail, subject: string, body: string) =>
     request<OutboundMail>(`${root(mail.shop_id)}/messages/${mail.id}`, {

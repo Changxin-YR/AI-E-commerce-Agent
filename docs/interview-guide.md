@@ -316,3 +316,9 @@
 - **如何证明模型结果可保存而且可追溯？** Agent API真实执行后逐步审批，再回读分析/Listing/客服/运营记录，核对模型步骤usage；修改来源后旧候选审批409、历史金额保留。G-05证明生产适配器与三层业务链实际配合，而不仅是网络连通。
 - **为什么有两份费用值？** agent_model._cost使用部署的最高档USD预算费率并向上取整，预算用于拒绝超额请求；验收人民币账本按官方当前档位和供应商usage核算目录估算。0.000933 USD与0.0007750 CNY不是实时汇率换算，实际扣款另看账单。未知usage保留预留并停止重试。
 - **正常记录为什么不能写成异常？** operation_checks中Branch.count统计读取记录数，Finding才代表候选问题；outbound.py邮件摘要需沿用该口径。test_outbound.py加入正常订单，锁定检查记录数与异常含义的区别。
+
+## QQ SMTP 的不确定结果与收件地址审批（2026-10-10）
+
+- **SMTP250等于实际送达吗？** QQMailProvider只在send_message取得DATA最终250后记录smtp_accepted，表示服务器接受。Message-ID由已持久化dispatch_key生成，用于匹配原邮件；实际收件由人工证据单独记录。DATA响应丢失时保留unknown，不能仅凭本地标识推断成功。
+- **为何退出连接失败不能改写成功？** 邮件可能已接受，QUIT是清理动作。适配器finally安全关闭，避免把已知250误标未知；测试通过真实标准库send_message/sendmail和模拟底层命令覆盖该边界。
+- **允许任意收件地址如何保留审批约束？** OutboundService将单个recipient固化到预览、content_hash与dedupe_key；新收件地址产生新记录，不能挪用另一预览的approval_id。账号/店铺绑定、正文版本、来源时效和次数限制共同复验。

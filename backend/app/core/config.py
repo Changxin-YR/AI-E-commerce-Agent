@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     database_url: SecretStr
     scheduler_enabled: bool = True
     outbound_enabled: bool = False
+    outbound_provider: Literal["resend", "qq_smtp"] = "resend"
+    outbound_smtp_authorization_code: SecretStr | None = None
     outbound_api_key: SecretStr | None = None
     outbound_owner_id: int | None = None
     outbound_shop_id: int | None = None

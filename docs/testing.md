@@ -464,3 +464,13 @@ G-05于10月9日23:54至23:56执行7次真实百炼请求，通过实际Agent AP
 邮件审阅发现分支读取记录数被标成异常数，outbound.py已改为检查记录数；既有全过程测试加入正常已履约订单，验证2条记录的正文统计口径和审批后发送替身仍与审阅全文一致。定向命令`pytest tests/test_outbound.py tests/test_dashscope_model.py tests/test_analysis_model.py tests/test_listing_model.py tests/test_support_model.py tests/test_operations_model.py -q --tb=short --basetemp=../.local/pytest-g05`：**152 passed / 68.38秒**。使用3308测试库，真实模型和邮件显式关闭；3309真实验收证据保留。Ruff规则/223文件格式通过、mypy158 app文件通过，无新迁移、前端代码未变。Starlette/httpx弃用提示保留。
 
 基线d5fe67f的[CI37954208866](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/37954208866)已核实Success，verify10分17秒、总10分20秒。前端沿用此前97单元、浏览器完整54通过加定向4通过覆盖；本轮无前端改动，未扩大重复运行。B-06通过；B-07仍待本人通道配置、邮箱验证、本次单次发送许可与实际收件。已备operation_run #4的全文审阅稿，尚未创建或提交真实邮件。
+
+## 第三十三迭代：QQ 邮箱与指定收件人（2026-10-10）
+
+QQ SMTP适配、单个收件地址固化到预览、配置切换时准确展示新验证地址、SMTP未知与人工收件声明边界已实现。完整后端命令`pytest -q --tb=short --maxfail=1 --basetemp=../.local/pytest-qq-release`：**719 passed / 289.98秒**；覆盖全部原有邮件、工作台、权限、来源清除与新增QQ协议/收件人测试。Ruff规则与226文件格式通过，mypy159 app文件通过。所有邮件均为替身，新增真实模型/邮件调用均0。
+
+前端26文件**98单元 / 4.68秒**通过；最终邮件组件定向3项/1.51秒通过，lint、type-check及构建通过。`npm run test:e2e -- e2e/outbound.spec.ts`最终**2 passed / 10.1秒**，每个用例覆盖桌面与390px手机：原Resend回查及QQ指定收件人、审批、unknown、人工声明、刷新、地址回读与未重发。已查看系统Temp中的soloops-qq-mail-desktop.png及soloops-qq-mail-mobile.png，最终页面无横溢，地址/邮件标识/未知与人工证据可读。
+
+隔离3308测试库上完成`92c7ea53bd10 → 7e7851694067 → 92c7ea53bd10`回退/升级；字段默认值与空值兼容校验、Alembic模型差异检查通过，无额外变更。随后再次运行浏览器流程通过。3307开发库及保留G-04/G-05证据的3309库未执行此次迁移；后续启用实例须先升级。原有数据库备份仍按其历史head恢复，再逐步升级。
+
+Windows沙箱默认临时目录重命名和数据库连接被限，获正常权限后本地运行通过；无自动审批拒绝。原有Starlette/httpx弃用及Node颜色环境提示保留。初次浏览器两个通道复用同一账号被60秒发送间隔拒绝，QQ用例改用独立合成账号后通过，生产限额未改。真实QQ授权码、单次验证码/摘要许可与收件佐证仍待，B-07/B-08邮件段未标完成。

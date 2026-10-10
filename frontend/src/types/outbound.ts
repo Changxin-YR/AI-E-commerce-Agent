@@ -1,4 +1,5 @@
 export interface MailChannel {
+  provider: 'resend' | 'qq_smtp'
   configured: boolean
   id: number | null
   status: string
@@ -20,6 +21,8 @@ export interface MailApproval {
   created_at: string
 }
 export interface OutboundMail {
+  provider: 'resend' | 'qq_smtp'
+  smtp_message_id: string | null
   id: number
   shop_id: number
   channel_id: number
@@ -51,6 +54,8 @@ export const mailLabels: Record<string, string> = {
   active: '已验证 / 有效',
   configuration_changed: '配置已变化',
   domain_unverified: '发送域未验证',
+  sender_unverified: '发件账号验证未通过，请检查 SMTP 服务和授权码',
+  smtp_accepted: 'QQ SMTP 已接受（250）',
   expired: '已过期',
   locked: '验证次数用尽',
   revoked: '已撤销',

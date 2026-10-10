@@ -42,7 +42,7 @@ class FakeMail:
         self.before_send: Callable[[], None] | None = None
         self.before_domain: Callable[[], None] | None = None
 
-    def verify_domain(self) -> bool:
+    def verify_sender(self) -> bool:
         if self.before_domain:
             self.before_domain()
         return self.domain
@@ -346,7 +346,7 @@ def test_rate_limit_and_isolation_csrf_strict_contract(logged_in, mailbox):
             root(shop) + "/messages",
             json={"run_id": mail["run_id"], "recipient": "buyer@example.net"},
         ).status_code
-        == 422
+        == 409
     )
     assert (
         logged_in.post(
@@ -512,7 +512,7 @@ def test_http_adapter_fixed_host_one_post_and_exact_readback(settings):
         )
 
     provider = ResendMailProvider(config, httpx.MockTransport(handler))
-    assert provider.verify_domain()
+    assert provider.verify_sender()
     assert provider.send(envelope).status == "unknown"
     assert provider.reconcile(envelope, None) == MailResult("accepted", receipt, "delivered")
     assert len([x for x in calls if x[0] == "POST"]) == 1

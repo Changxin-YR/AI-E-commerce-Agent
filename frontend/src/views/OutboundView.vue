@@ -26,6 +26,7 @@ const busy = ref(false)
 const error = ref('')
 const confirmed = ref(false)
 const code = ref('')
+const recipient = ref('')
 const timezone = computed(() => shops.value.find((s) => s.id === shop.value)?.timezone ?? 'UTC')
 const label = (value: string) => mailLabels[value] ?? value
 let epoch = 0
@@ -37,6 +38,7 @@ async function load(): Promise<void> {
   before.value = null
   confirmed.value = false
   code.value = error.value = ''
+  recipient.value = ''
   if (!shop.value) return
   busy.value = true
   try {
@@ -47,6 +49,7 @@ async function load(): Promise<void> {
     ])
     if (token !== epoch) return
     channel.value = connection
+    recipient.value = connection.recipient
     messages.value = page.items
     before.value = page.next_before_id
     runs.value = checks.filter((r) => r.source_status === 'current')
@@ -87,7 +90,13 @@ async function create(): Promise<void> {
   busy.value = true
   error.value = ''
   try {
-    updated(await outboundApi.create(shop.value, runId.value))
+    updated(
+      await outboundApi.create(
+        shop.value,
+        runId.value,
+        channel.value?.provider === 'qq_smtp' ? recipient.value.trim() : undefined,
+      ),
+    )
   } catch (cause) {
     error.value = errorMessage(cause)
   } finally {
@@ -132,7 +141,7 @@ onMounted(async () => {
   <div class="page-heading">
     <div>
       <h1>测试外发</h1>
-      <p>把已核对的经营摘要，送到你自己的测试邮箱。</p>
+      <p>审阅经营摘要，核对收件地址，再批准发送。</p>
     </div>
     <span class="outline-label">独立 R2 审批</span>
   </div>
@@ -178,13 +187,17 @@ onMounted(async () => {
     >
       <h2>本人测试邮箱 · {{ label(channel.status) }}</h2>
       <p v-if="!channel.configured">
-        尚未配置此店铺的测试外发通道。需先提供已授权的自有发送账号、已验证域名与本人测试收件地址。完成配置后可在此验证邮箱；现有本地检查和审批继续可用。
+        尚未配置此店铺的外发通道。QQ 邮箱需配置发件地址、客户端授权码和本人验证邮箱；Resend
+        需配置密钥和已验证域名。完成配置后可在此验证邮箱。
       </p>
       <template v-else
-        ><p>Resend · {{ channel.sender }} → {{ channel.recipient }}</p>
+        ><p>
+          {{ channel.provider === 'qq_smtp' ? 'QQ 邮箱' : 'Resend' }} · {{ channel.sender }} →
+          {{ channel.recipient }}
+        </p>
         <p>
-          仅此部署名单内的本人测试邮箱可接收；验证邮件不含业务数据。账号 24 小时最多提交 10
-          份经营摘要，间隔至少 60 秒。
+          验证邮件发送到以上本人邮箱，不含业务数据。账号 24 小时最多提交 10 份经营摘要，间隔至少 60
+          秒。
         </p>
         <fieldset :disabled="busy">
           <template v-if="!['active', 'verifying', 'unknown'].includes(channel.status)">
@@ -233,6 +246,18 @@ onMounted(async () => {
     </section>
     <section class="form-panel section-block" aria-label="准备经营摘要">
       <h2>准备待审摘要</h2>
+      <div v-if="channel?.provider === 'qq_smtp'" class="form-field">
+        <label for="mail-recipient">收件邮箱</label>
+        <input
+          id="mail-recipient"
+          v-model="recipient"
+          type="email"
+          required
+          maxlength="254"
+          :disabled="busy"
+        />
+        <p>默认发到本人邮箱。可填写其他收件地址，生成预览后核对地址和全文，单独批准一次。</p>
+      </div>
       <p>
         正文来自已保存的今日运营检查，可修改后重新审阅。<RouterLink to="/agent"
           >前往任务执行台</RouterLink

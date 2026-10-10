@@ -287,3 +287,9 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - Docker官方[独立项目名](https://docs.docker.com/compose/how-tos/project-name/)与[Compose参数](https://docs.docker.com/reference/cli/docker/compose/)：使用独立项目名、配置文件和端口隔离容器、网络与持久卷；只启动验收项目的MySQL。Docker Compose采用Apache-2.0，文档仅作接口参考，不复制实现。
 - Pydantic官方[Settings优先级](https://pydantic.dev/docs/validation/latest/concepts/pydantic_settings/)：环境变量优先于dotenv。pydantic-settings采用MIT，本轮独立验收清除继承的SOLOOPS变量，从新副本backend工作目录读取新配置；真实模型及邮件显式关闭，避免继承开发配置。
 - 适配：从已提交源码导出独立副本，执行现有setup_local、迁移及账号CLI，经过真实HTTP与独立API进程验证。初始化补齐对已有.local/test.env的保护，所有配置文件使用独占创建模式；配置与证据均留忽略目录。
+
+## QQ 邮箱测试外发（2026-10-10）
+
+- 腾讯官方[QQ 邮箱连接说明](https://hiflow.tencent.com/document/applications/qq-mail/)及[SMTP 配置示例](https://cloud.tencent.com/document/product/1207/45117/)：开启邮箱 SMTP 服务，以完整 QQ 邮箱地址和客户端授权码登录 `smtp.qq.com:465`，启用 SSL。官方资料版权归腾讯；仅参考协议参数，自行实现，未复制正文或代码。Firecrawl 已确认 402，本次使用官方网页检索。
+- Python 官方[smtplib](https://docs.python.org/3/library/smtplib.html)与[email.message](https://docs.python.org/3/library/email.message.html)：PSF 文档与标准库接口，沿用项目 Python 标准库，无新依赖。固定 SSL 主机、证书校验、有限超时；UTF-8 纯文本邮件，稳定 Message-ID；SMTP DATA 最终 250 才记录服务器接受，连接断开保留未知，清理连接失败不覆盖已取得的接受结果。
+- 适配：由配置选择 QQ SMTP 通道，账号/店铺与授权码绑定通道；用户指定的单个收件地址与全文绑定审批；通道类型随验证记录持久化，配置变更不能复用旧审批。QQ SMTP 无远端回执查询接口，未知结果仅人工核对原收件箱并记录独立收件声明，不伪造供应商送达或自动重发。Resend 历史通道保留原有语义。

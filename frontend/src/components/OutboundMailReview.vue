@@ -16,6 +16,7 @@ const hours = ref(1)
 const receipt = ref('')
 const evidence = ref('')
 const received = ref(false)
+const qqMail = computed(() => props.mail.provider === 'qq_smtp')
 const editable = computed(
   () => props.mail.status === 'draft' && props.mail.source_status === 'current',
 )
@@ -104,14 +105,19 @@ function attest(): void {
     <dl class="mail-addresses">
       <dt>发件人</dt>
       <dd>{{ mail.sender }}</dd>
-      <dt>本人测试收件人</dt>
+      <dt>收件人</dt>
       <dd>{{ mail.recipient }}</dd>
     </dl>
     <p class="mail-warning">
       审批时原状态：尚未提交；目标动作：向上述邮箱提交 1
       封邮件。每份摘要最多提交一次，邮件不可撤回。撤销授权只停止尚未提交的动作，已开始的提交仍可能送达。
     </p>
-    <p>预计费用：由你的 Resend 套餐和配额决定，本系统无法核定实际账单。无附件、抄送或密送。</p>
+    <p v-if="qqMail">
+      QQ 邮箱发送额度与限制以邮箱服务为准。每次只发往上述一个收件地址，无附件、抄送或密送。
+    </p>
+    <p v-else>
+      预计费用：由你的 Resend 套餐和配额决定，本系统无法核定实际账单。无附件、抄送或密送。
+    </p>
     <template v-if="mail.body !== null">
       <h3>{{ mail.subject }}</h3>
       <pre class="mail-body">{{ mail.body }}</pre>
@@ -173,9 +179,23 @@ function attest(): void {
       <div v-if="mail.dispatch_at" class="source-detail">
         <h3>提交与回执</h3>
         <p>提交时间 {{ time(mail.dispatch_at) }}（{{ timezone }}）</p>
-        <p>通道回执：{{ mail.receipt_id ?? '尚未取得' }} · {{ label(mail.provider_event) }}</p>
-        <p>通道接受或报告送达不等于测试邮箱实际收件；未知态先回查，系统不会重复提交。</p>
-        <template v-if="mail.body !== null"
+        <template v-if="qqMail">
+          <p>邮件标识 Message-ID：{{ mail.smtp_message_id }}</p>
+          <p>
+            SMTP 提交结果：{{
+              mail.provider_event ? label(mail.provider_event) : label(mail.status)
+            }}
+          </p>
+          <p>
+            QQ SMTP
+            无回执查询接口。请核对收件箱和垃圾箱中的地址、主题、全文及邮件标识，再记录实际收件证据。人工声明不改变服务器提交状态，未知结果不会自动重发。
+          </p>
+        </template>
+        <template v-else>
+          <p>通道回执：{{ mail.receipt_id ?? '尚未取得' }} · {{ label(mail.provider_event) }}</p>
+          <p>通道接受或报告送达不等于实际收件；未知态先回查，系统不会重复提交。</p>
+        </template>
+        <template v-if="mail.body !== null && !qqMail"
           ><label
             >可选：从通道后台取得的邮件 ID<input
               v-model="receipt"
@@ -194,7 +214,10 @@ function attest(): void {
           </p></template
         >
         <form
-          v-if="mail.status === 'accepted' && mail.body !== null"
+          v-if="
+            (mail.status === 'accepted' || (qqMail && mail.status === 'unknown')) &&
+            mail.body !== null
+          "
           class="mail-editor"
           @submit.prevent="attest"
         >
@@ -205,20 +228,21 @@ function attest(): void {
               maxlength="500"
               rows="3"
               required
-              placeholder="例如：本人测试邮箱收到的时间、主题与可复查证据位置"
+              placeholder="例如：收件人确认的收到时间、主题与可复查证据位置"
             ></textarea>
           </label>
           <label class="check-label"
             ><input
               v-model="received"
               type="checkbox"
-            />我已在本人测试邮箱核对实际收件，此项为人工证据声明</label
-          ><button class="button secondary small" :disabled="!received">记录本人收件证据</button>
+            />我已核对收件人实际收到此邮件，此项为人工证据声明</label
+          >
+          <button class="button secondary small" :disabled="!received">记录实际收件证据</button>
         </form>
         <p v-if="mail.received_at">
           人工收件声明 {{ time(mail.received_at) }}：{{ mail.receipt_evidence }}
         </p>
-        <p v-else>尚无测试邮箱实际收件证据。</p>
+        <p v-else>尚无实际收件证据。</p>
       </div>
       <details v-if="mail.approvals.length">
         <summary>审批与消耗记录（{{ mail.approvals.length }}）</summary>

@@ -44,10 +44,15 @@ class OutboundChannels:
 
     def output(self, owner: int, shop: int, item: TestMailChannel | None) -> ChannelOutput:
         ready = configured(self.settings, owner, shop)
+        status = self.status(item) if item else "disconnected" if ready else "not_configured"
+        if item and ready and item.config_hash != config_hash(self.settings):
+            # A new verification must preview the addresses it will actually use.
+            item = None
         return ChannelOutput(
             configured=ready,
+            provider=item.provider if item else self.settings.outbound_provider,
             id=item.id if item else None,
-            status=self.status(item) if item else "disconnected" if ready else "not_configured",
+            status=status,
             sender=item.sender if item else self.settings.outbound_sender if ready else "",
             recipient=item.recipient
             if item
@@ -89,6 +94,7 @@ class OutboundChannels:
             owner_id=owner,
             shop_id=shop,
             config_hash=config_hash(self.settings),
+            provider=self.settings.outbound_provider,
             sender=self.settings.outbound_sender,
             recipient=self.settings.outbound_test_recipient,
             verification_hash=hashlib.sha256(code.encode()).hexdigest(),
@@ -110,8 +116,11 @@ class OutboundChannels:
         )
         self.uow.commit()
         # No database lock during provider I/O. Consent reserves one verification attempt.
-        if not self.provider.verify_domain():
-            result_status, receipt = "domain_unverified", None
+        if not self.provider.verify_sender():
+            result_status = (
+                "sender_unverified" if item.provider == "qq_smtp" else "domain_unverified"
+            )
+            receipt = None
         else:
             result = self.provider.send(envelope)
             result_status = "verifying" if result.status == "accepted" else result.status
