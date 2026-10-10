@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { applyLinkedScope, linkedShop } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { workbenchApi } from '@/api/workbench'
 import { errorMessage } from '@/api/client'
 import type { Shop } from '@/types/identity'
-import { type WorkItem, type WorkPage, workBuckets, workKinds } from '@/types/workbench'
+import { type WorkItem, type WorkPage, workBuckets, workKinds, workViews } from '@/types/workbench'
 import { agentLabels } from '@/types/agent'
-import { taskLabels, sourceLabels } from '@/types/operations'
+import { taskLabels, sourceLabels, businessLabels, type OperationScope } from '@/types/operations'
 import { listingStatus } from '@/types/listings'
 import { replyStatus, supportTime } from '@/types/support'
 import { mailLabels } from '@/types/outbound'
@@ -14,7 +16,27 @@ import { authorizationLabels } from '@/api/authorizations'
 import FeedbackBanner from './FeedbackBanner.vue'
 
 const shops = ref<Shop[]>([])
-const filters = reactive({ shop_id: '', data_identity: '', channel: '', kind: '', bucket: '' })
+const route = useRoute()
+const filters = reactive({
+  shop_id: '',
+  data_identity: 'user_import',
+  channel: '',
+  kind: '',
+  bucket: '',
+  view: 'attention',
+})
+const historyOpen = ref(false)
+const initialized = ref(false)
+const quickQuery = computed(() => {
+  const query: Record<string, string> = {}
+  if (filters.shop_id) query.shop = filters.shop_id
+  if (filters.data_identity) query.identity = filters.data_identity
+  if (filters.channel) query.channel = filters.channel
+  return query
+})
+const timezone = computed(
+  () => shops.value.find((shop) => String(shop.id) === filters.shop_id)?.timezone ?? 'UTC',
+)
 const data = ref<WorkPage | null>(null)
 const busy = ref(false)
 const error = ref('')
@@ -42,6 +64,7 @@ function channelLabel(channel: string | null): string {
   return channel ? (names[channel] ?? channel) : '跨渠道 / 不可追溯'
 }
 async function load(more = false): Promise<void> {
+  if (!initialized.value) return
   const token = ++epoch
   const previous = data.value
   if (!more) data.value = null
@@ -71,20 +94,41 @@ async function load(more = false): Promise<void> {
   }
 }
 function choose(bucket: string): void {
+  filters.view = ''
   filters.bucket = bucket
+  void load()
+}
+function continueApproval(): void {
+  historyOpen.value = true
+  choose('approval')
+}
+function chooseView(view: string): void {
+  filters.view = view
+  filters.bucket = ''
   void load()
 }
 function focus(): void {
   void load()
 }
-onMounted(async () => {
-  window.addEventListener('focus', focus)
-  void load()
+async function initialize(): Promise<void> {
   try {
-    shops.value = await identityApi.shops()
+    const loaded = await identityApi.shops()
+    if (!alive) return
+    shops.value = loaded
+    filters.shop_id = String(linkedShop(loaded, route.query.shop) || '')
+    const scope: Partial<OperationScope> = { data_identity: 'user_import' }
+    applyLinkedScope(scope, route.query)
+    filters.data_identity = scope.data_identity ?? 'user_import'
+    filters.channel = scope.channel ?? ''
+    initialized.value = true
+    await load()
   } catch (cause) {
     if (alive) error.value = errorMessage(cause)
   }
+}
+onMounted(() => {
+  window.addEventListener('focus', focus)
+  void initialize()
 })
 onUnmounted(() => {
   alive = false
@@ -99,11 +143,18 @@ onUnmounted(() => {
       <div>
         <span class="inbox-eyebrow">YOUR NEXT MOVE</span>
         <h2>把下一步，放在一起。</h2>
-        <p>任务、草稿、审批与报告，回到同一份工作清单。</p>
+        <p>先处理需要你决定的事，再查看执行结果与数据更新。</p>
       </div>
       <div class="button-row">
-        <RouterLink class="button primary" to="/agent">创建受控任务</RouterLink
-        ><a class="button secondary" href="#operations">运行今日检查</a>
+        <RouterLink class="button primary" :to="{ path: '/imports', query: quickQuery }"
+          >导入文件</RouterLink
+        >
+        <RouterLink
+          class="button secondary"
+          :to="{ path: '/', query: quickQuery, hash: '#operations' }"
+          >运行今日检查</RouterLink
+        >
+        <button class="button secondary" @click="continueApproval">继续审批</button>
       </div>
     </div>
     <form class="inbox-filters" aria-label="收件箱筛选" @submit.prevent="load()">
@@ -139,24 +190,64 @@ onUnmounted(() => {
       >
     </form>
     <FeedbackBanner :message="error" />
-    <div class="inbox-counts" aria-label="事项状态">
+    <div class="inbox-counts seller-views" role="group" aria-label="卖家工作视图">
       <button
-        v-for="(name, key) in workBuckets"
+        v-for="(name, key) in workViews"
         :key="key"
         type="button"
-        :aria-pressed="filters.bucket === key"
-        :class="['inbox-count', key]"
-        @click="choose(key)"
+        class="inbox-count"
+        :aria-pressed="filters.view === key"
+        @click="chooseView(key)"
       >
         <span>{{ name }}</span
-        ><strong>{{ data ? (data.counts[key] ?? 0) : '—' }}</strong>
+        ><strong>{{ data ? (data.view_counts[key] ?? 0) : '—' }}</strong>
       </button>
     </div>
+    <p class="inbox-scope-note">
+      AI 已完成表示受控任务已执行并核验内部结果。人工核对、已解决事项及其他存档可在全部与历史查看。
+    </p>
+    <details
+      class="inbox-history"
+      :open="historyOpen"
+      @toggle="historyOpen = ($event.target as HTMLDetailsElement).open"
+    >
+      <summary>全部与历史 · 原始事项状态</summary>
+      <div class="inbox-counts" aria-label="事项状态">
+        <button
+          v-for="(name, key) in workBuckets"
+          :key="key"
+          type="button"
+          :aria-pressed="filters.bucket === key"
+          :class="['inbox-count', key]"
+          @click="choose(key)"
+        >
+          <span>{{ name }}</span
+          ><strong>{{ data ? (data.counts[key] ?? 0) : '—' }}</strong>
+        </button>
+      </div>
+      <div class="inbox-toolbar">
+        <button
+          class="button secondary small"
+          :aria-pressed="!filters.view && !filters.bucket"
+          @click="choose('')"
+        >
+          全部状态
+        </button>
+      </div>
+    </details>
     <div class="inbox-toolbar">
-      <button class="button secondary small" :aria-pressed="!filters.bucket" @click="choose('')">
-        全部状态</button
-      ><span>按创建时间倒序 · 每页 20 条</span
-      ><button class="button secondary small" :disabled="busy" @click="load()">刷新收件箱</button>
+      <span
+        >{{
+          filters.view
+            ? workViews[filters.view]
+            : filters.bucket
+              ? workBuckets[filters.bucket]
+              : '全部与历史'
+        }}
+        · 按创建时间倒序 · 每页 20 条</span
+      >
+      <RouterLink :to="{ path: '/agent', query: quickQuery }">创建受控任务</RouterLink>
+      <button class="button secondary small" :disabled="busy" @click="load()">刷新收件箱</button>
     </div>
     <p v-if="busy" role="status">正在核对工作记录…</p>
     <template v-if="data">
@@ -186,13 +277,17 @@ onUnmounted(() => {
           }}
         </h3>
         <p>从导入一份文件、运行一次检查或创建草稿开始，结果会出现在这里。</p>
-        <RouterLink to="/imports" class="button secondary small">导入业务数据</RouterLink>
+        <RouterLink :to="{ path: '/imports', query: quickQuery }" class="button secondary small"
+          >导入业务数据</RouterLink
+        >
       </div>
       <ol v-else class="inbox-list" aria-label="工作事项">
         <li v-for="item in data.items" :key="`${item.kind}:${item.id}`" :data-kind="item.kind">
           <div class="inbox-item-head">
             <span class="outline-label">{{ workKinds[item.kind] }} #{{ item.id }}</span
-            ><span :class="['inbox-state', item.bucket]">{{ workBuckets[item.bucket] }}</span>
+            ><span :class="['inbox-state', item.bucket]">{{
+              item.view ? workViews[item.view] : '存档 / 已记录'
+            }}</span>
           </div>
           <h3>
             {{
@@ -216,10 +311,15 @@ onUnmounted(() => {
             · {{ channelLabel(item.channel) }}
           </p>
           <p v-if="item.detail">{{ item.detail }}</p>
+          <p v-if="item.business_state" class="business-state">
+            {{ businessLabels[item.business_state]
+            }}<span v-if="item.review_current"> · 当前复检有效</span>
+          </p>
           <div class="inbox-item-foot">
             <div>
               <span
-                >{{ sourceLabels[item.source_status] ?? item.source_status }} ·
+                >{{ item.kind === 'operation_task' ? '原异常依据：' : ''
+                }}{{ sourceLabels[item.source_status] ?? item.source_status }} ·
                 {{ item.risk }}</span
               ><small>创建于 {{ supportTime(item.created_at, item.timezone) }}</small
               ><small v-if="item.due_at"
@@ -246,11 +346,13 @@ onUnmounted(() => {
       </button>
       <p class="inbox-scope-note">
         读取时间：{{
-          supportTime(data.read_at, 'Asia/Shanghai')
+          supportTime(data.read_at, timezone)
         }}。打开记录会再次核验来源、状态与授权；外发结果未知时请进入原记录回查。
       </p>
     </template>
-    <button v-if="error" class="button secondary" @click="load()">重新加载收件箱</button>
+    <button v-if="error" class="button secondary" @click="initialized ? load() : initialize()">
+      重新加载收件箱
+    </button>
   </section>
 </template>
 
@@ -330,6 +432,26 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.8rem;
   flex-wrap: wrap;
+}
+.seller-views {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.inbox-history {
+  margin: 1rem 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.inbox-history summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.inbox-history .inbox-counts {
+  margin-top: 1rem;
+}
+.inbox-list .business-state {
+  color: var(--green);
+  font-weight: 600;
 }
 .inbox-toolbar span {
   margin-right: auto;

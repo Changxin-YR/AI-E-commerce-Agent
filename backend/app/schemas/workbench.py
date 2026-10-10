@@ -4,6 +4,7 @@ from pydantic import Field
 
 from app.schemas.common import InputModel, OutputModel
 from app.schemas.imports import DataIdentity, SourceChannel
+from app.schemas.operations import BusinessState
 
 WorkKind = Literal[
     "operation_task",
@@ -18,6 +19,7 @@ WorkKind = Literal[
     "outbound",
 ]
 WorkBucket = Literal["pending", "approval", "failed", "unknown", "stale", "history"]
+WorkView = Literal["attention", "ai_completed", "update_data"]
 
 
 class WorkQuery(InputModel):
@@ -26,6 +28,7 @@ class WorkQuery(InputModel):
     channel: SourceChannel | None = None
     kind: WorkKind | None = None
     bucket: WorkBucket | None = None
+    view: WorkView | None = None
     cursor: Annotated[str | None, Field(max_length=600)] = None
 
 
@@ -41,6 +44,9 @@ class WorkItem(OutputModel):
     status: str
     source_status: str
     bucket: WorkBucket
+    view: WorkView | None
+    business_state: BusinessState | None
+    review_current: bool
     label: str
     detail: str
     created_at: str
@@ -54,5 +60,6 @@ class WorkPage(OutputModel):
     items: list[WorkItem]
     recent_runs: list[WorkItem]
     counts: dict[str, int]
+    view_counts: dict[str, int]
     next_cursor: str | None
     read_at: str

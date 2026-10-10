@@ -10,6 +10,9 @@ export interface WorkItem {
   status: string
   source_status: string
   bucket: string
+  view: string | null
+  business_state: string | null
+  review_current: boolean
   label: string
   detail: string
   created_at: string
@@ -22,8 +25,14 @@ export interface WorkPage {
   items: WorkItem[]
   recent_runs: WorkItem[]
   counts: Record<string, number>
+  view_counts: Record<string, number>
   next_cursor: string | null
   read_at: string
+}
+export const workViews: Record<string, string> = {
+  attention: '待我处理',
+  ai_completed: 'AI 已完成',
+  update_data: '需要更新数据',
 }
 export const workKinds: Record<string, string> = {
   operation_task: '运营待办',

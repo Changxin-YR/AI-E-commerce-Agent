@@ -1,5 +1,13 @@
 # SoloOps 开发文档
 
+## R2 A4：卖家导航与业务视图（2026-10-10）
+
+SellerNavigation用原生展开按钮与列表组织19个业务页面，保留全部URL、RouterLink当前页语义和AppShell登录守卫。当前路由所在组自动展开，全功能入口支持键盘；手机子入口自然折行。WorkInbox默认已有店铺及明确数据身份，合法深链优先；筛选保留在组件内，避免每次筛选重挂载原事项详情。快捷导入、检查与Agent入口携带店铺/身份/渠道；检查链接由Dashboard在挂载后定位到检查区域。
+
+WorkbenchRepository扩展原union只读投影，以数据库CASE派生三种互斥view和A3 business_state/review_current；原六bucket和所有历史保持。全范围聚合计数先于view过滤及20条游标分页，cursor指纹包含view，切范围不能复用旧游标。每次读取仍是固定查询数，没有逐条调用事项服务。复检有效性对齐OperationsService，比较店铺revision、原规则和UTC有效期；JSON时间转换为DATETIME(6)，保留微秒边界。原异常stale与新有效复检分别表达，resolved留在历史，still_anomalous回待处理，失效结论回待更新。人工completed仍待业务处理，只有受控Agent succeeded进入AI已完成；未知结果优先待核对。
+
+AppliedRules在原组件中使用details收纳，加载和pending事件保持执行，关闭详情仍执行规则门禁；已有Agent预算折叠继续使用。导入模板按钮局部设置不收缩和整段文本折行，实测纠正手机文字挤成竖列的问题。没有新表、迁移、依赖或业务写操作。验收见r2-a4-acceptance.md。
+
 ## R2 A3：原异常复核与人工证据（2026-10-10）
 
 保留OperationTask原status与异常snapshot，增加可空review JSON；响应派生business_state，旧completed显示“已完成核对”。OperationsService在用户→店铺锁下校验版本、写入自报凭据及操作事件；OperationRechecks读取有界当前投影，按原源行的稳定对象键核对，仓库负责用户/店铺/身份约束。人工凭据含说明、依据、发生时间、登记时间及登记卖家，不生成平台回执。

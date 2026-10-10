@@ -3,7 +3,8 @@
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import Select, and_, case, exists, func, literal, or_, select, union_all
+from sqlalchemy import Select, and_, case, cast, exists, func, literal, or_, select, union_all
+from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql import ColumnElement
 
@@ -65,6 +66,8 @@ def projection(
     target: Expr | None = None,
     due: Expr | None = None,
     shop: Expr | None = None,
+    business: Expr | None = None,
+    review_current: Expr | None = None,
 ) -> Select[Any]:
     return select(
         literal(kind).label("kind"),
@@ -79,29 +82,60 @@ def projection(
         (label if label is not None else literal("")).label("label"),
         (detail if detail is not None else literal("")).label("detail"),
         (due if due is not None else literal(None)).label("due_at"),
+        (business if business is not None else literal(None)).label("business_state"),
+        (review_current if review_current is not None else literal(False)).label("review_current"),
     )
 
 
 def task_statement(owner: int, now: datetime) -> Select[Any]:
     task = OperationTask
-    invalid = rules_changed(
+    changed = rules_changed(
         task.owner_id,
         task.shop_id,
         task.channel,
         task.data_identity,
         task.snapshot["rule_revision_id"].as_integer(),
-    ) | (task.valid_until <= now)
-    return projection(
-        "operation_task",
-        task,
-        task.data_identity,
-        task.channel,
-        task.status,
-        source_state(task.source_status, invalid),
-        label=task.snapshot["object_label"].as_string(),
-        detail=task.kind,
-        due=task.due_at,
-    ).where(task.owner_id == owner)
+    )
+    result = task.review["recheck"]
+    revision = result["source_revision"].as_integer()
+    expiry_text = result["valid_until"].as_string()
+    expiry = cast(
+        func.replace(func.substring_index(expiry_text, "+", 1), "T", " "), DATETIME(fsp=6)
+    )
+    current = func.coalesce(
+        and_(
+            revision.is_not(None),
+            ~changed,
+            revision == Shop.data_revision,
+            or_(expiry_text.is_(None), expiry > now),
+        ),
+        False,
+    )
+    business = case(
+        (task.source_status == "cleared", "cleared"),
+        (task.status.in_(["ignored", "rejected"]), "ignored"),
+        (and_(revision.is_not(None), ~current), "awaiting_source"),
+        (task.review["state"].as_string().is_not(None), task.review["state"].as_string()),
+        (task.status == "completed", "checked_pending"),
+        else_="pending_review",
+    )
+    return (
+        projection(
+            "operation_task",
+            task,
+            task.data_identity,
+            task.channel,
+            task.status,
+            source_state(task.source_status, changed | (task.valid_until <= now)),
+            label=task.snapshot["object_label"].as_string(),
+            detail=task.kind,
+            due=task.due_at,
+            business=business,
+            review_current=current,
+        )
+        .join(Shop, and_(Shop.id == task.shop_id, Shop.owner_id == owner))
+        .where(task.owner_id == owner)
+    )
 
 
 def agent_statement(owner: int, now: datetime) -> Select[Any]:
@@ -376,6 +410,23 @@ def bucket(status: Expr, source: Expr, kind: Expr) -> Expr:
     )
 
 
+def seller_view(status: Expr, source: Expr, kind: Expr, business: Expr, current: Expr) -> Expr:
+    """Mutually exclusive seller actions, independent of the original record's bucket."""
+    return case(
+        (status.in_(["unknown", "result_unknown"]), "attention"),
+        (source == "cleared", None),
+        (and_(kind == "operation_task", business == "ignored"), None),
+        (and_(kind == "operation_task", current, business == "resolved"), None),
+        (and_(kind == "operation_task", current, business == "still_anomalous"), "attention"),
+        (and_(kind == "operation_task", business == "awaiting_source"), "update_data"),
+        (source == "stale", "update_data"),
+        (and_(kind == "agent", status == "succeeded"), "ai_completed"),
+        (and_(kind == "operation_task", status == "completed"), "attention"),
+        (bucket(status, source, kind).in_(["pending", "approval", "failed"]), "attention"),
+        else_=None,
+    )
+
+
 class WorkbenchRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
@@ -386,10 +437,16 @@ class WorkbenchRepository:
         query: WorkQuery,
         now: datetime,
         before: tuple[datetime, str, int] | None,
-    ) -> tuple[list[dict[str, Any]], dict[str, int], list[dict[str, Any]]]:
+    ) -> tuple[list[dict[str, Any]], dict[str, int], dict[str, int], list[dict[str, Any]]]:
         records = union_all(*statements(owner, now, query.shop_id)).subquery()
         c = records.c
-        filtered = select(records, bucket(c.status, c.source_status, c.kind).label("bucket"))
+        filtered = select(
+            records,
+            bucket(c.status, c.source_status, c.kind).label("bucket"),
+            seller_view(
+                c.status, c.source_status, c.kind, c.business_state, c.review_current
+            ).label("view"),
+        )
         if query.shop_id:
             filtered = filtered.where((c.shop_id == query.shop_id) | (c.kind == "overview"))
         if query.data_identity:
@@ -408,12 +465,14 @@ class WorkbenchRepository:
             filtered = filtered.where(c.kind == query.kind)
         scoped = filtered.subquery()
         c = scoped.c
-        counts = {
-            str(key): int(value)
-            for key, value in self.session.execute(
-                select(c.bucket, func.count()).group_by(c.bucket)
-            )
-        }
+        counts: dict[str, int] = {}
+        view_counts: dict[str, int] = {}
+        for key, view, value in self.session.execute(
+            select(c.bucket, c.view, func.count()).group_by(c.bucket, c.view)
+        ):
+            counts[key] = counts.get(key, 0) + int(value)
+            if view:
+                view_counts[view] = view_counts.get(view, 0) + int(value)
         stmt = select(
             scoped, Shop.name.label("shop_name"), Shop.timezone.label("timezone")
         ).outerjoin(
@@ -423,6 +482,8 @@ class WorkbenchRepository:
         # A selected shop is checked by the service; each branch is independently owner scoped.
         if query.bucket:
             stmt = stmt.where(c.bucket == query.bucket)
+        if query.view:
+            stmt = stmt.where(c.view == query.view)
         if before:
             at, kind, identifier = before
             stmt = stmt.where(
@@ -433,4 +494,9 @@ class WorkbenchRepository:
                 )
             )
         stmt = stmt.order_by(c.created_at.desc(), c.kind.desc(), c.id.desc()).limit(21)
-        return [dict(row) for row in self.session.execute(stmt).mappings()], counts, recent_rows
+        return (
+            [dict(row) for row in self.session.execute(stmt).mappings()],
+            counts,
+            view_counts,
+            recent_rows,
+        )

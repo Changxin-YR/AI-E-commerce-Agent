@@ -47,6 +47,7 @@ def test_empty_and_query_validation(logged_in: TestClient) -> None:
     for query in [{"shop_id": 0}, {"kind": "script"}, {"cursor": "bad"}, {"bucket": "send"}]:
         assert logged_in.get("/api/workbench", params=query).status_code == 422
     assert logged_in.get("/api/workbench?shop_id=99999").status_code == 404
+    assert logged_in.get("/api/workbench?view=sent").status_code == 422
 
 
 def test_real_runs_tasks_approval_and_identity(logged_in: TestClient) -> None:
@@ -232,6 +233,7 @@ def test_r2_unknown_retains_receipt_path_and_never_submits(
     result = page(logged_in, bucket="unknown")["items"][0]
     assert result["status"] == "unknown" and result["source_status"] == "stale"
     assert result["path"] == "/outbound" and result["query"]["mail"] == str(mail["id"])
+    assert result["view"] == "attention"
     assert len(fake.sent) == 1  # Only fixture's verification email.
 
 
@@ -253,6 +255,7 @@ def test_other_owner_cannot_list_count_or_follow_items(
     logged_in.headers["X-CSRF-Token"] = login.json()["csrf_token"]
     assert page(logged_in)["items"] == [] and page(logged_in)["counts"] == {}
     assert page(logged_in)["recent_runs"] == []
+    assert page(logged_in)["view_counts"] == {}
     assert logged_in.get(f"/api/workbench?shop_id={shop}").status_code == 404
     with session_factory() as session:
         assert session.scalar(select(func.count(Shop.id))) == 1

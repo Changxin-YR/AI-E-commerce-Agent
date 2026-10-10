@@ -5,6 +5,7 @@ import { useSession } from '@/composables/useSession'
 import { errorMessage } from '@/api/client'
 import FeedbackBanner from './FeedbackBanner.vue'
 import ReturnToTask from './ReturnToTask.vue'
+import SellerNavigation from './SellerNavigation.vue'
 
 const router = useRouter()
 const { session, logout } = useSession()
@@ -33,45 +34,7 @@ async function signOut(): Promise<void> {
         ></RouterLink
       >
       <p class="sidebar-caption">你的独立经营工作台</p>
-      <nav aria-label="主导航">
-        <RouterLink to="/" exact-active-class="active"
-          ><span class="nav-number">01</span>工作台</RouterLink
-        ><RouterLink to="/settings" active-class="active"
-          ><span class="nav-number">02</span>经营资料</RouterLink
-        ><RouterLink to="/imports" active-class="active"
-          ><span class="nav-number">03</span>数据导入</RouterLink
-        ><RouterLink to="/analytics" active-class="active"
-          ><span class="nav-number">04</span>经营分析</RouterLink
-        ><RouterLink to="/listings" active-class="active"
-          ><span class="nav-number">05</span>Listing 审批</RouterLink
-        ><RouterLink to="/support" active-class="active"
-          ><span class="nav-number">06</span>客服工作台</RouterLink
-        ><RouterLink to="/inventory" active-class="active"
-          ><span class="nav-number">07</span>库存快照</RouterLink
-        ><RouterLink to="/agent" active-class="active"
-          ><span class="nav-number">08</span>任务执行台</RouterLink
-        ><RouterLink to="/profit" active-class="active"
-          ><span class="nav-number">09</span>新品利润</RouterLink
-        ><RouterLink to="/rules" active-class="active"
-          ><span class="nav-number">10</span>经营规则</RouterLink
-        ><RouterLink to="/outbound" active-class="active"
-          ><span class="nav-number">11</span>测试外发</RouterLink
-        ><RouterLink to="/overview" active-class="active"
-          ><span class="nav-number">12</span>经营总览</RouterLink
-        ><RouterLink to="/schedules" active-class="active"
-          ><span class="nav-number">13</span>定时与通知</RouterLink
-        ><RouterLink to="/product-quality" active-class="active"
-          ><span class="nav-number">14</span>商品质量</RouterLink
-        ><RouterLink to="/product-edits" active-class="active"
-          ><span class="nav-number">15</span>商品修订</RouterLink
-        ><RouterLink to="/expenses" active-class="active"
-          ><span class="nav-number">16</span>实际费用</RouterLink
-        ><RouterLink to="/statements" active-class="active"
-          ><span class="nav-number">17</span>账单核对</RouterLink
-        ><RouterLink to="/settlements" active-class="active"
-          ><span class="nav-number">18</span>结算与回款</RouterLink
-        >
-      </nav>
+      <SellerNavigation />
       <div class="sidebar-bottom">
         <div class="mode-status"><span></span>文件分析模式</div>
         <p>从你提供的数据出发，<br />让每个经营判断有据可查。</p>

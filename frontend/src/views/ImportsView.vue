@@ -324,7 +324,7 @@ onMounted(initialize)
     <section class="section-block form-panel">
       <div class="section-title">
         <h2>01 / 选择文件</h2>
-        <div class="button-group">
+        <div class="button-group import-templates">
           <select v-model="templateFormat" aria-label="模板格式" class="template-format">
             <option value="csv">CSV</option>
             <option value="xlsx">Excel</option>
@@ -646,3 +646,16 @@ onMounted(initialize)
     </section>
   </template>
 </template>
+
+<style scoped>
+.import-templates {
+  flex-wrap: wrap;
+}
+.import-templates .template-format {
+  flex: 0 0 92px;
+}
+.import-templates .button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+</style>

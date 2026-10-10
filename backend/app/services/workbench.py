@@ -109,6 +109,9 @@ def output(row: dict[str, Any]) -> WorkItem:
                 "status",
                 "source_status",
                 "bucket",
+                "view",
+                "business_state",
+                "review_current",
             ]
         },
         shop_name=row["shop_name"] or "跨店经营摘要",
@@ -132,11 +135,12 @@ class WorkbenchService:
             raise NotFoundError()
         before = decode_cursor(query)
         now = utc_now()
-        rows, counts, recent = self.uow.workbench.page(owner, query, now, before)
+        rows, counts, view_counts, recent = self.uow.workbench.page(owner, query, now, before)
         return WorkPage(
             items=[output(row) for row in rows[:20]],
             recent_runs=[output(row) for row in recent],
             counts=counts,
+            view_counts=view_counts,
             next_cursor=encode_cursor(rows[19], query) if len(rows) > 20 else None,
             read_at=utc_text(now),
         )

@@ -1,5 +1,13 @@
 # 项目理解与面试知识点
 
+## R2：为什么首页计数与详情状态要共用同一语义？
+
+`WorkbenchRepository`是既有业务记录的只读投影，view不持久化。完整范围的计数和筛选在SQL内完成，避免只筛20条导致漏项；cursor包含筛选指纹，等时间记录以kind/id保证稳定顺序。原bucket与新view表达不同用途，保留原接口默认全量行为。
+
+A3新复检必须比较shop revision、规则和有效期，原异常来源过期不能掩盖新的有效解决结论。`test_workbench_views.py`逐步通过四类来源更新、复检、撤销、清除，并对比原事项详情；相同时间的分页与22个实际执行验证完整计数。
+
+`SellerNavigation`使用原生button和隐藏列表支持键盘。`AppliedRules`的details只改变可见性，组件继续挂载并发出pending，因此隐藏高级选项不会关闭业务门禁。端到端验证19条路由、旧query、浏览器历史和390px布局。
+
 ## R2：人工完成为何不能证明异常已解决？
 
 - `OperationsService._task_output`将持久人工status和派生business_state分开。完成核对不会改写来源事实；只有`OperationRechecks`对同对象的新有效来源计算后，才显示证据支持解决。

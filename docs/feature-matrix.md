@@ -1,5 +1,9 @@
 # 功能实现矩阵
 
+## R2 A4 验收增量（2026-10-10）
+
+SO-002/003/004/005/065/067/068既有入口增加五组导航与19页完整可达、三类工作视图、服务端全范围计数及游标、当前复检状态和高级选项收纳。原URL、审批、六类bucket、历史及来源门禁保留；本地合成桌面/手机通过，准确代码CI见[r2-a4-acceptance](r2-a4-acceptance.md)。SO-065长期完整使用助手范围仍按foundation-backlog管理；全部74SO、32原验收、47长期延期保持。
+
 R2 A3补充（2026-10-10）：SO-004/005/030/068沿用OperationTask/Event，新增人工自报证据、同对象新来源复检及独立业务状态；旧完成仅显示已完成核对。库存/履约/低毛利/客服四类的无新来源、仍异常、证据支持解除、重开、幂等、撤销恢复及隐私清除经合成测试验证。实现见operation_rechecks.py、operations.py、OperationTaskFollowUp.vue；验证见test_operation_rechecks.py与operations.spec.ts，完整回归及CI状态见[r2-a3-acceptance](r2-a3-acceptance.md)。原74SO/32验收及长期模块范围保持。
 
 R2 A1-3补充（2026-10-10）：SO-001/008增加Shopify当前商品CSV字段子集候选，带官方依据/核实日期/人工补录指引，复用导入审批与撤销。格式不符或预设停用后仍可手工映射。合成验证及订单预设条件延期见[r2-a1-3-acceptance](r2-a1-3-acceptance.md)，74项SO与长期范围保持。

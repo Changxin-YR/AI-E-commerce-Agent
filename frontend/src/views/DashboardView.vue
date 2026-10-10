@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { identityApi } from '@/api/identity'
 import { errorMessage } from '@/api/client'
 import type { Onboarding } from '@/types/identity'
@@ -10,6 +11,7 @@ import WorkInbox from '@/components/WorkInbox.vue'
 const status = ref<Onboarding | null>(null)
 const error = ref('')
 const loading = ref(true)
+const route = useRoute()
 async function load(): Promise<void> {
   loading.value = true
   error.value = ''
@@ -19,6 +21,10 @@ async function load(): Promise<void> {
     error.value = errorMessage(cause)
   } finally {
     loading.value = false
+    if (status.value && route.hash === '#operations') {
+      await nextTick()
+      document.getElementById('operations')?.scrollIntoView({ block: 'start' })
+    }
   }
 }
 onMounted(load)

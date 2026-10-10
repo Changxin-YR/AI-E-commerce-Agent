@@ -122,7 +122,7 @@ async function prepare(page: Page) {
     scope: overviewScope,
     expected_revisions: { [shop.id]: revision },
   })
-  return { shop: shop.id, listing, reply, run, agent, grant, analysis, overview }
+  return { shop: shop.id, listing, reply, run, agent, grant, analysis, overview, post }
 }
 
 test('unified workbench opens exact cross-module records and original approvals', async ({
@@ -138,6 +138,9 @@ test('unified workbench opens exact cross-module records and original approvals'
   async function home() {
     await page.goto('/')
     await inbox.getByLabel('查看店铺').selectOption(String(records.shop))
+    await inbox.getByLabel('筛选身份').selectOption('synthetic')
+    await inbox.getByText('全部与历史 · 原始事项状态', { exact: true }).click()
+    await inbox.getByRole('button', { name: '全部状态', exact: true }).click()
     await expect(inbox.getByRole('list', { name: '工作事项' })).toBeVisible()
   }
   async function open(kind: string) {
@@ -199,6 +202,7 @@ test('mobile inbox scope, direct link reload and inaccessible shop handling', as
   await page.goto('/')
   const inbox = page.getByRole('region', { name: '统一工作收件箱' })
   await inbox.getByLabel('查看店铺').selectOption(String(records.shop))
+  await inbox.getByLabel('筛选身份').selectOption('synthetic')
   await inbox.getByLabel('事项类型').selectOption('listing')
   await expect(inbox.locator('li[data-kind="listing"]')).toBeVisible()
   await page.screenshot({ path: path.join(tmpdir(), 'soloops-workbench-first-mobile.png') })
@@ -210,10 +214,73 @@ test('mobile inbox scope, direct link reload and inaccessible shop handling', as
   await expect(page.getByRole('region', { name: 'Listing 审批详情' })).toContainText(
     'Synthetic cup',
   )
+  await page.goBack()
+  await expect(page.getByRole('region', { name: '统一工作收件箱' })).toBeVisible()
+  await page.goForward()
+  await expect(page).toHaveURL(new RegExp(`listing=${records.listing.id}`))
+  await expect(page.getByRole('region', { name: 'Listing 审批详情' })).toContainText(
+    'Synthetic cup',
+  )
   await page.goto(`/listings?shop=999999&listing=${records.listing.id}`)
   await expect(page.getByRole('alert')).toContainText('店铺不存在或无权访问')
   await expect(page.getByRole('region', { name: 'Listing 审批详情' })).toHaveCount(0)
   await page.goto(`/?shop=${records.shop}&run=invalid`)
   await expect(page.getByRole('alert')).toContainText('记录链接无效')
   await expect(page.getByRole('complementary', { name: '最近检查摘要' })).toHaveCount(0)
+  await page.goto(`/?shop=${records.shop}&identity=synthetic&channel=generic`)
+  await expect(inbox.getByLabel('查看店铺')).toHaveValue(String(records.shop))
+  await inbox.getByRole('link', { name: '运行今日检查', exact: true }).click()
+  await expect(page.getByRole('region', { name: '今日运营收件箱' })).toBeInViewport()
+  await expect(page.getByLabel('所属店铺')).toHaveValue(String(records.shop))
+  await expect(page.getByLabel('数据身份', { exact: true })).toHaveValue('synthetic')
+  await inbox.getByRole('link', { name: '导入文件', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`shop=${records.shop}`))
+  await expect(page.getByLabel('模板格式')).toBeVisible()
+  const templateButtons = await page
+    .locator('.import-templates .button')
+    .evaluateAll((nodes) => nodes.map((n) => n.getBoundingClientRect().height))
+  expect(templateButtons.every((height) => height < 50)).toBe(true)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({
+    path: path.join(tmpdir(), 'soloops-a4-imports-mobile.png'),
+    fullPage: true,
+  })
+})
+
+test('seller views separate controlled success, approvals and waiting for fresh sources', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  const records = await prepare(page)
+  const base = `/api/shops/${records.shop}`
+  let agent = records.agent
+  for (const action of ['approve', 'advance', 'advance']) {
+    agent = await records.post(`${base}/agent/runs/${agent.id}`, { action, version: agent.version })
+  }
+  const tasks = (await (
+    await page.request.get(`${base}/operations/tasks?data_identity=synthetic`)
+  ).json()) as { items: { id: number; version: number }[] }
+  let task = tasks.items[0]!
+  for (const action of ['approve', 'wait_source']) {
+    task = await records.post(`${base}/operations/tasks/${task.id}`, {
+      action,
+      version: task.version,
+    })
+  }
+  await page.goto(`/?shop=${records.shop}&identity=synthetic&channel=generic`)
+  const inbox = page.getByRole('region', { name: '统一工作收件箱' })
+  const views = inbox.getByRole('group', { name: '卖家工作视图' })
+  await expect(inbox.locator('li[data-kind="listing"]')).toBeVisible()
+  await views.getByRole('button', { name: 'AI 已完成 1', exact: true }).click()
+  await expect(inbox.locator('li')).toHaveCount(1)
+  await expect(inbox.locator('li[data-kind="agent"]')).toContainText(`Agent 执行 #${agent.id}`)
+  await views.getByRole('button', { name: '需要更新数据 1', exact: true }).click()
+  await expect(inbox.locator('li[data-kind="operation_task"]')).toContainText('待来源更新复检')
+  await inbox.getByRole('button', { name: '继续审批', exact: true }).click()
+  await expect(inbox.locator('li[data-kind="listing"]')).toBeVisible()
+  await expect(inbox.locator('li[data-kind="agent"]')).toHaveCount(0)
+  await page.screenshot({
+    path: path.join(tmpdir(), 'soloops-a4-three-views-mobile.png'),
+    fullPage: true,
+  })
 })

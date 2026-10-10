@@ -52,6 +52,10 @@ test('mobile seller settings fit the viewport and preserve accessible inputs', a
   await login(page)
   await page
     .getByRole('navigation', { name: '主导航' })
+    .getByRole('button', { name: /自动化与设置/ })
+    .click()
+  await page
+    .getByRole('navigation', { name: '主导航' })
     .getByRole('link', { name: /经营资料/ })
     .click()
   await expect(page.getByLabel('经营名称')).toBeVisible()

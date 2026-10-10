@@ -6,7 +6,7 @@ Vue 3 + TypeScript / Python FastAPI / MySQL 的个人卖家运营项目。后端
 
 ## 当前基础版本
 
-基础验收完成后，当前推进[个人卖家 R2 优化](docs/requirements/SoloOps-R2.md)，按[实施进度与A0对齐](docs/r2-progress.md)逐包升级。A1已补字段语义审阅、安全分组导入及有官方依据的Shopify商品候选。A2增加当前成本估算/卖家订单行历史成本两种口径、凭据版本和撤销；交付证据及CI状态见[R2 A2验收](docs/r2-a2-acceptance.md)。
+基础验收完成后，当前推进[个人卖家 R2 优化](docs/requirements/SoloOps-R2.md)，按[实施进度与A0对齐](docs/r2-progress.md)逐包升级。A1已补字段语义审阅、安全分组导入及有官方依据的Shopify商品候选。A2增加当前成本估算/卖家订单行历史成本两种口径、凭据版本和撤销；交付证据及CI状态见[R2 A2验收](docs/r2-a2-acceptance.md)。A3补充人工处理证据与新来源复检；A4增加五组导航、三类首页工作视图和19页完整入口，见[R2 A4验收](docs/r2-a4-acceptance.md)。
 
 当前目标为可实际安装、使用、重启恢复和维护的基础系统，完整交付今日运营、经营问数、Listing维护、客服处理四条流程。当前实施及验收状态见 [基础规格](docs/foundation-release.md)、[逐项验收](docs/foundation-acceptance.md)、[使用维护](docs/foundation-user-guide.md) 和 [后续迭代清单](docs/foundation-backlog.md)。现有能力及74项长期需求保留，基础版本B-01至B-14已于2026-10-10全部通过。
 
