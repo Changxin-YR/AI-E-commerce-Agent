@@ -144,6 +144,8 @@ def error_report(batch_id: int, current: CurrentSession, uow: UowDependency) -> 
     output = StringIO(newline="")
     writer = csv.writer(output)
     writer.writerow(["source_row", "field", "error"])
+    for message in result.errors:
+        writer.writerow(["", "'mapping", "'" + message])
     for row in result.rows:
         for issue in row.errors:
             # Always quote text as a spreadsheet literal, including attacker-controlled headers.

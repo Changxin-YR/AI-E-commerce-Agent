@@ -18,6 +18,7 @@ import type {
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import ImportMapping from '@/components/ImportMapping.vue'
 import ImportRows from '@/components/ImportRows.vue'
+import ImportSemanticsReview from '@/components/ImportSemanticsReview.vue'
 
 const route = useRoute()
 const kindLabels = {
@@ -49,6 +50,7 @@ const error = ref('')
 const success = ref('')
 const dirty = ref(false)
 const allowUpdates = ref(false)
+const reviewedFields = ref<string[]>([])
 const templateName = ref('')
 const selectedTemplate = ref('')
 const pendingAction = ref<'revoke' | 'clear' | null>(null)
@@ -66,6 +68,9 @@ const canCommit = computed(
     !dirty.value &&
     !batch.value.errors.length &&
     batch.value.error_rows === 0 &&
+    (batch.value.required_reviews ?? []).every((item) =>
+      reviewedFields.value.includes(item.field),
+    ) &&
     (!batch.value.updated_rows || allowUpdates.value),
 )
 const statusLabels = {
@@ -105,6 +110,7 @@ function adopt(value: ImportBatch): void {
   )
   dirty.value = false
   allowUpdates.value = false
+  reviewedFields.value = []
   pendingAction.value = null
 }
 async function initialize(): Promise<void> {
@@ -172,12 +178,14 @@ async function upload(): Promise<void> {
   })
 }
 function changeMapping(field: string, column: string): void {
+  reviewedFields.value = []
   mapping.value[field] = column
   corrections.value = {}
   dirty.value = true
   allowUpdates.value = false
 }
 function correct(row: number, field: string, value: string): void {
+  reviewedFields.value = []
   corrections.value[row] = { ...corrections.value[row], [field]: value }
   dirty.value = true
   allowUpdates.value = false
@@ -199,7 +207,14 @@ async function preview(): Promise<void> {
 async function commit(): Promise<void> {
   await perform(async () => {
     if (!batch.value || !canCommit.value) return
-    adopt(await importsApi.commit(batch.value.id, batch.value.version, allowUpdates.value))
+    adopt(
+      await importsApi.commit(
+        batch.value.id,
+        batch.value.version,
+        allowUpdates.value,
+        reviewedFields.value,
+      ),
+    )
     await loadHistory()
     success.value = '批次已导入。可展开源行核对，重复确认不会重复增加业务记录。'
   })
@@ -222,6 +237,7 @@ async function withdraw(): Promise<void> {
   })
 }
 function applyTemplate(): void {
+  reviewedFields.value = []
   const selected = suitableTemplates.value.find(
     (item) => item.id === Number(selectedTemplate.value),
   )
@@ -391,6 +407,10 @@ onMounted(initialize)
               >UTF-8 CSV 或单工作表 .xlsx，最多 2 MiB、2000 行、64
               列。金额最多四位小数；不接受宏、公式及外部链接。</small
             >
+            <small
+              >GB18030/GBK 文件请按原编码打开并另存为 CSV
+              UTF-8；多表文件请将所需工作表单独另存，第一行保留表头，移除说明行及重复表头。</small
+            >
           </div>
         </div>
         <div class="form-actions">
@@ -485,13 +505,14 @@ onMounted(initialize)
           >
         </div>
         <p class="muted">
-          币种：{{
+          文件内重复键涉及 {{ batch.duplicate_rows ?? 0 }} 行（已计入错误）；总计 = 有效 +
+          错误，有效 = 新增 + 更新 + 相同。相同记录重导不会增加数量。 币种：{{
             batch.currencies.join('、') || '未知'
           }}。不同币种分别保留，不自动换算。未知费用不补零。
         </p>
         <FeedbackBanner v-for="message in batch.errors" :key="message" :message="message" />
         <a
-          v-if="batch.error_rows"
+          v-if="batch.error_rows || batch.errors.length"
           class="button secondary small"
           :href="`/api/imports/${batch.id}/errors.csv`"
           >下载错误行报告</a
@@ -508,6 +529,12 @@ onMounted(initialize)
           />
         </div>
       </template>
+      <ImportSemanticsReview
+        v-if="editable && batch.status === 'preview'"
+        v-model="reviewedFields"
+        :reviews="batch.required_reviews ?? []"
+        :disabled="busy || dirty"
+      />
       <div v-if="editable" class="form-actions">
         <label v-if="batch.updated_rows" class="check-label"
           ><input

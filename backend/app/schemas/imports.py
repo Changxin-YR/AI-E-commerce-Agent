@@ -107,6 +107,9 @@ class VersionInput(InputModel):
 
 class CommitInput(VersionInput):
     allow_updates: bool = False
+    reviewed_fields: list[Annotated[str, Field(max_length=40)]] = Field(
+        default_factory=list, max_length=20
+    )
 
 
 class MappingTemplateInput(InputModel):
@@ -144,6 +147,13 @@ class MappingSuggestion(OutputModel):
     field: str
     column: str
     confidence: Literal["exact", "candidate"]
+
+
+class MappingReview(OutputModel):
+    field: str
+    column: str
+    label: str
+    meaning: str
 
 
 class RowOutput(OutputModel):
@@ -192,6 +202,8 @@ class BatchOutput(BatchSummary):
     suggested_kind: ImportKind
     errors: list[str]
     rows: list[RowOutput]
+    required_reviews: list[MappingReview] = Field(default_factory=list)
+    duplicate_rows: int = 0
 
 
 class CatalogOutput(OutputModel):

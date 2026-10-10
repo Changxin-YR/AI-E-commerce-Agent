@@ -19,7 +19,7 @@ from app.schemas.imports import (
     RowOutput,
     UploadOptions,
 )
-from app.services.import_catalog import FIELDS, guess_kind, suggest_mapping
+from app.services.import_catalog import FIELDS, guess_kind, mapping_reviews, suggest_mapping
 from app.services.import_parser import parse_file
 from app.services.import_validation import business_key, normalize_row
 
@@ -109,6 +109,7 @@ class ImportService:
         if batch.raw_data:
             first = ParsedRow.model_validate(batch.raw_data[0])
             examples = dict(zip(batch.headers, first.values, strict=True))
+        rows = [RowOutput.model_validate(row) for row in self.repo.rows(owner_id, batch.id)]
         return BatchOutput(
             **BatchSummary.model_validate(batch).model_dump(),
             headers=batch.headers,
@@ -117,7 +118,9 @@ class ImportService:
             suggestions=suggest_mapping(batch.kind, batch.headers),
             suggested_kind=guess_kind(batch.headers),
             errors=batch.errors,
-            rows=[RowOutput.model_validate(row) for row in self.repo.rows(owner_id, batch.id)],
+            rows=rows,
+            required_reviews=mapping_reviews(batch.kind, batch.mapping),
+            duplicate_rows=sum(any(issue.field == "key" for issue in row.errors) for row in rows),
         )
 
     def preview(self, owner_id: int, batch_id: int, data: PreviewInput) -> BatchOutput:
@@ -164,6 +167,20 @@ class ImportService:
             )
             if key and key in current:
                 result.previous = current[key][1].normalized
+                if batch.kind == "orders":
+                    previous_batch = self._batch(owner_id, current[key][1].batch_id)
+                    if (batch.source_channel, batch.data_identity) != (
+                        previous_batch.source_channel,
+                        previous_batch.data_identity,
+                    ):
+                        result.errors.append(
+                            RowIssue(
+                                field="source_scope",
+                                message="同店铺已有相同订单号/行号，但渠道或数据身份不同；"
+                                "请核对文件归属和来源稳定标识，不能覆盖另一来源的订单",
+                            )
+                        )
+                        result.action = "error"
                 if batch.kind == "inventory" and not result.errors:
                     incoming_time = datetime.fromisoformat(str(result.normalized["snapshot_at"]))
                     previous_time = datetime.fromisoformat(str(result.previous["snapshot_at"]))
@@ -233,6 +250,9 @@ class ImportService:
             raise ConflictError("预览后店铺数据已变化，请重新预览最新差异")
         if batch.updated_rows and not data.allow_updates:
             raise ConflictError("存在覆盖更新，请核对旧值和新值并明确确认")
+        required = {item.field for item in mapping_reviews(batch.kind, batch.mapping)}
+        if required - set(data.reviewed_fields):
+            raise ConflictError("请逐项核对非标准关键字段的金额、身份、时间及状态含义后确认")
         current = self.repo.current_entries(owner_id, shop.id, batch.kind)
         for row in self.repo.rows(owner_id, batch.id):
             existing = current.get(row.business_key or "")
@@ -260,7 +280,12 @@ class ImportService:
             "import.committed",
             "import_batch",
             batch.id,
-            {"revision": shop.data_revision, "rows": batch.valid_rows},
+            {
+                "revision": shop.data_revision,
+                "rows": batch.valid_rows,
+                "reviewed_fields": sorted(required),
+                "preview_version": data.version,
+            },
         )
         self.uow.commit()
         return self._output(owner_id, batch)

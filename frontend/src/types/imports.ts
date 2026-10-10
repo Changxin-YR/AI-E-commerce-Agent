@@ -67,5 +67,13 @@ export interface ImportBatch extends BatchSummary {
   suggested_kind: ImportKind
   errors: string[]
   rows: ImportRow[]
+  required_reviews?: MappingReview[]
+  duplicate_rows?: number
+}
+export interface MappingReview {
+  field: string
+  column: string
+  label: string
+  meaning: string
 }
 export type Corrections = Record<number, Record<string, string>>

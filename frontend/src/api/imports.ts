@@ -30,10 +30,14 @@ export const importsApi = {
       method: 'POST',
       body: JSON.stringify({ version, mapping, corrections }),
     }),
-  commit: (id: number, version: number, allowUpdates: boolean) =>
+  commit: (id: number, version: number, allowUpdates: boolean, reviewedFields: string[] = []) =>
     request<ImportBatch>(`/imports/${id}/commit`, {
       method: 'POST',
-      body: JSON.stringify({ version, allow_updates: allowUpdates }),
+      body: JSON.stringify({
+        version,
+        allow_updates: allowUpdates,
+        reviewed_fields: reviewedFields,
+      }),
     }),
   withdraw: (id: number, version: number, action: 'revoke' | 'clear') =>
     request<ImportBatch>(`/imports/${id}/${action}`, {

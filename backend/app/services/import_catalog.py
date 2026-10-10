@@ -1,4 +1,4 @@
-from app.schemas.imports import FieldDefinition, ImportKind, MappingSuggestion
+from app.schemas.imports import FieldDefinition, ImportKind, MappingReview, MappingSuggestion
 
 
 def field(
@@ -194,6 +194,47 @@ def suggest_mapping(kind: str, headers: list[str]) -> list[MappingSuggestion]:
                 )
             )
     return suggestions
+
+
+def mapping_reviews(kind: str, mapping: dict[str, str]) -> list[MappingReview]:
+    """Canonical template names carry a contract; other critical columns need human review."""
+    critical = {
+        "order_id",
+        "line_id",
+        "sku",
+        "quantity",
+        "unit_price",
+        "discount",
+        "refund",
+        "price",
+        "unit_cost",
+        "currency",
+        "cost_currency",
+        "ordered_at",
+        "status",
+        "fulfillment_status",
+        "snapshot_at",
+        "available",
+        "safety_threshold",
+        "statement_id",
+        "entry_type",
+        "amount",
+        "occurred_at",
+        "sent_at",
+        "message_id",
+    }
+    return [
+        MappingReview(
+            field=definition.key,
+            column=mapping[definition.key],
+            label=definition.label,
+            meaning=definition.help,
+        )
+        for definition in FIELDS[kind]
+        if definition.key in critical
+        and definition.key in mapping
+        and mapping[definition.key] != definition.key
+    ]
 
 
 def guess_kind(headers: list[str]) -> ImportKind:

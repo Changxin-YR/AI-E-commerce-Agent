@@ -1,5 +1,11 @@
 # 公开实现与借鉴记录
 
+## R2 A1-1 通用导入审阅（2026-10-10）
+
+- [Python csv](https://docs.python.org/3/library/csv.html)：PSF文档许可，借鉴明确编码、newline与csv.writer处理边界，复用既有解析器并增加GB18030/GBK转换指引。未复制实现。
+- [OWASP CSV Injection](https://github.com/OWASP/www-community/blob/master/pages/attacks/CSV_Injection.md)：社区文档CC BY-SA，借鉴不可信单元格导出风险，继续逐格前置文本标记并由csv.writer转义；错误报告不含原始客户单元格，补批次级错误。电子表格再次编辑/另存可能改变转义，不将导出视为永久消毒。未复制代码。
+- 资料检索：Firecrawl状态检查无法联网，接续记录已有402限制，采用内置web的官方Python/OWASP结果。字段语义确认基于项目现有字段契约与R2，不从相似列名推定总额/单价及订单/行退款。
+
 ## 受控技能与可恢复执行（2026-10-09）
 
 | 资料 | 许可证/性质 | 借鉴与适配 |

@@ -101,6 +101,7 @@ def commit(
         json={
             "version": batch["version"],
             "allow_updates": allow_updates,
+            "reviewed_fields": [item["field"] for item in batch.get("required_reviews", [])],
         },
     )
     assert response.status_code == 200, response.text

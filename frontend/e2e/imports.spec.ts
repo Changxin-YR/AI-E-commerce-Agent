@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import type { ImportBatch } from '../src/types/imports'
 
 async function openImports(page: Page): Promise<number> {
   await page.goto('/imports')
@@ -55,6 +56,12 @@ test('seller maps unknown columns, corrects a row, imports, reloads, revokes and
   await expect(page.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled()
   await page.getByLabel('源行 2 单位采购成本 修正值').fill('3.25')
   await page.getByRole('button', { name: '校验并预览' }).click()
+  await expect(page.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled()
+  for (const checkbox of await page
+    .getByRole('group', { name: '确认关键字段含义' })
+    .getByRole('checkbox')
+    .all())
+    await checkbox.check()
   await expect(page.getByRole('button', { name: '确认导入', exact: true })).toBeEnabled()
   await page.getByRole('button', { name: '确认导入', exact: true }).click()
   await expect(page.getByRole('status')).toContainText('批次已导入')
@@ -97,3 +104,78 @@ test('mobile order preview exposes duplicate rows and fits the viewport', async 
   await page.getByRole('button', { name: '确认撤销' }).click()
   await expect(page.getByText('已撤销', { exact: true })).toBeVisible()
 })
+
+for (const { width, amountColumn } of [
+  { width: 1440, amountColumn: 'total' },
+  { width: 390, amountColumn: `total_${'x'.repeat(90)}` },
+]) {
+  test(`seller reviews amount meaning and reconciles saved multi-SKU orders at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 })
+    const shopId = await openImports(page)
+    await page.getByLabel('报表类型').selectOption('orders')
+    await uploadCsv(
+      page,
+      `order_id,line_id,sku,quantity,${amountColumn},currency,ordered_at,status,discount,refund\n` +
+        'SYN-R2,001,A,2,20,USD,2026-10-07T00:30:00Z,partially_refunded,2,3\n' +
+        'SYN-R2,002,B,3,4,USD,2026-10-07T08:30:00+08:00,paid,0,0\n',
+    )
+    await page.getByLabel('成交单价 *', { exact: true }).selectOption(amountColumn)
+    await page.getByRole('button', { name: '校验并预览' }).click()
+    const review = page.getByRole('checkbox', { name: new RegExp(`已核对 ${amountColumn}`) })
+    await expect(review).not.toBeChecked()
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
+    ).toBe(false)
+    await page
+      .getByRole('group', { name: '确认关键字段含义' })
+      .screenshot({ path: `test-results/r2-review-${width}.png` })
+    await expect(page.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled()
+    await review.check()
+    // The seller checks the source: row 2 contained a line total, so unit price needs correction.
+    await page.getByText('源行 2 · A').click()
+    await page.getByLabel('源行 2 成交单价 修正值').fill('10')
+    await expect(review).not.toBeChecked()
+    await expect(page.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled()
+    await page.getByRole('button', { name: '校验并预览' }).click()
+    await expect(review).toBeEnabled()
+    await expect(review).not.toBeChecked()
+    await review.check()
+    const savedResponse = page.waitForResponse(
+      (response) => response.url().endsWith('/commit') && response.request().method() === 'POST',
+    )
+    await page.getByRole('button', { name: '确认导入', exact: true }).click()
+    const saved = (await (await savedResponse).json()) as ImportBatch
+    expect(saved.status).toBe('committed')
+    expect([saved.total_rows, saved.valid_rows, saved.new_rows, saved.error_rows]).toEqual([
+      2, 2, 2, 0,
+    ])
+    expect(saved.rows[0]?.raw.unit_price).toBe('20')
+    expect(saved.rows[0]?.corrections.unit_price).toBe('10')
+    expect(saved.rows.map((row) => row.normalized.unit_price)).toEqual(['10.0000', '4.0000'])
+    const netSales = saved.rows.reduce(
+      (sum, row) =>
+        sum +
+        Number(row.normalized.unit_price) * Number(row.normalized.quantity) -
+        Number(row.normalized.discount) -
+        Number(row.normalized.refund),
+      0,
+    )
+    expect(netSales).toBe(27)
+    await page.reload()
+    await page.getByLabel('所属店铺').selectOption(String(shopId))
+    await page.getByRole('button', { name: `查看批次 #${saved.id}` }).click()
+    await expect(page.getByText('已导入', { exact: true })).toBeVisible()
+    const readback = (await (
+      await page.request.get(`/api/imports/${saved.id}`)
+    ).json()) as ImportBatch
+    expect(readback.rows).toEqual(saved.rows)
+    await page.getByText('源行 2 · A').click()
+    await expect(page.getByRole('cell', { name: '10.0000', exact: true })).toBeVisible()
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
+    ).toBe(false)
+    await page.screenshot({ path: `test-results/r2-import-${width}.png`, fullPage: true })
+  })
+}

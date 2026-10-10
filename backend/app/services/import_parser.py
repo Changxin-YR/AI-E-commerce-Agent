@@ -86,7 +86,10 @@ def parse_file(filename: str, data: bytes) -> tuple[list[str], list[ParsedRow], 
             )
             try:
                 if len(workbook.worksheets) != 1:
-                    raise invalid_file("请提供仅包含一个工作表的 Excel 文件")
+                    raise invalid_file(
+                        "请将要导入的工作表另存为单工作表 .xlsx；第一行保留唯一表头，"
+                        "移除说明行及重复表头后重试"
+                    )
                 sheet = workbook.worksheets[0]
                 # Ignore untrusted sheet dimensions, but cap actual iteration.
                 sheet.reset_dimensions()
@@ -104,6 +107,11 @@ def parse_file(filename: str, data: bytes) -> tuple[list[str], list[ParsedRow], 
                 workbook.close()
     except BusinessError:
         raise
+    except UnicodeDecodeError as error:
+        raise invalid_file(
+            "CSV 需要 UTF-8 编码（可带 BOM）；GB18030/GBK 文件请在表格软件中"
+            "选择原编码打开，核对中文后另存为 CSV UTF-8 或单工作表 .xlsx"
+        ) from error
     except Exception as error:
         # Parser errors must never echo source cells or internal paths.
         raise invalid_file("无法安全解析文件；请检查编码、格式或重新导出纯数据文件") from error

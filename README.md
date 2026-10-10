@@ -6,6 +6,8 @@ Vue 3 + TypeScript / Python FastAPI / MySQL 的个人卖家运营项目。后端
 
 ## 当前基础版本
 
+基础验收完成后，当前推进[个人卖家 R2 优化](docs/requirements/SoloOps-R2.md)，按[实施进度与A0对齐](docs/r2-progress.md)逐包升级。首包增强现有导入：非标准关键字段需审阅、跨来源订单键冲突阻断、错误报告及行数对账。证据见[R2 A1-1验收](docs/r2-a1-1-acceptance.md)。
+
 当前目标为可实际安装、使用、重启恢复和维护的基础系统，完整交付今日运营、经营问数、Listing维护、客服处理四条流程。当前实施及验收状态见 [基础规格](docs/foundation-release.md)、[逐项验收](docs/foundation-acceptance.md)、[使用维护](docs/foundation-user-guide.md) 和 [后续迭代清单](docs/foundation-backlog.md)。现有能力及74项长期需求保留，基础版本B-01至B-14已于2026-10-10全部通过。
 
 统一演练可用 [基础合成样本](examples/foundation/README.md)；运营事项可直接定位库存、同范围分析、商品或消息，并返回原事项。独立空库安装及实际进程恢复已完成[G-04验收](docs/foundation-runtime-evidence.md)；安装、调度启停和隔离备份恢复命令见 [使用维护](docs/foundation-user-guide.md)。
