@@ -1,6 +1,6 @@
 # R2 修复包2：日期输入与任务连续性
 
-日期：2026-10-10。包1准确 SHA CI 成功后开始。首轮完整CI发现导航守卫问题，已定点修复，当前等待修复提交的准确 SHA CI。测试使用新隔离库 `127.0.0.1:3313/soloops_r2_fixes_test`，全部资料为合成数据。
+日期：2026-10-10。包1准确 SHA CI 成功后开始。本包完成；首轮导航守卫问题修复后，准确提交 `5216da4cb2728988d4c1424a155afcff70f5e5db` 的 [CI38053971553](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38053971553) 已核实 completed/success、head_sha 一致。job114218555957 原始日志实际为880后端/315.75秒、138前端单元/37文件、84浏览器/3.9分钟；Ruff258、mypy176、ESLint、TypeScript、生产构建全部通过。测试使用新隔离库 `127.0.0.1:3313/soloops_r2_fixes_test`，全部资料为合成数据。
 
 ## 修改与理由
 
