@@ -87,3 +87,8 @@ class OccurrenceOutput(OutputModel):
     notify_at: str
     read_at: str | None
     created_at: str
+
+
+class ScheduleStatus(OutputModel):
+    worker_enabled: bool
+    latest_timer: OccurrenceOutput | None

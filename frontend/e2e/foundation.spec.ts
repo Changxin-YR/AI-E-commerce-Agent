@@ -1,6 +1,7 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
+import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -43,6 +44,7 @@ async function upload(page: Page, shop: number, file: SampleFile, revise = false
   await expect(page.getByRole('combobox', { name: '数据身份', exact: true })).toHaveValue(
     'synthetic',
   )
+  if (revise) await page.getByLabel('导出时间（可选）').fill(new Date().toISOString())
   await page.getByLabel('CSV / Excel 文件').setInputFiles({
     name: file.filename,
     mimeType: 'text/csv',
@@ -77,13 +79,31 @@ async function returnTask(page: Page, id: number): Promise<void> {
   await expect(page.getByRole('region', { name: '待办审批详情' })).toContainText(`事项 #${id} ·`)
 }
 
+async function exportDraft(page: Page, region: Locator, expected: string): Promise<string> {
+  await region.getByRole('button', { name: '复制通用草稿' }).click()
+  await expect(region).toContainText('已复制通用草稿')
+  const copied = await page.evaluate(() => navigator.clipboard.readText())
+  expect(copied).toContain(expected)
+  expect(copied).toContain('未提交')
+  const downloading = page.waitForEvent('download')
+  await region.getByRole('button', { name: '下载通用 CSV' }).click()
+  const download = await downloading
+  const csv = await readFile((await download.path())!, 'utf8')
+  expect(csv.charCodeAt(0)).toBe(0xfeff)
+  expect(csv).toContain(expected)
+  expect(csv).toContain('基础闭环合成店铺 main')
+  return download.suggestedFilename()
+}
+
 for (const mobile of [false, true]) {
   const stage = mobile ? 'mobile' : 'desktop'
 
   test(`foundation shared data four workflows source revision and persistence ${stage}`, async ({
     page,
+    context,
   }) => {
-    test.setTimeout(150000)
+    test.setTimeout(180000)
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
     page.setDefaultTimeout(15000)
     await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 })
     const errors: string[] = []
@@ -220,6 +240,7 @@ for (const mobile of [false, true]) {
     await listing.getByLabel('我已逐项核对商品事实、差异与影响范围').check()
     await listing.getByRole('button', { name: '批准并在本地生效' }).click()
     await expect(listing).toContainText('本地已批准')
+    const firstExport = await exportDraft(page, listing, 'Synthetic steel cup')
     const listingUrl = page.url()
     await page.reload()
     await expect(listing).toContainText('本地已批准')
@@ -248,6 +269,24 @@ for (const mobile of [false, true]) {
     await draft.getByRole('button', { name: '存档处理记录' }).click()
     await expect(draft).toContainText('已存档')
     await expect(draft).toContainText('外部未提交')
+    const delivery = draft.getByRole('region', { name: '客服审阅与人工交付' })
+    await delivery.getByLabel('我已审阅回复全文、目标语言与全部接管提示').check()
+    await delivery.getByRole('button', { name: '确认当前版本已审阅' }).click()
+    await expect(delivery).toContainText('本版本已审阅')
+    await exportDraft(page, delivery, 'No refund has been confirmed.')
+    await delivery
+      .getByLabel('人工操作时间（含时区）')
+      .fill(new Date(Date.now() - 1000).toISOString())
+    await delivery.getByLabel('原渠道操作方式').fill('合成人工接管演练')
+    await delivery.getByLabel('人工操作证据索引').fill(`SYNTHETIC-FOUNDATION-${stage}`)
+    await delivery.getByLabel('我确认已在原渠道人工操作，此记录为本人自报').check()
+    await delivery.getByRole('button', { name: '登记人工操作', exact: true }).click()
+    await expect(delivery).toContainText('人工操作自报已登记')
+    const supportUrl = page.url()
+    await page.reload()
+    await delivery.getByRole('button', { name: '刷新人工操作记录' }).click()
+    await expect(delivery).toContainText(`SYNTHETIC-FOUNDATION-${stage}`)
+    await expect(draft).toContainText('外部未提交')
     await draft.screenshot({ path: path.join(tmpdir(), `soloops-foundation-support-${stage}.png`) })
     await returnTask(page, message.id)
     await detail.getByRole('button', { name: '批准并创建待办' }).click()
@@ -264,9 +303,23 @@ for (const mobile of [false, true]) {
     await expect(analysis).toContainText('需重新计算')
     await page.goto(listingUrl)
     await expect(listing).toContainText('需重新生成')
+    await expect(listing.getByRole('button', { name: '复制通用草稿' })).toBeDisabled()
+    await page.locator('.listing-product').filter({ hasText: 'SYN-CUP' }).click()
+    await page.getByRole('button', { name: '从商品事实生成草稿' }).click()
+    await listing.getByLabel('我已逐项核对商品事实、差异与影响范围').check()
+    await listing.getByRole('button', { name: '批准并在本地生效' }).click()
+    const freshExport = await exportDraft(page, listing, 'Synthetic steel cup')
+    expect(freshExport).not.toBe(firstExport)
+    const freshListingUrl = page.url()
+
     await page.goto(`${home}&task=${margin.id}`)
     await expect(detail.getByRole('heading', { level: 2 })).toContainText('已完成')
     await expect(detail).toContainText('需重新检查')
+    const businessReview = detail.getByRole('region', { name: '异常业务复核' })
+    await businessReview.getByRole('button', { name: '按原事项复检新来源' }).click()
+    await expect(businessReview.getByRole('heading')).toContainText('新来源仍显示异常')
+    await expect(detail.getByRole('heading', { level: 2 })).toContainText('已完成')
+
     await page.getByRole('button', { name: '运行今日运营', exact: true }).click()
     // Changed evidence creates a new candidate; the completed historical task remains stale.
     await expect(page.locator('.task-row')).toHaveCount(6)
@@ -287,6 +340,14 @@ for (const mobile of [false, true]) {
     await page.goto(`${home}&task=${margin.id}`)
     await expect(detail.getByRole('heading', { level: 2 })).toContainText('已完成')
     await expect(detail.getByLabel('处理备注')).toHaveValue(/已回读同范围分析/)
+    await expect(businessReview.getByRole('heading')).toContainText('新来源仍显示异常')
+    await page.goto(supportUrl)
+    await delivery.getByRole('button', { name: '刷新人工操作记录' }).click()
+    await expect(delivery).toContainText(`SYNTHETIC-FOUNDATION-${stage}`)
+    await expect(draft).toContainText('外部未提交')
+    await page.goto(freshListingUrl)
+    await expect(listing.getByRole('button', { name: '下载通用 CSV' })).toBeEnabled()
+
     await page.goto('/overview')
     await expect(page.locator('.shop-options input')).not.toHaveCount(0)
     for (const checkbox of await page.locator('.shop-options input').all()) await checkbox.uncheck()

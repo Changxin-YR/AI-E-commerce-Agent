@@ -59,6 +59,13 @@ async function setup(
     ).ok(),
   ).toBeTruthy()
   await page.goto(`/schedules?shop=${shop}`)
+  const runtime = page.getByRole('region', { name: '自动调度运行说明' })
+  await expect(runtime).toContainText('当前服务关闭自动调度')
+  await expect(runtime).toContainText('尚无自动周期记录')
+  await expect(runtime).toContainText('电脑关机或休眠期间不运行')
+  await runtime.screenshot({
+    path: path.join(tmpdir(), `soloops-r2-runtime-${page.viewportSize()!.width}.png`),
+  })
   await page.getByRole('button', { name: '新建计划', exact: true }).click()
   await page.getByLabel('检查数据身份').selectOption('synthetic')
   await expect(page.getByText('绑定经营规则版本 #0，使用下方检查阈值')).toBeVisible()
@@ -174,6 +181,9 @@ test('schedule edit pause resume check approval notification readback and revoke
   await edited.getByRole('button', { name: '立即检查一次', exact: true }).click()
   const history = page.getByRole('region', { name: '站内通知与运行历史' })
   await expect(history).toContainText('等待审批')
+  await expect(page.getByRole('region', { name: '自动调度运行说明' })).toContainText(
+    '尚无自动周期记录',
+  )
   await history.getByRole('link', { name: '查看检查与审批' }).click()
   const review = page.getByRole('region', { name: '任务执行详情' })
   await expect(review).toContainText('SCHEDULE-001')
@@ -181,6 +191,9 @@ test('schedule edit pause resume check approval notification readback and revoke
   await expect(review).toContainText('已完成')
   await page.goto(`/schedules?shop=${shop}`)
   await expect(history).toContainText('等待审批')
+  await expect(page.getByRole('region', { name: '自动调度运行说明' })).toContainText(
+    '尚无自动周期记录',
+  )
   await history.getByRole('button', { name: '标为已读' }).click()
   await expect(history).toContainText('当前没有到期的未读通知')
   await page.getByRole('checkbox', { name: '只看已到提醒时间的未读通知' }).uncheck()
@@ -219,10 +232,16 @@ test('mobile quiet hours history and source erasure', async ({ page }) => {
   await plan.getByRole('button', { name: '立即检查一次' }).click()
   const history = page.getByRole('region', { name: '站内通知与运行历史' })
   await expect(history).toContainText('等待审批')
+  await expect(page.getByRole('region', { name: '自动调度运行说明' })).toContainText(
+    '尚无自动周期记录',
+  )
   await page.getByRole('checkbox', { name: '只看已到提醒时间的未读通知' }).check()
   await expect(history).toContainText('当前没有到期的未读通知')
   await page.getByRole('checkbox', { name: '只看已到提醒时间的未读通知' }).uncheck()
   await expect(history).toContainText('等待审批')
+  await expect(page.getByRole('region', { name: '自动调度运行说明' })).toContainText(
+    '尚无自动周期记录',
+  )
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   )

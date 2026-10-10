@@ -16,6 +16,7 @@ from app.schemas.schedules import (
     ScheduleAction,
     ScheduleConfig,
     ScheduleOutput,
+    ScheduleStatus,
 )
 from app.services.agent import AgentService
 from app.services.agent_model import GenerationReply, ModelReply
@@ -160,6 +161,14 @@ class SchedulesService:
             "operation_schedule",
             row.id,
             {"version": row.version, "status": row.status},
+        )
+
+    def status(self, owner: int, shop: int, worker_enabled: bool) -> ScheduleStatus:
+        self._shop(owner, shop)
+        latest = self.repo.latest_timer(owner, shop)
+        return ScheduleStatus(
+            worker_enabled=worker_enabled,
+            latest_timer=self._notice(latest) if latest else None,
         )
 
     def schedules(self, owner: int, shop: int) -> list[ScheduleOutput]:

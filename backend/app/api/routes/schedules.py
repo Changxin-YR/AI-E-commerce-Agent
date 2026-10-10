@@ -7,6 +7,7 @@ from app.schemas.schedules import (
     OccurrenceOutput,
     ScheduleAction,
     ScheduleOutput,
+    ScheduleStatus,
 )
 from app.services.schedules import SchedulesService
 
@@ -16,9 +17,8 @@ router = APIRouter(prefix="/shops/{shop_id}/schedules", tags=["定时运营"])
 @router.get("/status")
 def status(
     shop_id: int, current: CurrentSession, uow: UowDependency, settings: SettingsDependency
-) -> dict[str, bool]:
-    SchedulesService(uow).schedules(current.user_id, shop_id)
-    return {"worker_enabled": settings.scheduler_enabled}
+) -> ScheduleStatus:
+    return SchedulesService(uow).status(current.user_id, shop_id, settings.scheduler_enabled)
 
 
 @router.get("")

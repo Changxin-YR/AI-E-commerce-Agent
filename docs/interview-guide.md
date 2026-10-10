@@ -386,3 +386,10 @@ A3新复检必须比较shop revision、规则和有效期，原异常来源过�
 - 为什么客服“已存档”不等于“已审阅”？ReplyDraft的status只表示处理进度，reviewed_version单独绑定全文版本/时间/语言；正文或状态变动后再审，SupportDeliveryService在每次交付时重核消息、订单及政策。
 - 如何记录人工发送而不伪造平台回执？ReplyManualAction保存seller_reported的方式/时间/证据，系统external_status保持not_submitted；同UUID重试精确回读，来源清除擦除payload，审计不含客户正文。
 - 如何保护正在录入的证据？SupportDelivery清除被修改表单的确认，SupportReply合并正文与证据dirty，SupportView合并写入busy；上下文epoch抑制迟到结果。独立进程回读与51条分页测试验证持久结果。
+
+
+## R2 C：调度配置、历史证据与在线状态
+
+为什么不以worker_enabled证明持续运行？它只是配置，进程关闭/主机休眠时不执行，空周期没有记录；ScheduleRuntime展示已保存最近自动周期及实际时间，后续审批从execution_id回查。为什么独立查询？未读筛选、免打扰和分页会隐藏最新记录，manual也不能冒充timer；SchedulesRepository.latest_timer显式owner/shop/trigger约束，created_at/id稳定排序，test_schedules验证同刻/手动/已读/跨店边界。
+
+为什么升级后旧迁移保护测试会影响后续测试？MySQL DDL已提交，跨多版本降级可先删除无数据的新结构，再被旧结构证据保护拒绝；测试必须finally恢复head，B3完整CI定位并回归92项。业务门禁不能因测试方便而放宽。公网就绪判断则见r2-deployment-gates：源码有保护不等于实际代理、Cookie、留存、恢复环境已验收。

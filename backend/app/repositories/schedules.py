@@ -103,6 +103,19 @@ class SchedulesRepository:
             )
         )
 
+    def latest_timer(self, owner: int, shop: int) -> ScheduleOccurrence | None:
+        return self.session.scalar(
+            select(ScheduleOccurrence)
+            .where(
+                ScheduleOccurrence.owner_id == owner,
+                ScheduleOccurrence.shop_id == shop,
+                ScheduleOccurrence.trigger == "timer",
+            )
+            .order_by(ScheduleOccurrence.created_at.desc(), ScheduleOccurrence.id.desc())
+            .limit(1)
+            .execution_options(populate_existing=True)
+        )
+
     def notification(self, owner: int, shop: int, item: int) -> ScheduleOccurrence | None:
         return self.session.scalar(
             select(ScheduleOccurrence)

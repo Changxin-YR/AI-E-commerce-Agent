@@ -46,11 +46,15 @@ export interface Occurrence {
   read_at: string | null
   created_at: string
 }
+export interface ScheduleStatus {
+  worker_enabled: boolean
+  latest_timer: Occurrence | null
+}
 export type ScheduleAction = 'pause' | 'resume' | 'revoke' | 'edit'
 const root = (shop: number) => `/shops/${shop}/schedules`
 export const schedulesApi = {
   list: (shop: number) => request<Schedule[]>(root(shop)),
-  status: (shop: number) => request<{ worker_enabled: boolean }>(`${root(shop)}/status`),
+  status: (shop: number) => request<ScheduleStatus>(`${root(shop)}/status`),
   create: (shop: number, request_id: string, config: ScheduleConfig) =>
     request<Schedule>(root(shop), {
       method: 'POST',

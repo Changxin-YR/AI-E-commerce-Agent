@@ -233,6 +233,7 @@ def test_empty_history_quiet_hours_and_missed_cycle(
     assert due(session_factory, shop, monthly["id"], NOW + timedelta(days=5))
     missed = logged_in.get(root(shop) + "/history").json()[0]
     assert missed["status"] == "missed" and missed["execution_id"] is None
+    assert logged_in.get(root(shop) + "/status").json()["latest_timer"] == missed
 
 
 def test_concurrent_workers_commit_one_cycle(
@@ -347,6 +348,7 @@ def test_isolation_csrf_confirmation(
     logged_in.headers["X-CSRF-Token"] = session_data["csrf_token"]
     assert logged_in.get(root(shop)).status_code == 404
     assert logged_in.get(root(shop) + "/history").status_code == 404
+    assert logged_in.get(root(shop) + "/status").status_code == 404
     del logged_in.headers["X-CSRF-Token"]
     assert (
         logged_in.post(
@@ -404,3 +406,37 @@ def test_lifespan_starts_and_stops_real_worker(logged_in: TestClient, settings: 
         assert completed.wait(timeout=10)
     notices = logged_in.get(root(shop) + "/history").json()
     assert len(notices) == 1 and notices[0]["status"] == "succeeded"
+
+
+def test_runtime_status_is_scoped_and_independent_of_manual_and_notification_filters(
+    logged_in: TestClient, session_factory: sessionmaker[Session]
+) -> None:
+    shop = create_shop(logged_in)
+    other = create_shop(logged_in, code="runtime-other")
+    path = root(shop) + "/status"
+    assert logged_in.get(path).json() == {"worker_enabled": False, "latest_timer": None}
+    plans = [create(logged_in, shop), create(logged_in, shop)]
+    for plan in plans:
+        assert due(session_factory, shop, plan["id"])
+    latest = logged_in.get(root(shop) + "/history").json()[0]
+    assert latest["schedule_id"] == plans[-1]["id"]
+    assert latest["coalesced_from"]
+    assert logged_in.get(path).json()["latest_timer"] == latest
+    assert logged_in.get(root(other) + "/status").json()["latest_timer"] is None
+    # A later manual check, read marker and history cursor must not hide the last timer.
+    manual = logged_in.post(
+        root(shop) + f"/{plans[-1]['id']}/check",
+        json={"request_id": str(uuid4()), "version": plans[-1]["version"]},
+    ).json()
+    assert manual["trigger"] == "manual" and manual["id"] > latest["id"]
+    read = logged_in.post(root(shop) + f"/history/{latest['id']}/read").json()
+    logged_in.get(root(shop) + f"/history?unread=true&before={latest['id']}")
+    assert logged_in.get(path).json()["latest_timer"] == read
+    # Sort by actual saved time, with ID only as tie breaker, not by scheduled time or ID alone.
+    with session_factory() as session:
+        earlier = session.get(ScheduleOccurrence, latest["id"] - 1)
+        assert earlier is not None
+        earlier.created_at = NOW + timedelta(seconds=1)
+        session.commit()
+        earlier_id = earlier.id
+    assert logged_in.get(path).json()["latest_timer"]["id"] == earlier_id

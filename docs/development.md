@@ -937,3 +937,10 @@ G-06使用生产QQMailProvider、R2服务及真实HTTP会话，对保留的3309�
 SupportService新增delivery_context作为唯一当前事实核验入口；SupportDeliveryService单独处理审阅、格式组装和人工自报，SupportRepository继续承担归属/锁/分页/清除查询。reviewed_version与状态版本精确匹配，编辑或存档后失效。独立ReplyManualAction保存操作时间与登记时间，UUID+请求指纹和用户锁保证重复请求不重复写入，源清除同时擦除证据payload；审计只记录编号。SupportDelivery组件向SupportReply/SupportView传播dirty/working并丢弃过期响应，父层共享忙状态避免跨对象结果。迁移和验证见r2-b3-acceptance.md。
 
 B3完整CI补充：MySQL DDL不随后续旧迁移保护异常整体回滚。所有触发旧降级门禁的测试必须在finally恢复head；A3两条预期拒绝路径漏恢复已修复，B3同样覆盖，保留业务拒绝断言。见r2-b3-acceptance.md。
+
+
+## R2 C：调度证据与本地交付范围
+
+schedules/status保留worker_enabled并增加latest_timer，接口→SchedulesService→SchedulesRepository按当前用户/店铺只取timer记录，created_at倒序、id打破同刻平局。摘要独立于历史未读筛选/游标和manual记录；ScheduleRuntime显式区分配置开关、保存记录与当前在线状态，并保留实际执行/报表入口。原30秒扫描、最近一期合并、24小时窗口、暂停/恢复、唯一时间槽机制保持，没有新增队列或迁移。
+
+局部可维护性沿用import_groups、margin_review、manual_delivery、support_delivery等职责拆分。上线门禁逐项记录源码/合成证据与部署待验内容，见[r2-deployment-gates](r2-deployment-gates.md)。统一卖家演示扩展原foundation浏览器测试，保留全部金额和旧路径断言；修订商品须填写新导出时间，原事项复检保持完成历史并如实显示新来源仍异常。具体证据见[r2-c-acceptance](r2-c-acceptance.md)。

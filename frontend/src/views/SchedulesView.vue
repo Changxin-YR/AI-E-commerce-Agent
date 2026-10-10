@@ -15,6 +15,7 @@ import type { Shop } from '@/types/identity'
 import { supportTime } from '@/types/support'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import ScheduleEditor from '@/components/ScheduleEditor.vue'
+import ScheduleRuntime from '@/components/ScheduleRuntime.vue'
 
 const route = useRoute()
 const shops = ref<Shop[]>([])
@@ -26,6 +27,7 @@ const editing = ref<Schedule | null>(null)
 const showEditor = ref(false)
 const unread = ref(true)
 const worker = ref<boolean | null>(null)
+const latestTimer = ref<Occurrence | null>(null)
 const busy = ref(false)
 const error = ref('')
 const info = ref('')
@@ -52,6 +54,7 @@ async function refresh(): Promise<void> {
   plans.value = rows
   history.value = notices
   worker.value = status.worker_enabled
+  latestTimer.value = status.latest_timer
 }
 async function perform(work: () => Promise<void>): Promise<void> {
   if (busy.value) return
@@ -72,6 +75,7 @@ async function load(): Promise<void> {
   plans.value = []
   history.value = []
   worker.value = null
+  latestTimer.value = null
   if (shopId.value) await perform(refresh)
 }
 function edit(row: Schedule | null): void {
@@ -156,14 +160,12 @@ onMounted(async () => {
           </select>
         </div>
       </div>
-      <p v-if="worker !== null">
-        {{
-          worker
-            ? '自动调度已启用，API 服务运行期间每 30 秒扫描到期计划。'
-            : '当前服务关闭自动调度，可手动检查并查看记录。'
-        }}
-        时间显示：{{ shop?.timezone }}。
-      </p>
+      <ScheduleRuntime
+        v-if="worker !== null"
+        :worker="worker"
+        :latest="latestTimer"
+        :timezone="shop?.timezone ?? 'UTC'"
+      />
       <p>
         巡检可生成待审候选，报表可定期保存经营摘要。每次使用当时可用的导入数据，结果和依据从运行历史进入。
       </p>
