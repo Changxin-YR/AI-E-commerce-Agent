@@ -1,10 +1,10 @@
 # R2 A1-3 渠道字段预设验收
 
-日期：2026-10-10。输入为自行编写的合成字段子集。状态：本地完整验收通过，目标提交CI待核对。
+日期：2026-10-10。输入为自行编写的合成字段子集。状态：Shopify当前商品预设完成，订单预设条件延期；本地完整验收与目标提交CI通过。
 
 ## 基线、范围与依据
 
-在A1-2代码`81ee5f6b14dd8121ce61c03a3b57e76b5b18d205`的[CI38022485965](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38022485965)回读completed/success后开始。本包代码SHA及CI在提交后补齐。
+在A1-2代码`81ee5f6b14dd8121ce61c03a3b57e76b5b18d205`的[CI38022485965](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38022485965)回读completed/success后开始。本包代码`5b420abf67ab7a4ba7faf928773876e1f7f21ce3`的[CI38023850875](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38023850875)于2026-10-10 12:33 Asia/Shanghai核实completed/success，head_sha一致，verify及全部步骤通过。
 
 | 渠道 / 报表 | 核实日期及字段 | 处理决定 |
 |---|---|---|

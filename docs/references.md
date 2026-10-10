@@ -314,3 +314,9 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - 腾讯官方[QQ 邮箱连接说明](https://hiflow.tencent.com/document/applications/qq-mail/)及[SMTP 配置示例](https://cloud.tencent.com/document/product/1207/45117/)：开启邮箱 SMTP 服务，以完整 QQ 邮箱地址和客户端授权码登录 `smtp.qq.com:465`，启用 SSL。官方资料版权归腾讯；仅参考协议参数，自行实现，未复制正文或代码。Firecrawl 已确认 402，本次使用官方网页检索。
 - Python 官方[smtplib](https://docs.python.org/3/library/smtplib.html)与[email.message](https://docs.python.org/3/library/email.message.html)：PSF 文档与标准库接口，沿用项目 Python 标准库，无新依赖。固定 SSL 主机、证书校验、有限超时；UTF-8 纯文本邮件，稳定 Message-ID；SMTP DATA 最终 250 才记录服务器接受，连接断开保留未知，清理连接失败不覆盖已取得的接受结果。
 - 适配：由配置选择 QQ SMTP 通道，账号/店铺与授权码绑定通道；用户指定的单个收件地址与全文绑定审批；通道类型随验证记录持久化，配置变更不能复用旧审批。QQ SMTP 无远端回执查询接口，未知结果仅人工核对原收件箱并记录独立收件声明，不伪造供应商送达或自动重发。Resend 历史通道保留原有语义。
+
+## R2 A2：订单行历史成本依据（2026-10-10）
+
+- Shopify 官方[利润报告](https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/profit-reports)：商品成本、净销售额和毛利有明确区别，折扣/退款影响利润，成本的记录时点影响覆盖。资料版权归 Shopify；仅参考业务含义，自行实现。SoloOps 保留自身已支付订单/退款归原订单窗规则，历史成本由卖家按订单源行确认，不将当前商品成本或平台报表口径视为独立核实的会计事实。
+- SQLAlchemy 2.0 官方[版本计数](https://docs.sqlalchemy.org/en/20/orm/versioning.html)与[Numeric](https://docs.sqlalchemy.org/en/20/core/type_basics.html#sqlalchemy.types.Numeric)：MIT；参考并发版本与 Decimal 存取机制。项目已有用户→店铺锁与显式 expected_version，沿用该协议追加凭据版本；金额列 Numeric(18,4)，不引入依赖或自动浮点转换。
+- Firecrawl CLI 状态再次返回 fetch failed，未能取得账户信息；本次通过内置 web 读取上述官方页面。借鉴限于语义/接口说明，没有复制实现。差异计划见 r2-a2-plan.md，开发须以前包目标 CI 成功为前置。
