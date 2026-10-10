@@ -1,3 +1,4 @@
+import type { ManualDelivery } from '@/types/manualDelivery'
 import { request } from './client'
 import type {
   ListingContent,
@@ -8,6 +9,8 @@ import type {
 
 const base = (shop: number) => `/shops/${shop}/listings`
 export const listingsApi = {
+  delivery: (shop: number, id: number, version: number) =>
+    request<ManualDelivery>(`${base(shop)}/versions/${id}/delivery?expected_version=${version}`),
   products: (shop: number, query: string, offset: number) =>
     request<ProductFacts[]>(
       `${base(shop)}/products?q=${encodeURIComponent(query)}&offset=${offset}`,

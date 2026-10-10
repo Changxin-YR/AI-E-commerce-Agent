@@ -539,3 +539,7 @@ Windows沙箱默认临时目录重命名和数据库连接被限，获正常权�
 3309持久合成验收库备份后升级92c7ea53bd10，64表行数及未改结构表CHECKSUM一致。生产SMTP_SSL/TLS/AUTH成功，随后按用户两次独立许可提交验证码与经营摘要各1封：通道#1验证active，摘要#1/version3为accepted/smtp_accepted，审批#1 used_count=1。用户确认本人收件箱地址和正文一致，09:15经receipt接口保存人工声明并GET核对。
 
 数据库只读核对1通道/1摘要/1审批，无重复；清空验证码哈希。外发关闭后实际重启API，原会话、已接受摘要/全文/标识/收件声明/单次审批一致；6个Agent执行、分析历史、Listing历史及运营检查共9份快照一致。账本保持7次/0.0007750元/未知0，未新增模型调用。B-07/B-08及A-13通过。完整操作与本机证据位置见foundation-mail-evidence；3307开发库本次未迁移。
+
+## R2 B2：人工交付定向验证（2026-10-10）
+
+后端32项（test_listing_delivery与test_listings）、前端9单元、Listing桌面手机4场景有通过覆盖。Ruff216/mypy173、lint/type-check/build通过。全部3308合成数据，模型/邮件/调度关闭，数据库测试串行；准确提交CI见r2-b2-acceptance.md。

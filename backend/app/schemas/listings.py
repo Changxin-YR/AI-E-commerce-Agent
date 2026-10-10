@@ -73,3 +73,22 @@ class ProductWorkspace(OutputModel):
     active_id: int | None
     active_version: ListingOutput | None
     versions: list[ListingOutput]
+
+
+class ListingDelivery(OutputModel):
+    listing_id: int
+    shop_id: int
+    shop_name: str
+    market: str
+    sku: str
+    number: int
+    version: int
+    source: SourceReference
+    source_batch_ids: list[int]
+    content: ListingContent
+    missing: list[str]
+    checked_at: str
+    plain_text: str
+    csv_text: str
+    filename: str
+    external_status: Literal["not_submitted"] = "not_submitted"

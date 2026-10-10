@@ -4,6 +4,7 @@ from typing import Any
 
 from app.core.errors import BusinessError, ConflictError
 from app.core.time import utc_now
+from app.models.identity import Shop
 from app.models.listings import ListingVersion
 from app.repositories.analytics import ProductEvidence
 from app.repositories.unit_of_work import UnitOfWork
@@ -12,6 +13,7 @@ from app.schemas.listings import (
     DecisionInput,
     GenerateInput,
     ListingContent,
+    ListingDelivery,
     ListingOutput,
     ListingSnapshot,
     ProductFacts,
@@ -19,6 +21,7 @@ from app.schemas.listings import (
     ReviseInput,
 )
 from app.services.listing_generation import ListingGenerator, check_content
+from app.services.manual_delivery import delivery_csv, delivery_text
 from app.services.profit_calculation import reference, utc_text
 
 
@@ -60,10 +63,12 @@ class ListingService:
         self.uow = uow
         self.repo = uow.listings
 
-    def _shop(self, owner: int, shop: int) -> None:
+    def _shop(self, owner: int, shop: int) -> Shop:
         self.uow.identity.lock_user(owner)
-        if self.uow.identity.get_shop(owner, shop, lock=True) is None:
+        record = self.uow.identity.get_shop(owner, shop, lock=True)
+        if record is None:
             raise BusinessError("not_found", "店铺不存在", 404)
+        return record
 
     def _product(self, owner: int, shop: int, product_id: int) -> ProductFacts:
         evidence = self.repo.product(owner, shop, product_id)
@@ -100,6 +105,60 @@ class ListingService:
     def get(self, owner: int, shop: int, listing_id: int) -> ListingOutput:
         self._shop(owner, shop)
         return output(self._item(owner, shop, listing_id))
+
+    def delivery(
+        self, owner: int, shop: int, listing_id: int, expected_version: int
+    ) -> ListingDelivery:
+        store = self._shop(owner, shop)
+        item = self._item(owner, shop, listing_id)
+        if item.version != expected_version or item.status != "approved":
+            raise ConflictError("仅可交付当前已批准版本，请刷新并重新核对")
+        product = self._current_product(owner, shop, item)
+        self._active(owner, shop, digest([shop, product.sku]), item.id)
+        snapshot = ListingSnapshot.model_validate(item.snapshot)
+        if product != snapshot.product:
+            raise ConflictError("商品事实或来源已变化，请重新生成并审批")
+        checked_at = utc_text(utc_now())
+        batches = sorted(self.repo.batches(owner, shop, item.id))
+        source = product.source
+        missing = [*snapshot.missing, "GTIN、认证及目标平台必填属性待人工核对。"]
+        fields = [
+            ("成果类型", "Listing 通用草稿 · 本地已批准 · 外部未提交"),
+            ("店铺", f"{store.name} (#{shop})"),
+            ("市场", store.market),
+            ("SKU", product.sku),
+            ("文案版本", f"#{item.id} / v{item.number} / 状态版本 {item.version}"),
+            ("来源批次", ", ".join(str(batch) for batch in batches)),
+            (
+                "来源文件与行",
+                f"{source.filename} / {source.sheet_name or 'CSV'} / "
+                f"行 {source.row_number} (#{source.row_id})",
+            ),
+            ("数据身份", source.data_identity),
+            ("来源导出时间 UTC", source.exported_at or "未提供"),
+            ("来源导入时间 UTC", source.imported_at),
+            ("核对时间 UTC", checked_at),
+            ("标题", snapshot.proposed.title),
+            ("说明", snapshot.proposed.description),
+            ("缺失与待核对属性", "\n".join(missing)),
+        ]
+        return ListingDelivery(
+            listing_id=item.id,
+            shop_id=shop,
+            shop_name=store.name,
+            market=store.market,
+            sku=product.sku,
+            number=item.number,
+            version=item.version,
+            source=source,
+            source_batch_ids=batches,
+            content=snapshot.proposed,
+            missing=missing,
+            checked_at=checked_at,
+            plain_text=delivery_text(fields),
+            csv_text=delivery_csv(fields),
+            filename=f"listing-{item.id}-v{item.number}.csv",
+        )
 
     def _active(
         self, owner: int, shop: int, key: str, expected: int | None

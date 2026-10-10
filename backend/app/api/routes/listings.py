@@ -6,6 +6,7 @@ from app.api.dependencies import CurrentSession, UowDependency
 from app.schemas.listings import (
     DecisionInput,
     GenerateInput,
+    ListingDelivery,
     ListingOutput,
     ProductFacts,
     ProductWorkspace,
@@ -71,3 +72,14 @@ def decide(
     shop_id: int, listing_id: int, data: DecisionInput, current: CurrentSession, uow: UowDependency
 ) -> ListingOutput:
     return ListingService(uow).decide(current.user_id, shop_id, listing_id, data)
+
+
+@router.get("/versions/{listing_id}/delivery")
+def delivery(
+    shop_id: int,
+    listing_id: int,
+    expected_version: Annotated[int, Query(gt=0)],
+    current: CurrentSession,
+    uow: UowDependency,
+) -> ListingDelivery:
+    return ListingService(uow).delivery(current.user_id, shop_id, listing_id, expected_version)

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
+import { listingsApi } from '@/api/listings'
+import ReviewedDelivery from './ReviewedDelivery.vue'
 import { analyticsApi } from '@/api/analytics'
 import { errorMessage } from '@/api/client'
 import type { SourceDetail } from '@/types/analytics'
@@ -23,6 +25,8 @@ const emit = defineEmits<{
   decide: [decision: 'approve' | 'reject', confirmed: boolean]
 }>()
 const content = reactive<ListingContent>({ title: '', description: '' })
+const loadDelivery = () =>
+  listingsApi.delivery(props.item.shop_id, props.item.id, props.item.version)
 const confirmed = ref(false)
 const source = ref<SourceDetail | null>(null)
 const sourceError = ref('')
@@ -215,6 +219,12 @@ async function inspect(): Promise<void> {
           </button>
         </div>
       </div>
+      <ReviewedDelivery
+        :context-key="`${item.shop_id}:${item.id}:${item.version}:${item.source_status}`"
+        :allowed="item.status === 'approved' && live"
+        :disabled="busy || dirty"
+        :load-artifact="loadDelivery"
+      />
       <p v-if="item.decided_at">审批时间：{{ time(item.decided_at) }} · 操作人：当前店铺拥有者</p>
     </template>
     <p v-else>来源内容与派生文案已清除；保留版本编号、处理状态和时间以供审计。</p>

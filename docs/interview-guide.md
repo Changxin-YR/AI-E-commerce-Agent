@@ -374,3 +374,9 @@ A3新复检必须比较shop revision、规则和有效期，原异常来源过�
 - **允许任意收件地址如何保留审批约束？** OutboundService将单个recipient固化到预览、content_hash与dedupe_key；新收件地址产生新记录，不能挪用另一预览的approval_id。账号/店铺绑定、正文版本、来源时效和次数限制共同复验。
 
 真实外发验收：`QQMailProvider.send`的SMTP最终250证明服务器接受，`OutboundService.receipt`保存用户独立收件声明；两者分别回答提交结果与实际收件事实。G-06经原审批接口绑定地址/全文/来源、消耗一次授权后发1封摘要，再实际重启验证接受状态和声明保留。`received_at`是声明记录时间，不等于投递时间。证据见foundation-mail-evidence.md。
+
+## R2 B2：交付时刻的一致性
+
+- 为什么已批准内容仍需在复制前请求后端？ListingService.delivery用expected_version和active ID检查页面看到的批准是否仍有效，并比对当前商品与快照；下载不能绕过来源撤销和用户/店铺隔离。
+- 如何处理异步复制的错误与迟到响应？ReviewedDelivery用epoch绑定对象、版本及编辑状态，过期响应不触发剪贴板或下载；writeText拒绝则显示只读全文，不记录复制成功。
+- CSV引号足够吗？引号只保证字段结构，manual_delivery对每个数据单元格额外加文本前缀，覆盖公式和控制字符；电子表格再次保存需重新核对，纯文本保留原始文案。

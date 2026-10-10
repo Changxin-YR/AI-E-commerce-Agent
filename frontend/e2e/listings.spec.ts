@@ -1,4 +1,7 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page, type BrowserContext, type Locator } from '@playwright/test'
+import { readFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 
 interface Batch {
   id: number
@@ -150,3 +153,84 @@ test('mobile untrusted text, uncovered claims and approval gate', async ({ page 
   )
   expect(dialogs).toEqual([])
 })
+
+const clipboardModes: Record<
+  number,
+  {
+    prepare: (page: Page, context: BrowserContext) => Promise<void>
+    verify: (page: Page, delivery: Locator) => Promise<void>
+  }
+> = {
+  1440: {
+    prepare: async (_page, context) => {
+      await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    },
+    verify: async (page, delivery) => {
+      await expect(delivery).toContainText('已复制通用草稿')
+      const text = await page.evaluate(() => navigator.clipboard.readText())
+      // Shared verifier is invoked by each viewport test below.
+      // eslint-disable-next-line playwright/no-standalone-expect
+      expect(text.replace(/\r\n/g, '\n')).toContain('材质: Steel\n容量: 300ml')
+    },
+  },
+  390: {
+    prepare: async (page) => {
+      await page.evaluate(() =>
+        Object.defineProperty(navigator, 'clipboard', {
+          configurable: true,
+          value: { writeText: () => Promise.reject(new Error('denied')) },
+        }),
+      )
+    },
+    verify: async (_page, delivery) => {
+      await expect(delivery.getByLabel('手动复制全文')).toHaveValue(/合成文案店铺/)
+      await expect(delivery).toContainText('浏览器未允许复制')
+    },
+  },
+}
+
+for (const width of [1440, 390]) {
+  test(`reviewed listing manual delivery ${width}`, async ({ page, context }) => {
+    await page.setViewportSize({ width, height: 900 })
+    const { shop, batch, headers } = await prepare(page, '"材质: Steel\n容量: 300ml"')
+    await page.getByRole('button', { name: '从商品事实生成草稿' }).click()
+    const review = page.getByRole('region', { name: 'Listing 审批详情' })
+    await review.getByLabel('我已逐项核对商品事实、差异与影响范围').check()
+    await review.getByRole('button', { name: '批准并在本地生效' }).click()
+    const delivery = review.getByRole('region', { name: '人工使用草稿' })
+    await expect(delivery.getByRole('button', { name: '复制通用草稿' })).toBeEnabled()
+    await clipboardModes[width]!.prepare(page, context)
+    await delivery.getByRole('button', { name: '复制通用草稿' }).click()
+    await clipboardModes[width]!.verify(page, delivery)
+    const downloaded = page.waitForEvent('download')
+    await delivery.getByRole('button', { name: '下载通用 CSV' }).click()
+    const download = await downloaded
+    expect(download.suggestedFilename()).toMatch(/^listing-\d+-v1\.csv$/)
+    const file = await download.path()
+    expect(file).toBeTruthy()
+    const csv = await readFile(file!, 'utf8')
+    expect(csv.charCodeAt(0)).toBe(0xfeff)
+    expect(csv).toContain("'材质: Steel\n容量: 300ml")
+    expect(csv).toContain('合成文案店铺')
+    expect(csv).toContain('GTIN、认证')
+    await expect(review).toContainText('外部状态：未提交')
+    await delivery.scrollIntoViewIfNeeded()
+    await page.screenshot({ path: path.join(tmpdir(), `soloops-r2-listing-delivery-${width}.png`) })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await page.reload()
+    await page.getByLabel('Listing 店铺').selectOption(String(shop))
+    await page.getByRole('button', { name: /查看版本 #.*v1/ }).click()
+    await expect(delivery.getByRole('button', { name: '下载通用 CSV' })).toBeEnabled()
+    await review.getByLabel('拟议标题').fill('Unsaved change')
+    await expect(delivery.getByRole('button', { name: '下载通用 CSV' })).toBeDisabled()
+    await review.getByLabel('拟议标题').fill('Synthetic cup')
+    const revoked = await page.request.post(`/api/imports/${batch.id}/revoke`, {
+      headers,
+      data: { version: batch.version },
+    })
+    expect(revoked.ok()).toBe(true)
+    await delivery.getByRole('button', { name: '复制通用草稿' }).click()
+    await expect(delivery.getByRole('alert')).toContainText(/变化|核对/)
+    await expect(delivery.getByLabel('手动复制全文')).toHaveCount(0)
+  })
+}
