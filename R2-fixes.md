@@ -1,18 +1,30 @@
 # R2 缺陷修复与体验收敛接续
 
-2026-10-10 19:15 Asia/Shanghai。主目录 C:/Users/27363/Desktop/AI E-commerce Agent，项目「电商智能体」。用户已授权按四包连续实施，具体范围 docs/r2-fix-scope.md、状态 docs/r2-fix-progress.md。包1完成；从包2开始。仅一个开发聊天写入，无子代理授权。
+2026-10-10 21:02 Asia/Shanghai。主目录 C:/Users/27363/Desktop/AI E-commerce Agent，项目「电商智能体」。用户已授权按四包连续实施，具体范围 docs/r2-fix-scope.md、状态 docs/r2-fix-progress.md。包1完成，包2已推送并等待准确CI；下一包为包3。仅一个开发聊天写入，无子代理授权。
 
 ## 当前提交与证据
 
-- main `adada50154d8dbc5e814961406747c0592120098` 已推送，仅补 AGENTS/范围/证据文档。业务代码 `90cc92903f4d7828e1857ac6d84bf436fbbaa321` 的 CI38046803979 / job114197876427 已核实相同SHA、completed/success，880后端/412.59秒、128前端、78浏览器/4.2分钟、Ruff258/mypy176及前端静态构建通过。
+- main最新业务提交 `5216da4cb2728988d4c1424a155afcff70f5e5db` 已推送；[CI38053971553](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38053971553) / job114218555957 正在运行，head_sha已核实一致。包2必须先补最终计数与成功结果再开始包3。
+- 包2首轮提交 `b23a5a6a6265447ec30c7ab43b98e0702a4d893f` 的CI38049335893 / job114205128885为failure：880后端/361.87秒、138前端单元/静态构建通过，浏览器81通过1失败。原19入口导航测试在Agent普通读取中离页被busy守卫拦截。5216da4区分读取与任务启动/推进/草稿保存，普通读取允许离页；useRecordLink绑定原页面并在卸载后停用，防迟到回包污染新页地址。原测试保持全部断言。
+- 包1业务代码 `90cc92903f4d7828e1857ac6d84bf436fbbaa321` 的 CI38046803979 / job114197876427 已核实相同SHA、completed/success，880后端/412.59秒、128前端、78浏览器/4.2分钟、Ruff258/mypy176及前端静态构建通过。
 - P2-01：repositories/margin_sources.py 共用只读 EXISTS 来源谓词。首页首次读取识别 B1 所依赖 Listing 变化；列表/计数/分页/最近执行一致，GET不写业务状态。详情/审批继续按原锁和门禁检查。无关 Listing、无 Listing 依赖成本分支不误阻断。10新增后端用例及原1440/390 B1测试已验证。无迁移，head d93f6b210ac4。
 - 本地125后端/90.25秒、8前端单元、7关键浏览器/28.5秒及静态通过。读 docs/r2-fix-p2-01.md，日志与证据在 .local/r2-fixes/。p2-readback.json另进程回读：桌面shop283/run260/analysis21/todo21/listing177，手机shop284/run261/analysis22/todo22/listing180；均7步双结果not_submitted。Listing批准后DB任务source仍current，首页派生stale/update_data=1，证明GET无写入。
-- 工作区仅原未跟踪 docs/r2-final-special-acceptance.md、docs/uat/；完整保留，不删除。第二份报告原题“真实卖家使用验收”实际是Codex合成/自动化模拟，无真人；最终整理准确命名。
+- 原未跟踪 docs/r2-final-special-acceptance.md、docs/uat/ 是用户输入，完整保留。第二份报告原题“真实卖家使用验收”实际是Codex合成/自动化模拟，无真人；最终整理准确命名。
 - `.context-memory/README.md` 是用户 MM（暂存及工作区均改），本轮不碰、不提交、不回滚。上下文只提交 R2-fixes.md；旧README/R2.md为历史，当前范围以此和主文档为准。
+
+## 包2实现与证据
+
+- `businessTime.ts`、`BusinessDateTime.vue`、`BusinessDateRange.vue`已接入各业务精确时间入口。原生选择明确IANA时区，UTC持久化和[start,end)保持；7/30天快捷、B1固定7天。候选UTC往返匹配拒绝DST不存在/重叠时间，高级ISO允许明确偏移并保留微秒原文。可选字段的无效编辑也阻止提交；切换显示时区不改保存值。费用/核对/结算/待办等复用，原自然日/调度控件保留。
+- Agent以shop/execution深链保存任务（兼容run），读取保存input恢复店铺/模板/范围/对象并独立展示。历史预算只用于继续原任务，allow_*和authorization不复选；新任务重新确认许可。刷新只读、不drive。切店重置旧表单；无任务URL仅保存合法非敏感范围。来源清除后表单副本同时清理，跨店404准确提示。经营规则组件重挂读取当前规则。
+- 客服草稿/消息/切店写URL，刷新和前后退定位。自己的URL更新保留编辑器，dirty路由保护+beforeunload，显式放弃或保存后可导航。写入中防离页，同页浏览器历史切换等当前读取完成；普通读取允许菜单离页。来源撤销/清除/无权均回读原服务，不发送。手机数据预览已修复横溢，截图已目视。
+- 新businessTime 10单元（纽约gap/fold、Lord Howe半小时、Apia跳日、微秒/显示时区、不合法时间阻断等）、continuity 4浏览器（1440/390）。原模型测试补历史新任务许可不自动勾选，原审批可继续。后端业务、依赖、迁移均未改，head d93f6b210ac4。
+- 本地144后端/77.67秒；137全量单元后补1项，末次受影响16项通过，共138不同用例有覆盖；最终Agent/连续性/B1/模型替身18浏览器/1.1分钟，日期相关20浏览器/1.1分钟；Ruff258/mypy176/ESLint/TS/build通过。详细命令和原始日志索引见 docs/r2-fix-uat-03-04.md，失败运行不算整套通过。
+- 导航修复补1440/390延迟GET可离页且不回跳，延迟恢复POST仍阻止离页；6项continuity浏览器。最终全量138前端单元（20261010-205549-npm-78a18c.log）/ESLint/TS/build通过，22受影响浏览器/1.1分钟（20261010-205707-npm-00ec77.log）通过，含原seller-navigation/Agent/B1及4种模型替身。中断后专用3313容器为Exited255，已仅启动本轮原容器并确认healthy；初次无法连接的运行不计通过。
+- .local/r2-fixes/uat34-readback.json 独立进程回查：shop543/546、run406/407，执行3节点，清除后blocked/cleared/input NULL；draft66/67/68/69，human_review、cleared/snapshot NULL，版本4/3。清除前浏览器已断言succeeded/编辑保存/外部未提交。
 
 ## 剩余工作（严格顺序）
 
-包2 UAT-03/04：日期/时间选择、时区回显、7/30天快捷、保留高级精确ISO与UTC/IANA和[start,end)；DST歧义/不存在时间明确拒绝。Agent合法URL+任务记录恢复店铺/身份/渠道/对象；历史只读回显不继承新任务授权，重新执行仍核对范围/预算/审批，刷新不自动启动。客服保存后深链、刷新历史回读、跨店/无权/失效/撤销/清除准确提示，未保存编辑不得静默覆盖、不发送。桌面1440/手机390完整交互回归，独立提交/准确CI成功再包3。
+包2：等待准确CI38053971553完成，失败则修复并验证新SHA；成功后记录日志中的实际计数，更新包级验收/进度/testing，独立文档提交推送，然后包3。880/138/84是待核实预期，必须读取日志的实际结果。
 
 包3 UAT-02：先提交最小方案，评估有界浏览器CSV拆分并复用import_split.py/manifest/原导入组协议。必须说明引号/转义/换行/BOM/多行、字节/行数/SHA256一致、内存/取消/中断/恢复、去重覆盖回退。少量可维护代码可安全实现则实施；复杂框架/大改需停自动拆分部分、记录风险并询问用户。无论拆分结论均改善超限、可执行下一步、进度/失败、对账及40000导入vs10000/1000分析限制提示。保留2MiB/2000单片/危险文件保护；合成测2001/10001行、跨片重复、失败继续、取消/整组撤销、退款/币种/日期/恶意格、重导不累加/完整性来源。独立提交/CI。
 
