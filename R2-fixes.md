@@ -1,44 +1,29 @@
 # R2 缺陷修复与体验收敛接续
 
-2026-10-10 21:02 Asia/Shanghai。主目录 C:/Users/27363/Desktop/AI E-commerce Agent，项目「电商智能体」。用户已授权按四包连续实施，具体范围 docs/r2-fix-scope.md、状态 docs/r2-fix-progress.md。包1完成，包2已推送并等待准确CI；下一包为包3。仅一个开发聊天写入，无子代理授权。
+2026-10-10 21:35 Asia/Shanghai。工作区 C:/Users/27363/Desktop/AI E-commerce Agent，项目「电商智能体」。按 docs/r2-fix-scope.md 连续完成四包及最终报告；每包独立测试/提交/推送并核实准确业务 SHA 的 CI 成功再进入下一包。当前聊天独占工作区，无子代理授权。
 
-## 当前提交与证据
+## 当前进度
 
-- main最新业务提交 `5216da4cb2728988d4c1424a155afcff70f5e5db` 已推送；[CI38053971553](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38053971553) / job114218555957 正在运行，head_sha已核实一致。包2必须先补最终计数与成功结果再开始包3。
-- 包2首轮提交 `b23a5a6a6265447ec30c7ab43b98e0702a4d893f` 的CI38049335893 / job114205128885为failure：880后端/361.87秒、138前端单元/静态构建通过，浏览器81通过1失败。原19入口导航测试在Agent普通读取中离页被busy守卫拦截。5216da4区分读取与任务启动/推进/草稿保存，普通读取允许离页；useRecordLink绑定原页面并在卸载后停用，防迟到回包污染新页地址。原测试保持全部断言。
-- 包1业务代码 `90cc92903f4d7828e1857ac6d84bf436fbbaa321` 的 CI38046803979 / job114197876427 已核实相同SHA、completed/success，880后端/412.59秒、128前端、78浏览器/4.2分钟、Ruff258/mypy176及前端静态构建通过。
-- P2-01：repositories/margin_sources.py 共用只读 EXISTS 来源谓词。首页首次读取识别 B1 所依赖 Listing 变化；列表/计数/分页/最近执行一致，GET不写业务状态。详情/审批继续按原锁和门禁检查。无关 Listing、无 Listing 依赖成本分支不误阻断。10新增后端用例及原1440/390 B1测试已验证。无迁移，head d93f6b210ac4。
-- 本地125后端/90.25秒、8前端单元、7关键浏览器/28.5秒及静态通过。读 docs/r2-fix-p2-01.md，日志与证据在 .local/r2-fixes/。p2-readback.json另进程回读：桌面shop283/run260/analysis21/todo21/listing177，手机shop284/run261/analysis22/todo22/listing180；均7步双结果not_submitted。Listing批准后DB任务source仍current，首页派生stale/update_data=1，证明GET无写入。
-- 原未跟踪 docs/r2-final-special-acceptance.md、docs/uat/ 是用户输入，完整保留。第二份报告原题“真实卖家使用验收”实际是Codex合成/自动化模拟，无真人；最终整理准确命名。
-- `.context-memory/README.md` 是用户 MM（暂存及工作区均改），本轮不碰、不提交、不回滚。上下文只提交 R2-fixes.md；旧README/R2.md为历史，当前范围以此和主文档为准。
+- 包1 P2-01完成，90cc92903f4d7828e1857ac6d84bf436fbbaa321 / CI38046803979 success，880后端/128前端/78浏览器。首页与详情共用只读来源谓词，首次GET即可判定B1 Listing依赖失效；原失败测试及查询数/隔离/审批/恢复/清除覆盖通过。验收 docs/r2-fix-p2-01.md。
+- 包2 UAT03/04完成，5216da4cb2728988d4c1424a155afcff70f5e5db / CI38053971553 / job114218555957 success：880后端315.75秒、138单元37文件、84浏览器3.9分钟。闭合文档b164a22已推送。原生业务日期/IANA时区、DST拒绝歧义、高级准确时间、Agent/客服深链及未保存保护。首次CI导航失败已修复：只读离页允许、写入守卫、卸载后迟到URL不回写。验收 docs/r2-fix-uat-03-04.md。
+- 包3最小方案fb13f5e先提交；实现 **69ba42a38ee95f31315c98c5f888de6a35a78e74** 已推送。**CI38055976730 / job114224496845 仍运行，head_sha匹配；通过前不得修改包4。** 880/158/89只是预期，须日志核实。成功后更新包级验收/进度/testing，文档提交推送。
+- 包3为有界浏览器CSV拆分/Worker取消/原件manifest匹配恢复/逐片上传；40MiB、40000记录、20片、每片2MiB/2000保持。无后端/迁移/依赖改动。原CLI字节协议逐片对照，未绕过服务校验。文件 csvSplit.ts、csvSplit.worker.ts、BrowserImportSource.vue、ImportGroups.vue、ImportsView.vue；验收 docs/r2-fix-uat-02.md。
+- 包3本地59后端/31.11秒、158单元39文件、13导入浏览器2.2分钟、ESLint无警告/TS/build通过。2001/10001、跨片重复、断网重试、刷新恢复、重复上传、整组撤销、退款/币种/日期/危险格已测。原件40000恰好20片成功、重编码第21片拒绝。截图 .local/r2-fixes/browser-import-*.png 已目视。
+- 包3独立回读 .local/r2-fixes/uat2-readback.json：组24/26各2001记录，第二片unchanged=1；25/27各10001/6片，四组均revoked且订单0；组28/shop656/batch944完整3记录，EUR10/USD2分开；原CLI29/30撤销后0。迁移d93f6b210ac4。
+- 当前已启动完整后端回归（不会与浏览器并行）：日志20261010-213416-pytest-9e8a85.log，尚未完成。Ruff规则/258格式、mypy176刚通过。需查看运行会话/日志，不能把未完成视为成功。
 
-## 包2实现与证据
+## 剩余工作
 
-- `businessTime.ts`、`BusinessDateTime.vue`、`BusinessDateRange.vue`已接入各业务精确时间入口。原生选择明确IANA时区，UTC持久化和[start,end)保持；7/30天快捷、B1固定7天。候选UTC往返匹配拒绝DST不存在/重叠时间，高级ISO允许明确偏移并保留微秒原文。可选字段的无效编辑也阻止提交；切换显示时区不改保存值。费用/核对/结算/待办等复用，原自然日/调度控件保留。
-- Agent以shop/execution深链保存任务（兼容run），读取保存input恢复店铺/模板/范围/对象并独立展示。历史预算只用于继续原任务，allow_*和authorization不复选；新任务重新确认许可。刷新只读、不drive。切店重置旧表单；无任务URL仅保存合法非敏感范围。来源清除后表单副本同时清理，跨店404准确提示。经营规则组件重挂读取当前规则。
-- 客服草稿/消息/切店写URL，刷新和前后退定位。自己的URL更新保留编辑器，dirty路由保护+beforeunload，显式放弃或保存后可导航。写入中防离页，同页浏览器历史切换等当前读取完成；普通读取允许菜单离页。来源撤销/清除/无权均回读原服务，不发送。手机数据预览已修复横溢，截图已目视。
-- 新businessTime 10单元（纽约gap/fold、Lord Howe半小时、Apia跳日、微秒/显示时区、不合法时间阻断等）、continuity 4浏览器（1440/390）。原模型测试补历史新任务许可不自动勾选，原审批可继续。后端业务、依赖、迁移均未改，head d93f6b210ac4。
-- 本地144后端/77.67秒；137全量单元后补1项，末次受影响16项通过，共138不同用例有覆盖；最终Agent/连续性/B1/模型替身18浏览器/1.1分钟，日期相关20浏览器/1.1分钟；Ruff258/mypy176/ESLint/TS/build通过。详细命令和原始日志索引见 docs/r2-fix-uat-03-04.md，失败运行不算整套通过。
-- 导航修复补1440/390延迟GET可离页且不回跳，延迟恢复POST仍阻止离页；6项continuity浏览器。最终全量138前端单元（20261010-205549-npm-78a18c.log）/ESLint/TS/build通过，22受影响浏览器/1.1分钟（20261010-205707-npm-00ec77.log）通过，含原seller-navigation/Agent/B1及4种模型替身。中断后专用3313容器为Exited255，已仅启动本轮原容器并确认healthy；初次无法连接的运行不计通过。
-- .local/r2-fixes/uat34-readback.json 独立进程回查：shop543/546、run406/407，执行3节点，清除后blocked/cleared/input NULL；draft66/67/68/69，human_review、cleared/snapshot NULL，版本4/3。清除前浏览器已断言succeeded/编辑保存/外部未提交。
+1. 核实包3准确CI，若失败定点修复新SHA再验；成功读取实际计数并闭合文档。
+2. 包4 UAT01：默认管理员预部署，卖家取得地址/账号后网页经营。当前Login帮助仍引向命令，Settings建店后无导入链接，Dashboard引导只按profile_complete展开。最小补账号获取/联系管理员重置、建店入口与店铺深链导入。正式CLI在backend/app/cli.py，保留无公开注册。首次卖家UI演练需隔离账号，现有E2E初始化只创建e2e_seller。尚未修改包4，尚未做包4官方检索。
+3. 最终四MVP+B1全回归：原foundation.spec同店四流程/75-62-13/修订10/人工交付；margin-review.spec双审批/7步/双内部结果。完整静态/880后端与迁移保护/单元/浏览器/准确CI；独立回读结果和迁移head。报告《SoloOps R2 基础版缺陷修复与用户体验收敛报告》包含P2原失败复验、UAT01–04分类、无退化证据、B1预算/断点/权限、最终SHA/CI、迁移回退与真实样本/真人/公网待验。全部完成后停止。
 
-## 剩余工作（严格顺序）
+## 运行边界
 
-包2：等待准确CI38053971553完成，失败则修复并验证新SHA；成功后记录日志中的实际计数，更新包级验收/进度/testing，独立文档提交推送，然后包3。880/138/84是待核实预期，必须读取日志的实际结果。
-
-包3 UAT-02：先提交最小方案，评估有界浏览器CSV拆分并复用import_split.py/manifest/原导入组协议。必须说明引号/转义/换行/BOM/多行、字节/行数/SHA256一致、内存/取消/中断/恢复、去重覆盖回退。少量可维护代码可安全实现则实施；复杂框架/大改需停自动拆分部分、记录风险并询问用户。无论拆分结论均改善超限、可执行下一步、进度/失败、对账及40000导入vs10000/1000分析限制提示。保留2MiB/2000单片/危险文件保护；合成测2001/10001行、跨片重复、失败继续、取消/整组撤销、退款/币种/日期/恶意格、重导不累加/完整性来源。独立提交/CI。
-
-包4 UAT-01：默认管理员预部署，卖家得账号后网页经营。保留管理员CLI建号，最小完善登录账号获取、建店、首次导入引导。公开注册/用户管理需单独安全设计+确认。核心业务无需卖家命令行/DB/API。独立提交/CI。
-
-最后四MVP+B1预算/断点/审批全回归；Ruff/mypy/pytest/ESLint/TS/build/Vitest/Playwright/准确最终CI。输出《SoloOps R2 基础版缺陷修复与用户体验收敛报告》，含P2-01原失败复验、UAT01–04分类处理状态、退化判断、B1受控写入、测试/CI/最终SHA、迁移回退、真实样本/真人/公网待验。全部完成停止。真人UAT不是本轮交付阻塞。
-
-## 安全环境与执行提示
-
-- 本轮新Docker项目soloops-r2-fixes-20261010，容器soloops-r2-fixes-20261010-mysql-test-1 / hostname189d09af3aee，卷fixes-data，**127.0.0.1:3313/soloops_r2_fixes_test**。测试只用此库。保护3307/3308/3309、专项3311/3312、模拟UAT33312、用户8002/5175。
-- 启动器：`backend/.venv/Scripts/python.exe .local/r2-fixes/run.py`；mode pytest/npm/python/docker。清理继承SOLOOPS变量后固定3313、模型/外发/调度false，TEMP/TMP指向任务tmp（解决Windows Vitest rename EPERM）。旧ui模式未配置，不使用。
-- 例：启动器后 `pytest tests/test_margin_workbench.py -q`，`python -m ruff check app tests migrations scripts ../scripts`，`python -m mypy app`，`npm run test:unit -- ...`，`npm run test:e2e -- ...`。后端和E2E串行共享3313；E2E自行启动8001/5174，必须用npm脚本先build，reuseExistingServer=false。Node .local/runtimes/node-v24.16.0-win-x64由启动器设置PATH。
-- 沙箱禁本机网络/Docker管道/.git写索引；需经工具require_escalated执行对应隔离库测试、git提交推送。已正常获批，无自动审批拒绝。不要输出真实配置/凭据，忽略目录日志不提交。git普通快进不强推。
-- GitHub使用 tools.mcp__codex_apps__github_fetch({url:REST URL})，返回JSON在structuredContent.content；只打印必要字段。日志 tools.mcp__codex_apps__github_fetch_workflow_job_logs({repo_full_name:'Changxin-YR/AI-E-commerce-Agent',job_id:...}) 返回structuredContent.content文本；运行中可能404，完成后可取。不要每分钟抓完整日志。
-- Firecrawl --status fetch failed，官方资料改用web且仅主来源；每功能更新docs/references.md。前端沿用现有Vue深绿纸面设计。no-negative-echo应用于提交/交接；无需新框架或大重构。74SO/32原验收/47长期功能不变。付费模型、真实邮件、平台写入本轮0且禁止，历史许可不复用。
-- 原聊天「验收 SoloOps R2 基础开发」01a1254c...曾同时写入。用户已在修复聊天明确授权通知其停写，由修复聊天接续；已确认其idle且未提交。不要再启动它。
-- 用户已授权接近上下文上限时创建同项目local接续聊天。项目ID1c274a7b-2f1e-45ca-bf1b-10475766545b；交接前落盘推送，旧聊天停止写。新聊天须持续做完剩余授权目标，不停在计划或要求用户再次授权常规步骤。
+- 仅127.0.0.1:3313/soloops_r2_fixes_test。Docker项目soloops-r2-fixes-20261010，容器soloops-r2-fixes-20261010-mysql-test-1，hostname189d09af3aee，迁移d93f6b210ac4。保护3307/3308/3309、3311/3312、33312及用户8002/5175。
+- 启动器 backend/.venv/Scripts/python.exe .local/r2-fixes/run.py；支持pytest、python、npm、docker。清理SOLOOPS/COMPOSE继承环境、固定3313，模型/邮件/调度false，Node .local/runtimes/node-v24.16.0-win-x64，TEMP在本轮忽略目录。数据库/网络测试和git写需require_escalated。pytest与E2E严格串行；npm run test:e2e先build，独占8001/5174、reuseExistingServer=false，每次初始化清空专用测试库。
+- 付费模型/真实邮件/平台写入本轮禁止，历史许可不复用。仅合成/替身，第二份报告是模拟卖家自动验收，没有真人。74SO/32原验收/47长期扩展保留，真人及真实样本/公网不阻塞本轮代码交付。
+- 用户输入未跟踪 docs/r2-final-special-acceptance.md、docs/uat/ 保留原样。**.context-memory/README.md 是用户 MM，禁止覆盖/提交/回滚。** 上下文仅R2-fixes.md，提交使用git commit --only -- R2-fixes.md。原README/R2.md为旧历史。
+- 已应用firecrawl和no-negative-echo；Firecrawl认证但fetch failed，官方资料用web fallback。每功能更新references/development/interview-guide/feature-matrix。沿用现有Vue设计，无新框架。
+- GitHub tools.mcp__codex_apps__github_fetch({url:REST URL})，JSON在structuredContent.content；actions/runs/{run}/jobs读取job，fetch_workflow_job_logs({repo_full_name:'Changxin-YR/AI-E-commerce-Agent',job_id:...})读完成日志。使用完整SHA筛选。未安装gh，不重复高频取日志。
+- 用户授权接近上下文上限时创建同项目local接续聊天，项目ID1c274a7b-2f1e-45ca-bf1b-10475766545b；先落盘推送，交接后旧聊天停止写。不向旧聊天发消息，也不再启动其他开发者。
