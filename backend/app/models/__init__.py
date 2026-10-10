@@ -23,6 +23,7 @@ from app.models.operations import (
     OperationTaskEvent,
     OperationTaskSource,
 )
+from app.models.order_costs import OrderCostRevision
 from app.models.outbound import OutboundApproval, OutboundMessage, TestMailChannel
 from app.models.overview import OverviewReport, OverviewShop, OverviewSource
 from app.models.product_edits import ProductEdit, ProductEditSource
@@ -45,6 +46,7 @@ from app.models.statement_reviews import (
 from app.models.support import ReplyDraft, ReplyPolicy, ReplySource, SupportPolicy
 
 __all__ = [
+    "OrderCostRevision",
     "ImportGroup",
     "Settlement",
     "SettlementReceipt",

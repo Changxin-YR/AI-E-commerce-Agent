@@ -29,6 +29,7 @@ const selectedSaved = ref<SavedAnalysis | null>(null)
 const questions = ['查看销售与已知毛利', '销量前五的 SKU', '哪些商品销量高但已知毛利低']
 const question = ref(questions[0]!)
 const scope = reactive<AnalysisScope>({
+  cost_mode: 'current_estimate',
   start_at: new Date(Date.now() - 30 * 86400000).toISOString(),
   end_at: new Date().toISOString(),
   timezone: 'Asia/Shanghai',
@@ -109,6 +110,11 @@ async function run(): Promise<void> {
     result.value = await analyticsApi.ask(shopId.value, { ...scope }, question.value)
   })
 }
+async function costsChanged(): Promise<void> {
+  outdated.value = true
+  await refreshHistory()
+  success.value = '历史成本凭据已更新，请重新计算以采用新依据。'
+}
 async function save(): Promise<void> {
   if (!result.value) return
   await action(async () => {
@@ -150,7 +156,12 @@ async function changeTodo(actionName: 'complete' | 'reopen'): Promise<void> {
 }
 async function show(item: Pick<SavedAnalysis, 'id'>): Promise<void> {
   await action(async () => {
-    selectedSaved.value = await analyticsApi.getSaved(shopId.value, item.id)
+    const saved = await analyticsApi.getSaved(shopId.value, item.id)
+    Object.assign(scope, saved.scope)
+    question.value =
+      questions[saved.scope.intent === 'sales' ? 1 : saved.scope.intent === 'low_margin' ? 2 : 0]!
+    await nextTick()
+    selectedSaved.value = saved
     result.value = selectedSaved.value.snapshot
     outdated.value = selectedSaved.value.status !== 'current'
   })
@@ -184,7 +195,7 @@ function time(value: string, timezone: string): string {
   <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
   <p v-if="shopId">
     <RouterLink
-      v-if="scope.channel"
+      v-if="scope.channel && scope.cost_mode !== 'seller_history'"
       :to="{
         path: '/agent',
         query: {
@@ -197,6 +208,9 @@ function time(value: string, timezone: string): string {
     >
       打开 AI 经营问数，确认范围与模型预算
     </RouterLink>
+    <span v-else-if="scope.cost_mode === 'seller_history'"
+      >历史成本在本页按凭据计算；AI 经营问数和今日运营使用当前成本估算口径。</span
+    >
     <span v-else>使用 AI 问数前，请先选择明确的订单来源渠道。</span>
   </p>
   <p v-if="!shops.length && !busy">
@@ -208,6 +222,12 @@ function time(value: string, timezone: string): string {
   <form v-else class="section-block" @submit.prevent="run">
     <h2>01 / 确认统计范围</h2>
     <fieldset :disabled="busy" class="analysis-fields">
+      <label class="full-width"
+        >采购成本口径<select v-model="scope.cost_mode">
+          <option value="current_estimate">当前成本回推估算</option>
+          <option value="seller_history">卖家确认的订单行历史成本</option>
+        </select></label
+      >
       <label
         >分析店铺<select v-model="shopId" @change="selectShop">
           <option v-for="shop in shops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
@@ -324,21 +344,29 @@ function time(value: string, timezone: string): string {
           ><small>{{ result.summary.line_count }} 行已支付 / 含退款</small>
         </div>
         <div>
-          <span>净销售额</span><strong>{{ money(result.summary.sales) }}</strong
+          <span>可确认净销售额</span><strong>{{ money(result.summary.sales) }}</strong
           ><small
             >可核对子集 {{ result.summary.known_sales_subtotal }} ·
             {{ result.summary.sales_known_lines }} 行</small
           >
         </div>
         <div>
-          <span>估算采购成本</span><strong>{{ money(result.summary.cost) }}</strong
+          <span>{{
+            result.scope.cost_mode === 'seller_history' ? '卖家确认历史采购成本' : '估算采购成本'
+          }}</span
+          ><strong>{{ money(result.summary.cost) }}</strong
           ><small
             >可核对子集 {{ result.summary.known_cost_subtotal }} ·
             {{ result.summary.cost_known_lines }} 行</small
           >
         </div>
         <div>
-          <span>已知商品毛利（估算）</span><strong>{{ money(result.summary.gross_profit) }}</strong
+          <span>{{
+            result.scope.cost_mode === 'seller_history'
+              ? '按卖家确认历史成本计算的商品毛利'
+              : '当前成本估算的商品毛利'
+          }}</span
+          ><strong>{{ money(result.summary.gross_profit) }}</strong
           ><small
             >配对完整子集 {{ result.summary.known_gross_subtotal }} ·
             {{ result.summary.gross_known_lines }} 行</small
@@ -349,7 +377,19 @@ function time(value: string, timezone: string): string {
       <p v-if="result.candidates.length">符合当前问题：{{ result.candidates.join('、') }}</p>
       <p>{{ result.formula }}</p>
       <p>{{ result.cost_basis }}</p>
+      <p>计算口径版本 {{ result.calculation_version ?? 1 }} · 尚无法核实净利润。</p>
       <p>费用缺口：{{ result.fee_gaps.join('、') }}。</p>
+      <p>
+        费用待核，商品毛利未自动扣除人工费用或平台账单；请先核对重复凭据及归属。<RouterLink
+          :to="{ path: '/expenses', query: { shop: shopId, ...scopeQuery(result.scope) } }"
+          >核对人工费用</RouterLink
+        >
+        ·
+        <RouterLink
+          :to="{ path: '/statements', query: { shop: shopId, ...scopeQuery(result.scope) } }"
+          >核对渠道账单</RouterLink
+        >
+      </p>
       <ul>
         <li v-for="warning in result.warnings" :key="warning">{{ warning }}</li>
       </ul>
@@ -367,7 +407,9 @@ function time(value: string, timezone: string): string {
               <th>SKU</th>
               <th>原购买数量</th>
               <th>净销售额</th>
-              <th>估算采购成本</th>
+              <th>
+                {{ result.scope.cost_mode === 'seller_history' ? '历史采购成本' : '估算采购成本' }}
+              </th>
               <th>已知毛利</th>
               <th>毛利率</th>
             </tr>
@@ -414,7 +456,13 @@ function time(value: string, timezone: string): string {
         </div>
       </div>
     </section>
-    <AnalysisEvidence :result="result" :shop-id="shopId" />
+    <AnalysisEvidence
+      :result="result"
+      :shop-id="shopId"
+      edit-costs
+      :stale="stale || busy"
+      @costs-changed="costsChanged"
+    />
   </template>
   <section v-if="shopId" class="section-block">
     <div class="section-title">

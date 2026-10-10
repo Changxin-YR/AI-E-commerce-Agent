@@ -428,6 +428,9 @@ def test_migration_refuses_to_drop_active_group_coverage(logged_in, settings, mo
         logged_in, create_shop(logged_in), group_data([(ORDER_HEADER + csv_line(0)).encode()])
     )
     monkeypatch.setenv("SOLOOPS_DATABASE_URL", settings.database_url.get_secret_value())
-    with pytest.raises(RuntimeError, match="活动导入组"):
-        command.downgrade(Config("alembic.ini"), "92c7ea53bd10")
+    try:
+        with pytest.raises(RuntimeError, match="活动导入组"):
+            command.downgrade(Config("alembic.ini"), "92c7ea53bd10")
+    finally:
+        command.upgrade(Config("alembic.ini"), "head")
     assert read_group(logged_in, group)["status"] == "active"

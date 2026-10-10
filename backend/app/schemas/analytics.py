@@ -6,11 +6,13 @@ from pydantic import Field, field_validator, model_validator
 
 from app.schemas.common import Currency, InputModel, OutputModel, Timezone
 from app.schemas.imports import DataIdentity, SourceChannel
+from app.schemas.order_costs import CostVersion
 
 Intent = Literal["sales", "low_margin", "summary"]
 
 
 class AnalysisInput(InputModel):
+    cost_mode: Literal["current_estimate", "seller_history"] = "current_estimate"
     start_at: datetime
     end_at: datetime
     timezone: Timezone
@@ -58,6 +60,8 @@ class SourceReference(OutputModel):
 
 
 class LineResult(OutputModel):
+    unit_cost: Decimal | None = None
+    historical_cost: CostVersion | None = None
     order_id: str
     line_id: str
     sku: str
@@ -94,6 +98,7 @@ class MetricSummary(OutputModel):
 
 
 class AnalysisResult(OutputModel):
+    calculation_version: int = 1
     scope: AnalysisInput
     source_revision: int
     calculated_at: str

@@ -1,4 +1,5 @@
 export interface AnalysisScope {
+  cost_mode?: 'current_estimate' | 'seller_history'
   start_at: string
   end_at: string
   timezone: string
@@ -36,6 +37,8 @@ export interface MetricSummary {
   margin_percent: string | null
 }
 export interface AnalysisLine {
+  unit_cost?: string | null
+  historical_cost?: CostVersion | null
   order_id: string
   line_id: string
   sku: string
@@ -55,6 +58,7 @@ export interface AnalysisLine {
   cost_source: SourceReference | null
 }
 export interface AnalysisResult {
+  calculation_version?: number
   scope: AnalysisScope
   source_revision: number
   calculated_at: string
@@ -86,4 +90,43 @@ export interface SourceDetail {
   raw: Record<string, unknown>
   corrections: Record<string, unknown>
   normalized: Record<string, unknown>
+}
+
+export interface CostVersion {
+  id: number
+  version: number
+  action: string
+  status: string
+  unit_cost: string | null
+  currency: string | null
+  evidence_ref: string | null
+  evidence_at: string | null
+  recorded_at: string
+}
+export interface CostHistory {
+  source_row_id: number
+  source_batch_id: number
+  source_current: boolean
+  source_revision: number
+  order_id: string
+  line_id: string
+  sku: string
+  currency: string
+  channel: string
+  data_identity: string
+  version: number
+  history: CostVersion[]
+}
+export interface CostWrite {
+  request_id: string
+  expected_version: number
+  expected_revision: number
+  action: 'upsert' | 'revoke'
+  content?: {
+    unit_cost: string
+    currency: string
+    evidence_ref: string
+    evidence_at: string
+    confirmed: boolean
+  }
 }

@@ -1,5 +1,13 @@
 # 测试与验收记录
 
+## R2 A2：历史成本凭据与两种口径（2026-10-10）
+
+证据见[r2-a2-acceptance](r2-a2-acceptance.md)。成本/分析/导入组定向48项/28.61秒；加入并发与跨用户后成本专包17项/8.77秒。最终后端完整763项/295.07秒、Ruff243文件、mypy169 app文件通过。3308隔离库的空表回退/升级、Alembic模型差异、旧记录回读及有成本历史拒绝降级通过；当前head b37e820ca491。
+
+前端30文件106单元/4.48秒，lint/type-check/build通过。分析页桌面/手机4浏览器场景/13.6秒通过，包含订单行人工录入3.25/4.5、48.97净销售额/11成本/37.97毛利、保存/刷新、修订5后新毛利34.47且旧报告37.97、版本/撤销后未知。已查看1440/390px截图，页面及输入无横溢。全站67项为66通过/1项本地ERR_NO_BUFFER_SPACE（3.1分钟）；trace定位费用模块静态脚本加载失败，保持代码/断言不变后账单存档桌面/手机定向2项通过（11.7秒）。全部67条有最终代码通过覆盖，本地未另跑单次全绿。截图及故障trace保存在忽略目录.local/r2-a2-evidence。
+
+所有MySQL验收串行，仅127.0.0.1:3308/soloops_test；真实模型/邮件/调度关闭。测试首先修正源行ID读取契约；前端单元发现Vue number输入会转换浮点数，已改文本十进制并复验。旧Starlette/httpx及Node颜色提示不影响结果。
+
 ## R2 A1-3：官方字段候选及人工补录（2026-10-10）
 
 完整证据见[r2-a1-3-acceptance](r2-a1-3-acceptance.md)。后端`pytest tests/test_import_presets.py tests/test_imports.py -q --tb=short --maxfail=1 --basetemp=../.local/pytest-r2-a13`：48项/7.84秒；完整`pytest -q --tb=short --maxfail=1 --basetemp=../.local/pytest-r2-a13-full`：746项/292.80秒。Ruff规则/237文件格式、mypy165 app文件通过。前端lint/type-check/build、29文件103单元/4.60秒及全站`npm run test:e2e`65项/3.0分钟通过。所有数据库测试串行使用3308，模型/邮件/调度关闭。

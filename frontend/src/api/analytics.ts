@@ -1,8 +1,22 @@
 import { request } from './client'
-import type { AnalysisResult, AnalysisScope, SavedAnalysis, SourceDetail } from '@/types/analytics'
+import type {
+  AnalysisResult,
+  AnalysisScope,
+  SavedAnalysis,
+  SourceDetail,
+  CostHistory,
+  CostWrite,
+} from '@/types/analytics'
 
 const base = (shop: number) => `/shops/${shop}/analytics`
 export const analyticsApi = {
+  costHistory: (shop: number, row: number) =>
+    request<CostHistory>(`${base(shop)}/order-costs/${row}`),
+  writeCost: (shop: number, row: number, data: CostWrite) =>
+    request<CostHistory>(`${base(shop)}/order-costs/${row}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
   revision: (shop: number) => request<number>(`${base(shop)}/revision`),
   getSaved: (shop: number, id: number) => request<SavedAnalysis>(`${base(shop)}/saved/${id}`),
   calculate: (shop: number, scope: AnalysisScope) =>

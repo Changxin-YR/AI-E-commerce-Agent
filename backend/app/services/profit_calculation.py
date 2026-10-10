@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from decimal import Decimal, localcontext
 
 from app.models.imports import ImportBatch, ImportRow
+from app.models.order_costs import OrderCostRevision
 from app.repositories.analytics import OrderEvidence, ProductEvidence
 from app.schemas.analytics import (
     AnalysisInput,
@@ -10,6 +11,7 @@ from app.schemas.analytics import (
     MetricSummary,
     SourceReference,
 )
+from app.schemas.order_costs import CostVersion
 
 PAID_STATUSES = {"paid", "partially_refunded", "refunded"}
 FORMULA = (
@@ -18,10 +20,29 @@ FORMULA = (
 )
 COST_BASIS = (
     "当前商品采购成本估算历史订单，成本生效日未知；"
+    "当前成本回推估算，非订单时点实际采购成本。"
     "来源导入/导出时间不等于成本生效时间。"
     "退款不恢复采购成本或库存，购买数量不是退货后的净销量。"
 )
 FEE_GAPS = ["平台佣金", "广告", "物流与履约", "税费", "其他费用"]
+HISTORICAL_BASIS = (
+    "按卖家提供并确认的订单行历史单位成本计算商品毛利；凭据未经系统独立核验。"
+    "缺少有效凭据时成本未知；退款不恢复采购成本或库存。"
+)
+
+
+def cost_version(record: OrderCostRevision) -> CostVersion:
+    return CostVersion(
+        id=record.id,
+        version=record.version,
+        action=record.action,
+        status=record.status,
+        unit_cost=record.unit_cost,
+        currency=record.currency,
+        evidence_ref=record.evidence_ref,
+        evidence_at=utc_text(record.evidence_at) if record.evidence_at else None,
+        recorded_at=utc_text(record.created_at),
+    )
 
 
 def utc_text(value: datetime) -> str:
@@ -43,13 +64,18 @@ def reference(row: ImportRow, batch: ImportBatch) -> SourceReference:
 
 
 def calculate_line(
-    evidence: OrderEvidence, product: ProductEvidence | None, scope: AnalysisInput
+    evidence: OrderEvidence,
+    product: ProductEvidence | None,
+    scope: AnalysisInput,
+    historical: OrderCostRevision | None = None,
 ) -> LineResult:
     order, row, batch = evidence
     included = order.status in PAID_STATUSES and order.currency == scope.currency
     gaps: list[str] = []
     sales = cost = gross = None
     cost_source = None
+    unit_cost = None
+    history = None
     if order.status not in PAID_STATUSES:
         gaps.append("取消、未付款或测试订单不计入已支付销售")
     if order.currency != scope.currency:
@@ -61,11 +87,22 @@ def calculate_line(
             gaps.append("缺行退款")
         if order.discount is not None and order.refund is not None:
             sales = order.quantity * order.unit_price - order.discount - order.refund
-        if product is None:
+        if scope.cost_mode == "seller_history":
+            if historical is None or historical.status != "active":
+                gaps.append("缺卖家确认的有效订单行历史成本凭据")
+            else:
+                history = cost_version(historical)
+                unit_cost = historical.unit_cost
+                if historical.currency != scope.currency:
+                    gaps.append("历史成本币种不同，缺已确认汇率")
+                elif unit_cost is not None:
+                    cost = order.quantity * unit_cost
+        elif product is None:
             gaps.append("缺商品采购成本")
         else:
             item, cost_row, cost_batch = product
             cost_source = reference(cost_row, cost_batch)
+            unit_cost = item.unit_cost
             if cost_batch.data_identity != scope.data_identity:
                 gaps.append("商品成本与订单数据身份不同")
             elif item.unit_cost is None:
@@ -96,6 +133,8 @@ def calculate_line(
         gaps=gaps,
         source=reference(row, batch),
         cost_source=cost_source,
+        unit_cost=unit_cost,
+        historical_cost=history,
     )
 
 
@@ -134,11 +173,12 @@ def calculate(
     scope: AnalysisInput,
     revision: int,
     calculated_at: datetime,
+    historical_costs: dict[int, OrderCostRevision] | None = None,
 ) -> AnalysisResult:
     # Numeric(18,4) × quantity up to 1e6, summed across <=10000 lines; 40 digits is ample.
     with localcontext() as context:
         context.prec = 40
-        return _calculate(orders, products, scope, revision, calculated_at)
+        return _calculate(orders, products, scope, revision, calculated_at, historical_costs or {})
 
 
 def _calculate(
@@ -147,10 +187,14 @@ def _calculate(
     scope: AnalysisInput,
     revision: int,
     calculated_at: datetime,
+    historical_costs: dict[int, OrderCostRevision],
 ) -> AnalysisResult:
     items = {item.sku: (item, row, batch) for item, row, batch in products}
     matching = [entry for entry in orders if entry[2].data_identity == scope.data_identity]
-    lines = [calculate_line(entry, items.get(entry[0].sku), scope) for entry in matching]
+    lines = [
+        calculate_line(entry, items.get(entry[0].sku), scope, historical_costs.get(entry[1].id))
+        for entry in matching
+    ]
     included = [line for line in lines if line.included]
     summary = aggregate(included)
     groups: dict[str, list[LineResult]] = {}
@@ -163,6 +207,7 @@ def _calculate(
     complete = bool(included) and summary.gross_profit is not None and not mixed_currency
     warnings = [
         "费用未完整归集，不能推断精确净利润。",
+        "费用待核：人工费用与平台账单须先核对重复凭据；商品毛利未扣费用，店铺费用未分摊。",
         "时间窗按订单时间筛选，包含起点、不含终点；退款归原订单时间。",
     ]
     if not included:
@@ -216,11 +261,14 @@ def _calculate(
             f"已知商品毛利 {summary.gross_known_lines} 行。"
         )
     return AnalysisResult(
+        calculation_version=2,
         scope=scope,
         source_revision=revision,
         calculated_at=utc_text(calculated_at),
-        formula=FORMULA,
-        cost_basis=COST_BASIS,
+        formula=FORMULA
+        if scope.cost_mode == "current_estimate"
+        else FORMULA.replace("当前单位采购成本", "卖家确认的订单行历史单位成本"),
+        cost_basis=COST_BASIS if scope.cost_mode == "current_estimate" else HISTORICAL_BASIS,
         fee_gaps=FEE_GAPS,
         warnings=warnings,
         summary=summary,

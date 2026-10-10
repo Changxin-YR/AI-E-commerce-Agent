@@ -7,6 +7,7 @@ interface Batch {
 }
 async function prepare(
   page: Page,
+  historical = false,
 ): Promise<{ shop: number; headers: Record<string, string>; orders: Batch }> {
   await page.goto('/analytics')
   await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
@@ -59,7 +60,8 @@ async function prepare(
   await importFile('products', 'sku,name,unit_cost,cost_currency\nA,Synthetic cup,7.125,USD\n')
   const orders = await importFile(
     'orders',
-    'order_id,line_id,sku,quantity,unit_price,currency,ordered_at,status,discount,refund\nO1,1,A,2,19.99,USD,2026-10-07 08:00:00,paid,1,0\n',
+    'order_id,line_id,sku,quantity,unit_price,currency,ordered_at,status,discount,refund\nO1,1,A,2,19.99,USD,2026-10-07 08:00:00,paid,1,0\n' +
+      (historical ? 'O2,1,A,1,19.99,USD,2026-10-07 12:00:00,partially_refunded,0,10\n' : ''),
   )
   await page.goto('/analytics')
   await page.getByLabel('分析店铺').selectOption(String(shop))
@@ -135,3 +137,77 @@ test('mobile scope, unknown question and empty-data guidance', async ({ page }) 
     '没有符合所选口径的已支付订单行',
   )
 })
+
+for (const width of [1440, 390]) {
+  test(`seller historical cost evidence, versions and recalculation at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 })
+    const { shop } = await prepare(page, true)
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    const result = page.getByRole('region', { name: '分析结果' })
+    await page.getByLabel('采购成本口径').selectOption('seller_history')
+    await page.getByRole('button', { name: '计算并查看证据' }).click()
+    await expect(result).toContainText('未知 / 缺数据')
+    async function editCost(index: number, value: string): Promise<void> {
+      const detail = page.locator('.analysis-evidence > details').nth(index)
+      await detail.locator(':scope > summary').click()
+      await detail.getByRole('button', { name: '历史成本凭据与版本' }).click()
+      const form = detail.getByRole('region', { name: '订单行历史成本凭据' })
+      await form.getByLabel('历史单位采购成本', { exact: true }).fill(value)
+      await form.getByLabel('凭据币种').selectOption('USD')
+      await form.getByLabel('凭据来源与说明').fill(`Synthetic receipt ${index + 1}`)
+      await form.getByLabel('凭据时间（含时区）').fill('2026-10-06T08:00:00+08:00')
+      await expect(form.getByRole('button', { name: '确认保存成本凭据' })).toBeDisabled()
+      await form.getByRole('checkbox').check()
+      await form.getByRole('button', { name: '确认保存成本凭据' }).click()
+      await expect(result.getByRole('alert')).toContainText('需重新计算')
+      await expect(page.getByRole('button', { name: '保存分析', exact: true })).toBeDisabled()
+      await page.getByRole('button', { name: '计算并查看证据' }).click()
+      await expect(result.getByRole('alert')).toHaveCount(0)
+    }
+    await editCost(0, '3.25')
+    await editCost(1, '4.5')
+    await expect(result).toContainText('48.9700')
+    await expect(result).toContainText('11.0000')
+    await expect(result).toContainText('37.9700')
+    await expect(result).toContainText('尚无法核实净利润')
+    await page.getByRole('button', { name: '保存分析', exact: true }).click()
+    await page.reload()
+    await page.getByLabel('分析店铺').selectOption(String(shop))
+    await page.getByRole('button', { name: /查看分析 #/ }).click()
+    await expect(result).toContainText('37.9700')
+    const first = page.locator('.analysis-evidence > details').first()
+    await first.locator(':scope > summary').click()
+    await first.getByRole('button', { name: '历史成本凭据与版本' }).click()
+    const evidence = first.getByRole('region', { name: '订单行历史成本凭据' })
+    await expect(evidence).toContainText('成本版本 1')
+    await evidence.getByLabel('历史单位采购成本', { exact: true }).fill('5')
+    await evidence.getByRole('checkbox').check()
+    await evidence.getByRole('button', { name: '确认保存成本凭据' }).click()
+    await expect(result).toContainText('37.9700')
+    await expect(result.getByRole('alert')).toContainText('需重新计算')
+    await page.getByRole('button', { name: '按此范围重算' }).click()
+    await expect(result).toContainText('34.4700')
+    const current = page.locator('.analysis-evidence > details').first()
+    await current.locator(':scope > summary').click()
+    await current.getByRole('button', { name: '历史成本凭据与版本' }).click()
+    const history = current.getByRole('region', { name: '订单行历史成本凭据' })
+    await expect(history).toContainText('成本版本 2')
+    await expect(history).toContainText('成本版本 1')
+    await expect(history).toContainText('已被新版本替代')
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
+    ).toBe(false)
+    await page.screenshot({ path: `test-results/r2-costs-${width}.png`, fullPage: true })
+    await history.getByRole('checkbox').check()
+    await history.getByRole('button', { name: '撤销当前成本凭据' }).click()
+    await page.getByRole('button', { name: '计算并查看证据' }).click()
+    await expect(result).toContainText('未知 / 缺数据')
+    await page.getByRole('button', { name: /查看分析 #/ }).click()
+    await expect(result).toContainText('37.9700')
+    await expect(result.getByRole('alert')).toContainText('需重新计算')
+    expect(errors).toEqual([])
+  })
+}

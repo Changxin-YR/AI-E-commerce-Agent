@@ -10,9 +10,25 @@ from app.schemas.analytics import (
     SourceOutput,
     TodoAction,
 )
+from app.schemas.order_costs import CostHistory, CostWrite
 from app.services.analytics import AnalyticsService
+from app.services.order_costs import OrderCostService
 
 router = APIRouter(prefix="/shops/{shop_id}/analytics", tags=["经营分析"])
+
+
+@router.get("/order-costs/{row_id}")
+def cost_history(
+    shop_id: int, row_id: int, current: CurrentSession, uow: UowDependency
+) -> CostHistory:
+    return OrderCostService(uow).get(current.user_id, shop_id, row_id)
+
+
+@router.post("/order-costs/{row_id}")
+def write_cost(
+    shop_id: int, row_id: int, data: CostWrite, current: CurrentSession, uow: UowDependency
+) -> CostHistory:
+    return OrderCostService(uow).write(current.user_id, shop_id, row_id, data)
 
 
 @router.get("/revision")

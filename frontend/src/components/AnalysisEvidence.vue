@@ -4,8 +4,15 @@ import { analyticsApi } from '@/api/analytics'
 import { errorMessage } from '@/api/client'
 import type { AnalysisResult, SourceDetail, SourceReference } from '@/types/analytics'
 import FeedbackBanner from './FeedbackBanner.vue'
+import OrderCostEditor from './OrderCostEditor.vue'
 
-const props = defineProps<{ result: AnalysisResult; shopId: number }>()
+const props = defineProps<{
+  result: AnalysisResult
+  shopId: number
+  editCosts?: boolean
+  stale?: boolean
+}>()
+const emit = defineEmits<{ costsChanged: [] }>()
 const page = ref(0)
 const source = ref<SourceDetail | null>(null)
 const error = ref('')
@@ -43,7 +50,13 @@ async function inspect(ref: SourceReference): Promise<void> {
 <template>
   <section class="section-block analysis-evidence">
     <h2>订单行与来源</h2>
-    <p>订单渠道：{{ result.scope.channel ?? '全部渠道' }}；商品成本取此店铺同身份的当前主档。</p>
+    <p>
+      订单渠道：{{ result.scope.channel ?? '全部渠道' }}；{{
+        result.scope.cost_mode === 'seller_history'
+          ? '成本来自对应订单源行的卖家确认凭据。'
+          : '商品成本取此店铺同身份的当前主档，回推历史订单为估算。'
+      }}
+    </p>
     <p>共 {{ result.lines.length }} 行；取消、未付款、测试和其他币种的行显示排除原因。</p>
     <details v-for="line in rows" :key="line.source.row_id" class="analysis-line">
       <summary>
@@ -59,10 +72,25 @@ async function inspect(ref: SourceReference): Promise<void> {
         {{ line.sales ?? '未知 / 未计入' }}
       </p>
       <p>
-        估算采购成本 {{ line.cost ?? '未知 / 未计入' }} · 已知毛利
+        {{ result.scope.cost_mode === 'seller_history' ? '卖家历史成本' : '估算采购成本' }}
+        {{ line.cost ?? '未知 / 未计入' }} · 已知毛利
         {{ line.gross_profit ?? '未知 / 未计入' }}
       </p>
       <p v-for="gap in line.gaps" :key="gap">{{ gap }}</p>
+      <p v-if="line.unit_cost !== null && line.unit_cost !== undefined">
+        计算单位成本：{{ line.unit_cost }}
+      </p>
+      <div v-if="line.historical_cost">
+        <p>
+          卖家确认成本版本 {{ line.historical_cost.version }} · {{ line.historical_cost.unit_cost }}
+          {{ line.historical_cost.currency }} · {{ line.historical_cost.evidence_ref }}
+        </p>
+        <p>
+          凭据时间：{{
+            line.historical_cost.evidence_at ? time(line.historical_cost.evidence_at) : '未知'
+          }}；记录时间：{{ time(line.historical_cost.recorded_at) }}。此处为计算时依据。
+        </p>
+      </div>
       <div class="button-row">
         <button class="button secondary small" :disabled="busy" @click="inspect(line.source)">
           订单来源 · 批次 {{ line.source.batch_id }} · 行 {{ line.source.row_number }}
@@ -76,6 +104,14 @@ async function inspect(ref: SourceReference): Promise<void> {
           成本来源 · 批次 {{ line.cost_source.batch_id }} · 行 {{ line.cost_source.row_number }}
         </button>
       </div>
+      <OrderCostEditor
+        v-if="editCosts"
+        :shop-id="shopId"
+        :row-id="line.source.row_id"
+        :timezone="result.scope.timezone"
+        :disabled="stale"
+        @changed="emit('costsChanged')"
+      />
     </details>
     <div v-if="result.lines.length > 20" class="pagination">
       <button class="button secondary small" :disabled="page === 0" @click="page--">上一页</button>

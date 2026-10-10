@@ -1,5 +1,13 @@
 # 项目理解与面试知识点
 
+## R2：如何补历史成本而保持历史报告可解释？
+
+- `OrderCostService.write`把卖家凭据绑定到确定的订单源行，追加Numeric金额与UTC时间版本；请求UUID重放与expected_version解决不同问题，分别防重复提交和旧界面覆盖。用户/店铺锁让并发请求按相同顺序执行。
+- `profit_calculation.calculate`从明确选择的成本模式取数。原始订单销售/退款公式共用，当前成本估算和卖家历史凭据不会混用；同SKU不同订单可有不同单位成本，缺凭据保持未知。
+- SavedAnalysis保存计算版本、公式、来源和当时成本版本。新增依据只使旧分析stale，原数字不重写；清除源数据时才按隐私协议擦除快照。
+- 来源回退不等于恢复确认：`OrderCostRepository.invalidate`在源行被替换时把有效凭据置stale，恢复原导入行后仍需卖家重核。这个规则通过覆盖→撤销→重算验证。
+- 浏览器数字输入也会影响精度：Vue对number输入自动转Number；`OrderCostEditor.vue`用十进制文本传输，后端用Decimal/Numeric。未知失败重试保留相同UUID，编辑内容后须重新确认。
+
 ## R2 渠道预设为何只提供候选映射？
 
 `services/import_presets.py`将可核实字段语义与源数据转换分开：表头签名只说明存在已知列，不证明每行金额、币种和商品身份都正确。`ImportService._output`派生候选，显式应用复用原preview/commit；币种未知、空白名称和危险单元格仍阻断。候选可停用而历史映射/原始值不被重写，体现格式版本与业务事实版本分别维护。`test_import_presets.py`验证停用回读、重导一致和撤销，浏览器验证卖家补录路径。

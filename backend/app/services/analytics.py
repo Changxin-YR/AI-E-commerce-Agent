@@ -43,7 +43,12 @@ class AnalyticsService:
     def run(self, owner_id: int, shop_id: int, scope: AnalysisInput) -> AnalysisResult:
         shop = self._shop(owner_id, shop_id)
         require_import_coverage(
-            self.uow, owner_id, shop_id, scope.data_identity, {"orders", "products"}, scope.channel
+            self.uow,
+            owner_id,
+            shop_id,
+            scope.data_identity,
+            {"orders", "products"} if scope.cost_mode == "current_estimate" else {"orders"},
+            scope.channel,
         )
         orders = self.repo.orders(
             owner_id,
@@ -58,8 +63,17 @@ class AnalyticsService:
         skus = {
             order.sku for order, _, batch in orders if batch.data_identity == scope.data_identity
         }
-        products = self.repo.products(owner_id, shop_id, skus) if skus else []
-        return calculate(orders, products, scope, shop.data_revision, utc_now())
+        products = (
+            self.repo.products(owner_id, shop_id, skus)
+            if skus and scope.cost_mode == "current_estimate"
+            else []
+        )
+        costs = (
+            self.uow.order_costs.active(owner_id, shop_id, {row.id for _, row, _ in orders})
+            if scope.cost_mode == "seller_history"
+            else {}
+        )
+        return calculate(orders, products, scope, shop.data_revision, utc_now(), costs)
 
     def ask(self, owner_id: int, shop_id: int, data: QuestionInput) -> AnalysisResult:
         self._shop(owner_id, shop_id)

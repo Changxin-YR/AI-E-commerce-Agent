@@ -10,6 +10,7 @@ from app.schemas.imports import DataIdentity, SourceChannel
 
 
 class OperationScope(AnalysisInput):
+    cost_mode: Literal["current_estimate"] = "current_estimate"
     rule_revision_id: Annotated[int, Field(ge=0)] = 0
     intent: Literal["low_margin"] = "low_margin"
     channel: SourceChannel = "generic"

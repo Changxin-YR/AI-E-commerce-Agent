@@ -18,6 +18,7 @@ from app.repositories.imports import ImportRepository
 from app.repositories.inventory import InventoryRepository
 from app.repositories.listings import ListingRepository
 from app.repositories.operations import OperationsRepository
+from app.repositories.order_costs import OrderCostRepository
 from app.repositories.order_reconciliation import OrderReconciliationRepository
 from app.repositories.outbound import OutboundRepository
 from app.repositories.overview import OverviewRepository
@@ -49,6 +50,7 @@ class UnitOfWork:
         self.inventory = InventoryRepository(session)
         self.operations = OperationsRepository(session)
         self.order_reconciliation = OrderReconciliationRepository(session)
+        self.order_costs = OrderCostRepository(session)
         self.outbound = OutboundRepository(session)
         self.overview = OverviewRepository(session)
         self.analytics = AnalyticsRepository(session)
