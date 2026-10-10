@@ -1,6 +1,6 @@
 # P2-01：首页 B1 来源有效性修复
 
-日期：2026-10-10。起点 `ef3eaa6b8ce2b0086e733270ec2f07f9331d9573`；本包新证据独立记录，全部使用合成数据。
+日期：2026-10-10。起点 `ef3eaa6b8ce2b0086e733270ec2f07f9331d9573`；本包新证据独立记录，全部使用合成数据。本包完成，修复提交 `90cc92903f4d7828e1857ac6d84bf436fbbaa321` 已推送，[CI38046803979](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38046803979) 已核对相同 SHA、completed/success。
 
 ## 缺陷与修复
 
@@ -23,11 +23,13 @@ B1 已完成 metrics → margin_evidence、读取缺少 `Capacity: 400ml` 的本
 | 前端相关单元 | `npm run test:unit -- src/__tests__/WorkInbox.spec.ts src/__tests__/MarginReviewEvidence.spec.ts src/__tests__/AgentRunReview.spec.ts` | 8 passed；日志 `20261010-185601-npm-4bfe79.log` |
 | 前端静态/构建 | ESLint、TypeScript、build | 接续前同前端代码已通过；日志 `20261010-185140-npm-a10293.log`、`20261010-185238-npm-72c019.log` |
 | 浏览器 | `npm run test:e2e -- margin-review.spec.ts workbench.spec.ts seller-navigation.spec.ts` | 7 passed / 28.5 秒，含 1440/390 B1 双写、首次首页与 19 路由；日志 `20261010-185802-npm-70c252.log` |
-| 准确提交 CI | 待本包提交后回读 | 待验证 |
+| 准确提交 CI | `90cc92903f4d7828e1857ac6d84bf436fbbaa321` / [run38046803979](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38046803979) / job114197876427 | completed/success；880 后端 / 412.59 秒、128 前端单元、78 浏览器 / 4.2 分钟、全部静态检查与构建通过 |
 
 修复过程：初次扩展回归 119 passed / 2 failed，原因是新增测试将登录退出应有审计当作 GET 写入、及测试标题缺少原商品事实；修正测试输入和审计观察边界后，最终上述 125 项通过。沙箱本机连接限制和 Vitest 临时目录 rename EPERM 分别通过已授权的隔离库网络执行、任务内临时目录解决，相关环境失败日志保留，不计作通过。
 
 业务断言：新 Listing 批准后，首次首页 stale / update_data；22 个同类任务统计为 22、分页 20+2，任务数增加不增加 SQL 往返；GET 前后 AgentExecution/AgentStep/ListingVersion/AuditEvent 保持。旧审批返回 409，最新版本 advance 进入 blocked/source_changed 且不追加写入；暂停旧任务不能 resume，新任务读取新基线。无内容证据的成本分支仍能审批落盘。已成功任务的结果 ID/步骤保持，来源 clear 后不再进入 update_data，仍按 cleared 历史回读。
+
+浏览器后另一个进程只读核对本轮数据库，证据 `.local/r2-fixes/p2-readback.json`：桌面店铺 283 / Agent260，分析/待办21、Listing177；手机店铺284 / Agent261，分析/待办22、Listing180。两者 succeeded / 7步，各有 analysis、listing 两次 verify，external_status 均 not_submitted。用户批准新 Listing 后，数据库 Agent.source_status 仍 current，而首次及重复工作台查询派生 stale / update_data=1，证明首页没有持久化该变更。迁移仍 d93f6b210ac4；手机任务/证据截图已目视核对。
 
 ## 迁移与回退
 

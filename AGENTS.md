@@ -1,7 +1,7 @@
 # SoloOps 开发约定
 
 - 默认简体中文沟通，代码标识符使用清晰英文。优先可供人阅读的小函数和明确类型。
-- 本轮交付目标：用户于2026-10-10要求按`docs/requirements/SoloOps-R2.md`对齐、开发、闭环和升级；执行状态与授权解释见`docs/r2-progress.md`。先A0，再按R2顺序逐包实施、独立测试/提交/CI核对。原基础B-01至B-14及74SO/32原验收保留，47项长期模块仍按`docs/foundation-backlog.md`管理。接续先读三份foundation文档、R2计划及进度。
+- 本轮交付目标：原R2 A0→C已完成；用户于2026-10-10追加基础版缺陷修复与体验收敛，当前按`docs/r2-fix-progress.md`执行：P2-01 → UAT-03/04日期与任务连续性 → UAT-02大文件入口 → UAT-01管理员预部署首次使用 → 完整回归报告。每包独立测试/提交并确认准确SHA的CI成功后继续。原基础B-01至B-14及74SO/32原验收保留，47项长期模块仍按`docs/foundation-backlog.md`管理。接续先读三份foundation文档、R2计划/进度、修复进度和包级验收。
 - 原基础真实模型1元验收及两封QQ邮件已完成；本轮优化使用合成数据与替身测试，新的付费模型、真实邮件及平台写入另获明确授权，历史许可不复用。
 - 功能基线：`docs/requirements/SoloOps-V1.0.md`。维护全部 74 个 SO、32 个验收项，不将计划写成实现。
 - 技术栈：Vue 3 + TypeScript、FastAPI/Python、MySQL。接口 → 业务服务 → 数据访问三层，Agent 只能调用受控业务服务。
