@@ -1,5 +1,11 @@
 # 公开实现与借鉴记录
 
+## R2 B2：人工复制与通用CSV（2026-10-10）
+
+- Mozilla Contributors [Clipboard.writeText](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText)与[内容许可](https://developer.mozilla.org/en-US/docs/MDN/Writing_guidelines/Attrib_copyright_license)：文档CC-BY-SA 2.5或更新版本，示例代码按页面许可说明；本次不复制正文/代码。借鉴安全上下文、异步成功和NotAllowedError处理，失败保留手工复制路径。
+- OWASP [CSV Injection](https://community.owasp.org/attacks/CSV_Injection)：CC-BY-SA 4.0，参考分隔符/引号编码、危险公式起始和全角变体、不同电子表格软件重新保存的差异。沿用现有错误CSV的文本字面量思路，补完整转义和恶意内容测试；CSV为人工核对的通用草稿，原始正文可通过纯文本取得。
+- 适配：复用本地已批准Listing与来源锁校验，复制/下载前均重新检查当前版本；不引入平台模板或发布连接。无新依赖；Firecrawl负额度，资料通过官方web只读检索核实。
+
 ## R2 B1：证据驱动的有限技能组合（2026-10-10）
 
 - Anthropic官方[Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)：借鉴可由确定性分类执行的routing、清楚的技能契约、基于实际工具结果继续和有限停止条件。文章版权归Anthropic，未复制代码；只在现有持久Agent中增加一个低毛利复核模板。
