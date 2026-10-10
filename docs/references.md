@@ -356,3 +356,10 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - OWASP [Transaction Authorization](https://cheatsheetseries.owasp.org/cheatsheets/Transaction_Authorization_Cheat_Sheet.html)与[Logging](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)：CC BY-SA 4.0。借鉴审阅绑定可见内容、服务端操作前再次校验及敏感数据最小化原则；自行实现版本审阅，审计仅存草稿/证据编号，不记录客户正文或证据内容。
 - SQLAlchemy官方[UniqueConstraint](https://docs.sqlalchemy.org/en/20/core/constraints.html#unique-constraint)：MIT。结合既有用户/店铺锁，以唯一UUID请求键和请求指纹处理人工证据重试；相同键不同内容拒绝，来源清除擦除证据payload。
 - 文档仅作设计和接口参考，未复制实现。Firecrawl已知额度不足，未发起付费抓取；本次用内置web查阅官方页面。复制/CSV沿用B2的MDN/OWASP依据。
+
+
+## R2 C：API内调度与部署边界（2026-10-10）
+
+- FastAPI官方[Lifespan](https://fastapi.tiangolo.com/advanced/events/)与[HTTPS部署](https://fastapi.tiangolo.com/deployment/https/)（MIT项目）：参考API生命周期资源启停、TLS代理和运行进程的职责。既有进程内调度保持，新增摘要只读取已保存自动周期，不当作进程心跳；没有引入任务队列。
+- OWASP [Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)（CC BY-SA 4.0）：参考HTTPS、Secure/HttpOnly/SameSite和会话生命周期关系。代码能力与真实部署证据分别记录，公开上线前逐项验证实际环境。
+- 文档只作设计依据，自行实现查询与展示，无复制代码或新依赖。Firecrawl已知额度不足，使用内置web查阅官方页面。具体本地/部署门禁见本包交付文档；未取得新的生产操作授权。
