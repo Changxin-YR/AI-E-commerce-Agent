@@ -554,3 +554,5 @@ R2 B3完整CI修复：旧A3降级拒绝测试补finally恢复head，92项迁移�
 ## R2 C 定向与统一演示验收（2026-10-10）
 
 调度/身份后端49项/14.91秒、ScheduleRuntime三单元/1.03秒通过，Ruff256文件、mypy175及lint/type-check/build通过。时区断言按既有supportTime的日期/分钟格式修正；首次统一演示缺少修订文件导出时间，被业务时效门禁正确保留awaiting_source，补实际合成导出时间后复验。浏览器和最终准确CI以[r2-c-acceptance](r2-c-acceptance.md)为准；所有本机数据库测试仍仅3308，串行，无真实外部调用。
+
+C最终准确业务代码ed30b872e5a89be096e15c550cb46b9b7240ee44的CI38042318938已核实completed/success：870后端/311.57秒、128前端单元、78浏览器/3.6分钟，Ruff256/mypy175及全部静态构建通过。本轮11包完成，条件延期范围见r2-progress.md。
