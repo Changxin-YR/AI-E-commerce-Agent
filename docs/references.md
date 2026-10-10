@@ -375,3 +375,9 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - FastAPI官方[Lifespan](https://fastapi.tiangolo.com/advanced/events/)与[HTTPS部署](https://fastapi.tiangolo.com/deployment/https/)（MIT项目）：参考API生命周期资源启停、TLS代理和运行进程的职责。既有进程内调度保持，新增摘要只读取已保存自动周期，不当作进程心跳；没有引入任务队列。
 - OWASP [Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)（CC BY-SA 4.0）：参考HTTPS、Secure/HttpOnly/SameSite和会话生命周期关系。代码能力与真实部署证据分别记录，公开上线前逐项验证实际环境。
 - 文档只作设计依据，自行实现查询与展示，无复制代码或新依赖。Firecrawl已知额度不足，使用内置web查阅官方页面。具体本地/部署门禁见本包交付文档；未取得新的生产操作授权。
+
+## R2 修复包3：浏览器CSV拆分（2026-10-10）
+
+- Python 3.11官方[csv](https://docs.python.org/3.11/library/csv.html)（PSF）：参考strict、newline与默认writer规则，以项目import_split.py作为逐字节对照基准，自行实现有界浏览器子集，不复制源码。
+- MDN [digest](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest)、[Blob.slice](https://developer.mozilla.org/en-US/docs/Web/API/Blob/slice)、[TextDecoder.decode](https://developer.mozilla.org/en-US/docs/Web/API/TextDecoder/decode)与[Worker.terminate](https://developer.mozilla.org/en-US/docs/Web/API/Worker/terminate)（文档CC BY-SA）：digest必须整块读入，故保留40MiB上限；解析按64KiB严格解码；Worker终止实现取消。只参考API和限制，自行实现，无新依赖。方案见r2-fix-uat-02-plan.md。
+- Firecrawl状态再次为fetch failed，本次使用内置web检索并读取上述官方资料。
