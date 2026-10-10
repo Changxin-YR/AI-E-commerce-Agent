@@ -1,6 +1,6 @@
 # R2 修复包4：管理员预部署与首次网页操作
 
-日期：2026-10-10。前置包3准确提交69ba42a / CI38055976730成功。实现及本地定向验证完成，准确业务提交与完整CI待补。
+日期：2026-10-10。前置包3准确提交69ba42a / CI38055976730成功。本包完成；准确业务提交a84ffa3e88abc66ad45df3740591a206115ade15的[CI38057461269](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38057461269)已核实同SHA、completed/success。
 
 ## 交付方式与修改
 
@@ -21,7 +21,7 @@ first-use.spec.ts先用正式CLI在专用测试库创建两个账号，再分别
 - `npm run test:unit`：158通过/39文件/9.25秒，日志20261010-215037-npm-d39545.log。ESLint无警告、TypeScript及生产构建通过，静态日志20261010-215036-npm-f97246.log、20261010-214857-npm-7e1147.log。
 - 独立进程`python ../.local/r2-fixes/read_first_use.py`只读SQL核对：桌面shop1416/batch1916、手机shop1417/batch1917，各1商品FIRST-CUP，price10.0000/unit_cost3.0000/USD，批次committed/synthetic。桌面档案version1，手机档案NULL，证明后者确实没有依赖预置档案。迁移d93f6b210ac4；证据uat1-readback.json，日志20261010-215120-python-fce36f.log。
 - 本包不改后端业务；当前完整后端`pytest -q`为880 passed/455.81秒，含原身份、CSRF/重置吊销、跨用户店铺、迁移保护，日志20261010-213416-pytest-9e8a85.log。Ruff258格式/规则及mypy176通过。
-- 准确业务SHA与完整CI待补。
+- 准确业务CI job114228754736实际日志为880后端/433.76秒、158单元/39文件、91浏览器/6.6分钟，Ruff258格式/规则、mypy176及前端静态构建全部通过。最终本地完整浏览器91项/6.4分钟也通过，日志20261010-215325-npm-ff1418.log；四MVP/B1独立回读见[最终报告](r2-fixes-final-report.md)。
 
 最终`npm run build`（含type-check）退出0，日志20261010-215214-npm-208556.log。此前同命令在沙箱中因Vite Worker文件realpath触发EPERM，原命令获正常项目权限后通过；业务代码和构建配置未改，失败运行不计通过。
 

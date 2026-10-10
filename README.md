@@ -6,6 +6,8 @@ Vue 3 + TypeScript / Python FastAPI / MySQL 的个人卖家运营项目。后端
 
 ## 当前基础版本
 
+2026-10-10追加的基础版缺陷修复与体验收敛已完成，范围和逐包状态见[修复进度](docs/r2-fix-progress.md)，完整证据与当前交付边界见[最终报告](docs/r2-fixes-final-report.md)。修复覆盖首页B1来源一致性、业务日期和任务连续性、有界浏览器大CSV导入，以及管理员预部署后的首次网页操作；下文原R2与基础验收记录保留其历史提交范围。
+
 基础验收完成后，[个人卖家 R2 优化](docs/requirements/SoloOps-R2.md)已按约定本地范围完成11个工作包，逐包证据和条件延期见[实施进度](docs/r2-progress.md)。最终业务提交ed30b87的[完整CI](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38042318938)通过870后端、128前端单元和78浏览器测试。A1已补字段语义审阅、安全分组导入及有官方依据的Shopify商品候选。A2增加当前成本估算/卖家订单行历史成本两种口径、凭据版本和撤销；交付证据及CI状态见[R2 A2验收](docs/r2-a2-acceptance.md)。A3补充人工处理证据与新来源复检；A4增加五组导航、三类首页工作视图和19页完整入口，见[R2 A4验收](docs/r2-a4-acceptance.md)。B1增加最近7天证据驱动低毛利复核、逐节点审批和多个内部结果回查，见[R2 B1验收](docs/r2-b1-acceptance.md)。B2/B3补当前已审阅Listing/客服的人工复制与通用CSV、客服人工操作自报；C补最近自动周期及运行边界，见[B2](docs/r2-b2-acceptance.md)、[B3](docs/r2-b3-acceptance.md)、[C验收](docs/r2-c-acceptance.md)。统一使用路径见[R2演练](docs/r2-walkthrough.md)，当前本地合成/脱敏交付范围及公开上线前置条件见[上线门禁](docs/r2-deployment-gates.md)。
 
 当前目标为可实际安装、使用、重启恢复和维护的基础系统，完整交付今日运营、经营问数、Listing维护、客服处理四条流程。当前实施及验收状态见 [基础规格](docs/foundation-release.md)、[逐项验收](docs/foundation-acceptance.md)、[使用维护](docs/foundation-user-guide.md) 和 [后续迭代清单](docs/foundation-backlog.md)。现有能力及74项长期需求保留，基础版本B-01至B-14已于2026-10-10全部通过。

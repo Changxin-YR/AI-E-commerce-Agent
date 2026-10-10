@@ -12,10 +12,10 @@
 | 密钥和日志 | 配置密钥使用SecretStr；本机配置忽略；API验证错误不回显输入；异常日志只留request_id和异常类型 | 实际部署秘密注入与轮换、DB最小权限、备份加密与存取限制、代理及平台日志脱敏、历史仓库秘密扫描 | 待部署审计 |
 | 数据/审计范围及留存 | 原始导入、快照、人工凭据和备份均可能含经营数据；业务清除传播已测，B3清除人工证据payload；B3交付审计保留编号/版本 | 明确经营所需字段、个人信息依据、保留期限、审计保留、下载/备份副本删除责任；未配置自动到期删除 | 待用户经营政策与实测 |
 | 用户/店铺权限 | API取当前会话用户，业务层校验店铺，查询按owner/shop；跨用户/店铺及CSRF/Origin合成用例通过 | 在部署拓扑重验权限、会话及跨域边界，核验代理不会扩大可访问范围 | 源码/合成通过，部署待验 |
-| 备份恢复 | 原G-03在旧head恢复64表及代表业务记录，工具拒绝覆盖已有目标；G-04真实进程重启与旧业务快照保持 | R2当前迁移head d93f6b210ac4含新增数据结构，须在另行授权的隔离恢复目标验证新凭据、审阅、人工记录及审计，并演练恢复流程 | 当前新结构恢复待验 |
+| 备份恢复 | 2026-10-10原专项在3311源实例→3312新目标完成head d93f6b210ac4恢复，67表COUNT/CHECKSUM及38份API快照相同，含新凭据、审阅、人工记录和审计；拒绝覆盖及恢复账号清理通过。本轮修复只读核对备份SQL哈希和归档证据一致 | 实际部署仍须验证备份加密、访问控制、恢复时限与灾备流程；原专项不替代生产目标的演练 | 当前R2合成隔离恢复已验，生产部署待验 |
 | 生产配置 | trusted_hosts/origins默认只允许本机；模型和外发默认关闭；调度随API生命周期运行 | 核对真实host/origin、Cookie、DB账户、备份位置、日志、进程托管、告警及每项外部开关；调度配置默认true，部署时须明确决定 | 待部署验证 |
 
-历史G-03/G-04证据见[foundation-acceptance](foundation-acceptance.md)、[foundation-runtime-evidence](foundation-runtime-evidence.md)；其成功日期和数据库结构保持原记载。本轮只验证127.0.0.1:3308/soloops_test，不创建额外恢复库，不接触3307/3309及8002/5175。
+历史G-03/G-04证据见[foundation-acceptance](foundation-acceptance.md)、[foundation-runtime-evidence](foundation-runtime-evidence.md)；其成功日期和数据库结构保持原记载。原R2 C使用3308测试库；后续专项恢复使用独立3311/3312；本轮缺陷修复只使用3313/soloops_r2_fixes_test，未启动或写入前述恢复实例及3307/3309、用户8002/5175。当前结构恢复证据保存在.local/r2-final/restore-verification.json及readback-source/restored.json，备份manifest在.local/backups/r2-final-20261010/；属于原专项证据，本轮只核对归档文件。
 
 ## 定时任务的实际承诺
 
