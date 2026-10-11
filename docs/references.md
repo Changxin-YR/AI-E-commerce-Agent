@@ -403,3 +403,5 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - M0-A IDE 收尾（2026-10-11）：[Gradle Java 兼容表](https://docs.gradle.org/current/userguide/compatibility.html)和[Gradle 8.3 发布说明](https://docs.gradle.org/8.3/release-notes.html)确认运行 JVM 的版本边界，项目沿用 JDK17。固定 Flutter OH 提交的 `ohos_builder.dart` 中 `copyFlutterBuildInfoFile` / `copyFramesCfgFile` 确认两份配置向 rawfile 的迁移；按 BSD 模板来源保留原内容，不修改第三方 SDK。微信完整构建后的 IDE 显示通过实际窗口核对，热重载错误和完整编译结果分开记录。
 
 - 腾讯云 COS 小程序快速入门：https://cloud.tencent.com/document/product/436/31953 。读取官方域名白名单配置说明，仅用于 request / uploadFile 配置入口依据；具体微信主体、类目及完整 HTTPS 准入继续单独核对。
+
+- 微信服务类目后台入口：[腾讯云类目申请资质要求](https://cloud.tencent.com/document/product/1078/43316/) 明确“设置 > 基本设置 > 服务类目”。本次仅引用入口路径，个人主体由用户确认，SoloOps 的类目/发布适用性仍需账号后台核实。

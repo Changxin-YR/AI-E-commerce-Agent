@@ -1,6 +1,6 @@
 # SoloOps R2 · M0-A 实际工程验收
 
-核对日：2026-10-11。**三端最小目标编译均为 PASS；M0-A 整体验收仍为 BLOCKED。** 微信开发者工具启动页已实际加载，构建与静态契约已归档；当前微信主体/服务类目及完整域名规则核对仍受阻。OHOS 为未签名 HAP，设备与业务测试尚未执行。
+核对日：2026-10-11。**三端最小目标编译均为 PASS；M0-A 整体验收仍为 BLOCKED。** 微信开发者工具启动页已实际加载，构建与静态契约已归档；当前个人主体由用户确认，服务类目及完整域名规则核对仍受阻。OHOS 为未签名 HAP，设备与业务测试尚未执行。
 
 ## 1. 仓库与隔离
 
@@ -91,7 +91,7 @@ hvigorw.bat assembleHap -p product=default -p buildMode=debug --no-daemon -p FLU
 ## 6. 插件、资质与契约
 
 - [插件矩阵](plugin-matrix.md)：网络、Cookie/Bearer、存储、文件选择、读取上传、剪贴板、下载分享、缓存、导航和生命周期均有版本/来源/实测/替代项。OH 文件选择旧候选版本约束 FAIL，OH 凭据存储候选静态安全审查 FAIL；未经设备验证的能力 NOT_TESTED。
-- [微信资质](weapp-compliance.md)：备案原则、接入商区域要求、request/uploadFile 域名配置入口取得官方依据；现行主体与类目、完整 HTTPS/域名细则仍 BLOCKED。已有本机 AppID，主体类型和后台资质 NOT_TESTED；未推断个人主体必然可或不可发布。
+- [微信资质](weapp-compliance.md)：备案原则、接入商区域要求、request/uploadFile 域名配置入口取得官方依据；服务类目设置入口已有官方依据；该 AppID 的个人主体由用户确认，类目可能尚未设置、待后台核实。个人主体的实际类目适用性与完整 HTTPS/域名细则仍 BLOCKED，后台资质 NOT_TESTED；未推断个人主体必然可或不可发布。
 - [UI契约](ui-contract.md) / `contracts/ui-contract.json`：首页、待办、AI、客服、我的五入口；21功能（19业务路由+登录+B1）、149现有 API 引用。校验结构、ID唯一、路由覆盖、静态 OpenAPI 字段/动作、写入门禁和风险语义。
 - `not_submitted` 不表示外部发布，`seller_reported` 不等于渠道确认，`stale` 要求重核来源；候选不等于执行、审批不等于外部成功；B1 保留两处独立审批。Flutter/Taro 业务实现 NOT_TESTED；12项契约变异测试属于静态检查。
 - [依赖与许可证](dependency-review.md)：许可证静态检查 PASS；npm 安全审计 FAIL（1 low、12 moderate、25 high、4 critical 依赖节点），生产发布 BLOCKED。当前依赖锁未变。
@@ -107,7 +107,7 @@ hvigorw.bat assembleHap -p product=default -p buildMode=debug --no-daemon -p FLU
 | 微信 automator 通道 | BLOCKED | 连接/页面读取55秒超时；原生 UI 启动证据独立有效。后续检查工具和自动化协议兼容性 |
 | Flutter包装命令签名检查 | BLOCKED | 按后续运行目标核对调试签名、架构和 API；未签名构建已 PASS，现有 IDE 启动日志不替代设备验收 |
 | Taro 安全审计 | FAIL | 后续评估兼容修复版及漏洞可达性；接真实业务/发布前处理 |
-| 官方当前微信规则及账号材料 | BLOCKED | 官方完整类目/网络文档读取受限；需允许渠道与账号后台确认主体、类目、HTTPS/域名细则 |
+| 官方当前微信规则及账号材料 | BLOCKED | 官方完整类目/网络文档读取受限；用户已确认个人主体；需允许渠道与该账号后台确认类目及其主体适用性、HTTPS/域名细则 |
 | 移动设备 / 插件 / 真实业务行为 | NOT_TESTED | 后续获授权阶段以合成资料逐端验收 |
 
 ## 8. 准入判断
@@ -116,5 +116,5 @@ hvigorw.bat assembleHap -p product=default -p buildMode=debug --no-daemon -p FLU
 
 - Android：编译前置 PASS；可在新指令下安排 M0-B 合成资料设备验证。
 - OHOS：未签名编译前置 PASS；M0-B 需要本机调试签名及设备运行验证。
-- 微信小程序：编译和 IDE 最小启动页 PASS；后续补稳定基础库/真机、主体类目、域名和依赖安全条件。
+- 微信小程序：编译和 IDE 最小启动页 PASS；后续补稳定基础库/真机、个人主体的适用类目、域名和依赖安全条件。
 - M0-A 整体放行：BLOCKED（资质核对未闭合）；生产发布：BLOCKED。技术构建通过支持分端建议，不等于后续阶段已授权。本轮停止在 M0-A。
