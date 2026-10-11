@@ -8,8 +8,9 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "backend"))
-from app.services.outbound_provider import MailEnvelope  # noqa: E402
 from business_fixture import SyntheticMail, SyntheticModel, build_app  # noqa: E402
+
+from app.services.outbound_provider import MailEnvelope  # noqa: E402
 
 
 @pytest.mark.parametrize(
