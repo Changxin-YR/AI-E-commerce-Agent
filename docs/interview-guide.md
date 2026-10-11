@@ -418,3 +418,5 @@ Vue Router的query更新与组件重建如何影响编辑？`AppShell`只让Agen
 - 静态契约能证明什么？scripts/validate_ui_contract.py核对路由、OpenAPI字段、动作和风险语义；12项变异测试证明错误会被拒绝，不证明各客户端真的执行了业务。
 - 为什么退出码0仍可能FAIL？微信开发工具open命令本次退出0但返回openProject/code10错误；run_evidence记录过程，报告按实际结果验收。doctor检测到SDK也不意味着其版本足以编译。
 - 如何保护R2？独立worktree和分支只新增客户端工程及静态校验；后端金额、权限、审批、导入和Web业务均保持。具体成功产物和阻塞见mobile/m0a-report.md。
+
+M0-A API22版本约束示例：`apps/soloops_flutter/toolchain.lock.json`锁定维护者支持API22的版本与引擎SHA，`ohos/build-profile.json5`分别声明编译/目标/最低运行API。目标字段不能证明已安装对应SDK；真实Hvigor错误00303168为环境阻塞证据。微信检查脚本只读启动页，CLI返回0与页面加载成功单独判定。

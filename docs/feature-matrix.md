@@ -133,3 +133,5 @@ SO-001/006/067/068/074的既有能力通过G-04独立空库首次安装和真实
 2026-10-10 R2修复包4：SO-001/074的现有账号与建店路径明确管理员预部署职责；登录账号获取/求助、首页首店、店铺导入深链与首份文件说明经独立合成账号网页流程验证，结果见[r2-fix-uat-01](r2-fix-uat-01.md)。本轮不把最小起步提示计为SO-065长期软件助手完成；74SO/32验收/47长期模块保持。
 
 2026-10-11 M0-A工程补充：三端目录与最小壳已建立；Android APK和微信目标编译PASS，OHOS HAP因SDK配套BLOCKED。21功能/149现有API静态UI契约和12项校验器测试PASS。设备、真实业务跨端一致性NOT_TESTED；微信IDE加载和npm安全审计FAIL。见[实际验收](mobile/m0a-report.md)。此记录是工程前置证据，不增加SO业务实现；原74SO/32验收/47长期模块保持。
+
+M0-A API22复核（2026-10-11）：Flutter OH 1.0.7 + compile/target22；Android编译PASS，HAP因SDK组件缺失BLOCKED。小程序编译PASS，IDE加载BLOCKED。真实业务/设备状态仍NOT_TESTED。证据：`docs/mobile/m0a-sdk22-evidence.json`。

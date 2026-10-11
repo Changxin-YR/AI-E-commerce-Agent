@@ -21,3 +21,18 @@ npm audit --json
 当前 npm 审计仍失败，详见 [`依赖审查`](../../docs/mobile/dependency-review.md)。
 这些问题阻止生产发布放行；本阶段只记录最小编译可行性。不可对审计建议直接使用
 `--force` 将 Taro 降级到 1.x/3.x，或把 Vite 升至不满足 peer 约束的版本。
+
+## 开发者工具启动页复核
+
+先编译本工程，在 IDE 导入此目录。以下命令在仓库根目录执行，
+`$weappCli` 设置为本机微信开发者工具的 `cli.bat` 绝对路径：
+
+```powershell
+npm install --prefix .local/weapp-tools --save-exact miniprogram-automator@0.12.1 --no-audit --no-fund
+& $weappCli auto --project (Resolve-Path apps/soloops_weapp).Path --auto-port 9420 --trust-project
+node scripts/mobile/check_weapp_load.cjs
+```
+
+检查只读取启动页路径、SoloOps 标题和 M0-A 说明，超时55秒，结束时仅断开自动化连接。
+它不执行登录、上传或发布。当前 CLI 已连接 IDE，但导入停在 preparing；实际自动化
+连接失败，项目加载状态 BLOCKED。必须取得页面断言成功的真实结果后才能改为 PASS。

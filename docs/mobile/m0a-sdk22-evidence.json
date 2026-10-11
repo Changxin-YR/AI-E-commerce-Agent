@@ -1,0 +1,235 @@
+{
+  "schema_version": "1.0",
+  "phase": "M0-A",
+  "baseline_sha": "0a49a37dcd7f1ccf0acc2c0a225bfdc8d8bee686",
+  "branch": "feat/soloops-mobile-m0a",
+  "raw_logs": "Local ignored .local/mobile-m0a; paths relative to repository root",
+  "status_policy": "Explicit assessment; exit 0 alone does not prove successful operation",
+  "records": [
+    {
+      "name": "sdk22-flutter-version",
+      "started_utc": "2026-10-11T02:02:18.583814+00:00",
+      "finished_utc": "2026-10-11T02:04:20.510274+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "--version",
+        "--machine"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T020218Z-sdk22-flutter-version.log",
+      "log_sha256": "74993a60adb15c8fda4511c0a74b8328e14be40cf2a60fa30948e43c5cc18735",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "sdk22-template",
+      "started_utc": "2026-10-11T02:05:15.386534+00:00",
+      "finished_utc": "2026-10-11T02:05:32.127846+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "create",
+        "--platforms",
+        "android,ohos",
+        "--org",
+        "dev.soloops",
+        "--project-name",
+        "soloops_flutter",
+        "--no-pub",
+        ".local/platform-template-api22"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T020515Z-sdk22-template.log",
+      "log_sha256": "5c9914bf95a70d749683c91ff24bcf604804f231646adcc496a0fedf4f959d69",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "sdk22-pub-get",
+      "started_utc": "2026-10-11T02:06:47.634420+00:00",
+      "finished_utc": "2026-10-11T02:07:00.271676+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "pub",
+        "get"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T020647Z-sdk22-pub-get.log",
+      "log_sha256": "ea02a6a4f2472e95c16d68b6b2c67bfbb178fbadfbd289784a9d1905af26980e",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "sdk22-android-apk",
+      "started_utc": "2026-10-11T02:07:00.551470+00:00",
+      "finished_utc": "2026-10-11T02:07:18.550256+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "build",
+        "apk",
+        "--debug",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T020700Z-sdk22-android-apk.log",
+      "log_sha256": "ba79fc4de7c7cca66bfce5c5cfcbb37c5cfbf11ea7cae9c9285c80250ff6d626",
+      "artifacts": [
+        {
+          "path": "apps/soloops_flutter/build/app/outputs/flutter-apk/app-debug.apk",
+          "bytes": 86763598,
+          "sha256": "8705feac7d87f53a9926b4e50e8ad9b0a6ce1ffd914c33c9ade3edbbab0f1aa8"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "sdk22-ohos-hap",
+      "started_utc": "2026-10-11T02:07:18.796042+00:00",
+      "finished_utc": "2026-10-11T02:07:38.477787+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "build",
+        "hap",
+        "--debug",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 1,
+      "log": ".local/mobile-m0a/20261011T020718Z-sdk22-ohos-hap.log",
+      "log_sha256": "2cf345f3e751d81b0a7d84bf1515fca9976e10bf52ffa1627b14abfd7afc4cba",
+      "artifacts": [],
+      "status": "FAIL"
+    },
+    {
+      "name": "sdk22-ohos-hap-final",
+      "started_utc": "2026-10-11T02:12:18.633475+00:00",
+      "finished_utc": "2026-10-11T02:12:48.911726+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "build",
+        "hap",
+        "--debug",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 1,
+      "log": ".local/mobile-m0a/20261011T021218Z-sdk22-ohos-hap-final.log",
+      "log_sha256": "7170f8652618917634159dbe32d38f54803478c6a4f34f8e5867a2aaf7458e2c",
+      "artifacts": [],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "sdk22-analyze",
+      "started_utc": "2026-10-11T02:12:49.209125+00:00",
+      "finished_utc": "2026-10-11T02:13:15.565334+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "analyze",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T021249Z-sdk22-analyze.log",
+      "log_sha256": "39e1666d2a8e485be9779a68763e3ace41785a51a798bc83be315ac7d944ac8c",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "sdk22-widget-test",
+      "started_utc": "2026-10-11T02:13:15.794722+00:00",
+      "finished_utc": "2026-10-11T02:13:30.173211+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "test",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T021315Z-sdk22-widget-test.log",
+      "log_sha256": "06616575adfdf6e40147d10a38fc3ff429e0190573c1c60ac13f7256b8145615",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "weapp-devtools-reopen",
+      "started_utc": "2026-10-11T02:00:27.619790+00:00",
+      "finished_utc": "2026-10-11T02:03:21.818889+00:00",
+      "command": [
+        "WECHAT_DEVTOOLS_CLI",
+        "open",
+        "--project",
+        "apps/soloops_weapp"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T020027Z-weapp-devtools-reopen.log",
+      "log_sha256": "6e35af8df1929fab5f77a20bbcaefa807bc4aca948e3121ef14733b378f9182d",
+      "artifacts": [],
+      "status": "BLOCKED",
+      "assessment": "CLI child processes stopped after prolonged preparing; wrapper exit 0 does not confirm IDE load"
+    },
+    {
+      "name": "weapp-devtools-auto",
+      "started_utc": "2026-10-11T02:06:32.568525+00:00",
+      "finished_utc": "2026-10-11T02:11:48.465973+00:00",
+      "command": [
+        "WECHAT_DEVTOOLS_CLI",
+        "auto",
+        "--project",
+        "apps/soloops_weapp",
+        "--auto-port",
+        "9420",
+        "--trust-project"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T020632Z-weapp-devtools-auto.log",
+      "log_sha256": "6e35af8df1929fab5f77a20bbcaefa807bc4aca948e3121ef14733b378f9182d",
+      "artifacts": [],
+      "status": "BLOCKED",
+      "assessment": "CLI child processes stopped after prolonged preparing; wrapper exit 0 does not confirm IDE load"
+    },
+    {
+      "name": "weapp-startup-load",
+      "started_utc": "2026-10-11T02:07:13.814036+00:00",
+      "finished_utc": "2026-10-11T02:07:19.753483+00:00",
+      "command": [
+        "node",
+        "scripts/mobile/check_weapp_load.cjs"
+      ],
+      "cwd": ".",
+      "exit_code": 1,
+      "log": ".local/mobile-m0a/20261011T020713Z-weapp-startup-load.log",
+      "log_sha256": "b5dc11308a4097a7ccf5d70c0da394ca7cb0cb482ebbd4225d496ffd149ddedf",
+      "artifacts": [],
+      "status": "BLOCKED",
+      "assessment": "Automation port connection failed; startup page was not observed"
+    },
+    {
+      "name": "weapp-load-script-syntax",
+      "started_utc": "2026-10-11T02:15:23.884102+00:00",
+      "finished_utc": "2026-10-11T02:15:24.096307+00:00",
+      "command": [
+        "node",
+        "--check",
+        "scripts/mobile/check_weapp_load.cjs"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T021523Z-weapp-load-script-syntax.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifacts": [],
+      "status": "PASS"
+    }
+  ],
+  "starting_commit": "0cc7f4ceb046f4b1b6c58bef395602a0cc255653",
+  "source_sha256": {
+    "apps/soloops_flutter/lib/main.dart": "ebdde6ec6177b3466baa050c9e841b96b2b4c304dcacaeef7a06923c0e413f50",
+    "apps/soloops_flutter/ohos/build-profile.json5": "a519fd7bb6adaaceac3e07f25b700e968f90a6f260663e23e7463eb40448c287",
+    "apps/soloops_flutter/toolchain.lock.json": "37349747cb3148db58986144fa3d062c66b604755caaa256388c3d303740fcfc",
+    "scripts/mobile/check_weapp_load.cjs": "d02014c0ca2ecaa26d0bf3c112022b3e39d12493c49d328ea45817fff94e3cec"
+  }
+}

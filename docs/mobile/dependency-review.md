@@ -43,3 +43,5 @@
 - 插件矩阵中的第三方候选另有 BSD-3-Clause/MIT/Apache 文件头；尚未引入或分发，后续集成须核对所固定提交和传递依赖。
 
 当前仅提交源码、锁文件与声明。应用商店发布、第三方完整通知包及许可证义务复核为 NOT_TESTED。
+
+API22复核：当前Flutter OH固定3.27.5-ohos-1.0.7，Dart版本和pubspec.lock不变。`miniprogram-automator@0.12.1`（MIT）仅安装在被忽略的`.local/weapp-tools`，不进入小程序依赖或产物；它仅检查本地启动页，本次连接BLOCKED。

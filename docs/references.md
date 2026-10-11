@@ -390,8 +390,10 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 
 ## M0-A 三端最小工程（2026-10-11）
 
-- [CPF Flutter OH](https://atomgit.com/CPF-Flutter/flutter_flutter) tag `3.27.4+ohos-1.0.9`，完整 SHA `cdb95e38dbc298aae697db043c14cdf29f584636`，Dart3.6.2。读取发布说明与模板，Android/OHOS共享 Dart 启动壳。SDK BSD 类型通知保留在 apps/soloops_flutter/licenses；实际 HAP 阻塞与版本配套见 mobile/m0a-report.md。
+- [CPF Flutter OH](https://atomgit.com/CPF-Flutter/flutter_flutter) tag `3.27.5-ohos-1.0.7`，完整 SHA `6e545c2ce6ec9e303868dece5012d1d928890b57`，Dart3.6.2。读取发布说明与模板，Android/OHOS共享 Dart 启动壳。SDK BSD 类型通知保留在 apps/soloops_flutter/licenses；实际 HAP 阻塞与版本配套见 mobile/m0a-report.md。
 - [Taro 官方 Vue3 文档](https://docs.taro.zone/docs/vue3)和[4.3.0模板](https://github.com/NervJS/taro/blob/v4.3.0/packages/taro-cli/templates/default/package.json.tmpl)，MIT。参考工程配置，依据 npm manifest 的 peer 约束选择 Vite4 组合，自行编写启动页；许可证和依赖审计见 mobile/dependency-review.md。
 - [Dart HttpClient](https://api.dart.dev/dart-io/HttpClient-class.html)、[Flutter Clipboard](https://api.flutter.dev/flutter/services/Clipboard-class.html)及 CPF 四个插件仓库用于候选核对；固定提交、约束、安全发现与替代方案见 mobile/plugin-matrix.md；未将社区支持声明当作本项目端测证据。
 - 工信部105号通知与官方解读、腾讯云备案文档用于资质核对；来源和未决项见 mobile/weapp-compliance.md。微信现行类目和域名细则未取得可读官方正文，未据二手文章放行。
 - Firecrawl优先尝试返回402额度不足，改用内置web及官方Git源码；微信浏览器文档读取被站点安全策略阻止，保留核验阻塞。
+
+- M0-A API22复核：[CPF 1.0.7 固定提交发布说明](https://atomgit.com/CPF-Flutter/flutter_flutter/blob/6e545c2ce6ec9e303868dece5012d1d928890b57/release-notes/Flutter%203.27.4-ohos%201.0.7%20ReleaseNote.md) 明确构建API22、最低运行API12；按该版本锁定共享SDK。微信本地启动页验证使用官方 npm 包 [miniprogram-automator 0.12.1](https://www.npmjs.com/package/miniprogram-automator/v/0.12.1)，MIT，独立本机工具依赖；只检查启动路由和标题。连接失败已如实记录。

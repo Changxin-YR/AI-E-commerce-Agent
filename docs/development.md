@@ -972,3 +972,7 @@ apps/soloops_flutter 的 android/ohos 只承担平台启动桥接，共用 lib/m
 contracts/ui-contract.json 把原19个业务路由、登录和 B1 对应到五个移动入口，保留字段、服务端动作、审批/来源/人工交付语义。scripts/validate_ui_contract.py 读取现有路由和静态 OpenAPI，核对引用及结构；显式关闭模型、调度与外发，不启动 lifespan/数据库会话。JSON 是唯一编辑源，Markdown 自动生成并校验同步。12项变异测试验证错路由、错API、缺语义、缺写入保护等会被拒绝，不能作为移动业务 E2E。
 
 scripts/mobile/run_evidence.py 保留实际命令、日志、退出码和产物SHA256；export_evidence.py 重新核对哈希后导出脱离本机路径的清单。构建 PASS、运行 NOT_TESTED、工具环境 BLOCKED 和依赖审计 FAIL 分开记录。微信CLI退出0但正文报错的案例按实际加载失败记录。
+
+### M0-A · API 22 复核（2026-10-11）
+
+按用户指定将 Flutter OH 固定为 3.27.5-ohos-1.0.7，显式 compile/target 6.0.2(22)，共享 Dart 不变。Android APK、analyze、1项宿主启动测试 PASS。HAP 实际进入 Hvigor 后报00303168 SDK component missing；本机检测包为API24，状态BLOCKED。微信已打开IDE可连接，但导入停在preparing、自动化连接失败，加载BLOCKED。新增只读启动页检查脚本及独立复核证据，继续止于M0-A。
