@@ -21,7 +21,7 @@ export const tabEntries: TabEntry[] = [
   { key: 'mine', title: '我的', page: '/pages/mine/index' },
 ]
 
-/** Web 路由 → 小程序页面。仅登记第一波已实现的页面。 */
+/** Web 路由 → 小程序页面。第二波已补齐 R2 业务页面。 */
 const BUSINESS_ROUTES: Record<string, string> = {
   '/': '/pages/tasks/index',
   '/imports': '/pages/imports/index',
@@ -30,6 +30,17 @@ const BUSINESS_ROUTES: Record<string, string> = {
   '/support': '/pages/support/index',
   '/agent': '/pages/agent/index',
   '/login': '/pages/login/index',
+  '/analytics': '/pages/analytics/index',
+  '/overview': '/pages/overview/index',
+  '/profit': '/pages/profit/index',
+  '/expenses': '/pages/expenses/index',
+  '/statements': '/pages/statements/index',
+  '/settlements': '/pages/settlements/index',
+  '/rules': '/pages/rules/index',
+  '/outbound': '/pages/outbound/index',
+  '/schedules': '/pages/schedules/index',
+  '/product-quality': '/pages/product_quality/index',
+  '/product-edits': '/pages/product_edits/index',
 }
 
 /** 制表符页无法接收参数，用挂起意图在目标页 onShow 时取用。 */
