@@ -6,6 +6,7 @@ import uvicorn
 from app.core.config import Settings
 from app.main import create_app
 from dotenv import dotenv_values
+from scripts.e2e_analysis import configure as configure_analysis
 
 
 def main() -> None:
@@ -27,7 +28,10 @@ def main() -> None:
         trusted_hosts=["127.0.0.1", "localhost", "10.0.2.2"],
         trusted_origins=["https://localhost", "http://10.0.2.2:8011"],
     )
-    uvicorn.run(create_app(settings), host="127.0.0.1", port=8011)
+    application = create_app(settings)
+    # Existing synthetic shop prefixes opt into a local deterministic model only.
+    configure_analysis(application, settings)
+    uvicorn.run(application, host="127.0.0.1", port=8011)
 
 
 if __name__ == "__main__":

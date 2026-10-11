@@ -13,6 +13,14 @@
 - A3应复用现有Vue/后端业务和frontend/e2e流程，补已安装APK的设备证据；页面可达不等于业务完成。新增店铺的离页确认/保存解除在A3补验，客服/任务业务保护在A4补验。
 - 当前仅专属API34模拟器；真机与其他尺寸归A5，正式签名/服务地址归A6。
 
+## A3 接续记录（2026-10-11）
+
+- 已确认测试提交 `6ecbd860c3d779657ddefbaa55d0b5b62994deda` 的 CI 38143266315 为 Success（2m56s）。
+- 新增 `frontend/scripts/android-device.mjs` 与 `frontend/scripts/check-android-imports.mjs`：覆盖新增店铺未保存保护/保存后导航、Android 系统文件选择器、UTF-8 中文 CSV（引号/逗号/换行）真实字节上传、数据库原始字段回读；首个产品文件证据通过，SHA256 `bbad5bfac0ea476a38e87ea8315bf004a95c1f6c95c3e03e619c7da30f6fee2d`。
+- 大报表续传脚本已写入并完成系统选择器根因定位：模拟器 DocumentsUI 对 `adb push` 的未知 MIME 文件显示为不可选，脚本已按文件名片段匹配；重启专属 AVD 后需继续验证 2001 行两片、强停恢复、指纹拒绝、去重和销售回读。
+- `scripts/start_android_backend.py` 为合成店铺前缀接入既有确定性模型替身，真实模型、邮件和平台写入仍关闭。
+- 本地 lint、type-check、2 个导入单元文件 5 项、生产构建通过；浏览器模型 E2E因当前终端未加载 `_test` 数据库环境而未启动。`npx eslint`受本机 npm cache EPERM阻断，项目脚本 lint 已通过。
+
 ## 本轮执行注意
 
 - Windows沙箱导致Vitest临时文件rename EPERM，正常本机权限重跑192项通过。必须加载scripts/android-env.ps1后构建，否则缺少VITE_SOLOOPS_API_ORIGIN。
