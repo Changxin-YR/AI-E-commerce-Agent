@@ -1,5 +1,17 @@
 # 鸿蒙完整业务版 · 实时进度
 
+## 2026-10-11 21:35 接续环境复核（优先于下文历史状态）
+
+- 已 fetch 并核对 GitHub 与本地起点 `7edb160c3f0c4b8d026d799e25970d8245492736`，继续同一鸿蒙分支和 worktree。
+- 原 API 进程已退出；本机 18080 被其他项目的 nx-keycloak 使用。合成 API 已恢复到 **127.0.0.1:18081**，HDC 使用 `rport tcp:18080 tcp:18081`，应用地址仍是 18080。不停止其他项目服务。
+- 专用 MySQL 曾停止，tmpfs 数据丢失。重启后查询确认业务库 0 张表，才恢复已校验的 `harmony-account-switch.sql`。恢复后 migration=b42e83f516c0、费用1138/v1 active、批次1181–1187共7条已回读。原备份保持不变，禁止向该保留库运行清表测试。
+- 固定 HAP 哈希仍为3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e；覆盖安装成功，Asset会话、店铺918、首页恢复，session/shops/workbench/onboarding均200。设备证据 `.local/mobile-business/device/resumed-installed.json` 与 `expense-restored-detail.json`。
+- **端测当前阻塞：API22再次离线。** Emulator.log在21:27:55记录主机空闲268 MB，21:32:39记录std::bad_alloc。HDC最终返回Empty。未停止其他聊天的Android模拟器或Docker服务，已向用户询问资源安排。
+- 本轮费用修订没有提交，费用1138仍v1/2.3456。不要将本轮尝试记为订单关联/修订通过。下一步仍从费用修订、订单关联及H12–H20剩余闭环继续。
+- HDC存在退出码0但stdout/stderr返回[Fail]的情况；设备助手已改为立即抛出明确传输错误，避免误解析JSON。3项无数据库回归（先2失败/1通过，修复后3通过）、Ruff检查通过。
+- UI输入3.4567曾回读为3.4567999999999999，来源尚未彻底核实；不要据此认定业务金额计算错误。重新输入与最终字段回读必做。键盘/动画改变布局后先等待稳定快照，再执行下一动作。
+- 当前API进程入口直接调用 `business_fixture.build_app()` 后uvicorn监听18081，未调用prepare_samples，保留已有样本日期。日志为 `.local/mobile-business/resume-api.stdout.log` / `resume-api.stderr.log`。
+
 更新：2026-10-11。实际工作区 `.local/worktrees/mobile-m0a`，分支 `feat/soloops-mobile-m0b`。执行 `docs/requirements/SoloOps-Mobile-V1.3.md`，21功能标识/149条API引用，H14补充6个路由操作另见 `harmony-api-supplement.md`。当前提交精确SHA由接续消息和context-memory/HARMONY.md给出。
 
 ## 当前结果

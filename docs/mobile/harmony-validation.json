@@ -1,6 +1,6 @@
 {
   "date": "2026-10-11",
-  "phase": "account-switch-checkpoint",
+  "phase": "environment-restored-device-memory-blocked",
   "business_api22": "partial_passed",
   "dart_analyze": "passed",
   "flutter_tests": 23,
@@ -58,7 +58,11 @@
     "device/support-draft.json",
     "device/support-share-consumer.json",
     "device/inventory-results.json",
-    "device/profit-calculated.json"
+    "device/profit-calculated.json",
+    "resume-api.stdout.log",
+    "resume-api.stderr.log",
+    "device/resumed-installed.json",
+    "device/expense-restored-detail.json"
   ],
   "backend_full_tests": 890,
   "backend_full_duration_seconds": 529.36,
@@ -66,10 +70,13 @@
   "runtime": {
     "api": 22,
     "device": "127.0.0.1:5555",
-    "test_api": "http://127.0.0.1:18080",
+    "test_api": "http://127.0.0.1:18081",
     "shop_id": 918,
     "model": "synthetic-r2-local",
-    "mail": "synthetic capture only"
+    "mail": "synthetic capture only",
+    "device_api": "http://127.0.0.1:18080",
+    "port_mapping": "device tcp:18080 -> host tcp:18081",
+    "device_status": "offline after host low-memory and std::bad_alloc logs"
   },
   "device_passed": [
     "synthetic login/profile/shop creation",
@@ -108,5 +115,17 @@
       "sha256": "4d38ef10d2bb800a32f5da396304ea4c6ac3d3892b6908bb822546285c42af50"
     }
   ],
-  "next": "Resume remaining H04/H05/H07/H09-H20 and H21 boundary/device journeys from harmony-handoff.md; no full regression rerun against preserved acceptance database."
+  "next": "Resume remaining H04/H05/H07/H09-H20 and H21 boundary/device journeys from harmony-handoff.md; no full regression rerun against preserved acceptance database.",
+  "hdc_helper_tests": 3,
+  "environment_recovery": {
+    "database_empty_before_restore": true,
+    "backup_sha256": "e67ce2a4bc09b8751c28f45855b3a162575327e44d8486c4ca88ccf29b377f82",
+    "restored_migration": "b42e83f516c0",
+    "expense_id": 1138,
+    "expense_version": 1,
+    "import_batches_1181_to_1187": 7,
+    "hap_reinstall": "passed",
+    "session_restore": "passed",
+    "device_journey": "blocked pending available memory"
+  }
 }

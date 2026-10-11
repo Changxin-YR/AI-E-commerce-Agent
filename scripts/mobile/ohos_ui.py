@@ -23,6 +23,10 @@ def hdc(*args):
         errors="replace",
         check=True,
     )
+    # HDC can report a transport failure while still exiting with status zero.
+    failure = re.search(r"(?m)^\[Fail\][^\r\n]*", result.stdout + "\n" + result.stderr)
+    if failure:
+        raise RuntimeError(f"HDC command failed: {failure.group(0)}")
     return result.stdout
 
 
