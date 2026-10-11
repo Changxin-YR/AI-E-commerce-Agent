@@ -36,9 +36,33 @@
 
 **尚未验证（不得写成通过）**：未在微信开发者工具/真机联调，未向真实后端发起请求，运行时行为（登录、列表、写操作）未验证；真机需在 MP 后台把服务域名加入合法域名，`http://127.0.0.1:18080` 仅开发者工具可用（并需关闭域名校验）。automator 通道在 M0 阶段即 60s 超时（exit 124），未复测。
 
-## 下一波（wave 2）
+## wave 2（同日交付）
 
-`mine/设置`（经营档案、店铺管理）、`analytics`、`overview`、`profit`、`expenses`、`statements`、`settlements`、`rules`、`outbound`、`schedules`、`product_quality`、`product_edits` 共 12 个 feature 页面；补 tabBar 图标与"来源证据展开"组件；随后在开发者工具中做运行时联调并把结果写入 `docs/mobile/harmony-validation.json` 同级的微信验证记录。
+新增 11 个页面（各 `index.vue` + `index.config.ts`，共 7,477 行）：`analytics`、`overview`、`profit`、`expenses`、`statements`、`settlements`、`rules`、`outbound`、`schedules`、`product_quality`、`product_edits`。同时：
+
+- `app.config.ts` 注册这 11 页（`pages` 共 22 项，tabBar 仍 5 项）。
+- `src/pages/mine/index.vue`（107 → 472 行）在原有内容上**追加**入口分组：开始经营、经营档案、店铺管理（创建店铺 + 回读资料）、经营与财务、规则·自动化与外发、商品维护；原有账号/店铺切换/业务工具/退出逻辑未改。
+- `src/core/links.ts` 追加 11 条 `web_route → 页面` 映射，供工作台事项深链。
+
+feature → 主要 api_ref（均带 `/api/shops/{shop_id}` 前缀，`r2.overview` 除外）：
+
+- r2.analytics：`/analytics/{calculate,ask,saved,saved/{id},saved/{id}/todo,order-costs/{row_id},sources/{row_id},revision}`
+- r2.overview：`/overview/{calculate,reports,reports/{id},reports/{id}/clear}`
+- r2.profit：`/profit/{calculate,saved,saved/{id}}`
+- r2.expenses：`/expenses{,/summary,/orders,/{id},/{id}/{action}}` + `/fee-rules{/preview,/{id},/{id}/{action}}`
+- r2.statements：`/statements/reconcile` + `/statement-reviews{/preview,/{id},/{id}/current,/{id}/{action}}`
+- r2.settlements：`/settlements{/preview,/{id},/{id}/current,/{id}/{action}}`
+- r2.rules：`/business-rules{,/history,/{version}}` + `/authorizations{,/{id},/{id}/revoke,/{id}/uses/{use_id}/revert}`
+- r2.outbound：`/outbound/{channel,connect,channel/{id}/verify,channel/{id}/revoke,messages,messages/{id},{id}/approve,{id}/reject,{id}/send,{id}/reconcile,{id}/receipt}`
+- r2.schedules：`/schedules{,/status,/history,/{id},/{id}/check}` + `/history/{item_id}/read`
+- r2.product_quality：`/product-quality/{preview,reports,reports/{id},reports/{id}/clear}`
+- r2.product_edits：`/product-quality/preview` + `/product-edits{,/{id},/{id}/approve,/{id}/{action}}`
+
+**验证（本机，主代理复核）**：`npm run type-check` exit 0（0 错误）；`npm run build:weapp` 成功（`✓ built in 6.23s`），`dist/app.json` `pages=22`、`tabBar=5`，11 个新页面标题正确；70 处接口路径与 `contracts/ui-contract.json` / 后端路由一致；未新增依赖；金额按十进制字符串处理，未用 `parseFloat/toFixed` 算钱；`r2.outbound` 仅界面与接口，未真实发送。
+
+## 下一波（wave 3）
+
+`r2.order_reconciliation` 独立页面与「我的」入口、`/fee-rules` 独立页（现并入实际费用页）、tabBar 图标、"来源证据展开"组件；**微信开发者工具运行时联调**（登录、列表、写操作真实链路）并把结果写入文档；真机需在 MP 后台配置合法域名（`http://127.0.0.1:18080` 仅开发者工具可用）。
 
 ## 保护
 

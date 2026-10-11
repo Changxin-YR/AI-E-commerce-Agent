@@ -112,7 +112,7 @@
     "Operation schedule saved: operation_schedules id 24 active v1 daily 09:00 Asia/Shanghai, next_run_at 2026-10-12 01:00 UTC (= 09:00 +08:00); bound to rule 24; scheduler service honestly reported as not enabled",
     "Product quality report saved: synthetic scope checked 4 products / 2 affected / 2 missing, all three check groups executed, product_quality_reports=1 and product_quality_sources=2"
   ],
-  "pending": "Remaining H13-H20 business journeys (fee mapping, statements, reconciliation, settlements, analytics, overview, rules, schedules, product quality/edits, outbound) and H21 lifecycle/layout/conflict/unknown-result scenarios",
+  "pending": "H19 product selection control not identified (selection stayed 0); remaining H13 review conclusion, H14 differential path, H16 disable/reset, H17 enable/disable/run-now/notifications, H09/H10/H18 history, H20 outbound and H21 lifecycle/layout scenarios",
   "product_facts_contract_tests": 1,
   "delivered_files": [
     {
