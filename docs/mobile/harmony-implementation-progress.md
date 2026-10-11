@@ -9,6 +9,7 @@
 - **本轮新增端测通过**：费用 1138 由 v1(2.3456) 修订为 v2(2.5678)，发生时间保持 12:00+08:00→04:00 UTC 且 v1 历史保留；随后 v3 关联订单行 `SYN-G1 / 1 · SYN-CUP`（来源 `orders-generic-synthetic.csv` 批次 #1187 源行 2），数据库回读 `v3/cv3/active`。证据 `.local/mobile-business/device/expense-revision-linkage-v3.json`。
 - 操作要点：费用页默认"数据身份"是 `user_import`，费用 1138 属于 `synthetic`，必须先在"数据身份"里切到"合成测试数据"再查询，否则显示"当前范围没有记录"。
 - 微信小程序业务端第一波（core/登录/首页/待办/导入/AI/Listing/客服/库存）在同一分支并行实施。
+- **账单与映射（本轮新增通过）**：合成账单 `statements-synthetic.csv`（5 行 sale/fee/fee/payout/refund）经设备文件选择器导入，批次 **#1188 committed**；费用映射规则 **#310**（`SyntheticShipping → 物流`）预览影响账单行 #8280 后保存 v1（`fee_rules=1`/`fee_rule_revisions=1`）；"渠道账单与费用核对"按类型合计正确（费用 14.8456 / 回款 100.0000 / 退款 8.0000 / 销售款 120.0000 USD），凭据 **`SYN-EXP-20261011-01` 编号与金额一致、差额 0.0000**（对应新建的人工费用 **#1139**，user_import/generic），未匹配的 `SYN-FEE-001` 保持"仅账单有记录 · 无法确定"；跨身份（synthetic 费用 vs user_import 账单）按作用域正确隔离。证据 `.local/mobile-business/device/statements-and-mapping-rule.json`、`statement-review-and-match.json`。
 - 下一步顺序：H12 费用映射规则 → H13 渠道账单 → H14 订单核对 → H15 回款 → H09/H10/H16–H20 → H21 边界与布局。
 
 ## 2026-10-11 21:35 接续环境复核（优先于下文历史状态）

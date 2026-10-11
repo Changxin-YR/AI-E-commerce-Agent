@@ -104,7 +104,9 @@
     "Expense 1138 revision: v2 update to 2.5678 while occurred_at stayed 12:00+08:00 / 04:00 UTC; history keeps v1",
     "Expense 1138 order linkage: v3 allocation=order_line on SYN-G1 / SYN-CUP, source batch 1187 row 2 (file_import)",
     "Statement import 1188: statements-synthetic.csv picked on device, 5 new rows (sale/fee/fee/payout/refund) committed and read back",
-    "Fee mapping rule 310: synthetic fee name SyntheticShipping mapped to 物流 after preview of affected line #8280; saved v1 with revision history"
+    "Fee mapping rule 310: synthetic fee name SyntheticShipping mapped to 物流 after preview of affected line #8280; saved v1 with revision history",
+    "Manual expense 1139 created in user_import/generic scope with evidence SYN-EXP-20261011-01, 2.3456 USD, 物流",
+    "Statement review: totals fee 14.8456 / payout 100.0000 / refund 8.0000 / sale 120.0000 USD; evidence match SYN-EXP-20261011-01 consistent with difference 0.0000; unmatched SYN-FEE-001 stays unknown"
   ],
   "pending": "Remaining H13-H20 business journeys (fee mapping, statements, reconciliation, settlements, analytics, overview, rules, schedules, product quality/edits, outbound) and H21 lifecycle/layout/conflict/unknown-result scenarios",
   "product_facts_contract_tests": 1,
