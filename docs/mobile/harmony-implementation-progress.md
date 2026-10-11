@@ -11,6 +11,7 @@
 - 微信小程序业务端第一波（core/登录/首页/待办/导入/AI/Listing/客服/库存）在同一分支并行实施。
 - **账单与映射（本轮新增通过）**：合成账单 `statements-synthetic.csv`（5 行 sale/fee/fee/payout/refund）经设备文件选择器导入，批次 **#1188 committed**；费用映射规则 **#310**（`SyntheticShipping → 物流`）预览影响账单行 #8280 后保存 v1（`fee_rules=1`/`fee_rule_revisions=1`）；"渠道账单与费用核对"按类型合计正确（费用 14.8456 / 回款 100.0000 / 退款 8.0000 / 销售款 120.0000 USD），凭据 **`SYN-EXP-20261011-01` 编号与金额一致、差额 0.0000**（对应新建的人工费用 **#1139**，user_import/generic），未匹配的 `SYN-FEE-001` 保持"仅账单有记录 · 无法确定"；跨身份（synthetic 费用 vs user_import 账单）按作用域正确隔离。证据 `.local/mobile-business/device/statements-and-mapping-rule.json`、`statement-review-and-match.json`。
 - **结算回款（H15）本轮通过**：原账单 `SYN-ST-001` + 人工到账登记 `BANK-SYN-001`/`PAY-SYN-001`（100.0000 USD）→ 逐笔比较"编号与金额一致、差额 0.0000"，周期外明细保持未知，未知项（覆盖完整性、期初期末余额、银行证据）按原文保留；保存后 `settlements`/`settlement_receipts`/`settlement_revisions` 各 1 条并显示版本历史。证据 `.local/mobile-business/device/settlement-receipt-verification.json`。
+- **订单账单核对（H14）本轮只部分验证**：设备端"匹配订单与账单"可运行，口径依据与来源覆盖完整性保持未知，账单销售款/退款显示"待核实 · 差异未知"，原因是当前 `user_import/generic` 作用域内没有订单行（批次 1184/1187 的订单属 synthetic 作用域）。**结论预览/保存与"有差异"计算路径仍未验证**，下一步需先在 user_import 作用域导入订单行。
 - 下一步顺序：H12 费用映射规则 → H13 渠道账单 → H14 订单核对 → H15 回款 → H09/H10/H16–H20 → H21 边界与布局。
 
 ## 2026-10-11 21:35 接续环境复核（优先于下文历史状态）
