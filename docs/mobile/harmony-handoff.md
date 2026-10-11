@@ -9,7 +9,8 @@
   - **键盘开着时不要滑动页面**——滑动会落在键盘上，把 `、` 连续打进当前输入框。`ohos_ui.py` 的 `hide-ime` 已修好（读 `WindowManagerService` 里 `softKeyboard` 的 ZOrd），`findtap` 每次滑动前也会先收键盘。
   - 系统**剪贴板权限框**会抢焦点，使 `uitest dumpLayout -b <bundle>` 返回**空树**；已选"始终允许"解除。遇到空树先 `hidumper -s WindowManagerService -a '-a'` 看 `Focus window` 是不是 37（应用窗口）。
   - 中文校验：`docker exec … mysql` 默认字符集把中文显示成 `?`，必须加 `--default-character-set=utf8mb4`；用 `HEX()` 判断库内真值。
-- **下一步顺序**：H12 映射规则撤销/清除 → H13 审阅结论预览/保存/版本/清除 → H14（先在 `user_import` 作用域导入订单行）→ H15 撤销/清除 → H16 停用/重置/恢复与 AI 授权 → H17 启停/撤销/立即运行/通知深链 → H09 分析、H10 总览、H18 历史回读/清除、H20 测试外发（仅替身）→ H21 边界。
+- **H12 映射规则撤销/清除、H13 账单审阅结论已通过**：规则 #310 → `withdrawn` v2（`match_key` 置空）→ `cleared` v3（`content` NULL，历史正文全清，active 规则 0）；账单审阅 #187 → v1 `pending` 保存 → v2 改说明更新 → 历史点 v1 可回读快照 → v3 `cleared`（三版 `snapshot` 全 NULL）。注意：**有未匹配/异币种/未知分类时服务端只接受"仍待核对"结论**，选其他结论预览会被明确拒绝。
+- **下一步顺序**：H14（先在 `user_import` 作用域导入订单行）→ H15 撤销/清除 → H16 停用/重置/恢复与 AI 授权 → H17 启停/撤销/立即运行/通知深链 → H09 分析、H10 总览、H18 历史回读/清除、H20 测试外发（仅替身）→ H21 边界；微信端 wave 3 页面已落地待开发者工具联调。
 
 ## 2026-10-11 23:45 M0-C 接续环境复核（优先于下文历史状态）
 

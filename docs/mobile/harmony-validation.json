@@ -115,7 +115,13 @@
     "H19 bulk apply: prefix H19- and appended facts H19-APPEND applied to the selected product form; create produced product_edits id 31 v1 draft with 当前有效商品数 0",
     "H19 approve: edit 31 became v2 applied, products id 1305 renamed to 'H19-Synthetic steel cup' with facts line H19-APPEND, output import batch 1189 committed with origin=manual_edit, 当前有效商品数 1",
     "H19 withdraw: edit 31 became v3 revoked, product 1305 reverted to the original name and facts, batch 1189 status revoked",
-    "H19 clear: edit 31 became v4 cleared, snapshot NULL, product_edit_sources 0 rows, batch 1189 status cleared"
+    "H19 clear: edit 31 became v4 cleared, snapshot NULL, product_edit_sources 0 rows, batch 1189 status cleared",
+    "H12 fee rule revoke: rule 310 withdrawn at v2 with match_key cleared, fee_rule_revisions gained a withdraw row",
+    "H12 fee rule clear: rule 310 cleared at v3, content NULL, every revision of that rule has NULL content, active rule count 0",
+    "H13 review preview gate: with pending items (missing side / duplicate evidence / cross-currency / unknown category) the server rejects any conclusion other than 仍待核对 and states 仍有待核事项，只能保存待核结论",
+    "H13 review save: statement_reviews 187 v1 active, outcome pending, note persisted verbatim, statement_review_sources 1",
+    "H13 review version: second save produced v2; statement_review_revisions keeps v1 create and v2 update with their own notes; opening history row v1 on device reads the v1 snapshot back",
+    "H13 review clear: statement_reviews 187 cleared at v3, all three revisions have NULL snapshot, sources 0"
   ],
   "pending": "H12 fee mapping rule revoke/clear; H13 statement review conclusion preview/save/version/clear; H14 order reconciliation differential path (import order rows into the user_import scope first); H15 settlement revoke/clear; H16 disable/reset/restore and AI authorization management; H17 schedule enable/disable/revoke/run-now/notification deep link; H09 analytics, H10 overview, H18 product quality history/clear, H20 outbound stub-only, H21 lifecycle/layout boundaries",
   "session_2026_10_12": {
@@ -149,7 +155,31 @@
       "reason": "H19-本地修订验证",
       "source_evidence": "products-synthetic.xlsx row 2 batch 1182"
     },
-    "tooling_fix": "scripts/mobile/ohos_ui.py hide-ime now decides from the WindowManagerService softKeyboard ZOrd column and findtap hides the IME before every swipe; the previous layout-tree package check missed the open IME, so swipes hit the keyboard and typed '、' into the 修订依据 field"
+    "tooling_fix": "scripts/mobile/ohos_ui.py hide-ime now decides from the WindowManagerService softKeyboard ZOrd column and findtap hides the IME before every swipe; the previous layout-tree package check missed the open IME, so swipes hit the keyboard and typed '、' into the 修订依据 field",
+    "h12_fee_rule": {
+      "rule_id": 310,
+      "scope": "user_import/generic",
+      "content": "SyntheticShipping -> shipping (物流)",
+      "states": ["v1 active", "v2 withdrawn (match_key NULL)", "v3 cleared (content NULL)"],
+      "revisions": "138 create, 139 withdraw, 140 clear; all content NULL after clear",
+      "active_rules_after_clear": 0
+    },
+    "h13_statement_review": {
+      "review_id": 187,
+      "kind": "fees",
+      "scope": "user_import/generic",
+      "rejected_conclusion": "金额差异已说明 · 待跟进 was refused at preview because pending items exist",
+      "accepted_conclusion": "仍待核对 (pending)",
+      "blockers": [
+        "存在缺失一侧、重复凭据或异币种记录。",
+        "存在未知收费分类、重复凭据、异币种或类别冲突。"
+      ],
+      "source_revision_and_rule_revision": "10 / 140",
+      "states": ["v1 active create", "v2 active update", "v3 cleared"],
+      "history_readback": "opening history row v1 on device displayed the v1 conclusion and note",
+      "sources_after_clear": 0
+    },
+    "session_expiry": "the mobile session expired once while navigating (device showed 登录已过期，请重新登录); re-login with harmony_r2 restored shop 918 and the workbench counts"
   },
   "product_facts_contract_tests": 1,
   "delivered_files": [
