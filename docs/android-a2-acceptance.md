@@ -29,3 +29,5 @@
 见 `android-handoff.md` 与 `android-local-testing.md`。脚本使用已安装APK WebView CDP并操作真实ADB，不替换后端接口。本机日志/截图/APK/数据库配置在Git忽略目录，源码与步骤已提交。
 
 换账号前最后校验：新增安卓壳/会话恢复两文件6项单元全部通过，lint通过。最新type-check受本机内存不足中断（JavaScript heap out of memory）；此前同包type-check已通过，但最终SHA仍须以CI及重跑结果确认。CI链接/准确SHA在提交后补记。
+
+GitHub代码检查点为 `b70e783285a0242f2dafb0f8d714b8fce48bdcde`；[CI 38141560687](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38141560687) 已触发，写入本记录时仍在运行。最终设备回归依照上方待办执行。
