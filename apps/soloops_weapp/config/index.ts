@@ -10,5 +10,9 @@ export default defineConfig({
   framework: 'vue3',
   compiler: 'vite',
   plugins: ['@tarojs/plugin-platform-weapp'],
+  // 后端地址在构建期内联，运行时不依赖 process 全局对象。
+  defineConstants: {
+    'process.env.TARO_APP_API_BASE': JSON.stringify(process.env.TARO_APP_API_BASE ?? ''),
+  },
   mini: {},
 })

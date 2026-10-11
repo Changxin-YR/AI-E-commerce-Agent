@@ -1,0 +1,291 @@
+/**
+ * 共享中文标签表。键与值逐字对齐 Flutter 端
+ * apps/soloops_flutter/lib/features/ 下的常量映射与后端枚举，
+ * 未命中的键保留原值展示，不猜测语义。
+ */
+
+export type LabelMap = Record<string, string>
+
+/** 事项类型（后端 WorkKind）。 */
+export const workKinds: LabelMap = {
+  operation_task: '运营待办',
+  agent: 'Agent 执行',
+  listing: 'Listing 草稿',
+  reply: '客服草稿',
+  analysis_todo: '分析核对待办',
+  operation_run: '运营检查',
+  analysis: '分析报告',
+  overview: '经营摘要',
+  authorization: 'R1 预授权',
+  outbound: 'R2 测试邮件',
+}
+
+/** 处理分组（后端 WorkBucket）。 */
+export const workBuckets: LabelMap = {
+  pending: '待处理',
+  approval: '待审阅',
+  failed: '失败 / 阻断',
+  unknown: '结果未知',
+  stale: '需更新来源',
+  history: '存档 / 已记录',
+}
+
+/** 首页三个计数视图。 */
+export const workViews: LabelMap = {
+  attention: '待我处理',
+  ai_completed: 'AI 已完成',
+  update_data: '需要更新数据',
+}
+
+/** 导入数据类型。 */
+export const importKinds: LabelMap = {
+  products: '商品',
+  orders: '订单行',
+  messages: '客服消息',
+  inventory: '库存快照',
+  statements: '渠道账单',
+}
+
+/** 来源渠道。 */
+export const importChannels: LabelMap = {
+  generic: '通用 / 自建表',
+  shopify: 'Shopify 风格候选',
+  amazon: 'Amazon 风格候选',
+  other: '其他来源',
+}
+
+/** 数据身份。 */
+export const importIdentities: LabelMap = {
+  user_import: '用户导入文件',
+  synthetic: '合成测试数据',
+}
+
+/** 导入批次状态。 */
+export const batchStatuses: LabelMap = {
+  draft: '待映射',
+  preview: '待确认',
+  committed: '已导入',
+  revoked: '已撤销',
+  cleared: '已清除',
+  expired: '已过期',
+}
+
+/** 预览行的处理动作。 */
+export const rowActions: LabelMap = {
+  new: '新增',
+  update: '更新',
+  unchanged: '相同记录',
+  error: '需修正',
+}
+
+/** 运营待办状态。 */
+export const taskLabels: LabelMap = {
+  pending_approval: '待审批',
+  open: '待处理',
+  deferred: '已延期',
+  completed: '已完成核对',
+  ignored: '已忽略',
+  rejected: '已拒绝',
+  none: '尚未创建',
+}
+
+/** 业务进展状态。 */
+export const businessLabels: LabelMap = {
+  pending_review: '待核对',
+  checked_pending: '已核对待外部处理',
+  evidence_recorded: '已登记操作证据',
+  awaiting_source: '待来源更新复检',
+  resolved: '新有效证据支持已解决',
+  still_anomalous: '新来源仍显示异常',
+  ignored: '已忽略或不适用',
+  cleared: '来源已清除',
+}
+
+/** 来源时效状态。 */
+export const sourceLabels: LabelMap = {
+  current: '来源有效',
+  stale: '需重新检查',
+  cleared: '来源已清除',
+}
+
+/** 待办可执行动作。 */
+export const taskActions: LabelMap = {
+  approve: '批准并创建待办',
+  reject: '拒绝候选',
+  ignore: '忽略此事项',
+  defer: '延期至截止时间',
+  complete: '完成核对',
+  reopen: '重新打开待办',
+  edit: '保存处理记录',
+  record_evidence: '登记操作证据',
+  wait_source: '等待来源更新',
+  recheck: '按原事项复检',
+}
+
+/** 库存快照状态。 */
+export const inventoryStatuses: LabelMap = {
+  low: '低于安全阈值',
+  above_threshold: '未低于安全阈值',
+  unknown: '当前库存未知',
+}
+
+/** 客服草稿状态（后端 status）。 */
+export const replyStatuses: LabelMap = {
+  draft: '候选回复',
+  human_review: '需人工接管',
+  archived: '已存档',
+}
+
+/** 客服草稿动作。 */
+export const replyActions: LabelMap = {
+  handoff: '标记需要人工',
+  archive: '存档处理记录',
+  reopen: '重开并转人工',
+  edit: '保存修改',
+  review: '确认当前版本已审阅',
+}
+
+/** 政策版本状态与可用性。 */
+export const policyStatuses: LabelMap = {
+  active: '当前有效版本',
+  superseded: '已被新版本取代',
+  cleared: '已清除',
+  effective: '在有效区间内',
+  future: '尚未生效',
+  expired: '已过期',
+}
+
+/** 政策主题。 */
+export const policyTopics: LabelMap = {
+  faq: '一般 FAQ',
+  shipping: '物流',
+  refund: '退款退货',
+  warranty: '保修',
+}
+
+/** 目标语言。 */
+export const languages: LabelMap = {
+  en: 'English',
+  zh: '中文',
+}
+
+/** 消息语言（含待人工确认）。 */
+export const messageLanguages: LabelMap = {
+  und: '待人工确认 / 其他',
+  en: 'English',
+  zh: '中文',
+}
+
+/** Agent / 技能 / 步骤标签（与 Flutter agent_labels.dart 一致）。 */
+export const agentLabels: LabelMap = {
+  margin_review: '最近7天低毛利复核',
+  margin_evidence: '核对成本与独立内容证据',
+  daily_model: 'AI 今日运营',
+  explain_operations: '组织运营检查概览',
+  support_model: 'AI 客服候选',
+  support_context: '读取客服依据',
+  compose_support: '识别诉求与组织回复',
+  support_candidate: '保存客服候选',
+  listing_model: 'AI Listing 候选',
+  compose_listing: '组织商品事实文案',
+  listing_candidate: '保存模型 Listing 候选',
+  question: 'AI 经营问数',
+  question_plan: '理解经营问题',
+  explain_analysis: '组织事实解释',
+  analysis_todo: '保存分析和核对待办',
+  ready: '待执行',
+  running: '模型调用中',
+  waiting_approval: '等待审批',
+  paused: '已暂停',
+  cancelled: '已取消',
+  rejected: '已拒绝',
+  blocked: '已阻断',
+  succeeded: '已完成',
+  circuit_open: '已熔断',
+  result_unknown: '模型结果 / 费用未确认',
+  waiting_configuration: '等待模型配置',
+  waiting_input: '等待补充数据',
+  completed: '步骤完成',
+  failed: '步骤失败',
+  discarded: '结果未采纳',
+  data_check: '检查数据',
+  metrics: '销售与已知毛利',
+  propose_tasks: '保存异常候选',
+  product_context: '读取商品事实',
+  listing_draft: '保存 Listing 模板草稿',
+  message_context: '读取客户消息',
+  support_draft: '保存人工接管草稿',
+  verify: '回读核验',
+  plan: '识别目标',
+  end: '结束',
+  daily: '今日运营流程',
+  analysis: '经营分析',
+  listing: 'Listing 草稿',
+  support: '客服草稿',
+  natural: '自然语言目标',
+  not_used: '本地确定性流程',
+  not_configured: '模型待配置',
+  openai_responses: 'OpenAI Responses',
+  dashscope_chat: '阿里云百炼（北京）',
+  test_double: '测试替身',
+}
+
+/** 受控 Agent 的阻断/停止原因。 */
+export const agentReasons: LabelMap = {
+  margin_missing_orders: '没有符合范围的已支付订单。补录或核对范围后，请新建任务。',
+  margin_review_ready: '请核对成本口径、费用缺口及以下独立建议，再批准当前分析存档。',
+  margin_no_action: '本次未发现符合条件的低毛利或独立内容写入建议。可查看完整分析和人工核对提示。',
+  operation_consent_required: '请核对运营概览的数据范围，并同意目标和聚合检查数据发送后新建任务。',
+  operations_explained: '运营概览已保存。请审阅全部候选与来源，再批准保存到工作台。',
+  support_consent_required: '请核对消息、所选政策与发送范围，并同意目标和客服数据发送后新建任务。',
+  support_handoff: '本次候选需要人工接管。核对全部诉求和证据后，可批准保存本地草稿。',
+  support_candidate_ready: '客服候选已准备，请审阅回复全文和政策依据后批准保存。',
+  listing_consent_required: '请核对目标商品与参数并同意发送到模型，然后新建任务。',
+  listing_needs_review: '模型建议先人工核对目标或商品事实。补充来源后可新建任务。',
+  listing_candidate_ready: '已生成事实候选，请核对前后差异后批准保存草稿。',
+  invalid_product_facts: '商品参数须包含 1—100 行完整事实，请整理来源后重新导入。',
+  analysis_consent_required: '需要同意发送问题和匿名聚合事实；请确认数据范围后新建任务。',
+  unsupported_analysis: '此问题超出当前范围或能力。支持销售汇总、购买数量前五与已知毛利筛选；请调整问题或表单范围。',
+  invalid_model_output: '模型输出未通过事实与结构校验，已阻断。已知费用仍记录，原始统计可继续查看。',
+  analysis_review_suggested: '模型建议核对以下事实。批准后保存分析及一个核对待办，可在经营分析页完成或重开。',
+  analysis_explained: '证据解释已保存到本次执行记录。',
+  model_input_too_large: '模型输入超过限制，请缩小统计范围。',
+  use_authorization: '已绑定匹配的 R1 预授权；执行前将再次核对。',
+  preauthorization_ready: '候选符合 R1 预授权，准备保存。',
+  preauthorization_used: '已使用 R1 预授权保存候选并记录一次消耗。',
+  authorization_unavailable: '预授权已失效或范围不符；请重新审阅，单次批准或使用新的有效授权。',
+  missing_goal: '请填写运营目标后新建任务。',
+  invalid_skill_output: '技能输出未通过类型校验，请人工核对。',
+  no_findings: '本次检查未产生异常候选。缺数据的模块仍为未检查。',
+  findings_found: '已找到需要核对的来源异常，请审阅后批准保存候选。',
+  step_budget: '已达到执行步数上限。已完成步骤保留，可提高预算后恢复。',
+  time_budget: '已达到累计执行时长上限。等待审批和暂停的时间不计入。',
+  cost_budget: '费用余额不足或已触及上限。可调整美元预算后恢复。',
+  not_configured: '请由部署者配置模型、凭据与费率；可使用本地固定流程。',
+  model_consent_required: '尚未同意将目标文本发送至模型，请调整选项后新建任务。',
+  source_changed: '来源已变化或过期，请用当前数据新建任务。',
+  source_cleared: '依赖来源已清除，任务内容和步骤正文已擦除。',
+  missing_product_facts: '商品缺少参数，请补充导入后新建任务。',
+  missing_object: '缺少商品或消息，请选择对象后新建任务。',
+  policy_denied: '目标涉及不允许的操作或不支持的范围，任务已停止。',
+  invalid_skill: '技能元数据缺失或无效，任务已停止。',
+  skill_policy_denied: '技能的权限声明不符合内置规则，任务已停止。',
+  read_circuit_open: '读取失败已达到上限，请核对服务状态；此任务不会自动重试。',
+  temporary_read_failure: '读取遇临时故障，将在最多三次尝试内重试。',
+  model_result_unknown: '模型结果或费用无法核实。保留费用预留，请人工核对供应商记录；不会自动重发。',
+  model_lease_expired: '模型调用中断或超时。费用预留仍保留，请人工核对后再新建任务。',
+  scope_mismatch: '对象不属于所选数据身份或渠道，请重新选择。',
+  conflict: '业务记录已变化，请核对业务页面后新建任务。',
+}
+
+/** 把标签表转成选择器选项：首项为“全部…”，其余为具名选项。 */
+export function withAll(label: string, values: LabelMap): LabelMap {
+  return { '': label, ...values }
+}
+
+/** 查表展示：未命中时保留原值；空值显示“未知”。 */
+export function labelOf(map: LabelMap, value: unknown): string {
+  if (value === null || value === undefined || `${value}` === '') return '未知'
+  const key = `${value}`
+  return map[key] ?? key
+}

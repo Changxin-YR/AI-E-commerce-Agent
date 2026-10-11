@@ -7,6 +7,18 @@
 - 设备状态：会话/店铺 918 恢复；费用 1138 已完成 **v1→v2 修订（2.5678）** 与 **v3 订单行关联（SYN-G1 / SYN-CUP，批次 #1187 源行 2）**，数据库回读 `v3/cv3/active`，证据 `.local/mobile-business/device/expense-revision-linkage-v3.json`。
 - 提醒：费用页需先把"数据身份"切到"合成测试数据"才能看到 1138（默认 `user_import` 会显示"当前范围没有记录"）。
 - 下一步：H12 费用映射规则 → H13 渠道账单 → H14 订单核对 → H15 回款 → H09/H10/H16–H20 → H21 边界/布局。
+- **账单合成样本已就绪（本轮新增，可复现）**：`statements-synthetic.csv`（473 B）。放到设备 `Download` 后，在"首页 → 导入业务文件 → 报表类型=渠道账单 → 选择 CSV / XLSX → 下载与接收 → 下载管理器"选中它；映射会自动匹配，预览为"5 新增 / 0 更新"，确认后批次 **#1188 committed**，`statement_lines` 5 行。内容：
+  ```
+  statement_id,line_id,entry_type,amount,currency,occurred_at,evidence_ref,fee_name,settlement_id
+  SYN-ST-001,1,sale,120.0000,USD,2026-10-08T09:00:00+08:00,,,
+  SYN-ST-001,2,fee,12.5000,USD,2026-10-08T09:00:00+08:00,SYN-FEE-001,Platform commission,
+  SYN-ST-001,3,fee,2.3456,USD,2026-10-11T12:00:00+08:00,SYN-EXP-20261011-01,SyntheticShipping,
+  SYN-ST-001,4,payout,100.0000,USD,2026-10-10T10:00:00+08:00,PAY-SYN-001,,
+  SYN-ST-001,5,refund,8.0000,USD,2026-10-09T11:00:00+08:00,,,
+  ```
+  第 3 行与人工费用 1138 同凭据编号（`SYN-EXP-20261011-01`），可直接用于账单/费用核对与回款核对。
+- **映射规则已通过**：规则 **#310**（`SyntheticShipping → 物流`，依据 `Synthetic-fee-name-mapping`）预览影响账单行 #8280 后保存为 `当前有效 · v1`；`fee_rules=1`、`fee_rule_revisions=1`。
+- 端上操作提醒：`uitest uiInput text` 只接受**单个**无空格参数（多词会被判参数数量错误）；表单必填项（如"映射依据"）留空时预览按钮不会提交，界面看起来"没反应"。键盘开合会改变布局坐标，输入后必须重新 dump 再取坐标。
 
 ## 2026-10-11 21:35 接续环境复核（优先于下文历史状态）
 
