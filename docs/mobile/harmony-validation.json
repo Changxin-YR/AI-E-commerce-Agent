@@ -106,7 +106,8 @@
     "Statement import 1188: statements-synthetic.csv picked on device, 5 new rows (sale/fee/fee/payout/refund) committed and read back",
     "Fee mapping rule 310: synthetic fee name SyntheticShipping mapped to 物流 after preview of affected line #8280; saved v1 with revision history",
     "Manual expense 1139 created in user_import/generic scope with evidence SYN-EXP-20261011-01, 2.3456 USD, 物流",
-    "Statement review: totals fee 14.8456 / payout 100.0000 / refund 8.0000 / sale 120.0000 USD; evidence match SYN-EXP-20261011-01 consistent with difference 0.0000; unmatched SYN-FEE-001 stays unknown"
+    "Statement review: totals fee 14.8456 / payout 100.0000 / refund 8.0000 / sale 120.0000 USD; evidence match SYN-EXP-20261011-01 consistent with difference 0.0000; unmatched SYN-FEE-001 stays unknown",
+    "Settlement SYN-ST-001 with manual receipt BANK-SYN-001/PAY-SYN-001 100.0000 USD: per-receipt comparison consistent, difference 0.0000, saved with version history (settlements/receipts/revisions = 1 each)"
   ],
   "pending": "Remaining H13-H20 business journeys (fee mapping, statements, reconciliation, settlements, analytics, overview, rules, schedules, product quality/edits, outbound) and H21 lifecycle/layout/conflict/unknown-result scenarios",
   "product_facts_contract_tests": 1,
