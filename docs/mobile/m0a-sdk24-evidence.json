@@ -1,0 +1,467 @@
+{
+  "schema_version": "1.0",
+  "phase": "M0-A",
+  "baseline_sha": "0a49a37dcd7f1ccf0acc2c0a225bfdc8d8bee686",
+  "branch": "feat/soloops-mobile-m0a",
+  "raw_logs": "Local ignored .local/mobile-m0a; paths relative to repository root",
+  "status_policy": "Explicit assessment; exit 0 alone does not prove successful operation",
+  "records": [
+    {
+      "name": "sdk24-ohos-hap",
+      "started_utc": "2026-10-11T02:20:32.846677+00:00",
+      "finished_utc": "2026-10-11T02:20:52.502425+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "build",
+        "hap",
+        "--debug",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 1,
+      "log": ".local/mobile-m0a/20261011T022032Z-sdk24-ohos-hap.log",
+      "log_sha256": "cafe42b1fb4cb273285895aa57d3d258f2681a24066825dc034a24be91f2139f",
+      "artifacts": [],
+      "status": "FAIL"
+    },
+    {
+      "name": "sdk24-ohos-hap-final",
+      "started_utc": "2026-10-11T02:25:45.877801+00:00",
+      "finished_utc": "2026-10-11T02:27:48.465443+00:00",
+      "command": [
+        "pwsh.exe",
+        "-NoProfile",
+        "-File",
+        "scripts/mobile/build_hap_windows.ps1"
+      ],
+      "cwd": ".",
+      "exit_code": 1,
+      "timeout_seconds": 300.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T022545Z-sdk24-ohos-hap-final.log",
+      "log_sha256": "258b861f04dd5b61683de6faabceeaf19f23ce0361c3247cb4b59eb7cbb9ad47",
+      "artifacts": [],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "sdk24-ohos-unsigned",
+      "started_utc": "2026-10-11T02:29:34.109131+00:00",
+      "finished_utc": "2026-10-11T02:31:27.655025+00:00",
+      "command": [
+        "pwsh.exe",
+        "-NoProfile",
+        "-File",
+        "scripts/mobile/build_hap_windows.ps1",
+        "-Unsigned"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": 300.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T022934Z-sdk24-ohos-unsigned.log",
+      "log_sha256": "2e2b8a9124a24585e6bd7664294dddf8ac213dae48b4612fbdb19d541c9dfc74",
+      "artifacts": [
+        {
+          "path": "apps/soloops_flutter/build/ohos/hap/entry-default-unsigned.hap",
+          "bytes": 93888452,
+          "sha256": "717bb4baf1a835deb0a18001922ac898209f9f752b802210faf970b52f0f3076"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "weapp-import-sdk24",
+      "started_utc": "2026-10-11T02:21:25.825607+00:00",
+      "finished_utc": "2026-10-11T02:22:36.468669+00:00",
+      "command": [
+        "WECHAT_DEVTOOLS_CLI",
+        "auto",
+        "--project",
+        "apps/soloops_weapp",
+        "--auto-port",
+        "9420",
+        "--trust-project",
+        "--debug"
+      ],
+      "cwd": ".",
+      "exit_code": 124,
+      "timeout_seconds": 70.0,
+      "timed_out": true,
+      "log": ".local/mobile-m0a/20261011T022125Z-weapp-import-sdk24.log",
+      "log_sha256": "86f0e2b4472190676b7986dbd515e97af4f4f185c8d1a06c3fad13ce26281e45",
+      "artifacts": [],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "weapp-load-sdk24",
+      "started_utc": "2026-10-11T02:26:43.153556+00:00",
+      "finished_utc": "2026-10-11T02:26:44.099416+00:00",
+      "command": [
+        "node",
+        "scripts/mobile/check_weapp_load.cjs"
+      ],
+      "cwd": ".",
+      "exit_code": 1,
+      "timeout_seconds": 60.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T022643Z-weapp-load-sdk24.log",
+      "log_sha256": "b5dc11308a4097a7ccf5d70c0da394ca7cb0cb482ebbd4225d496ffd149ddedf",
+      "artifacts": [],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "sdk24-tools-tests",
+      "started_utc": "2026-10-11T02:31:11.100504+00:00",
+      "finished_utc": "2026-10-11T02:31:27.935200+00:00",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mobile/tests",
+        "-v"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": 60.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T023111Z-sdk24-tools-tests.log",
+      "log_sha256": "32e4c89d570fc84e1adae0758408a21bd4205464c72949f0cafca82fa4c975a2",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "sdk24-python-lint",
+      "started_utc": "2026-10-11T02:33:38.085063+00:00",
+      "finished_utc": "2026-10-11T02:33:38.450616+00:00",
+      "command": [
+        "python",
+        "-m",
+        "ruff",
+        "check",
+        "--config",
+        "backend/pyproject.toml",
+        "scripts/mobile",
+        "scripts/validate_ui_contract.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": null,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T023338Z-sdk24-python-lint.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "sdk24-python-format",
+      "started_utc": "2026-10-11T02:33:38.920965+00:00",
+      "finished_utc": "2026-10-11T02:33:43.063758+00:00",
+      "command": [
+        "python",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "--config",
+        "backend/pyproject.toml",
+        "scripts/mobile",
+        "scripts/validate_ui_contract.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": null,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T023338Z-sdk24-python-format.log",
+      "log_sha256": "ef7d13d02214e98ca902b05257cdbe6a8e84f3b4714508efdc19766460b54209",
+      "artifacts": [],
+      "status": "PASS"
+    }
+  ],
+  "starting_commit": "ca82f9e592f8080a51c8da6dda5b897764376905",
+  "hap_build_steps": {
+    "unsigned_requested": true,
+    "sdk_commit": "6e545c2ce6ec9e303868dece5012d1d928890b57",
+    "flutter_exit_code": 1,
+    "native_build_exit_code": 0
+  },
+  "build_source_snapshot": [
+    {
+      "path": "apps/soloops_flutter/.gitignore",
+      "sha256": "a01d0e0344e9ab40bd0543c52cd0631e153d7a85b9f27c0089c2f23a73eef89b"
+    },
+    {
+      "path": "apps/soloops_flutter/.metadata",
+      "sha256": "7828f404ae0238c1f1344ed2c3024e222430bcc6e06dd106cb9dde0d0ec772d1"
+    },
+    {
+      "path": "apps/soloops_flutter/README.md",
+      "sha256": "0a29079186d2fddca01323547c905a60e060cef995da0114a6ee4fcba1f4bfb7"
+    },
+    {
+      "path": "apps/soloops_flutter/analysis_options.yaml",
+      "sha256": "b63207cf529949ec4727b68c23dbb38ce255b6f6f4ae1effcb5c1dcf2852d238"
+    },
+    {
+      "path": "apps/soloops_flutter/android/.gitignore",
+      "sha256": "b74b8563f97bcd519df6e2f8e7cc0789bb00fd5eb215c620eb72e3a945c2a6a4"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/build.gradle",
+      "sha256": "cd28aa1c1de799774a94e5a670577c96e92b79fb814bc6e2ddc4b3411eaeeed1"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/debug/AndroidManifest.xml",
+      "sha256": "b01a4541a8144c15bc617bab7eb267c99fa1476368fbbda5a12cdbf4e316a34c"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/AndroidManifest.xml",
+      "sha256": "a662d211f90cb32fe21048f389872e88df2bb942b40d1834fe6cb02d1ae4d932"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/kotlin/dev/soloops/soloops_flutter/MainActivity.kt",
+      "sha256": "df50168c1ba04c2d76f0fcfc76a3ad634ba078556cb8d82077bc17604444082c"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/res/drawable-v21/launch_background.xml",
+      "sha256": "dca312ec77de83e43ef70a825c299b51451247286c29167d62f19165750b8793"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/res/drawable/launch_background.xml",
+      "sha256": "2df60e2cfbee873ce2858088cf003e6b93498f2f568476da437610467ea1a9d7"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+      "sha256": "6a7c8f0d703e3682108f9662f813302236240d3f8f638bb391e32bfb96055fef"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+      "sha256": "c7c0c0189145e4e32a401c61c9bdc615754b0264e7afae24e834bb81049eaf81"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+      "sha256": "e14aa40904929bf313fded22cf7e7ffcbf1d1aac4263b5ef1be8bfce650397aa"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+      "sha256": "4d470bf22d5c17d84edc5f82516d1ba8a1c09559cd761cefb792f86d9f52b540"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "sha256": "3c34e1f298d0c9ea3455d46db6b7759c8211a49e9ec6e44b635fc5c87dfb4180"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/res/values-night/styles.xml",
+      "sha256": "ea763597dc1a84c8034251caee98d7753e0fbf57340ffc94677427de4b537516"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/main/res/values/styles.xml",
+      "sha256": "cca15a99b59380a548bf6a890f7ca5380ee509b1f9bbb2f5f9ec3589fa25c2f7"
+    },
+    {
+      "path": "apps/soloops_flutter/android/app/src/profile/AndroidManifest.xml",
+      "sha256": "b01a4541a8144c15bc617bab7eb267c99fa1476368fbbda5a12cdbf4e316a34c"
+    },
+    {
+      "path": "apps/soloops_flutter/android/build.gradle",
+      "sha256": "8e842487c25e027acf681411b4552d352dde9cdec9a41545210bbbcccafa5e56"
+    },
+    {
+      "path": "apps/soloops_flutter/android/gradle.properties",
+      "sha256": "ce5add197675bba8e2d8a5c30955e2e0f29bfc6703a3a1a2f50f3d0c7e3a9611"
+    },
+    {
+      "path": "apps/soloops_flutter/android/gradle/wrapper/gradle-wrapper.properties",
+      "sha256": "5fbaee100c5dedc530f45be478f1d8afec34d1105a98a7163f2b6c0d117dc1ad"
+    },
+    {
+      "path": "apps/soloops_flutter/android/settings.gradle",
+      "sha256": "f3c662934490d10f4512719827ea89ed2263f3b700aebc26e6a4e4e20e4c38d0"
+    },
+    {
+      "path": "apps/soloops_flutter/lib/main.dart",
+      "sha256": "ebdde6ec6177b3466baa050c9e841b96b2b4c304dcacaeef7a06923c0e413f50"
+    },
+    {
+      "path": "apps/soloops_flutter/licenses/FLUTTER-LICENSE",
+      "sha256": "a3a9fd82f800a47377f7d3f60c60a5c91cae0495be8f329031e1448ce0f5dab9"
+    },
+    {
+      "path": "apps/soloops_flutter/licenses/FLUTTER-OH-LICENSE",
+      "sha256": "d8af3e1d57d6f9393af9adec232e4d8886f2e6b890740cee7b1cf84771436b31"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/.gitignore",
+      "sha256": "0fe249bd95878abd6ac5aa1ab48fc7995fe34a19e83d03b2687c507c32ccc5d4"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/AppScope/app.json5",
+      "sha256": "1c3e3f59ffe2890eb91c5ef55c85ac5bd70ab6016a89326923901e12703331f6"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/AppScope/resources/base/element/string.json",
+      "sha256": "eb383e8b38c4ca7044b803a650d503142c47ff5cb00096474b03f8665d5f59a3"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/AppScope/resources/base/media/app_icon.png",
+      "sha256": "4d470bf22d5c17d84edc5f82516d1ba8a1c09559cd761cefb792f86d9f52b540"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/build-profile.json5",
+      "sha256": "0ab28bf734c585e14fdb2b1ce487e138e135baf946c6f0b9bfa4c81fcad90d3d"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/.gitignore",
+      "sha256": "c4f6d116b0ebfe835ba0f8cea3e7f3cdb87b04ce92805e52e6861f33d5c045a7"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/build-profile.json5",
+      "sha256": "66805c8996a83c4cc55fab0393b7e3dc7ec511f8bcbea10a03cd19a3072bfe9b"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/hvigorfile.ts",
+      "sha256": "6c55ba5122d7687df5c161946f8ffb7354fb3a59ec3b404d293b78831205babb"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/oh-package.json5",
+      "sha256": "c841a8d03cdfd9f6d5e1ceed3a2c68e4533f4f5176ed4155b7223a91d415cd1f"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/ets/entryability/EntryAbility.ets",
+      "sha256": "9902a9891997bd13c1cf01d5ea450070de43cc0bd02892995a95d59f21f472dc"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/ets/pages/Index.ets",
+      "sha256": "f21788ce800ac292099b37caa2fde380cfa67ff634670484490da9ffb7947798"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/module.json5",
+      "sha256": "a9ae63a72151c58647f5dc54b6bf08efcc4add1b5bc565f82ca3461f046cfc0f"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/resources/base/element/color.json",
+      "sha256": "40dce2e2f49200e562eaad66d43f3212f4371cafd2c83c558c2cb6401434ef52"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/resources/base/element/string.json",
+      "sha256": "7b1ff552cb666f42d65a70cd96afc11863581308ceb7fcb1863806963667eb45"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/resources/base/media/icon.png",
+      "sha256": "4d470bf22d5c17d84edc5f82516d1ba8a1c09559cd761cefb792f86d9f52b540"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/resources/base/profile/buildinfo.json5",
+      "sha256": "cff8f0dc449bb91b94a544bf2e367d3fcb0f3349d8327da1e548dbe4149c1841"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/resources/base/profile/framesconfig.json",
+      "sha256": "974e05afb4062c63586a9f42e04e54c8ebcc5623bcb685fdb17f5cbda4bd58a7"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/resources/base/profile/main_pages.json",
+      "sha256": "b7248e3d58d4006a4bb01d9991e34b1292c03f3d212b5945470ec5bdcf9f1cbd"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/resources/en_US/element/string.json",
+      "sha256": "7b1ff552cb666f42d65a70cd96afc11863581308ceb7fcb1863806963667eb45"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/main/resources/zh_CN/element/string.json",
+      "sha256": "6b1a615c539f3e2ad966a277ba8cc558c3e3afce638673f511bb5d673f21fc01"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/ohosTest/ets/test/Ability.test.ets",
+      "sha256": "2b19b142ae61dabdc8b2a3143848967852f03f45c93d62cbd7784a148089ab7e"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/ohosTest/ets/test/List.test.ets",
+      "sha256": "e7e1128b8a057cc7a68927e7577fa676528fb50566b81287099bfce40979ad5e"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/ohosTest/ets/testability/TestAbility.ets",
+      "sha256": "385d7c4b8ab8af30175ee98d632ecb423a53efefe5ad453cc5067b04ef90ebb0"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/ohosTest/ets/testability/pages/Index.ets",
+      "sha256": "202ce3b15acbe04358dd9d0a376ee5beb42a502c2087f4f9425ba27750dbc094"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/ohosTest/ets/testrunner/OpenHarmonyTestRunner.ts",
+      "sha256": "2acb891278c3bc91181ca9677ff56bef79add5367943a97127f277ad43661fcb"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/ohosTest/module.json5",
+      "sha256": "bb48a2058eefc0948b201b4dfec1d2ec5b24839f290957c45fa93109d0371dce"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/ohosTest/resources/base/element/color.json",
+      "sha256": "40dce2e2f49200e562eaad66d43f3212f4371cafd2c83c558c2cb6401434ef52"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/ohosTest/resources/base/element/string.json",
+      "sha256": "01855e0ce7b3cb2edd53f80cc2b3a45cedf1b00589584ccb3f2e52e836486792"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/ohosTest/resources/base/media/icon.png",
+      "sha256": "4d470bf22d5c17d84edc5f82516d1ba8a1c09559cd761cefb792f86d9f52b540"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/entry/src/ohosTest/resources/base/profile/test_pages.json",
+      "sha256": "ec28ee9f0627e7acd56cfa858239d3c679c4c4ec763f5b7d25825619a4ac8bd7"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/hvigor/hvigor-config.json5",
+      "sha256": "e7e9449d226534b4bb341340401454b96aa5b6e60a89a08896a6ff500b90e5e1"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/hvigorconfig.ts",
+      "sha256": "dfcc47dd4e7fc54c3ba7c896d0cdcdd7ddb9371278ed3ff6af75ee53d3ccb2bc"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/hvigorfile.ts",
+      "sha256": "1431fbf5711b3d4dc0348c18741240671e015a0e5869317b88034d34e01acca7"
+    },
+    {
+      "path": "apps/soloops_flutter/ohos/oh-package.json5",
+      "sha256": "246d07e17239870278b194372683ca01d4ef4369845d4d3364efa5e65c8f55b1"
+    },
+    {
+      "path": "apps/soloops_flutter/pubspec.lock",
+      "sha256": "88918a763cd2eec3f018503b9576b25f8a09b86519691866ef28b11cdf04c779"
+    },
+    {
+      "path": "apps/soloops_flutter/pubspec.yaml",
+      "sha256": "2ef934335900ba8b2edacabd942d15db7bb4cecde43c56ca74c15e6648f18c88"
+    },
+    {
+      "path": "apps/soloops_flutter/test/widget_test.dart",
+      "sha256": "6e30e03d4479d3188c9c6cd0813373196d1e169f898548d57c16f23cb2c6913d"
+    },
+    {
+      "path": "apps/soloops_flutter/toolchain.lock.json",
+      "sha256": "c8563dd0a19d15fdc7425228445e857d96c78685df3855b4810d10cd9983d129"
+    }
+  ],
+  "hap_inspection": {
+    "status": "PASS",
+    "scope": "ZIP CRC, package SDK metadata and Flutter payload only",
+    "compile_sdk": "6.1.1.125",
+    "target_api": 24,
+    "compatible_api_declared": 12,
+    "debug": true,
+    "bundle_name": "dev.soloops.soloops_flutter",
+    "required_payloads": [
+      "libs/arm64-v8a/libflutter.so",
+      "resources/rawfile/flutter_assets/kernel_blob.bin"
+    ],
+    "entry_count": 21,
+    "signing_status": "BLOCKED",
+    "device_runtime_status": "NOT_TESTED"
+  },
+  "verification_tools_sha256": {
+    "scripts/mobile/build_hap_windows.ps1": "f6fa53abf2a7378f172db8ca3458a68d96046f2885320fe9a7b582099eba6adb",
+    "scripts/mobile/run_evidence.py": "3a8b7366d6c2af865471fffea8d1969b6bd0bdc9057cfee0c7f28f59cee42ac6"
+  }
+}

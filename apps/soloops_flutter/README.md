@@ -1,48 +1,53 @@
 # SoloOps Flutter OH 最小工程
 
 Android 与 OHOS 共用 `lib/main.dart`，只显示启动页、环境信息、导航和生命周期事件。
-`test/widget_test.dart` 是宿主机启动壳测试，不是设备或业务一致性测试。
+`test/widget_test.dart` 是宿主机启动壳测试。
 
 ## 锁定工具链
 
-见 [`toolchain.lock.json`](toolchain.lock.json)。使用 CPF Flutter OH 发布标签
+[`toolchain.lock.json`](toolchain.lock.json) 固定 CPF Flutter OH
 `3.27.5-ohos-1.0.7` / `6e545c2ce6ec9e303868dece5012d1d928890b57`，Dart 3.6.2。
-Android 使用 JDK 17、SDK platform/build-tools 35，Gradle 8.3 / AGP 8.1.0。
-OHOS 编译和目标 SDK 固定为 `6.0.2(22)`，最低运行 SDK `5.0.0(12)`。
-配套 DevEco Studio / Command Line Tools 必须安装完整 API 22 SDK。
-维护者发布说明名称为 3.27.4-ohos-1.0.7，实际 tag/version 为 3.27.5-ohos-1.0.7。
-本机目前检测到 API 24，API 22 构建实际报 `SDK component missing`，状态 BLOCKED。
-`.metadata` 保留首次创建记录；当前 SDK 以锁文件为准。
+维护者发布说明名称为 3.27.4-ohos-1.0.7；实际 tag/version 为 3.27.5-ohos-1.0.7。
+该版本引擎最低构建 API22，本工程 compile/target 固定 `6.1.1(24)`，最低运行声明为
+`5.0.0(12)`。本机 SDK 包 6.1.1.125、DevEco6.1.1.290、Hvigor6.24.3。
+SDK24 未签名 HAP 编译 PASS；声明的最低运行版本尚未经过设备验证。
+`.metadata` 保留首次创建记录，当前 SDK 以锁文件为准。
 
-在仓库根目录用 PowerShell 初始化（SDK 与缓存不提交）：
+Android 使用 JDK17、SDK platform/build-tools35，Gradle8.3 / AGP8.1.0。
+本机 SDK 路径、`local.properties`、证书及账号资料不提交。
+
+## Windows 复现
+
+SDK 和 OHOS 工具都需要无空格物理路径。示例从仓库根目录执行，PowerShell7：
 
 ```powershell
-git -c core.longpaths=true clone --depth 1 --branch '3.27.5-ohos-1.0.7' https://atomgit.com/CPF-Flutter/flutter_flutter.git .local/toolchains/flutter-oh-api22
-git -C .local/toolchains/flutter-oh-api22 rev-parse HEAD
-$flutter = (Resolve-Path .local/toolchains/flutter-oh-api22/bin/flutter.bat).Path
-$env:PATH = (Split-Path $flutter) + ';' + $env:PATH
+$env:SOLOOPS_FLUTTER_SDK = Join-Path $env:TEMP 'soloops-flutter-6e545c2'
+# 目录不存在时初始化；已存在时先核对 SHA 与 git status。
+git -c core.longpaths=true clone --depth 1 --branch '3.27.5-ohos-1.0.7' https://atomgit.com/CPF-Flutter/flutter_flutter.git $env:SOLOOPS_FLUTTER_SDK
+git -C $env:SOLOOPS_FLUTTER_SDK rev-parse HEAD
+$flutter = Join-Path $env:SOLOOPS_FLUTTER_SDK 'bin/flutter.bat'
 $env:GRADLE_USER_HOME = Join-Path (Get-Location) '.local/gradle'
-& $flutter --version
-& $flutter doctor -v
 Push-Location apps/soloops_flutter
 & $flutter pub get
 & $flutter analyze --no-pub
 & $flutter test --no-pub
 & $flutter build apk --debug --no-pub
-& $flutter build hap --debug --no-pub
 Pop-Location
+pwsh -NoProfile -File scripts/mobile/build_hap_windows.ps1 -Unsigned
 ```
 
-先按本机安装位置设置 `JAVA_HOME`、Android SDK 与 `DEVECO_SDK_HOME`；不要提交
-`local.properties`、签名文件或开发者账号资料。Gradle 启动器由 Flutter 工具按模板补齐。
-SDK 标签正确仍可能出现 upstream/channel 提示，以固定 Git SHA 和工具输出核对。
-下载依赖网络与 Android 许可证；本次 APK 已成功，doctor 仍提示部分组件许可证未接受。
+先按本机安装位置配置 Android SDK、JAVA_HOME、DEVECO_SDK_HOME 和 hvigorw.bat 的 PATH。
+`build_hap_windows.ps1` 校验 SDK 提交及干净状态，将仓库内已跟踪的 Flutter 文件复制到
+独立临时目录，逐文件核对 SHA256，并确认 pub get 没有改动依赖锁。
+该临时目录是构建快照，源码仍在本仓库；新文件应先 git add 才能进入快照。
+默认创建新目录，不清理已有目录。SDK/构建目录保留用于本机复核。
 
-Windows SDK 应放在较短的物理路径，clone 开启 `core.longpaths`；Dart 下载缓存的
-路径清理仍可能触及 Windows 长路径限制，盘符映射不保证生效。本次缓存下载完成后
-重试已进入 Hvigor，完整原始记录保留。独立 `GRADLE_USER_HOME` 避免复用
-其他项目损坏的全局 Gradle cache，不改变用户全局配置。
+脚本先运行 `flutter build hap --debug --no-pub`，再在 `-Unsigned` 模式单独运行相同的
+Hvigor assembleHap 命令，保留两个退出码。当前 Flutter 包装命令在编译后要求签名，退出1；
+Hvigor 未签名构建退出0。该编译 PASS 不能用于声明签名、安装或设备运行成功。
+SDK24 仍有上游 ArkTS 弃用/异常处理告警，设备兼容性留待后续阶段。
 
-产物：`build/app/outputs/flutter-apk/app-debug.apk`；OHOS 预期为
-`ohos/entry/build/default/outputs/default/*.hap`，本次未生成 HAP。
-实际错误及恢复步骤见 M0-A 报告。签名和设备运行待后续授权。
+产物：`build/app/outputs/flutter-apk/app-debug.apk`、
+`build/ohos/hap/entry-default-unsigned.hap`。
+构建快照清单与分步退出码在 `.local/mobile-m0a/hap-source-manifest.json`、
+`hap-build-results.json`；完整结果见 [`M0-A报告`](../../docs/mobile/m0a-report.md)。

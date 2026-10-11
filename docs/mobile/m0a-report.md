@@ -1,6 +1,6 @@
 # SoloOps R2 · M0-A 实际工程验收
 
-核对日：2026-10-11。**M0-A 整体验收：BLOCKED。** 已交付可独立复核的 Android、小程序最小构建和静态契约；OHOS 工具链、小程序开发工具加载与部分资质核对仍受阻。本报告不表示三端整体完成。
+核对日：2026-10-11。**M0-A 整体验收：BLOCKED。** 已交付 Android APK、SDK24 未签名 HAP、小程序最小构建和静态契约；小程序开发工具加载与部分资质核对仍受阻。OHOS 签名及设备运行尚未验收。本报告不表示三端整体完成。
 
 ## 1. 仓库与隔离
 
@@ -9,7 +9,7 @@
 - 原工作区未提交的 `docs/r2-final-special-acceptance.md`、`docs/uat/` 保留；原工作区仍在 `main`。
 - 起步时重新查询的最新主分支 CI：[38058670333](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38058670333)，HEAD 为上述完整 SHA，结果 PASS。历史880/158/91数字不作为本次新跑的测试结果。
 - 已读取 AGENTS、两版需求、foundation 三份文档、R2计划/进度/修复与部署门禁、功能矩阵，以及指定的后端入口/身份/中间件和 Web 路由。仓库无三端V1.2正式方案；用户提供的附件作为设计参考，执行授权仅为本次启动指令的 M0-A。
-- API 22 复核从干净提交 `0cc7f4ceb046f4b1b6c58bef395602a0cc255653` 开始；该提交的 [分支 CI 38102975470](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38102975470) 为 PASS。
+- SDK24 复核从干净提交 `ca82f9e592f8080a51c8da6dda5b897764376905` 开始；其 [分支 CI 38104616877](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38104616877) 为 PASS。
 - 交付提交 SHA 用 `git rev-parse HEAD` 获取；此报告记录提交前事实，最终提交 SHA 和该 SHA 的分支 CI 由交付消息给出。CI 工作流只覆盖静态契约与小程序构建，不能代表 APK/HAP 的云端构建。
 
 ## 2. 实际环境与锁定版本
@@ -22,53 +22,55 @@
 | Dart / DevTools | 3.6.2 / 2.40.0 |
 | Android | Temurin17.0.19+10，SDK35 / build-tools35.0.0，Gradle8.3，AGP8.1.0，Kotlin1.8.22 |
 | OHOS 实际 | DevEco6.1.1.290，Hvigor6.24.3，OHPM6.1.2.285，SDK API24:default，构建时Node24.15.0 |
-| OHOS 发布版要求 | compile/target `6.0.2(22)`，compatible `5.0.0(12)`；配套工具须安装完整 API 22 SDK |
+| OHOS 工程配置 | compile/target `6.1.1(24)`，compatible `5.0.0(12)`；实际SDK包6.1.1.125 |
 | 小程序 | Node24.16.0 / npm11.13.0，Taro4.3.0，Vue3.5.43，TS5.9.3，Vite4.5.14 |
 | 微信开发者工具 | 2.01.2510290；已连接打开的 IDE，导入停在 preparing；自动化端口未就绪 |
 
 SDK 源码从官方标签独立克隆并核对 SHA；Android/OHOS 都用该 SDK、同一 `lib/main.dart`。
 引擎/HAR完整版本见 [`toolchain.lock.json`](../../apps/soloops_flutter/toolchain.lock.json)。
 下载使用本机已有 `pub.flutter-io.cn` / `storage.flutter-io.cn` 镜像；锁文件记录来源及校验和。
-发布说明明确 1.0.7 的应用构建目标为 API 22、最低运行 API 12，实际 tag/version 显示为 3.27.5-ohos-1.0.7。工程显式锁定 compile/target 为 6.0.2(22)。环境变量 SDK 和 DevEco 自带 SDK 的元数据均报告 API 24 / 6.1.1.125；Hvigor 实际报 `00303168 SDK component missing`。doctor 的绿项不能证明 API 22 组件齐全或 HAP 成功。
+发布说明明确 1.0.7 的引擎构建最低 API22、最低运行 API12。工程采用本机 SDK24，包内 module.json 实测 compileSdkVersion=6.1.1.125、targetAPIVersion=60101024；pack.info 的 target=24、compatible=12。此为编译与包元数据验证，最低运行版本尚未通过设备测试。
 
 ## 3. 分端结果
 
 | 验证 | Android | OHOS | 微信小程序 |
 |---|---|---|---|
-| 目标编译 | PASS | BLOCKED | PASS |
+| 目标编译 | PASS | PASS（未签名HAP） | PASS |
 | 端专属类型/静态检查 | PASS（Flutter analyze） | PASS（共享 Dart analyze，仅语言层） | PASS（vue-tsc） |
 | IDE 项目加载 | NOT_TESTED | NOT_TESTED | BLOCKED |
 | 模拟器运行 | NOT_TESTED | NOT_TESTED | NOT_TESTED |
 | 真机运行 | NOT_TESTED | NOT_TESTED | NOT_TESTED |
 | 真实业务跨端一致性 | NOT_TESTED | NOT_TESTED | NOT_TESTED |
 
+OHOS 的 `flutter build hap` 因签名检查退出1，单独执行相同 Hvigor assembleHap 编译退出0并生成未签名 HAP；分别记录，不将包装命令失败改写为成功。SDK24 上游 ArkTS 有弃用、异常处理和NAPI声明告警。
+
 Flutter 另有 **1 项宿主 widget test PASS**：启动页→环境信息→返回。它不证明 Android/OHOS 设备运行。
 Taro 仅启动页和本地环境信息折叠按钮，没有伪造业务测试。
 
 ## 4. 实际命令、退出码和日志
 
-下表路径相对独立 worktree 根目录。`flutter` 当前指 `.local/toolchains/flutter-oh-api22/bin/flutter.bat`；
-Flutter 命令在 `apps/soloops_flutter` 执行，npm 命令在 `apps/soloops_weapp` 执行，Python 命令在根目录执行。
-原始 M0-A 的 argv、UTC时间、日志/产物 SHA256 见 [`m0a-evidence.json`](m0a-evidence.json)；API 22 复核见 [`m0a-sdk22-evidence.json`](m0a-sdk22-evidence.json)。旧清单对应当时 SDK，保留为历史证据。
+下表路径相对独立 worktree 根目录。`flutter` 均为锁定的1.0.7；Android使用仓库忽略目录中的SDK，OHOS使用相同提交的无空格物理SDK目录（通过 SOLOOPS_FLUTTER_SDK 指定）。
+Android及宿主Flutter检查在 `apps/soloops_flutter` 执行，OHOS脚本在临时源码快照中执行Flutter/Hvigor；npm命令在 `apps/soloops_weapp`、Python命令在根目录执行。
+原始 M0-A 的 argv、UTC时间、日志/产物 SHA256 见 [`m0a-evidence.json`](m0a-evidence.json)；API 22 复核见 [`m0a-sdk22-evidence.json`](m0a-sdk22-evidence.json)。当前 SDK24 编译及微信加载复核见 [`m0a-sdk24-evidence.json`](m0a-sdk24-evidence.json)。旧清单保留为历史证据。
 
 | 实际命令 | 退出码 | 验收 | 日志 `.local/mobile-m0a/` 下文件 |
 |---|---:|---|---|
 | `flutter build apk --debug --no-pub` | 0 | PASS | `20261011T020700Z-sdk22-android-apk.log` |
-| `flutter build hap --debug --no-pub` | 1 | BLOCKED | `20261011T021218Z-sdk22-ohos-hap-final.log` |
+| `flutter build hap --debug --no-pub` | 1 | BLOCKED | `20261011T022545Z-sdk24-ohos-hap-final.log` |
+| `pwsh -NoProfile -File scripts/mobile/build_hap_windows.ps1 -Unsigned` | 0 | PASS，未签名编译 | `20261011T022934Z-sdk24-ohos-unsigned.log` |
 | `flutter analyze --no-pub` | 0 | PASS | `20261011T021249Z-sdk22-analyze.log` |
 | `flutter test --no-pub` | 0 | PASS | `20261011T021315Z-sdk22-widget-test.log` |
 | `npm run type-check` | 0 | PASS | `20261011T013154Z-weapp-final-type-check.log` |
 | `npm run build:weapp` | 0 | PASS | `20261011T013200Z-weapp-final-build.log` |
 | `npm audit --json` | 1 | FAIL | `20261011T013220Z-weapp-final-audit.log` |
-| 微信官方 `cli.bat open --project <本工程>` | 0 | BLOCKED | `20261011T020027Z-weapp-devtools-reopen.log` |
-| 微信官方 `cli.bat auto --project <本工程> --auto-port 9420 --trust-project` | 0 | BLOCKED | `20261011T020632Z-weapp-devtools-auto.log` |
-| `node scripts/mobile/check_weapp_load.cjs` | 1 | BLOCKED | `20261011T020713Z-weapp-startup-load.log` |
+| 微信官方 `cli.bat auto --project <本工程> --auto-port 9420 --trust-project --debug` | 124（超时） | BLOCKED | `20261011T022125Z-weapp-import-sdk24.log` |
+| `node scripts/mobile/check_weapp_load.cjs` | 1 | BLOCKED | `20261011T022643Z-weapp-load-sdk24.log` |
 | `python scripts/validate_ui_contract.py` | 0 | PASS | `20261011T014203Z-ui-contract.log` |
-| `python -m unittest discover -s scripts/mobile/tests -v` | 0 | PASS，12项 | `20261011T014206Z-ui-contract-tests.log` |
-| `python -m ruff check --config backend/pyproject.toml scripts/mobile scripts/validate_ui_contract.py` | 0 | PASS | `20261011T014202Z-python-lint.log` |
-| `python -m ruff format --check --config backend/pyproject.toml scripts/mobile scripts/validate_ui_contract.py` | 0 | PASS | `20261011T014203Z-python-format.log` |
+| `python -m unittest discover -s scripts/mobile/tests -v` | 0 | PASS，13项 | `20261011T023111Z-sdk24-tools-tests.log` |
+| `python -m ruff check --config backend/pyproject.toml scripts/mobile scripts/validate_ui_contract.py` | 0 | PASS | `20261011T023338Z-sdk24-python-lint.log` |
+| `python -m ruff format --check --config backend/pyproject.toml scripts/mobile scripts/validate_ui_contract.py` | 0 | PASS | `20261011T023338Z-sdk24-python-format.log` |
 
-编译和检查经 `scripts/mobile/run_evidence.py` 记录实际退出码。微信 open/auto 分别在约174/316秒仍停留 preparing 后终止了本任务 CLI 子进程，IDE 窗口保留；外层进程返回0不代表成功。自动化 SDK 实际连接失败，未读取到启动页。原始开发日志按仓库约定留在本机忽略目录；提交可复核的相对路径、命令与哈希，不提交本机配置。`export_evidence.py` 导出前重新核对日志与产物哈希；验收状态由实际语义决定，不按退出码机械判定。
+编译和检查经 `scripts/mobile/run_evidence.py` 记录实际退出码。微信 CLI 仍停留 preparing，70秒超时后仅终止本任务进程树，明确记录124和 timed_out=true，保留IDE窗口。独立回归测试已验证超时后子进程不能继续写文件。自动化 SDK 实际连接失败，未读取到启动页。原始开发日志按仓库约定留在本机忽略目录；提交可复核的相对路径、命令与哈希，不提交本机配置。`export_evidence.py` 导出前重新核对日志与产物哈希；验收状态由实际语义决定，不按退出码机械判定。
 
 ## 5. 产物
 
@@ -77,7 +79,9 @@ Flutter 命令在 `apps/soloops_flutter` 执行，npm 命令在 `apps/soloops_we
 - 小程序：`apps/soloops_weapp/dist/`，15个实际文件，逐文件哈希在证据 JSON；含 `app.js/app.json`、页面 JS/JSON/WXML、Taro runtime。
 - 小程序本地打包：`.local/mobile-m0a/soloops-weapp-dist.zip`，69,161 bytes。
   SHA256：`9e8b9b110827f77339e73783f12225adfdd46a139e4ee3ecb300126d8581bbf0`。
-- HAP：没有生成。预期目录 `apps/soloops_flutter/ohos/entry/build/default/outputs/default/` 不作为成功产物。
+- HAP：`apps/soloops_flutter/build/ohos/hap/entry-default-unsigned.hap`，93,888,452 bytes。
+  SHA256：`717bb4baf1a835deb0a18001922ac898209f9f752b802210faf970b52f0f3076`。
+  ZIP CRC通过，21项归档条目，包含arm64 Flutter引擎及Dart kernel_blob；没有签名和设备安装证明。
 - GitHub 分支 CI 会独立生成 `soloops-weapp-dist` artifact；云端压缩包和本地 zip 不要求字节相同。
 
 ## 6. 插件、资质与契约
@@ -94,9 +98,10 @@ Flutter 命令在 `apps/soloops_flutter` 执行，npm 命令在 `apps/soloops_we
 |---|---|---|
 | 原全局 Gradle cache 缺失 scripts metadata，首次 APK 构建失败 | PASS | 本任务改用独立 `.local/gradle`，最终命令成功并生成实际 APK；保留首次失败原日志 |
 | Windows SDK clone 长路径 | PASS | 仅对任务 SDK clone 配置 `core.longpaths` 并恢复该新克隆的缺失模板；固定 SDK 工作区已核对干净 |
-| HAP Hvigor `00303168 SDK component missing` | BLOCKED | 已采用维护者明确支持 API 22 的 SDK，并显式锁定 compile/target22；安装或定位完整 API 22 SDK，将本机 SDK 路径指向它后重跑。当前可见包为 API24；需要用户提供已装 API22 的目录或通过 DevEco SDK Manager 补齐组件 |
-| API22 引擎下载后的 Windows 路径清理异常 | PASS | 下载写入引擎/HAR版本戳后重试已进入 Hvigor；干净环境优先使用较短 SDK 物理目录，盘符映射未解决本次清理问题 |
-| 微信 IDE 项目加载 | BLOCKED | 打开的 IDE 已响应12994端口，但 open/auto 长时间停留 preparing，9420自动化连接失败。需在 IDE 确认本工程是否导入及是否有待处理提示；随后按小程序 README 重跑启动页验证。未清理全局缓存或关闭用户 IDE |
+| SDK24未签名HAP | PASS | 同一Dart页面已通过Hvigor编译并复制产物到仓库build目录；完整版本、分步退出码和SHA256已归档 |
+| OHPM / Flutter-Hvigor 空格路径解析 | PASS | 构建脚本使用无空格物理SDK与逐文件SHA256核对的临时源码快照，检查依赖锁不变；64项源码快照清单在SDK24证据中 |
+| Flutter包装命令签名检查 | BLOCKED | 编译完成后要求签名；M0-B设备安装前由开发者在本机配置调试签名。未生成或提交任何账号证书 |
+| 微信 IDE 项目加载 | BLOCKED | 打开的 IDE 已响应12994端口，但 auto 在70秒超时前一直停留 preparing，9420自动化连接失败。需在 IDE 确认本工程是否导入及是否有待处理提示；随后按小程序 README 重跑启动页验证。未清理全局缓存或关闭用户 IDE |
 | Taro依赖安全审计 | FAIL | 详见依赖审查，后续验证修复版或定向补丁，不强制跨大版本替换 peer 依赖 |
 | 官方微信当前规则读取 | BLOCKED | 当前工具站点策略阻止文档读取；后续由允许的官方渠道及账号后台确认类目、主体和域名配置 |
 | 设备/网络业务/权限与插件实际行为 | NOT_TESTED | 由后续获授权阶段使用合成数据验证；当前编译和静态检查不能替代 |
@@ -108,5 +113,5 @@ Flutter 命令在 `apps/soloops_flutter` 执行，npm 命令在 `apps/soloops_we
 
 - Android：编译前置 PASS，可在新指令下申请 M0-B 合成数据设备验证；凭据存储/插件能力仍须单独验收。
 - 微信小程序：编译前置 PASS；先修复 IDE 项目加载并处理后续所需安全/账号前置条件，再安排 M0-B。
-- OHOS：BLOCKED，先补齐或定位完整 SDK22 并补 M0-A HAP 编译证据；不阻止其他端未来分端推进。
+- OHOS：未签名编译前置 PASS；下一阶段须本机调试签名及合成数据设备验证。不能据编译通过宣称签名/安装/运行通过。
 - 全端 M0-A 整体放行：BLOCKED。生产发布：BLOCKED。本轮止于 M0-A，未进入 M0-B、M1、M2、M3 或 M4。

@@ -16,21 +16,25 @@
     "kotlin": "1.8.22"
   },
   "ohos_required": {
-    "deveco_or_command_line_tools": "API 22-capable DevEco or Command Line Tools",
-    "compile_sdk": "6.0.2(22)",
-    "target_sdk": "6.0.2(22)",
+    "deveco_or_command_line_tools": "DevEco Studio 6.1.1.290",
+    "compile_sdk": "6.1.1(24)",
+    "target_sdk": "6.1.1(24)",
     "compatible_sdk": "5.0.0(12)",
-    "release_note": "release-notes/Flutter 3.27.4-ohos 1.0.7 ReleaseNote.md"
+    "release_note": "release-notes/Flutter 3.27.4-ohos 1.0.7 ReleaseNote.md",
+    "upstream_engine_minimum_api": 22
   },
   "ohos_observed": {
     "deveco": "6.1.1.290",
     "available_api": "24:default",
     "ohpm": "6.1.2.285",
     "node": "24.15.0",
-    "build_status": "BLOCKED",
+    "build_status": "PASS",
     "hvigor": "6.24.3",
     "sdk_package": "6.1.1.125",
-    "api22_status": "BLOCKED",
-    "build_error": "00303168 Configuration Error: SDK component missing"
+    "build_scope": "unsigned arm64 debug HAP via Hvigor",
+    "flutter_signed_build_status": "BLOCKED",
+    "flutter_exit_code": 1,
+    "hvigor_exit_code": 0,
+    "runtime_status": "NOT_TESTED"
   }
 }

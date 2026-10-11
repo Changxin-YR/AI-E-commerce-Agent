@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -16,11 +17,14 @@ def main() -> int:
     parser.add_argument("--name", required=True)
     parser.add_argument("--cwd", type=Path, default=Path.cwd())
     parser.add_argument("--artifact", action="append", default=[])
+    parser.add_argument("--timeout", type=float, help="Maximum seconds; timeout is exit 124")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ["--"] else args.command
     if not command or not args.name.replace("-", "").replace("_", "").isalnum():
         parser.error("a safe evidence name and command are required")
+    if args.timeout is not None and args.timeout <= 0:
+        parser.error("timeout must be positive")
     root = Path(__file__).resolve().parents[2]
     directory = root / ".local/mobile-m0a"
     directory.mkdir(parents=True, exist_ok=True)
@@ -39,12 +43,33 @@ def main() -> int:
             + subprocess.list2cmdline(invocation)
             + '"'
         )
+    timed_out = False
     with log.open("wb") as output:
         try:
-            result = subprocess.run(
-                invocation, cwd=args.cwd, stdout=output, stderr=subprocess.STDOUT, check=False
-            )
-            code = result.returncode
+            with subprocess.Popen(
+                invocation,
+                cwd=args.cwd,
+                stdout=output,
+                stderr=subprocess.STDOUT,
+                start_new_session=os.name != "nt",
+            ) as process:
+                try:
+                    code = process.wait(timeout=args.timeout)
+                except subprocess.TimeoutExpired:
+                    timed_out = True
+                    # Terminate only this invocation's process tree, preserving the IDE.
+                    if os.name == "nt":
+                        subprocess.run(
+                            ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                            stdout=output,
+                            stderr=subprocess.STDOUT,
+                            check=False,
+                        )
+                    else:
+                        os.killpg(process.pid, signal.SIGKILL)
+                    process.wait()
+                    code = 124
+                    output.write(f"\nTIMEOUT after {args.timeout:g} seconds\n".encode())
         except OSError as error:
             output.write(str(error).encode("utf-8"))
             code = 127
@@ -66,6 +91,8 @@ def main() -> int:
         "command": command,
         "cwd": str(args.cwd.resolve()),
         "exit_code": code,
+        "timeout_seconds": args.timeout,
+        "timed_out": timed_out,
         "log": str(log),
         "log_sha256": hashlib.sha256(log.read_bytes()).hexdigest(),
         "artifacts": artifacts,

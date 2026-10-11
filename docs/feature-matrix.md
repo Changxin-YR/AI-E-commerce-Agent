@@ -135,3 +135,5 @@ SO-001/006/067/068/074的既有能力通过G-04独立空库首次安装和真实
 2026-10-11 M0-A工程补充：三端目录与最小壳已建立；Android APK和微信目标编译PASS，OHOS HAP因SDK配套BLOCKED。21功能/149现有API静态UI契约和12项校验器测试PASS。设备、真实业务跨端一致性NOT_TESTED；微信IDE加载和npm安全审计FAIL。见[实际验收](mobile/m0a-report.md)。此记录是工程前置证据，不增加SO业务实现；原74SO/32验收/47长期模块保持。
 
 M0-A API22复核（2026-10-11）：Flutter OH 1.0.7 + compile/target22；Android编译PASS，HAP因SDK组件缺失BLOCKED。小程序编译PASS，IDE加载BLOCKED。真实业务/设备状态仍NOT_TESTED。证据：`docs/mobile/m0a-sdk22-evidence.json`。
+
+当前M0-A SDK24复核（2026-10-11）：Android APK编译PASS；OHOS compile/target24，未签名HAP编译PASS、签名BLOCKED；微信目标编译PASS、IDE加载BLOCKED。设备/业务运行仍NOT_TESTED。证据：`docs/mobile/m0a-sdk24-evidence.json`。

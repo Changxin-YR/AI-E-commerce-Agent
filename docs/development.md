@@ -976,3 +976,7 @@ scripts/mobile/run_evidence.py 保留实际命令、日志、退出码和产物S
 ### M0-A · API 22 复核（2026-10-11）
 
 按用户指定将 Flutter OH 固定为 3.27.5-ohos-1.0.7，显式 compile/target 6.0.2(22)，共享 Dart 不变。Android APK、analyze、1项宿主启动测试 PASS。HAP 实际进入 Hvigor 后报00303168 SDK component missing；本机检测包为API24，状态BLOCKED。微信已打开IDE可连接，但导入停在preparing、自动化连接失败，加载BLOCKED。新增只读启动页检查脚本及独立复核证据，继续止于M0-A。
+
+### M0-A · SDK24编译复核（2026-10-11）
+
+compile/target现为6.1.1(24)。Flutter OH 1.0.7与共享Dart保持锁定。新增Windows HAP构建脚本，以无空格SDK及逐文件校验的临时源码快照解决OHPM/Flutter-Hvigor的空格路径错误；仓库源码目录不变。Flutter包装命令因签名退出1，Hvigor未签名构建退出0，生成93,888,452字节HAP，编译PASS。微信CLI导入70秒超时且页面连接失败，加载BLOCKED。证据工具新增进程树超时终止及回归测试，13项测试PASS。设备/签名仍待后续授权。

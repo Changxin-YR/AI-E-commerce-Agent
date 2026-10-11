@@ -420,3 +420,5 @@ Vue Router的query更新与组件重建如何影响编辑？`AppShell`只让Agen
 - 如何保护R2？独立worktree和分支只新增客户端工程及静态校验；后端金额、权限、审批、导入和Web业务均保持。具体成功产物和阻塞见mobile/m0a-report.md。
 
 M0-A API22版本约束示例：`apps/soloops_flutter/toolchain.lock.json`锁定维护者支持API22的版本与引擎SHA，`ohos/build-profile.json5`分别声明编译/目标/最低运行API。目标字段不能证明已安装对应SDK；真实Hvigor错误00303168为环境阻塞证据。微信检查脚本只读启动页，CLI返回0与页面加载成功单独判定。
+
+SDK24实际构建：`scripts/mobile/build_hap_windows.ps1`将构建输入复制到无空格物理目录、核对SDK提交和源码哈希。Flutter包装层的签名门禁与Hvigor编译分别取退出码；未签名HAP可证明编译但不能证明安装。`test_run_evidence.py`验证超时终止子进程，防止CLI进程挂起时留下写入动作。

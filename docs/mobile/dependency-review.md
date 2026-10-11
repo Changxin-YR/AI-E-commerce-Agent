@@ -45,3 +45,5 @@
 当前仅提交源码、锁文件与声明。应用商店发布、第三方完整通知包及许可证义务复核为 NOT_TESTED。
 
 API22复核：当前Flutter OH固定3.27.5-ohos-1.0.7，Dart版本和pubspec.lock不变。`miniprogram-automator@0.12.1`（MIT）仅安装在被忽略的`.local/weapp-tools`，不进入小程序依赖或产物；它仅检查本地启动页，本次连接BLOCKED。
+
+SDK24复核：沿用已锁定Flutter OH 1.0.7与Dart依赖，新增本机无空格构建脚本。HAP包内编译SDK为6.1.1.125、target24；编译PASS但上游ArkTS仍有弃用/异常处理/NAPI告警。未签名包不构成安装或发布验收。证据工具超时回归PASS，未引入新的应用运行时依赖。
