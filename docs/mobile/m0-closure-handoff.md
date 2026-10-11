@@ -1,3 +1,5 @@
+> 当前开发计划已更新为 [鸿蒙优先 V1.3](../requirements/SoloOps-Mobile-V1.3.md)，接续读取 [实时进度](harmony-implementation-progress.md)。本文保留M0历史环境信息，原“止于M0”和Android→鸿蒙→微信顺序已被用户新指令替代。
+
 # SoloOps M0 技术缺口接续记录
 
 更新日期：2026-10-11。实现基线：`fdb404a165861763d57afa18329a94c23bfaf2ff`，分支：`feat/soloops-mobile-m0b`。
@@ -59,6 +61,7 @@ GitHub `fetch_commit_workflow_runs`本次错误返回空数组；通过连接器
 
 ## 工具与操作经验
 
+- 单模拟器规则（2026-10-11 用户追加）：桌面及后台一次只运行一个模拟器。跑 Android 前关闭鸿蒙，跑鸿蒙前关闭 Android；切换平台先停止上一台并确认进程退出，再启动目标实例。验证结束关闭本轮模拟器，保留实例数据。微信阶段也先关闭 Android/OHOS 模拟器。
 - Flutter OH `3.27.5-ohos-1.0.7` / `6e545c2ce6ec9e303868dece5012d1d928890b57`，宿主 Dart3.6.2；Android 引擎实际 Dart3.6.1，OHOS3.6.2。
 - Android：JDK17、SDK35、Gradle8.3、AGP8.1.0；上次 AVD `KnowFlow_API34`，串号 `emulator-5580`。用 read-only/no-snapshot 模式复用已有 AVD，保持其他项目资料。
 - OHOS：DevEco6.1.1.290、SDK24 6.1.1.125、Hvigor6.24.3；上次 HDC `127.0.0.1:5555`，API22 x64。准确 Hvigor x64 构建参数见 M0-B 报告，不能沿用 arm64 包。

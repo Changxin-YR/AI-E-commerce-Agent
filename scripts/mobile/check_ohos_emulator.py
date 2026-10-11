@@ -1,8 +1,10 @@
 """Verify completed synthetic OHOS events from the current application process."""
 
 import argparse
+import hashlib
 import json
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -24,7 +26,11 @@ def main():
     parser.add_argument("--require-navigation", action="store_true")
     parser.add_argument("--require-lifecycle", action="store_true")
     args = parser.parse_args()
-    output = ROOT / ".local/mobile-m0b/ohos-emulator"
+    output = (
+        ROOT
+        / ".local/mobile-m0b"
+        / (datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-ohos-emulator")
+    )
     output.mkdir(parents=True, exist_ok=True)
     commands = []
 
@@ -40,7 +46,15 @@ def main():
     pid = hdc("shell", "pidof", "dev.soloops.soloops_flutter")
     if not pid.isdigit():
         raise RuntimeError("App is not running or PID is ambiguous")
-    logs = hdc("shell", "hilog", "-x", "-P", pid)
+    raw = hdc("shell", "hilog", "-x", "-P", pid)
+    markers = (
+        "SOLOOPS_M0B ",
+        "onUnhandledException",
+        "Unhandled Exception",
+        "A RenderFlex overflowed",
+        "EXCEPTION CAUGHT BY",
+    )
+    logs = "\n".join(line[:2000] for line in raw.splitlines() if any(m in line for m in markers))
     (output / "app-hilog.txt").write_text(logs, encoding="utf8")
     events = [
         json.loads(line.split("SOLOOPS_M0B ", 1)[1])
@@ -75,6 +89,14 @@ def main():
         else "PASS"
     )
     report = {
+        "at": datetime.now(UTC).isoformat(),
+        "hap_sha256": hashlib.sha256(
+            (
+                ROOT
+                / "apps/soloops_flutter/ohos/entry/build/default/outputs/default"
+                / "entry-default-unsigned.hap"
+            ).read_bytes()
+        ).hexdigest(),
         "device_api": hdc("shell", "param", "get", "const.ohos.apiversion"),
         "pid": pid,
         "events": events,

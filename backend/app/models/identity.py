@@ -26,6 +26,10 @@ class LoginSession(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     csrf_token: Mapped[str] = mapped_column(String(64))
     expires_at: Mapped[datetime] = mapped_column(index=True)
+    client_type: Mapped[str] = mapped_column(String(16), default="web", server_default="web")
+    device_session_id: Mapped[str | None] = mapped_column(String(32), unique=True)
+    issued_at: Mapped[datetime | None]
+    last_used_at: Mapped[datetime | None]
 
 
 class SellerProfile(Base):

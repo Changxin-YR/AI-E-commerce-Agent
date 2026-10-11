@@ -57,3 +57,12 @@ SDK24复核：沿用已锁定Flutter OH 1.0.7与Dart依赖，新增本机无空�
 - flutter_localizations 跟随锁定 Flutter OH SDK；传递 intl 固定为0.19.0，已读取安装包 LICENSE（BSD-3-Clause）。完整声明另保留 apps/soloops_flutter/licenses/INTL-LICENSE，Flutter NOTICE 构建资产由工具链生成。
 - Keystore/SAF/SharedPreferences 平台 API 未增加第三方存储插件。自编原型通道仅在 debug 响应。
 - 微信依赖尚未在此 Android 顺序阶段变更；其审计状态沿用 FAIL，待微信专项调查。
+
+
+## 鸿蒙技术补齐增量（2026-10-11）
+
+- 采用锁定 DevEco SDK 的 AssetStoreKit、CoreFileKit、ArkData、CryptoArchitectureKit、ShareKit；自编 debug MethodChannel，不增加第三方运行时包，现有依赖锁不变。
+- Asset ATTRIBUTES 端测确认 DEVICE_UNLOCKED、SYNC_TYPE=NEVER、IS_PERSISTENT=false；硬件保护、卸载效果仍 NOT_TESTED。非敏感 preferences 与 Asset 分开存储。
+- DocumentViewPicker 文件读取最多2MiB，分块读取与 finally 关闭；分享仅合成26字节样本，经系统面板取消和清理。渠道交付仍 NOT_TESTED。
+- 最终 SDK24 x64 HAP 构建和 API22 安装 PASS；26项端上断言 PASS。上游 SDK 弃用告警仍存在，不从编译成功推导生产准入。
+- 微信审计与 automator 调查将在下一端执行；当前微信审计状态沿用 FAIL。

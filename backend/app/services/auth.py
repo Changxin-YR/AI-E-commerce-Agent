@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
+from typing import Literal
+from uuid import uuid4
 
 from app.core.config import Settings
 from app.core.errors import AuthenticationError, BusinessError, NotFoundError
@@ -17,6 +19,8 @@ LOCKOUT_MINUTES = 15
 class LoginResult:
     token: str
     session: SessionOutput
+    expires_at: datetime
+    device_session_id: str | None
 
 
 class AuthService:
@@ -45,7 +49,9 @@ class AuthService:
         self.uow.record_event(user.id, "account.password_reset", "user", user.id)
         self.uow.commit()
 
-    def login(self, data: LoginInput) -> LoginResult:
+    def login(
+        self, data: LoginInput, *, client_type: Literal["web", "ohos", "android", "weapp"] = "web"
+    ) -> LoginResult:
         now = utc_now()
         user = self.uow.identity.find_user(data.username.strip().lower(), lock=True)
         valid = verify_password(
@@ -70,13 +76,19 @@ class AuthService:
         user.locked_until = None
         token = new_token()
         csrf_token = new_token()
+        device_session_id = uuid4().hex if client_type != "web" else None
+        expires_at = now + timedelta(hours=self.settings.session_hours)
         self.uow.identity.delete_expired_sessions(now)
         self.uow.identity.add_session(
             LoginSession(
                 token_hash=token_digest(token),
                 user_id=user.id,
                 csrf_token=csrf_token,
-                expires_at=now + timedelta(hours=self.settings.session_hours),
+                expires_at=expires_at,
+                client_type=client_type,
+                device_session_id=device_session_id,
+                issued_at=now,
+                last_used_at=now,
             )
         )
         self.uow.record_event(user.id, "session.created", "user", user.id)
@@ -84,18 +96,34 @@ class AuthService:
         return LoginResult(
             token=token,
             session=SessionOutput(user_id=user.id, username=user.username, csrf_token=csrf_token),
+            expires_at=expires_at,
+            device_session_id=device_session_id,
         )
 
-    def authenticate(self, token: str | None) -> SessionOutput:
+    def authenticate(self, token: str | None, *, mobile: bool = False) -> SessionOutput:
         if token is None or len(token) > 128:
             raise AuthenticationError()
         result = self.uow.identity.find_session(token_digest(token), utc_now())
         if result is None:
             raise AuthenticationError("登录已过期，请重新登录")
         login_session, user = result
+        if (login_session.client_type != "web") != mobile:
+            raise AuthenticationError("登录凭据与客户端通道不匹配")
+        if mobile and (
+            login_session.last_used_at is None
+            or login_session.last_used_at < utc_now() - timedelta(minutes=5)
+        ):
+            login_session.last_used_at = utc_now()
+            self.uow.commit()
         return SessionOutput(
             user_id=user.id, username=user.username, csrf_token=login_session.csrf_token
         )
+
+    def logout_all(self, user_id: int) -> None:
+        self.uow.identity.lock_user(user_id)
+        self.uow.identity.delete_user_sessions(user_id)
+        self.uow.record_event(user_id, "session.all_revoked", "user", user_id)
+        self.uow.commit()
 
     def logout(self, token: str, user_id: int) -> None:
         self.uow.identity.delete_session(token_digest(token))

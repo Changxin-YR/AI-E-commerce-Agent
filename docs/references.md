@@ -421,3 +421,20 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - [Dart HttpClientRequest.abort](https://api.dart.dev/dart-io/HttpClientRequest/abort.html)：共享 Dart 承担 debug loopback 合成传输、取消、响应截止时间、拒绝重定向和流式有界下载；未引入业务上传服务。
 - [Flutter 国际化](https://docs.flutter.dev/ui/internationalization)：锁定 SDK 的 flutter_localizations + intl0.19.0（BSD-3-Clause），验证固定 UTC 跨日样例在 zh_CN/en_US 的日期显示。该样例不是全时区业务日期实现。
 - Firecrawl 状态已认证但额度 -318，本次转内置 web 查询官方文档；相关 API 以固定 SDK 的真实构建和模拟器执行为最终兼容依据。
+
+## M0 鸿蒙系统能力（2026-10-11）
+
+- OpenHarmony [Asset添加](https://github.com/openharmony/docs/blob/master/en/application-dev/security/AssetStoreKit/asset-js-add.md) / [查询](https://github.com/openharmony/docs/blob/master/en/application-dev/security/AssetStoreKit/asset-js-query.md)：官方API语义参考，文档仓库CC-BY-4.0；桥接自行实现。使用SECRET字段、DEVICE_UNLOCKED、SYNC_TYPE=NEVER，IS_PERSISTENT默认false；错误原样拒绝，查询ATTRIBUTES核对策略和不返回SECRET。
+- 华为 [系统分享](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/share-system-share)：ShareController打开系统面板，dismiss只表示面板关闭，不表示渠道接收。SDK24本机声明核对API22可用字段。
+- OpenHarmony [DocumentViewPicker](https://github.com/openharmony/docs/blob/master/en/application-dev/reference/apis-core-file-kit/js-apis-file-picker.md)：用户授权后读取文档URI，通过SDK官方文件API检查实际大小并分块有界读取。M0只读取固定合成文件；未引入第三方存储或文件插件。
+
+- OpenHarmony [module.json5 orientation](https://github.com/openharmony/docs/blob/master/en/application-dev/quick-start/module-configuration-file.md) 与华为[横竖屏适配](https://developer.huawei.com/consumer/en/doc/best-practices-V5/bpta-landscape-and-portrait-development-V5)：配置 auto_rotation_restricted，使手机窗口随传感器旋转且遵循系统旋转锁；默认 unspecified 由系统决定。文档参数与 SDK24 构建核对，布局验收使用实际窗口尺寸。
+- OpenHarmony [app.json5 configuration](https://github.com/openharmony/docs/blob/master/en/application-dev/quick-start/app-configuration-file.md#configuration)：显式配置 fontSizeScale=followSystem，保留平台最大比例3.2；FlutterAbility 通过固定 SDK 的配置更新通道发送字体比例。仅静态配置不足以证明生效，使用系统字号与 Flutter 环境页共同验收。
+
+
+## 鸿蒙完整业务实现资料（2026-10-11）
+
+- Flutter官方架构指南：https://docs.flutter.dev/app-architecture/guide 。按view/state/repository/service分层，复用已锁定SDK，不引入新状态库。
+- FastAPI Bearer依赖：https://fastapi.tiangolo.com/tutorial/security/first-steps/ 。沿用依赖注入，校验服务端持久会话；自主实现不透明token适配。
+- OWASP会话管理：https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html 。绝对过期、服务端吊销、传输和存储保护；不复制正文或新增第三方实现。
+- 用户提供的三端V1.2已归档 `requirements/SoloOps-Mobile-V1.2-reference.md`；本轮执行计划为V1.3。Firecrawl额度耗尽，本次官方资料通过浏览工具核验。

@@ -6,6 +6,7 @@ from app.api.dependencies import (
     SettingsDependency,
     UowDependency,
 )
+from app.core.errors import BusinessError
 from app.schemas.identity import LoginInput, SessionOutput
 from app.services.auth import AuthService
 
@@ -30,7 +31,9 @@ def login(
 
 
 @router.get("/session", response_model=SessionOutput)
-def current_session(current: CurrentSession) -> SessionOutput:
+def current_session(request: Request, current: CurrentSession) -> SessionOutput:
+    if request.headers.get("authorization") is not None:
+        raise BusinessError("client_rejected", "请使用当前设备的会话入口", 400)
     return current
 
 
@@ -42,5 +45,7 @@ def logout(
     uow: UowDependency,
     settings: SettingsDependency,
 ) -> None:
+    if request.headers.get("authorization") is not None or SESSION_COOKIE not in request.cookies:
+        raise BusinessError("client_rejected", "请使用当前设备的退出入口", 400)
     AuthService(uow, settings).logout(request.cookies[SESSION_COOKIE], current.user_id)
     response.delete_cookie(SESSION_COOKIE, path="/api", secure=settings.cookie_secure)

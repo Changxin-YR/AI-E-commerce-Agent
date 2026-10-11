@@ -3,11 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'product_app.dart';
 import 'runtime_probe.dart';
 import 'closure_probe.dart';
 import 'package:flutter/foundation.dart';
 
-void main() => runApp(const SoloOpsApp());
+void main() => runApp(const ProductApp());
 
 class SoloOpsApp extends StatelessWidget {
   const SoloOpsApp({super.key});

@@ -429,3 +429,8 @@ SDK24实际构建：`scripts/mobile/build_hap_windows.ps1`将构建输入复制�
 安全存储的关键是密钥保护与失败策略。Android 桥接通过 Keystore 创建不可导出 AES-GCM 密钥，磁盘只留 IV 和认证密文；篡改和密钥缺失必须报错，清理后重新建立合成会话。模拟器报告 software securityLevel=0，不能据此证明真机 TEE。
 
 文件选择返回 content URI，必须走 ContentResolver；文件大小元数据只能作预检查，流读取仍按实际字节计数。上传和下载都有限额，下载先写 .part，验证完才重命名，取消与异常删除 .part。系统分享面板只证明系统接管，不证明目标渠道收到文件。进程终止前写入、PID 改变后读回并清除，提供持久化策略的实际证据。
+
+
+## 鸿蒙移动业务适配（开发中）
+
+关注 `api/dependencies.py` 的Cookie与Bearer通道区分、`mobile_auth.py` 的设备登录、`AuthService` 的索引会话吊销，以及Flutter `core/api_client.dart` 的请求世代与结果未知处理。ArkTS `DeviceBridge.ets` 将凭据交给系统Asset，普通设置交给preferences。当前仅代码实现事实，运行结果以后续API22集中验证为准。

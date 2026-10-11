@@ -20,6 +20,7 @@ from app.api.routes import (
     imports,
     inventory,
     listings,
+    mobile_auth,
     operations,
     outbound,
     overview,
@@ -67,6 +68,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     register_error_handlers(application)
     register_request_middleware(application, resolved_settings)
     application.include_router(auth.router, prefix="/api")
+    application.include_router(mobile_auth.router, prefix="/api")
     application.include_router(profile.router, prefix="/api")
     application.include_router(imports.router, prefix="/api")
     application.include_router(analytics.router, prefix="/api")

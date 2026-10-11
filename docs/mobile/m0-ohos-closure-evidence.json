@@ -1,0 +1,155 @@
+{
+  "scope": "Historical M0 synthetic API22 emulator artifact, before V1.3 business implementation",
+  "hap_sha256": "fc6a6ceed0bcdc4d35229943b4ddc9769276aa782fdef708f757fec1f545c742",
+  "hap_bytes": 100644160,
+  "build_log": ".local/mobile-m0b/20261011T082322Z-closure-ohos-build.log",
+  "install_log": ".local/mobile-m0b/20261011T082351Z-closure-ohos-install.log",
+  "events": {
+    "secure_metadata": "PASS",
+    "secure_roundtrip_overwrite": "PASS",
+    "asset_invalid_update_rejected": "PASS",
+    "asset_alias_isolation": "PASS",
+    "cache_scopes_and_clear": "PASS",
+    "uri_selection_guard": "PASS",
+    "share_size_rejected": "PASS",
+    "date_samples": "PASS",
+    "localized_dates": "PASS",
+    "restart_prepared": "PASS",
+    "restart_read_clear": "PASS",
+    "picker_size_limit": "PASS",
+    "picker_cancelled": "PASS",
+    "picker_selected": "PASS",
+    "selected_upload": "PASS",
+    "upload_2mib_boundary": "PASS",
+    "upload_oversize_rejected": "PASS",
+    "upload_server_failure": "PASS",
+    "upload_cancelled": "PASS",
+    "download_download": "PASS",
+    "download_download-large": "PASS",
+    "download_fail": "PASS",
+    "download_download-slow": "PASS",
+    "response_timeout": "PASS",
+    "redirect_not_followed": "PASS",
+    "transfer_error_recovery": "PASS",
+    "transfers_complete": "PASS",
+    "share_panel": "PASS",
+    "share_cleanup": "PASS",
+    "external_browser": "PASS"
+  },
+  "sources": [
+    {
+      "path": ".local/mobile-m0b/20261011-ohos-acceptance/pid-7342-082414393107-events.json",
+      "sha256": "68e93117166679ce1304f0e9117726339b59277230240dfe5fb2eb29c4926cbf",
+      "pid": "7342",
+      "at": "2026-10-11T08:24:14.456737+00:00"
+    },
+    {
+      "path": ".local/mobile-m0b/20261011-ohos-acceptance/pid-7422-082432871107-events.json",
+      "sha256": "9cce0477a37192c97ff56f92f3012cbe81c5130df69cf6aacdbc92caccec302f",
+      "pid": "7422",
+      "at": "2026-10-11T08:24:32.935352+00:00"
+    },
+    {
+      "path": ".local/mobile-m0b/20261011-ohos-acceptance/pid-7422-082946786716-events.json",
+      "sha256": "5ee57bb62415aa3b04c7c84832f93b07a007a4f5814b957c27b24e3d4af82c73",
+      "pid": "7422",
+      "at": "2026-10-11T08:29:46.849825+00:00"
+    },
+    {
+      "path": ".local/mobile-m0b/20261011-ohos-acceptance/pid-7422-083023803568-events.json",
+      "sha256": "7db716b178438613c34fe070938e3c026f45cd52c4894a1130728a76d1ff0ec8",
+      "pid": "7422",
+      "at": "2026-10-11T08:30:23.886772+00:00"
+    },
+    {
+      "path": ".local/mobile-m0b/20261011-ohos-acceptance/pid-7422-083059182995-events.json",
+      "sha256": "67ccb8adaa654b2b787e39a5c3b054d22377780664dfd61a78dbc3b692bbc631",
+      "pid": "7422",
+      "at": "2026-10-11T08:30:59.247621+00:00"
+    },
+    {
+      "path": ".local/mobile-m0b/20261011-ohos-acceptance/pid-7422-083111738860-events.json",
+      "sha256": "2ca9958c34f5e50ca65b742348d3fc41fa68862d223b98fb987e667256ec645f",
+      "pid": "7422",
+      "at": "2026-10-11T08:31:11.828690+00:00"
+    },
+    {
+      "path": ".local/mobile-m0b/20261011-ohos-acceptance/pid-7422-083124405631-events.json",
+      "sha256": "9c6b0834f069fd283a7274de15b0360452877c35fb34d57cfa17fd26342e3179",
+      "pid": "7422",
+      "at": "2026-10-11T08:31:24.483874+00:00"
+    },
+    {
+      "path": ".local/mobile-m0b/20261011-ohos-acceptance/pid-7422-083150288422-events.json",
+      "sha256": "f7cd3f96f4e9ffcd83e01305495e0d309e6390d06d795654a52693805b7258df",
+      "pid": "7422",
+      "at": "2026-10-11T08:31:50.367787+00:00"
+    },
+    {
+      "path": ".local/mobile-m0b/20261011-ohos-acceptance/pid-7422-083345743782-events.json",
+      "sha256": "a0bb44699a4c22ccc5133ba0b26fe159b47eb27e9e982e0f626013ae523ef85b",
+      "pid": "7422",
+      "at": "2026-10-11T08:33:45.824831+00:00"
+    }
+  ],
+  "basic_regression": {
+    "sandbox_file": "PASS",
+    "clipboard": "PASS",
+    "https_health": "PASS",
+    "anonymous_rejected": "PASS",
+    "synthetic_headers": "PASS",
+    "untrusted_certificate_rejected": "PASS",
+    "connection_failure_and_recovery": "PASS",
+    "navigation_and_back": "PASS",
+    "background_resume": "PASS",
+    "no_unhandled_exception": "PASS"
+  },
+  "display": {
+    "dark": "PASS",
+    "font_1_3": "PASS",
+    "landscape": "PASS",
+    "final_light_recheck": "NOT_TESTED",
+    "evidence": [
+      {
+        "path": ".local/mobile-m0b/20261011-ohos-acceptance/083237982185-screen.png",
+        "sha256": "4fe8f0e04e8896932f107cc701385cb644836255fe7d20e7733e232295f50127"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011-ohos-acceptance/083237982185-layout.json",
+        "sha256": "0f01b95d9c942ae7b5dd215e31eb5de6e845395001ee0eaa9db475dba961e5b5"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011-ohos-acceptance/083300794265-screen.png",
+        "sha256": "3a9ab931c532cea2f4c0f2e978067ea355f491613e2f28270eb8a8ecbf4fc654"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011-ohos-acceptance/083300794265-layout.json",
+        "sha256": "c5cabc5e7b5dda415bb2a2d2454bd723d9e9d07387d0c6511d84237f00370d7f"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011-ohos-acceptance/083328745890-screen.png",
+        "sha256": "7127f9e43d55becc23ed5a997352ee03b8e97ac51cfe1e51d24351c56833256d"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011-ohos-acceptance/083328745890-layout.json",
+        "sha256": "3ef0f9f89540a6cc45af5a830358e7fbb0031d5c43d6316212d46bd8ab194500"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011-ohos-acceptance/083344079621-screen.png",
+        "sha256": "75308138154d4523f1a60744bb403825e8c8571e5d59060aefabd2f31d36b55f"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011-ohos-acceptance/083344079621-layout.json",
+        "sha256": "0499d2eebf37e22626e696e4ef27514a823922ed80e1d5f744a3501b0f1c14af"
+      }
+    ]
+  },
+  "limitations": {
+    "physical_device": "NOT_TESTED",
+    "hardware_security": "NOT_TESTED",
+    "os_uri_revocation": "NOT_TESTED",
+    "channel_delivery": "NOT_TESTED",
+    "browser_page_load": "NOT_TESTED",
+    "business_implementation": "NOT_TESTED"
+  }
+}

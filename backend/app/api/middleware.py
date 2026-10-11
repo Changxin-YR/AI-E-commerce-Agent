@@ -13,12 +13,20 @@ def register_request_middleware(app: FastAPI, settings: Settings) -> None:
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         request.state.request_id = uuid4().hex
+        if (
+            request.headers.get("authorization") is not None
+            and "soloops_session" in request.cookies
+        ):
+            return error_response(request, "ambiguous_credentials", "请使用单一登录通道", 400)
         if request.method not in {"GET", "HEAD", "OPTIONS"}:
             origin = request.headers.get("origin")
             if origin is not None and origin not in settings.trusted_origins:
                 return error_response(request, "origin_rejected", "请求来源未获允许", 403)
             # A custom header makes login/logout unavailable to cross-origin HTML forms.
-            if request.headers.get("X-SoloOps-Client") != "web":
+            client = request.headers.get("X-SoloOps-Client")
+            mobile_login = request.url.path == "/api/mobile/auth/login"
+            bearer_request = request.headers.get("authorization", "").lower().startswith("bearer ")
+            if not (client == "web" or (client == "mobile" and (mobile_login or bearer_request))):
                 return error_response(request, "client_rejected", "缺少请求来源标识", 403)
         response = await call_next(request)
         response.headers["X-Request-ID"] = request.state.request_id

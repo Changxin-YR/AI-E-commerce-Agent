@@ -63,3 +63,19 @@ Android 最小壳编译 PASS；OHOS SDK24 未签名壳编译 PASS。
 | 分享 | PASS：FileProvider1.13.1 系统面板、取消和清理；渠道接收 NOT_TESTED | NOT_TESTED |
 | 外链 | PASS：ACTION_VIEW 交给 Chrome；Chrome 首次使用页后的网页加载 NOT_TESTED | NOT_TESTED |
 | 国际化日期 | PASS：flutter_localizations/intl0.19.0 固定 UTC 跨日样例，zh_CN/en_US 格式 | NOT_TESTED |
+
+
+## 鸿蒙技术补齐（2026-10-11）
+
+当前增量见 [鸿蒙技术验收](m0-ohos-closure.md)。原 M0-A 候选评估作为历史检查范围保留。
+
+| 能力 | API22 x64 实际实现 | 验收边界 |
+|---|---|---|
+| 安全存储 | SDK Asset 服务；合成写读覆盖、失败更新、alias隔离、重启清理 | 硬件保护与卸载效果 NOT_TESTED |
+| 非敏感缓存 | ArkData preferences，A/B scope隔离、flush和清理 | 不保存凭据 |
+| 文件 / URI | DocumentViewPicker + CoreFileKit，2MiB有界读取、一次性选择URI桥接守卫 | 系统级URI撤权 NOT_TESTED |
+| 上传 / 下载 / 网络 | 与Android共享Dart，分块、超限、取消、503、超时、恢复 | 仅本机合成夹具 |
+| 分享 / 外链 | ShareKit面板取消清理、AbilityKit openLink | 渠道接收与浏览器页面加载 NOT_TESTED |
+| 显示适配 | Material系统深色；auto_rotation_restricted；followSystem字体配置 | 显示运行结果以专项报告和证据清单为准 |
+
+无新增第三方插件依赖；微信专项仍待顺序执行。生产发布 BLOCKED。

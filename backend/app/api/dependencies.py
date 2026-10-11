@@ -32,7 +32,16 @@ UowDependency = Annotated[UnitOfWork, Depends(get_uow)]
 def get_current_session(
     request: Request, uow: UowDependency, settings: SettingsDependency
 ) -> SessionOutput:
-    current = AuthService(uow, settings).authenticate(request.cookies.get(SESSION_COOKIE))
+    authorization = request.headers.get("authorization")
+    cookie = request.cookies.get(SESSION_COOKIE)
+    if authorization is not None:
+        if cookie is not None:
+            raise BusinessError("ambiguous_credentials", "请使用单一登录通道", 400)
+        scheme, _, token = authorization.partition(" ")
+        if scheme.lower() != "bearer" or not token or " " in token:
+            raise BusinessError("invalid_credentials", "登录凭据格式无效", 401)
+        return AuthService(uow, settings).authenticate(token, mobile=True)
+    current = AuthService(uow, settings).authenticate(cookie)
     if request.method not in {"GET", "HEAD", "OPTIONS"}:
         csrf_token = request.headers.get("X-CSRF-Token", "")
         if not secrets.compare_digest(csrf_token, current.csrf_token):

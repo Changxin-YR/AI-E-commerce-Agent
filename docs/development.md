@@ -995,3 +995,8 @@ compile/target现为6.1.1(24)。Flutter OH 1.0.7与共享Dart保持锁定。新�
 ## M0 Android 系统能力补齐（2026-10-11）
 
 Android 增加 debug 平台通道：Keystore AES-GCM 安全密文、隔离的非敏感设置、系统文档选择器和只读 FileProvider 分享。共享 Dart 增加技术验收页与本机 HTTPS 合成传输；输入/下载均限定 2 MiB，取消/错误清理临时文件。夹具的 /_m0c/ 路由独立处理合成传输，其余业务写请求继续拒绝，数据库连接仍被禁止。实际 Android API34 模拟器证据见 mobile/m0-android-closure.md。后续依顺序补齐鸿蒙和微信，整体 M0 尚未完成。
+
+
+## 鸿蒙完整业务版开发（2026-10-11）
+
+按用户最新指令，移动实现改为鸿蒙API22优先、全部R2功能实现后集中自查。总体架构与21项功能清单见 `requirements/SoloOps-Mobile-V1.3.md`，实时源码状态见 `mobile/harmony-implementation-progress.md`。本次增加同表隔离的移动Bearer会话与增量迁移、Asset设备桥接、Dart网络/状态层和登录/资料/店铺页面。业务会话仅存摘要，Web Cookie/CSRF继续存在；切换店铺废弃在途响应。当前为实现中版本，数据库迁移与完整业务验收尚未执行。

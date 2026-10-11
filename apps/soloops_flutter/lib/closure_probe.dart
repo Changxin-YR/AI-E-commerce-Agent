@@ -55,11 +55,37 @@ class _ClosurePageState extends State<ClosurePage> {
       await native<bool>('secureWrite', {'value': 'm0-synthetic-v2'});
       requireM0(await native<String>('secureRead') == 'm0-synthetic-v2');
       final info = await native<Map>('secureInfo');
-      requireM0(
-          info?['nonExportable'] == true && info?['backupExcluded'] == true);
+      requireM0(Platform.operatingSystem == 'ohos'
+          ? (info?['storagePolicy'] == 'system_asset' &&
+              info?['syncNever'] == true &&
+              info?['deviceUnlocked'] == true &&
+              info?['metadataExcludesSecret'] == true &&
+              info?['retainedAfterUninstall'] == false)
+          : (info?['nonExportable'] == true &&
+              info?['backupExcluded'] == true));
       closureEvent('secure_metadata', 'PASS', info);
     });
-    for (final method in ['secureTamper', 'secureDropKey']) {
+    if (Platform.operatingSystem == 'ohos') {
+      await check('asset_invalid_update_rejected', () async {
+        await native<bool>('secureWrite', {'value': 'm0-synthetic-fault'});
+        var rejected = false;
+        try {
+          await native<bool>('secureInvalidUpdate');
+        } on PlatformException catch (error) {
+          rejected = error.code == 'NATIVE_401';
+        }
+        requireM0(rejected &&
+            await native<String>('secureRead') == 'm0-synthetic-fault');
+      });
+      await check('asset_alias_isolation', () async {
+        requireM0(await native<bool>('secureAliasIsolation') == true);
+        requireM0(await native<bool>('secureClear') == true);
+        requireM0(await native<String>('secureRead') == null);
+      });
+    }
+    for (final method in Platform.operatingSystem == 'ohos'
+        ? <String>[]
+        : ['secureTamper', 'secureDropKey']) {
       await check(method, () async {
         await native<bool>('secureWrite', {'value': 'm0-synthetic-fault'});
         await native<bool>(method);
@@ -88,7 +114,10 @@ class _ClosurePageState extends State<ClosurePage> {
       requireM0(
           await native<String>('cacheRead', {'scope': 'synthetic-a'}) == null);
     });
-    await check('uri_permission_denied', () async {
+    await check(
+        Platform.operatingSystem == 'ohos'
+            ? 'uri_selection_guard'
+            : 'uri_permission_denied', () async {
       requireM0(await native<bool>('uriDenied') == true);
     });
     await check('share_size_rejected', () async {
@@ -150,7 +179,9 @@ class _ClosurePageState extends State<ClosurePage> {
         final bytes = value?['bytes'] as Uint8List;
         // Only the known synthetic fixture may enter the network probe.
         requireM0(value?['name'] == 'soloops-m0-small.txt' &&
-            value?['scheme'] == 'content' &&
+            (Platform.operatingSystem == 'ohos'
+                ? (value?['scheme'] == 'file' && value?['authority'] == 'docs')
+                : (value?['scheme'] == 'content')) &&
             value?['mime'] == 'text/plain' &&
             listEquals(bytes, utf8.encode(syntheticText)));
         selected = bytes;
@@ -345,6 +376,10 @@ class _ClosurePageState extends State<ClosurePage> {
           const Text('合成资料 · 安全存储 / 文件 / 传输'),
           const Text('先准备存储，结束进程后核对。文件上限 2 MiB。'),
           for (final entry in <String, Future<void> Function()>{
+            if (Platform.operatingSystem == 'ohos')
+              '保存合成选择器样本': () => check('picker_fixtures_saved', () async {
+                    requireM0(await native<bool>('prepareFiles') == true);
+                  }),
             '存储与重启准备': storeChecks,
             '重启读回并清除': restartCheck,
             '选择合成文件': pick,
