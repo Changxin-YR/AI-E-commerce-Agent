@@ -49,6 +49,7 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
       credentials: native ? 'include' : 'same-origin',
     })
   } catch {
+    if (native) window.dispatchEvent(new Event('soloops:network-error'))
     throw new ApiError('暂时无法连接服务，请检查服务状态后重试。', 0, 'network_error', '')
   }
   if (!response.ok) {

@@ -6,12 +6,17 @@ import { errorMessage } from '@/api/client'
 import FeedbackBanner from './FeedbackBanner.vue'
 import ReturnToTask from './ReturnToTask.vue'
 import SellerNavigation from './SellerNavigation.vue'
+import { nativeAndroid, navigationOpen } from '@/composables/useAndroidShell'
+import { confirmLeaving } from '@/composables/useLeaveProtection'
 
 const router = useRouter()
 const { session, logout } = useSession()
 const error = ref('')
 const busy = ref(false)
 async function signOut(): Promise<void> {
+  if (busy.value) return
+  if (nativeAndroid && !(await confirmLeaving())) return
+  if (busy.value) return
   busy.value = true
   error.value = ''
   try {
@@ -27,7 +32,19 @@ async function signOut(): Promise<void> {
 <template>
   <div class="app-layout">
     <a class="skip-link" href="#main-content">跳到主要内容</a>
-    <aside class="sidebar">
+    <header v-if="nativeAndroid" class="android-toolbar">
+      <button
+        class="button secondary"
+        :aria-expanded="navigationOpen"
+        aria-controls="app-navigation"
+        @click="navigationOpen = !navigationOpen"
+      >
+        {{ navigationOpen ? '收起导航' : '全部功能' }}
+      </button>
+      <RouterLink to="/">SoloOps</RouterLink>
+      <span>{{ session?.username }}</span>
+    </header>
+    <aside id="app-navigation" class="sidebar" :class="{ 'navigation-open': navigationOpen }">
       <RouterLink to="/" class="wordmark" aria-label="SoloOps 首页"
         ><span class="brand-mark" aria-hidden="true"></span>SoloOps<span class="brand-dot"
           >.</span

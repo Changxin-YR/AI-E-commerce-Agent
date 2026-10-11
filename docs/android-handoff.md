@@ -1,30 +1,50 @@
-# Android 接续入口
+# Android 换账号接续入口
 
-更新：2026-10-11，Asia/Shanghai。独立目录 `C:/Users/27363/Desktop/AI E-commerce Agent/soloops-android`，分支 `android/capacitor-m0`。只写安卓副本；同级 UI、微信、鸿蒙由其他对话维护。
+更新时间：2026-10-11，Asia/Shanghai。GitHub 仓库 `Changxin-YR/AI-E-commerce-Agent`，分支 `android/capacitor-m0`。
+本地独立目录：`C:/Users/27363/Desktop/AI E-commerce Agent/soloops-android`。只写本副本；同级 UI、微信、鸿蒙由其他聊天维护。
 
-## 当前交付
+## 当前进度
 
-A0 完成，代码 `84d86a7b213e6bf16d5bcc90aedbbd9a92360159` 的 CI 38137311083 成功。
-A1 已完成：代码 `d6c54bed66081dcee7a9b6c10549087e2a4d94b7` 的 [CI 38139535722](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38139535722) 全部成功，包含前端校验、Android编译、HTTPS资源允许与本机资源release拒绝。Java 21、SDK 36、独立 AVD、FastAPI/MySQL已配置；40文件186单元、APK编译安装、7组真实设备认证均通过。后续 `[skip ci]` 提交只补验收记录。
+- A0、A1 已完成。A1准确代码 `d6c54bed66081dcee7a9b6c10549087e2a4d94b7` 的 CI 38139535722 全成功。
+- A2 已实现安卓收拢导航、返回键、安全区域、键盘/旋转适配、前后台会话回读、断网提示/恢复，以及经营资料和新增店铺离页保护。客服草稿和执行中任务沿用原保护，并补到退出入口。
+- A2第一版 APK 在 API34 上通过28组设备检查，包括19个页面入口、无横向溢出、返回键保护、键盘、旋转、后台恢复、真实断网和显式重试。
+- 后续增加导航条吸顶、保存中离页阻断、会话回读与退出并发保护。42文件191项单元已通过；最后补充的并发用例及最终提交CI以 `android-a2-acceptance.md` 为准。
+- **A2 尚需用最终提交重新编译安装并重跑两个设备脚本，再记录最终APK校验值。** 第一版设备证据不能替代最后补丁的验收。用户要求现在先推送进度，供切换账号恢复。
 
-先读 `AGENTS.md`、`android-plan.md`、`android-a1-acceptance.md`、`android-local-testing.md`。74 SO、32 原验收和四条 MVP 继承原需求，不把网页结果当设备业务验收。后端业务源码未改。
+## 新账号首先执行
 
-## 可复用环境
+1. 切到安卓分支，先读 `AGENTS.md`、本文、`docs/android-plan.md`、`docs/android-a2-acceptance.md`、`docs/android-local-testing.md`。
+2. 核对工作区与远端 SHA；检查对应提交的 Android foundation CI。先完成下面命令与设备验收，再将 A2 标为完成。
+3. A2完成后进入A3：原生文件选择/字节上传/分片与导入来源回读、今日运营和经营问数两条MVP；A4为Listing/客服/审批。74 SO、32原验收、四MVP及47长期模块继续按原需求/矩阵区分，不把页面可达计为业务完成。
 
-- `. ./scripts/android-env.ps1` 配置当前进程。Java `D:/Javajdk`；SDK `.local/android/sdk`；Gradle `.local/android/tools/gradle-8.14.3`，缓存同级 gradle。
-- AVD `.local/android/avd/SoloOps_A1.avd`，设备 `emulator-5580`，API 34 / Pixel 6 / x86_64 / WHPX。模拟器已后台运行；ADB 来自副本 SDK。命令须有正常本机进程访问权限，受限环境的 adb 可能无法访问 5037。
-- Docker project `soloops-android-a1`，端口3311、schema `soloops_android_test`、专属卷。配置 `.local/android/mysql.env`，后端配置 `.local/android/backend.env`。模型、邮件、调度明确关闭。
-- 后端已后台运行，监听 `127.0.0.1:8011`。启动 `scripts/start_android_backend.py` 前设 `PYTHONPATH` 为副本 backend。停止前按监听端口与父进程命令行核实归属，不使用过期 PID。
-- 合成账号 `android_seller` / `Android-Synthetic-2026!`，仅此合成库使用。
-- APK：`frontend/android/app/build/outputs/apk/debug/app-debug.apk`；SHA256 `CD676937533F7FA36D64DB12D5D82A57D96302775BE9E01AC28DCD0FC882FDB9`。
-- 设备证据 `.local/android/evidence/device-auth.json` 7组通过；同目录截图。当前应用已退出登录。
-- 运行 `node frontend/scripts/check-android-device.mjs` 会清除本模拟器中本应用数据；脚本真实操作 APK WebView。冷启动允许120秒，CDP使用 noDefaults。视口截图正常，全页截图在本 WebView 上有重复拼接，应使用 adb 原生截图判断视觉。
+```powershell
+. ./scripts/android-env.ps1
+Push-Location frontend
+npm run lint
+npm run type-check
+npm run test:unit -- --maxWorkers=2
+npm run android:sync:local
+Pop-Location
+.local/android/tools/gradle-8.14.3/bin/gradle.bat -p frontend/android assembleDebug
+adb -s emulator-5580 install -r frontend/android/app/build/outputs/apk/debug/app-debug.apk
+node frontend/scripts/check-android-device.mjs
+node frontend/scripts/check-android-shell.mjs
+```
 
-## 下一包 A2
+每步确认成功再继续。`check-android-device.mjs` 会清空专属模拟器内本应用数据；shell脚本暂时关闭网络、旋转和显示键盘，finally恢复设置；仅对 `SoloOps_A1/emulator-5580` 执行。
+Windows沙箱曾令 Vite worker realpath 报EPERM；使用正常本机执行权限。单元默认并行在本机耗尽内存，`--maxWorkers=2` 已通过。不要将这些环境限制误判成业务失败。
 
-1. 核对 Git 状态与 A1 CI，复用现有环境，开始安卓导航/返回键、安全区域、键盘、旋转、前后台恢复和断网恢复。
-2. 首先阅读 Capacitor App/Keyboard/Network 官方资料及现有 Vue 路由、未保存任务保护；按项目现有设计系统做移动适配。
-3. 登录页和工作台目前沿用网页响应式布局，检查首屏高度、导航可达和键盘遮挡。A1认证可作为回归脚本；设备页面与实际 API 验证配套。
-4. File 上传字节、系统文件选择和两条导入/问数MVP留 A3；Listing/客服/审批留 A4。禁止新增真实付费模型、邮件、平台写入。
+## 可复用本机环境
 
-用户已授权推送本分支到 `https://github.com/Changxin-YR/AI-E-commerce-Agent` 并运行 CI，持续有效。按包落盘、提交、推送并核对准确 SHA；上下文接近上限按已授权创建新对话接续，新对话接手后旧对话停止写入。
+- Java `D:/Javajdk`；SDK `.local/android/sdk`；Gradle `.local/android/tools/gradle-8.14.3`；环境脚本只设置当前进程，并设置 `VITE_SOLOOPS_API_ORIGIN=http://10.0.2.2:8011`。
+- AVD `.local/android/avd/SoloOps_A1.avd`，API34 / Pixel6 / x86_64 / WHPX；模拟器和镜像复用原SDK。当前后台运行，ADB5037需正常本机访问权限。
+- 独立 Docker project `soloops-android-a1`，MySQL8.4，端口3311，schema `soloops_android_test`，专属卷。配置 `.local/android/mysql.env`、`.local/android/backend.env`。
+- FastAPI后台监听 `127.0.0.1:8011`，启动入口 `scripts/start_android_backend.py`，模型/邮件/调度明确关闭。停止前按端口和父进程命令行核对归属，勿使用旧PID。
+- 合成账号 `android_seller` / `Android-Synthetic-2026!`。最后设备测试已退出登录。
+- 证据 `.local/android/evidence/device-shell.json`（28组）与 `a2-*.png`，单元 `.local/android/unit-a2.log`，构建 `.local/android/build-a2.log`。这些本机文件被Git忽略；可用已提交脚本复现。
+- 第一版 APK 已安装；构建输出后来又生成过版本，最终提交仍须重建安装。不要把当前输出/旧设备证据混记为同一二进制验收。
+
+## 授权和协作约定
+
+用户已授权持续开发、推送本安卓分支并运行CI；无需重复确认。仅合成数据/替身，新的真实付费模型、邮件、平台写入须另获明确授权。只允许一个开发聊天写本安卓副本。
+用户授权上下文接近上限时先落盘/推送，再新建聊天接续；旧聊天从新聊天接手起停止写入。此次因切换账号提前保存检查点，新账号可从本文直接恢复。

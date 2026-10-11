@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { useRecordLink } from '@/composables/useRecordLink'
+import { useLeaveProtection } from '@/composables/useLeaveProtection'
 import { linkedId, linkedShop, revealRecord, returnTaskQuery } from '@/composables/deepLink'
 import { supportApi } from '@/api/support'
 import { identityApi } from '@/api/identity'
@@ -36,6 +37,10 @@ function canNavigate(allowReading = false): boolean {
   return false
 }
 onBeforeRouteLeave(() => canNavigate(true))
+useLeaveProtection(
+  () => false,
+  () => dirty.value || saving.value || deliveryBusy.value,
+)
 onBeforeRouteUpdate(() => writingLink || canNavigate())
 function beforeUnload(event: BeforeUnloadEvent): void {
   if (dirty.value || saving.value || deliveryBusy.value) {
@@ -254,7 +259,12 @@ onUnmounted(() => {
       <div class="section-heading">
         <div class="form-field">
           <label for="support-shop">客服店铺</label
-          ><select id="support-shop" v-model="shopId" :disabled="busy || dirty" @change="changeShop">
+          ><select
+            id="support-shop"
+            v-model="shopId"
+            :disabled="busy || dirty"
+            @change="changeShop"
+          >
             <option v-for="shop in shops" :key="shop.id" :value="shop.id">
               {{ shop.name }} · {{ shop.code }}
             </option>
@@ -288,7 +298,12 @@ onUnmounted(() => {
           <form class="listing-search" @submit.prevent="search()">
             <div class="form-field">
               <label for="message-query">搜索正文 / 消息标识</label
-              ><input id="message-query" v-model="query" maxlength="120" :disabled="busy || dirty" />
+              ><input
+                id="message-query"
+                v-model="query"
+                maxlength="120"
+                :disabled="busy || dirty"
+              />
             </div>
             <button class="button secondary" :disabled="busy || dirty">搜索消息</button>
           </form>
@@ -302,7 +317,8 @@ onUnmounted(() => {
             :disabled="busy || dirty"
             @click="choose(message.id)"
           >
-            <strong>{{ message.message_id }} · {{ message.language }} · {{ message.channel }}</strong
+            <strong
+              >{{ message.message_id }} · {{ message.language }} · {{ message.channel }}</strong
             ><span class="support-excerpt">{{ message.body }}</span
             ><small
               >{{ supportTime(message.sent_at, timezone) }} ·
@@ -374,7 +390,9 @@ onUnmounted(() => {
             按
             {{ workspace.market }}、消息渠道、语言、数据身份和当前有效期筛选；请选择本次引用的政策。
           </p>
-          <p v-if="!workspace.policies.length">暂无适用政策，请人工核实。可在下方录入政策与 FAQ。</p>
+          <p v-if="!workspace.policies.length">
+            暂无适用政策，请人工核实。可在下方录入政策与 FAQ。
+          </p>
           <div v-for="policy in workspace.policies" :key="policy.id" class="support-policy-quote">
             <label class="check-label"
               ><input

@@ -3,6 +3,7 @@ import BusinessDateRange from '@/components/BusinessDateRange.vue'
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { useRecordLink } from '@/composables/useRecordLink'
+import { useLeaveProtection } from '@/composables/useLeaveProtection'
 import {
   scopeQuery,
   linkedId,
@@ -83,6 +84,10 @@ function canNavigate(allowReading = false): boolean {
   return false
 }
 onBeforeRouteLeave(() => canNavigate(true))
+useLeaveProtection(
+  () => false,
+  () => starting.value || controlling.value || driving.value,
+)
 onBeforeRouteUpdate((to) => recordLink.isOwn(to.fullPath, false) || canNavigate())
 const focusGrant = ref<number | undefined>()
 const focusShop = ref(0)
@@ -530,7 +535,11 @@ onUnmounted(() => {
     <p v-if="!shops.length">先在经营资料中添加店铺，再导入商品、订单或消息。</p>
     <template v-else>
       <label class="agent-shop"
-        >任务店铺<select v-model.number="shopId" :disabled="busy || controlling" @change="changeShop">
+        >任务店铺<select
+          v-model.number="shopId"
+          :disabled="busy || controlling"
+          @change="changeShop"
+        >
           <option v-for="shop in shops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
         </select></label
       >
@@ -666,7 +675,8 @@ onUnmounted(() => {
               </p>
               <label class="full-width"
                 ><span
-                  ><input v-model="form.allow_model" type="checkbox" /> 同意将本次目标文本发送至配置的
+                  ><input v-model="form.allow_model" type="checkbox" />
+                  同意将本次目标文本发送至配置的
                   {{ agentLabels[model?.provider ?? ''] ?? '供应商' }}
                   模型，并使用下方美元预算</span
                 ></label

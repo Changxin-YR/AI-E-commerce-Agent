@@ -5,6 +5,7 @@ import { errorMessage } from '@/api/client'
 import { currencies, timezones, type Shop, type ShopInput } from '@/types/identity'
 import FeedbackBanner from './FeedbackBanner.vue'
 import FormField from './FormField.vue'
+import { useLeaveProtection } from '@/composables/useLeaveProtection'
 
 const emit = defineEmits<{ created: [shop: Shop]; cancel: [] }>()
 const form = reactive<ShopInput>({
@@ -16,6 +17,11 @@ const form = reactive<ShopInput>({
   timezone: 'Asia/Shanghai',
 })
 const busy = ref(false)
+const baseline = JSON.stringify(form)
+useLeaveProtection(
+  () => JSON.stringify(form) !== baseline,
+  () => busy.value,
+)
 const error = ref('')
 async function create(): Promise<void> {
   if (busy.value) return

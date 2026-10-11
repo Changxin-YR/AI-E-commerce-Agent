@@ -5,6 +5,7 @@ import { errorMessage } from '@/api/client'
 import { currencies, timezones, type SellerProfile } from '@/types/identity'
 import FeedbackBanner from './FeedbackBanner.vue'
 import FormField from './FormField.vue'
+import { useLeaveProtection } from '@/composables/useLeaveProtection'
 
 const props = defineProps<{ profile: SellerProfile | null }>()
 const emit = defineEmits<{ saved: [profile: SellerProfile] }>()
@@ -21,10 +22,16 @@ const form = reactive<SellerProfile>({
 const busy = ref(false)
 const error = ref('')
 const success = ref('')
+const baseline = ref(JSON.stringify(form))
+useLeaveProtection(
+  () => JSON.stringify(form) !== baseline.value,
+  () => busy.value,
+)
 watch(
   () => props.profile,
   (value) => {
     if (value) Object.assign(form, value)
+    baseline.value = JSON.stringify(form)
   },
   { immediate: true },
 )
@@ -36,6 +43,7 @@ async function save(): Promise<void> {
   try {
     const result = await identityApi.saveProfile({ ...form })
     Object.assign(form, result)
+    baseline.value = JSON.stringify(form)
     emit('saved', result)
     success.value = '经营资料已保存。'
   } catch (cause) {

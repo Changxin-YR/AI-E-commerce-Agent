@@ -94,6 +94,7 @@ try {
   page = active.page
   await expect(page.locator('.account-row')).toContainText('android_seller', { timeout: 30000 })
   results.push({ check: 'force-stop-session-restoration', passed: true })
+  await page.getByRole('button', { name: '全部功能', exact: true }).click()
   await page.getByRole('button', { name: '退出', exact: true }).click()
   await expect(page.locator('#username')).toBeVisible({ timeout: 15000 })
   const status = await page.evaluate(

@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AppShell from '@/components/AppShell.vue'
 import { useSession } from '@/composables/useSession'
+import { nativeAndroid, navigationOpen } from '@/composables/useAndroidShell'
+import { confirmLeaving } from '@/composables/useLeaveProtection'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,11 +40,19 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach(async (to) => {
+router.beforeEach(async (to, from) => {
   const { session, initialize } = useSession()
   await initialize()
   if (!session.value && to.name !== 'login') return { name: 'login' }
   if (session.value && to.name === 'login') return '/'
+  if (nativeAndroid && session.value && to.path !== from.path && !(await confirmLeaving()))
+    return false
+})
+router.afterEach((_to, _from, failure) => {
+  if (!failure) {
+    navigationOpen.value = false
+    if (nativeAndroid) window.scrollTo(0, 0)
+  }
 })
 
 export default router

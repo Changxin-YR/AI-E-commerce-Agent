@@ -401,3 +401,10 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - https://developer.android.com/privacy-and-security/security-config ：按域名限制明文连接；仅 debug source set 增加 `10.0.2.2`，release 保持 HTTPS，并校验前端构建模式。
 - https://developer.android.com/studio/run/emulator-networking ：模拟器通过 `10.0.2.2` 连接宿主回环；本包后端监听 `127.0.0.1:8011`。
 - Android 文档 CC BY 4.0、示例 Apache 2.0；参考配置语义，自行实现。Firecrawl 额度不足，改用网页工具读取官方资料。
+
+## Android A2（2026-10-11）
+- [Capacitor App](https://capacitorjs.com/docs/apis/app)：参考backButton/appStateChange/minimizeApp；返回经过Vue Router守卫，根页最小化保留进程状态。
+- [Network](https://capacitorjs.com/docs/apis/network)：网络连接状态与API服务可用性分别检查，恢复只回读session。
+- [Keyboard](https://capacitorjs.com/docs/apis/keyboard)：监听didShow/didHide并滚动当前输入，配合Android adjustResize。
+- [SystemBars](https://capacitorjs.com/docs/apis/system-bars)：参考旧WebView的注入CSS变量作为env安全区域回退。
+- Capacitor及官方插件MIT；参考公开接口，自行实现Vue壳与测试。Firecrawl状态查询fetch failed，已回退官方网页工具。

@@ -971,3 +971,9 @@ LoginView把账号获取与求助写成卖家可执行步骤；管理员CLI仍�
 
 ## Android A0 工程基线（2026-10-11）
 Vue + Capacitor 独立副本复用既有业务服务。原生 HTTPS origin 与本地 UI 分离，API 客户端保留原 CSRF/会话协议，CapacitorHttp 提供二进制 fetch 桥接；原生打包前校验地址。任务拆分、实际验证与接续入口见 android-plan.md、android-a0-acceptance.md、android-handoff.md。
+
+## Android A2 检查点
+
+useAndroidShell将原生事件映射到Vue路由和会话回读。useLeaveProtection以组件生命周期注册脏状态/保存中阻断；会话epoch防止退出后迟到回包恢复状态。网络恢复只提示显式重试，不自动重放写操作。安卓CSS按native-android作用域加载。设备脚本真实操作专属AVD，第一版28组通过，最终补丁设备回归见android-a2-acceptance.md待办。
+
+本机Vitest默认并发曾耗尽内存，限定maxWorkers=2后42文件191项通过；最后新增并发用例单独校验。Vite worker的EPERM以正常本机权限运行解决。

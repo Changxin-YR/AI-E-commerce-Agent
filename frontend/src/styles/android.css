@@ -1,0 +1,148 @@
+/* Capacitor SystemBars supplies fallbacks for WebViews without env insets. */
+.native-android {
+  --android-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --android-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  scroll-padding-top: calc(76px + var(--android-top));
+}
+.native-android body {
+  padding: var(--android-top) var(--safe-area-inset-right, env(safe-area-inset-right, 0px))
+    var(--android-bottom) var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+}
+.native-android .app-layout {
+  display: block;
+  min-height: 100dvh;
+}
+.android-toolbar {
+  position: sticky;
+  top: var(--android-top);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: #f8faff;
+  border-bottom: 1px solid var(--line);
+}
+.android-toolbar > a {
+  font-weight: 750;
+  text-decoration: none;
+}
+.android-toolbar > span {
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+.native-android .sidebar {
+  display: none;
+  position: static;
+  height: auto;
+  width: 100%;
+  padding: 16px;
+}
+.native-android .sidebar.navigation-open {
+  display: block;
+}
+.native-android .sidebar > .wordmark,
+.native-android .sidebar-caption,
+.native-android .topbar,
+.native-android .sidebar-bottom > p,
+.native-android .sidebar-bottom > .mode-status {
+  display: none;
+}
+.native-android .sidebar .seller-navigation {
+  margin: 0;
+}
+.native-android .sidebar #seller-groups {
+  display: block;
+  overflow: visible;
+}
+.native-android .sidebar .nav-group ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-left: 0;
+}
+.native-android .sidebar .nav-group a {
+  font-size: 14px;
+}
+.native-android .sidebar .group-toggle {
+  font-size: 14px;
+}
+.native-android :is(button, .button, select, summary) {
+  min-height: 44px;
+}
+.native-android main#main-content {
+  padding: 22px 14px 36px;
+}
+.native-android .login-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - var(--android-top) - var(--android-bottom));
+  padding: 20px;
+  gap: 20px;
+}
+.native-android .login-story {
+  min-height: auto;
+  padding: 0;
+  gap: 12px;
+}
+.native-android .login-story > div:nth-child(2),
+.native-android .login-story .story-footer {
+  display: none;
+}
+.native-android .login-form-panel {
+  width: 100%;
+  max-width: 520px;
+  align-self: center;
+}
+.native-android .login-form {
+  padding: 24px 20px;
+}
+.native-android .login-form input {
+  font-size: 16px;
+}
+.native-android .login-submit {
+  margin-top: 18px;
+}
+.native-android .login-help {
+  margin-top: 18px;
+  padding-top: 12px;
+}
+.connection-notice {
+  position: fixed;
+  z-index: 30;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + var(--android-bottom));
+  padding: 12px;
+  background: #fff8eb;
+  border: 1px solid #d5a051;
+  border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  box-shadow: 0 4px 24px #182c5320;
+}
+.connection-notice > span {
+  flex-basis: 100%;
+}
+.leave-dialog {
+  width: min(420px, calc(100vw - 32px));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+  color: var(--ink);
+}
+.leave-dialog::backdrop {
+  background: #182c5370;
+}
+.native-android.keyboard-open .connection-notice {
+  position: static;
+  margin: 12px;
+}
+@media (max-width: 440px) {
+  .native-android .solo-page .form-grid,
+  .native-android .solo-page .analysis-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
