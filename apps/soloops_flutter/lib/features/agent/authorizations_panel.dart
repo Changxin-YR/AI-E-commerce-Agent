@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../ui/business_widgets.dart';
 import '../../ui/common.dart';
-import '../../ui/content_evidence.dart';
 
 class AuthorizationsPanel extends StatefulWidget {
   const AuthorizationsPanel(this.app,
@@ -46,18 +45,21 @@ class _AuthorizationsPanelState extends BusinessPageState<AuthorizationsPanel> {
   }
 
   void reset() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         confirmed = false;
         requestId = null;
       });
+    }
   }
 
   @override
   void didUpdateWidget(covariant AuthorizationsPanel old) {
     super.didUpdateWidget(old);
     if (old.run?['version'] != widget.run?['version'] ||
-        old.run?['id'] != widget.run?['id']) reset();
+        old.run?['id'] != widget.run?['id']) {
+      reset();
+    }
   }
 
   @override
@@ -76,8 +78,9 @@ class _AuthorizationsPanelState extends BusinessPageState<AuthorizationsPanel> {
     }
     if (!mounted) return;
     grants = more ? [...grants, ...rows(page['items'])] : rows(page['items']);
-    if (focused != null)
+    if (focused != null) {
       grants = [focused, ...grants.where((g) => g['id'] != focused!['id'])];
+    }
     next = page['next_before_id'] as int?;
   }
 
@@ -114,7 +117,9 @@ class _AuthorizationsPanelState extends BusinessPageState<AuthorizationsPanel> {
         use == null ? '撤销授权' : '撤回新增候选',
         use == null
             ? '已保存结果保留，后续执行不能再使用此授权。'
-            : '本次新增且未被后续处理的候选将设为已拒绝；历史保留，额度不返还。任一项已变化时整批不撤回。')) return;
+            : '本次新增且未被后续处理的候选将设为已拒绝；历史保留，额度不返还。任一项已变化时整批不撤回。')) {
+      return;
+    }
     await perform(() async {
       await widget.app.api.post(
           path(use == null

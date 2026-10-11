@@ -45,7 +45,7 @@ export class DeviceBridge implements MethodCallHandler {
     return name;
   }
   private async pickFile(): Promise<Object | null> {
-    const uris = await new picker.DocumentViewPicker(this.context).select({ maxSelectNumber: 1, fileSuffixFilters: ['报表|.csv,.xlsx'] });
+    const uris = await new picker.DocumentViewPicker(this.context).select({ maxSelectNumber: 1, fileSuffixFilters: ['报表与分片清单|.csv,.xlsx,.json'] });
     if (uris.length === 0) return null;
     if (uris.length !== 1 || !uris[0].startsWith('file://docs/')) throw new Error('FILE_URI');
     const file = fs.openSync(uris[0], fs.OpenMode.READ_ONLY);

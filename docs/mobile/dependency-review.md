@@ -70,3 +70,8 @@ SDK24复核：沿用已锁定Flutter OH 1.0.7与Dart依赖，新增本机无空�
 ## 鸿蒙业务导入依赖增量（2026-10-11）
 
 新增直接依赖 crypto 3.0.5，传递 typed_data 1.4.0，从原PUB_CACHE离线解析并更新pubspec.lock。读取两个固定版本完整LICENSE，均为BSD-3-Clause，副本在 apps/soloops_flutter/licenses/CRYPTO-LICENSE 与 TYPED-DATA-LICENSE。用途仅为来源文件、分片指纹核验。未新增原生文件插件；文档选择、保存、分享沿用已写入的ArkTS系统桥接。pub get --offline与Dart格式化已完成，新增业务源码尚未做编译、功能测试或API22运行。
+
+
+## 鸿蒙业务时间依赖与编译（2026-10-11）
+
+固定timezone0.10.1（BSD-2-Clause，IANA2025b），新增传递http1.6.0、http_parser4.1.2、web1.1.1（均BSD-3-Clause），精确锁在pubspec.lock。完整许可证放入apps/soloops_flutter/licenses/；使用包内Dart数据库，不获取设备时区。Dart3.6.2实际pub解析成功，17项Flutter测试、12组CSV差异核对和SDK24 x64 HAP构建通过；当前业务API22运行待验。无需新增原生插件。

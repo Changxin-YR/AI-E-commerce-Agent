@@ -44,8 +44,9 @@ class ApiClient {
     _client?.close(force: true);
     final context = SecurityContext(withTrustedRoots: true);
     const ca = String.fromEnvironment('M0B_CA_BASE64');
-    if (kDebugMode && uri.host == '127.0.0.1' && ca.isNotEmpty)
+    if (kDebugMode && uri.host == '127.0.0.1' && ca.isNotEmpty) {
       context.setTrustedCertificatesBytes(base64Decode(ca));
+    }
     _client = HttpClient(context: context)
       ..connectionTimeout = const Duration(seconds: 10);
   }
@@ -69,8 +70,9 @@ class ApiClient {
       Map<String, dynamic>? query,
       Uint8List? bytes,
       bool rawResponse = false}) async {
-    if (!path.startsWith('/') || path.startsWith('//'))
+    if (!path.startsWith('/') || path.startsWith('//')) {
       throw const ApiFailure('请求地址无效');
+    }
     final epoch = generation;
     final uri = Uri.parse('$baseUrl/api$path').replace(
         queryParameters: query == null
@@ -91,11 +93,16 @@ class ApiClient {
           .openUrl(method, uri)
           .timeout(const Duration(seconds: 12));
       pending = request;
+      if (epoch != generation) {
+        request.abort();
+        throw const ApiFailure('当前店铺或账号已变化，请刷新。', code: 'context_changed');
+      }
       _active.add(request);
       request.followRedirects = false;
       request.headers.set('X-SoloOps-Client', 'mobile');
-      if (token != null)
+      if (token != null) {
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+      }
       if (bytes != null) {
         request.headers.contentType = ContentType.binary;
         request.contentLength = bytes.length;
@@ -111,12 +118,14 @@ class ApiClient {
       final response = await request.close();
       final buffer = BytesBuilder(copy: false);
       await for (final chunk in response) {
-        if (buffer.length + chunk.length > 8 * 1024 * 1024)
+        if (buffer.length + chunk.length > 8 * 1024 * 1024) {
           throw const ApiFailure('结果超过本次可读取范围，请缩小筛选条件。');
+        }
         buffer.add(chunk);
       }
-      if (epoch != generation)
+      if (epoch != generation) {
         throw const ApiFailure('当前店铺或账号已变化，请刷新。', code: 'context_changed');
+      }
       final data = buffer.takeBytes();
       dynamic value;
       if (data.isNotEmpty && (!rawResponse || response.statusCode >= 400)) {
@@ -139,8 +148,9 @@ class ApiClient {
       }
       if (response.statusCode == 204) return null;
       if (rawResponse) return data;
-      if (value == null && data.isNotEmpty && utf8.decode(data) != 'null')
+      if (value == null && data.isNotEmpty && utf8.decode(data) != 'null') {
         throw const ApiFailure('服务响应无法读取，请稍后重试。');
+      }
       return value;
     } on ApiFailure {
       rethrow;

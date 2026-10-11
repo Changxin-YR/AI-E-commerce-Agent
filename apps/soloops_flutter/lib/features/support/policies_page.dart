@@ -1,3 +1,4 @@
+import '../../ui/business_time_fields.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../ui/business_widgets.dart';
@@ -68,8 +69,9 @@ class _PoliciesPageState extends BusinessPageState<PoliciesPage> {
 
   Future<void> load() => perform(read);
   Future<void> edit([Json? policy]) async {
-    if (editing && !await confirmAction(context, '放弃未保存政策', '将重新填写此政策表单。'))
+    if (editing && !await confirmAction(context, '放弃未保存政策', '将重新填写此政策表单。')) {
       return;
+    }
     final data = mapValue(policy?['data']);
     setState(() {
       expected = policy?['id'] as int?;
@@ -100,12 +102,14 @@ class _PoliciesPageState extends BusinessPageState<PoliciesPage> {
         'source': 400,
         'source_version': 80
       }.entries) {
-        if ((data[e.key] as String).length > e.value)
+        if ((data[e.key] as String).length > e.value) {
           throw FormatException('${e.key} 最多 ${e.value} 字。');
+        }
       }
       data['market'] = (data['market'] as String).toUpperCase();
-      if (!RegExp(r'^[A-Z]{2}$').hasMatch(data['market'] as String))
+      if (!RegExp(r'^[A-Z]{2}$').hasMatch(data['market'] as String)) {
         throw const FormatException('市场须为两位国家代码。');
+      }
       data['valid_from'] =
           awareDate(data['valid_from'] as String, '生效时间', required: true);
       data['valid_until'] = awareDate(data['valid_until'] as String, '结束时间');
@@ -127,8 +131,9 @@ class _PoliciesPageState extends BusinessPageState<PoliciesPage> {
 
   Future<void> clear(Json policy) async {
     if (!await confirmAction(
-        context, '清除政策 #${policy['id']}', '此政策版本及引用它的客服草稿正文将被擦除，保留编号与状态记录。'))
+        context, '清除政策 #${policy['id']}', '此政策版本及引用它的客服草稿正文将被擦除，保留编号与状态记录。')) {
       return;
+    }
     await perform(() async {
       await widget.app.api.post(path('/${policy['id']}/clear'), {});
       saved = true;
@@ -142,7 +147,9 @@ class _PoliciesPageState extends BusinessPageState<PoliciesPage> {
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop &&
             await confirmAction(context, '放弃未保存政策', '表单内容尚未保存，确认返回。') &&
-            context.mounted) Navigator.pop(context);
+            context.mounted) {
+          Navigator.pop(context);
+        }
       },
       child: Scaffold(
           appBar: AppBar(title: const Text('政策与 FAQ')),
@@ -223,9 +230,10 @@ class _PoliciesPageState extends BusinessPageState<PoliciesPage> {
                     FormInput('出处', fields['source']!, enabled: !busy),
                     FormInput('来源版本', fields['source_version']!,
                         enabled: !busy),
-                    FormInput('生效时间（ISO，含时区偏移）', fields['valid_from']!,
+                    BusinessDateTimeField('生效时间', fields['valid_from']!,
                         enabled: !busy),
-                    FormInput('结束时间（不含终点，留空长期）', fields['valid_until']!,
+                    BusinessDateTimeField(
+                        '结束时间（不含终点，留空长期）', fields['valid_until']!,
                         required: false, enabled: !busy),
                     CheckboxListTile(
                         value: confirmed,

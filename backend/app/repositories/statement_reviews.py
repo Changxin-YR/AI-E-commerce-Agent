@@ -74,13 +74,21 @@ class StatementReviewRepository:
         )
 
     def page(
-        self, owner: int, shop: int, identity: str, channel: str, before: int | None
+        self,
+        owner: int,
+        shop: int,
+        identity: str,
+        channel: str,
+        before: int | None,
+        *,
+        kind: str = "fees",
     ) -> list[StatementReview]:
         query = select(StatementReview).where(
             StatementReview.owner_id == owner,
             StatementReview.shop_id == shop,
             StatementReview.data_identity == identity,
             StatementReview.channel == channel,
+            StatementReview.kind == kind,
         )
         if before is not None:
             query = query.where(StatementReview.id < before)

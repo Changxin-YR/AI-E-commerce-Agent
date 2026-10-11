@@ -1,3 +1,5 @@
+import '../../core/business_time.dart';
+import '../../ui/business_time_fields.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../core/business_navigation.dart';
@@ -36,6 +38,11 @@ class _OverviewPageState extends BusinessPageState<OverviewPage> {
   void initState() {
     super.initState();
     zone.text = '${widget.app.shop?['timezone'] ?? 'Asia/Shanghai'}';
+    final today = BusinessTime.inZone(DateTime.now().toUtc(), zone.text);
+    end.text = BusinessTime.day(today);
+    start.text = BusinessTime.day(
+        DateTime.utc(today.year, today.month, today.day)
+            .subtract(const Duration(days: 7)));
     shopIds.addAll(widget.app.shops.take(20).map((s) => s['id'] as int));
     for (final c in controllers) {
       c.addListener(invalidate);
@@ -52,21 +59,23 @@ class _OverviewPageState extends BusinessPageState<OverviewPage> {
   }
 
   void invalidate() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         result = null;
         saved = null;
         stale = false;
         requestId = null;
       });
+    }
   }
 
   DateTime date(String value) {
     final parsed = DateTime.tryParse('${value.trim()}T00:00:00Z');
     if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value.trim()) ||
         parsed == null ||
-        parsed.toIso8601String().substring(0, 10) != value.trim())
+        parsed.toIso8601String().substring(0, 10) != value.trim()) {
       throw const FormatException('请填写 YYYY-MM-DD 形式的有效业务日期。');
+    }
     return parsed;
   }
 
@@ -78,8 +87,9 @@ class _OverviewPageState extends BusinessPageState<OverviewPage> {
   Json payload() {
     final from = date(start.text), to = date(end.text);
     final span = to.difference(from).inDays;
-    if (span < 1 || span > 366 || shopIds.isEmpty || shopIds.length > 20)
+    if (span < 1 || span > 366 || shopIds.isEmpty || shopIds.length > 20) {
       throw const FormatException('请选择 1–20 家店铺和 1–366 天的时间窗。');
+    }
     final a = int.tryParse(age.text), q = int.tryParse(quantity.text);
     if (a == null ||
         a < 1 ||
@@ -89,8 +99,9 @@ class _OverviewPageState extends BusinessPageState<OverviewPage> {
         q > 1000000 ||
         !RegExp(r'^-?\d+(\.\d{1,2})?$').hasMatch(margin.text) ||
         num.parse(margin.text) < -1000 ||
-        num.parse(margin.text) > 100)
+        num.parse(margin.text) > 100) {
       throw const FormatException('请核对库存小时数、最低销量与毛利率阈值。');
+    }
     return {
       'shop_ids': shopIds.toList(),
       'start_date': day(from),
@@ -143,7 +154,9 @@ class _OverviewPageState extends BusinessPageState<OverviewPage> {
           }
           if (current['valid_until'] != null &&
               !DateTime.parse('${current['valid_until']}')
-                  .isAfter(DateTime.now().toUtc())) stale = true;
+                  .isAfter(DateTime.now().toUtc())) {
+            stale = true;
+          }
           if (stale) {
             result = null;
             success = '来源或库存时效已变化，请重新生成。';
@@ -181,8 +194,9 @@ class _OverviewPageState extends BusinessPageState<OverviewPage> {
       });
   Future<void> clear() async {
     if (!await confirmAction(
-        context, '清除摘要 #${saved!['id']}', '摘要正文与来源依赖将被清除，保留范围、状态和审计记录。'))
+        context, '清除摘要 #${saved!['id']}', '摘要正文与来源依赖将被清除，保留范围、状态和审计记录。')) {
       return;
+    }
     await perform(() async {
       final value = object(await widget.app.api
           .post('/overview/reports/${saved!['id']}/clear', {'confirm': true}));
@@ -206,6 +220,11 @@ class _OverviewPageState extends BusinessPageState<OverviewPage> {
       ]);
   void filterShops() {
     shopIds.clear();
+    final today = BusinessTime.inZone(DateTime.now().toUtc(), zone.text);
+    end.text = BusinessTime.day(today);
+    start.text = BusinessTime.day(
+        DateTime.utc(today.year, today.month, today.day)
+            .subtract(const Duration(days: 7)));
     shopIds.addAll(widget.app.shops
         .where((s) =>
             (platform.isEmpty || s['platform'] == platform) &&
@@ -281,9 +300,9 @@ class _OverviewPageState extends BusinessPageState<OverviewPage> {
                                 identity = v;
                                 invalidate();
                               })),
-                  FormInput('业务时区', zone, enabled: !busy),
-                  FormInput('开始日期 YYYY-MM-DD', start, enabled: !busy),
-                  FormInput('结束日期 YYYY-MM-DD（不含此日）', end, enabled: !busy),
+                  BusinessZoneField('业务时区', zone, enabled: !busy),
+                  BusinessDateField('开始日期', start, enabled: !busy),
+                  BusinessDateField('结束日期（不含此日）', end, enabled: !busy),
                   Wrap(spacing: 12, children: [
                     for (final e
                         in const {1: '日摘要', 7: '周摘要', 30: '30 日摘要'}.entries)
@@ -303,9 +322,8 @@ class _OverviewPageState extends BusinessPageState<OverviewPage> {
                       title: const Text('自选对比区间'),
                       subtitle: const Text('关闭时使用紧邻本期之前的等长区间')),
                   if (customCompare) ...[
-                    FormInput('对比开始日期 YYYY-MM-DD', compareStart,
-                        enabled: !busy),
-                    FormInput('对比结束日期 YYYY-MM-DD', compareEnd, enabled: !busy),
+                    BusinessDateField('对比开始日期', compareStart, enabled: !busy),
+                    BusinessDateField('对比结束日期', compareEnd, enabled: !busy),
                   ],
                   const Text('币种（不选则读取数据中的全部币种）'),
                   Wrap(spacing: 8, children: [

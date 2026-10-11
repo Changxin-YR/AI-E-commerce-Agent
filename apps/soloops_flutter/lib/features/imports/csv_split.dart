@@ -170,8 +170,9 @@ PreparedCsv splitCsv(String name, Uint8List source,
       output.add(header!);
       return;
     }
-    if (values.length > columns)
+    if (values.length > columns) {
       throw FormatException('源数据记录 ${total + 1} 列数超出表头。');
+    }
     if (++total > 40000) throw const FormatException('最多 40000 个源记录，请缩小范围。');
     final row = _encodeRow(values);
     if (header!.length + row.length > partLimit) {

@@ -93,8 +93,9 @@ class _ImportBatchPageState extends BusinessPageState<ImportBatchPage> {
   Future<void> commit() async {
     if (!canCommit) return;
     if (!await confirmAction(context, '确认导入',
-        '本次新增 ${batch!['new_rows']} 行，更新 ${batch!['updated_rows']} 行。确认后写入当前店铺业务记录。'))
+        '本次新增 ${batch!['new_rows']} 行，更新 ${batch!['updated_rows']} 行。确认后写入当前店铺业务记录。')) {
       return;
+    }
     await perform(() async {
       final result = await repository.commit(batch!, allowUpdates, reviewed);
       if (mounted) adopt(result);
@@ -108,7 +109,9 @@ class _ImportBatchPageState extends BusinessPageState<ImportBatchPage> {
         clear ? '清除批次' : '撤销批次',
         clear
             ? '将撤销本批次影响并清除源行资料；操作后无法恢复本批次的原始明细。'
-            : '将撤销本批次及其衍生来源，按剩余有效批次恢复业务版本。')) return;
+            : '将撤销本批次及其衍生来源，按剩余有效批次恢复业务版本。')) {
+      return;
+    }
     await perform(() async {
       final result = await repository.withdraw(batch!, action);
       if (mounted) adopt(result);
@@ -134,11 +137,12 @@ class _ImportBatchPageState extends BusinessPageState<ImportBatchPage> {
         MaterialPageRoute(
             builder: (_) => ImportRowEditor(row, fields,
                 object(corrections['${row['row_number']}'] ?? {}))));
-    if (result != null && mounted)
+    if (result != null && mounted) {
       setState(() {
         corrections['${row['row_number']}'] = result;
         markDirty();
       });
+    }
   }
 
   Widget sourceRow(Json row) {
@@ -199,7 +203,9 @@ class _ImportBatchPageState extends BusinessPageState<ImportBatchPage> {
                   : () async {
                       if (dirty &&
                           !await confirmAction(
-                              context, '重新读取批次', '当前未预览的修改会丢失。')) return;
+                              context, '重新读取批次', '当前未预览的修改会丢失。')) {
+                        return;
+                      }
                       await load();
                     },
               icon: const Icon(Icons.refresh))
@@ -296,8 +302,9 @@ class _ImportBatchPageState extends BusinessPageState<ImportBatchPage> {
                   onPressed: busy
                       ? null
                       : () => perform(() async {
-                            if (templateName.text.trim().isEmpty)
+                            if (templateName.text.trim().isEmpty) {
                               throw const FormatException('请填写模板名称。');
+                            }
                             await repository.saveMapping(
                                 b, templateName.text.trim(), mapping);
                             templates = await repository.templates();
@@ -431,8 +438,9 @@ class _ImportRowEditorState extends State<ImportRowEditor> {
             onPressed: () {
               final result = {...widget.corrections};
               for (final e in inputs.entries) {
-                if (e.value.text != initial[e.key])
+                if (e.value.text != initial[e.key]) {
                   result[e.key] = e.value.text;
+                }
               }
               Navigator.pop(context, result);
             },

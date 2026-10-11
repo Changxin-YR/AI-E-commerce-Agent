@@ -9,11 +9,23 @@ import 'features/support/support_page.dart';
 import 'features/inventory/inventory_page.dart';
 import 'features/analytics/analytics_page.dart';
 import 'features/overview/overview_page.dart';
+import 'features/profit/profit_page.dart';
+import 'features/finance/expenses_page.dart';
+import 'features/finance/fee_rules_page.dart';
+import 'features/finance/settlements_page.dart';
+import 'features/rules/business_rules_page.dart';
+import 'features/schedules/schedules_page.dart';
+import 'features/products/product_quality_page.dart';
+import 'features/products/product_edits_page.dart';
+import 'features/outbound/outbound_page.dart';
+import 'features/finance/statements_page.dart';
+import 'features/finance/order_reconciliation_page.dart';
 import 'features/operations/operations_page.dart';
 import 'features/operations/operation_task_page.dart';
 import 'features/account_pages.dart';
 import 'features/workbench_page.dart';
 import 'ui/common.dart';
+import 'ui/business_time_fields.dart';
 
 class ProductApp extends StatefulWidget {
   const ProductApp({super.key});
@@ -21,12 +33,27 @@ class ProductApp extends StatefulWidget {
   State<ProductApp> createState() => _ProductAppState();
 }
 
-class _ProductAppState extends State<ProductApp> {
+class _ProductAppState extends State<ProductApp> with WidgetsBindingObserver {
   final app = AppState();
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     businessRoutes.addAll({
+      '/settlements': (app, q) => SettlementsPage(app, query: q),
+      '/rules': (app, q) => BusinessRulesPage(app, query: q),
+      '/schedules': (app, q) => SchedulesPage(app, query: q),
+      '/product-quality': (app, q) => ProductQualityPage(app, query: q),
+      '/product-edits': (app, q) => ProductEditsPage(app, query: q),
+      '/outbound': (app, q) => OutboundPage(app, query: q),
+      '/statements': (app, q) => StatementsPage(app, query: q),
+      '/order-reconciliation': (app, q) =>
+          OrderReconciliationPage(app, query: q),
+      '/statements/order-reconciliation': (app, q) =>
+          OrderReconciliationPage(app, query: q),
+      '/profit': (app, q) => ProfitPage(app, query: q),
+      '/expenses': (app, q) => ExpensesPage(app, query: q),
+      '/fee-rules': (app, q) => FeeRulesPage(app, query: q),
       '/overview': (app, q) => OverviewPage(app, query: q),
       '/inventory': (app, q) => InventoryPage(app, query: q),
       '/analytics': (app, q) => AnalyticsPage(app, query: q),
@@ -49,8 +76,14 @@ class _ProductAppState extends State<ProductApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     app.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) app.checkSession();
   }
 
   ThemeData theme(Brightness brightness) {
@@ -89,6 +122,10 @@ class _ProductAppState extends State<ProductApp> {
       builder: (context, _) => MaterialApp(
           key: ValueKey('${app.session?['user_id']}:${app.shopId}'),
           title: 'SoloOps',
+          builder: (context, child) => BusinessTimeZone(
+              zone:
+                  '${app.shop?['timezone'] ?? app.session?['profile']?['timezone'] ?? 'UTC'}',
+              child: child!),
           debugShowCheckedModeBanner: false,
           locale: const Locale('zh', 'CN'),
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
@@ -126,7 +163,8 @@ class _BusinessShellState extends State<BusinessShell> {
         appBar: AppBar(title: Text(labels[selected]), actions: [
           if (app.shops.isNotEmpty)
             SizedBox(
-                width: 180,
+                width: (MediaQuery.sizeOf(context).width * .43)
+                    .clamp(120.0, 240.0),
                 child: Padding(
                     padding: const EdgeInsets.only(right: 16),
                     child: ShopPicker(app)))

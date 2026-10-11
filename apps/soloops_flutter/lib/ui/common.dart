@@ -76,15 +76,18 @@ Future<bool> confirmAction(
         BuildContext context, String title, String message) async =>
     await showDialog<bool>(
         context: context,
-        builder: (context) =>
-            AlertDialog(title: Text(title), content: Text(message), actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('返回')),
-              FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('确认'))
-            ])) ??
+        builder: (context) => AlertDialog(
+                scrollable: true,
+                title: Text(title),
+                content: Text(message),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('返回')),
+                  FilledButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('确认'))
+                ])) ??
     false;
 
 class ShopPicker extends StatelessWidget {
@@ -96,6 +99,7 @@ class ShopPicker extends StatelessWidget {
           value: app.shopId,
           hint: const Text('选择店铺'),
           isExpanded: true,
+          itemHeight: null,
           items: app.shops
               .map((shop) => DropdownMenuItem<int>(
                   value: shop['id'] as int,

@@ -56,8 +56,9 @@ class _EvidenceSourcesState extends State<EvidenceSources> {
   Widget build(BuildContext context) => ExpansionTile(
           title: Text(sources == null ? '展开事实来源' : '事实来源（${sources!.length}）'),
           onExpansionChanged: (expanded) {
-            if (expanded && sources == null)
+            if (expanded && sources == null) {
               setState(() => sources = sourceReferences(widget.value));
+            }
           },
           children: [
             if (sources != null) ...[

@@ -1,5 +1,15 @@
 # SoloOps 开发文档
 
+## 鸿蒙完整R2业务与集中验证（2026-10-11）
+
+H11–H20原生Flutter页面接入原服务：利润的多方案和手工汇率、费用与规则、账单/订单审阅、结算回款、经营规则、周期通知、商品质量/本地修订和测试外发。每项采用业务表单和证据视图，金额为十进制字符串；BigInt缩放用于本机输入界限和汇率四舍五入。未知费用与明确零分开，结算币种分组核对。
+
+H14增加OrderStatementReviewService和6个路由操作，复用StatementReview版本/来源表并以kind区分fees/orders。保存前重新核对来源与预览hash，UUID幂等、expected version、来源失效/清除沿用既有锁和审计。迁移b42e83f516c0为旧行设置fees默认，有订单审阅时拒绝降级丢失类型。
+
+H21以固定timezone0.10.1提供IANA业务时间；日期选择不依赖设备时区。当地日期时间按候选UTC瞬间枚举，跳时拒绝，重复时段要求明确偏移。选择器和FactLine显示时区/偏移，输入原文保留；日期溢出提前拒绝。EditGuard保护金额、计划、资料、邮件等编辑并联动页面返回、深链和切店；前台恢复只检查会话，不重放业务写入。ApiClient在获得连接后再次核对generation，过期使在途请求失效。
+
+H02补onboarding与资料冲突回读，H04补独立manifest导入恢复。CSV的12组合成数据与Python清单/分片逐字节对照，覆盖多行、BOM、跨UTF8块、分片边界及拒绝条件。当前验证证据和剩余API22任务见 `mobile/harmony-implementation-progress.md`、`mobile/harmony-validation.md`。
+
 ## R2 B1：证据驱动的有限技能组合（2026-10-10）
 
 `margin_review`复用AgentExecution/Step、原审批、预算、SAVEPOINT和幂等请求。新增margin_evidence是R0受控业务服务，输入是metrics的已验证AnalysisResult；按完整性、历史成本和独立本地参数证据提出至多两条内部建议。完整双写路径为metrics→margin_evidence→analysis_todo→verify→product_context→listing_draft→verify，共7个执行节点，每个写节点单独批准。无符合口径订单时等待补录，完整且无可执行建议时结束。

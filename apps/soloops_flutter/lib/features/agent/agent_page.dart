@@ -82,24 +82,26 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
   }
 
   void consentChanged() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         allowModel = false;
         allowData = false;
         pendingStart = null;
       });
+    }
   }
 
   void changed() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         allowModel = false;
         allowData = false;
         operationContext = null;
         pendingStart = null;
         if (product != null &&
-            product!['source']['data_identity'] != scope.identity)
+            product!['source']['data_identity'] != scope.identity) {
           product = null;
+        }
         if (supportContext != null &&
             (supportContext!['message']['source']['data_identity'] !=
                     scope.identity ||
@@ -109,6 +111,7 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
           orderVerified = false;
         }
       });
+    }
   }
 
   void accept(Json value) {
@@ -124,8 +127,9 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
     final value = rows(await widget.app.api.get(path('/runs')));
     if (!mounted) return;
     history = value;
-    if (run != null)
+    if (run != null) {
       accept(object(await widget.app.api.get(path('/runs/${run!['id']}'))));
+    }
   }
 
   Future<void> readOptions(
@@ -170,17 +174,20 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
         if (initial) {
           final id = int.tryParse(
               widget.query['execution'] ?? widget.query['run'] ?? '');
-          if (id != null)
+          if (id != null) {
             run = object(await widget.app.api.get(path('/runs/$id')));
+          }
           if (!mounted) return;
           final p = int.tryParse(widget.query['product'] ?? '');
-          if (p != null)
+          if (p != null) {
             product = object((await widget.app.api
                 .get(widget.app.shopPath('/listings/products/$p')))['product']);
+          }
           final m = int.tryParse(widget.query['message'] ?? '');
-          if (m != null)
+          if (m != null) {
             supportContext = object(await widget.app.api
                 .get(widget.app.shopPath('/support/messages/$m')));
+          }
         }
       });
   Json budget() {
@@ -203,22 +210,29 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
         (goal.text.trim().isEmpty || goal.text.length > 500 || !allowModel)) {
       throw const FormatException('请填写 1–500 字目标，并核对本次模型数据授权。');
     }
-    if (useModel && template != 'natural' && !allowData)
+    if (useModel && template != 'natural' && !allowData) {
       throw const FormatException('请核对本次业务数据发送范围。');
-    if (['listing', 'listing_model'].contains(template) && product == null)
+    }
+    if (['listing', 'listing_model'].contains(template) && product == null) {
       throw const FormatException('请选择商品。');
+    }
     if (['support', 'support_model'].contains(template) &&
-        supportContext == null) throw const FormatException('请选择消息。');
+        supportContext == null) {
+      throw const FormatException('请选择消息。');
+    }
     if (product != null &&
-        product!['source']['data_identity'] != scope.identity)
+        product!['source']['data_identity'] != scope.identity) {
       throw const FormatException('商品数据身份不匹配。');
+    }
     if (supportContext != null &&
         (supportContext!['message']['source']['data_identity'] !=
                 scope.identity ||
-            supportContext!['message']['channel'] != scope.channel))
+            supportContext!['message']['channel'] != scope.channel)) {
       throw const FormatException('消息身份或渠道不匹配。');
-    if (template == 'daily_model' && operationContext == null)
+    }
+    if (template == 'daily_model' && operationContext == null) {
       throw const FormatException('请先预览本次运营数据。');
+    }
     if (policyIds.length > 10) throw const FormatException('最多选择 10 份政策。');
     return {
       'request_id': newRequestId(),
@@ -303,7 +317,9 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
           if (e is ApiFailure &&
               e.status >= 400 &&
               e.status < 500 &&
-              e.status != 408) pendingStart = null;
+              e.status != 408) {
+            pendingStart = null;
+          }
           rethrow;
         }
       });
@@ -311,7 +327,9 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
       {Json? newBudget, int? authorizationId}) async {
     if (run == null ||
         controlling ||
-        (busy && !['pause', 'cancel'].contains(action))) return;
+        (busy && !['pause', 'cancel'].contains(action))) {
+      return;
+    }
     final selected = run!, token = ++controlEpoch;
     driving = false;
     driveEpoch++;
@@ -348,11 +366,12 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
         } catch (_) {}
       }
     } finally {
-      if (mounted && token == controlEpoch)
+      if (mounted && token == controlEpoch) {
         setState(() {
           controlling = false;
           if (!driving) busy = false;
         });
+      }
     }
   }
 
@@ -375,12 +394,14 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
         operationContext = null;
         policyIds.clear();
         orderVerified = false;
-        if (input['product_id'] != null)
+        if (input['product_id'] != null) {
           product = object((await widget.app.api.get(widget.app.shopPath(
               '/listings/products/${input['product_id']}')))['product']);
-        if (input['message_id'] != null)
+        }
+        if (input['message_id'] != null) {
           supportContext = object(await widget.app.api.get(
               widget.app.shopPath('/support/messages/${input['message_id']}')));
+        }
         if (mounted) await scope.readRule(widget.app);
         consentChanged();
       }, message: '已按历史输入填入新任务表单并读取当前规则，请重新核对数据与授权。');
@@ -417,7 +438,9 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
                             !RegExp(r'^\d+(\.\d{1,6})?$').hasMatch(usd.text) ||
                             num.parse(usd.text) <
                                 num.parse('${b['max_cost_usd']}') ||
-                            num.parse(usd.text) > 10) return;
+                            num.parse(usd.text) > 10) {
+                          return;
+                        }
                         Navigator.pop(context, {
                           'max_steps': sn,
                           'max_seconds': st,

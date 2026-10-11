@@ -99,8 +99,9 @@ class _ListingsPageState extends BusinessPageState<ListingsPage> {
         final p = initial
             ? int.tryParse(widget.query['product'] ?? '')
             : workspace?['product']['product_id'] as int?;
-        if (p != null)
+        if (p != null) {
           workspace = object(await widget.app.api.get(path('/products/$p')));
+        }
       }
     });
   }
@@ -142,8 +143,9 @@ class _ListingsPageState extends BusinessPageState<ListingsPage> {
             'content': {'title': title.text, 'description': description.text},
           }));
         } else {
-          if (dirty || (action == 'approve' && !confirmed))
+          if (dirty || (action == 'approve' && !confirmed)) {
             throw const FormatException('请先保存文案并核对当前版本。');
+          }
           item = object(await widget.app.api
               .post(path('/versions/${selected!['id']}/decision'), {
             'expected_version': selected!['version'],
@@ -153,9 +155,10 @@ class _ListingsPageState extends BusinessPageState<ListingsPage> {
         }
         if (!mounted) return;
         accept(item);
-        if (item['snapshot'] != null)
+        if (item['snapshot'] != null) {
           workspace = object(await widget.app.api.get(
               path('/products/${item['snapshot']['product']['product_id']}')));
+        }
         if (mounted) await lists();
       },
           message: action == 'approve'
@@ -168,16 +171,18 @@ class _ListingsPageState extends BusinessPageState<ListingsPage> {
         final artifact = object(await widget.app.api.get(
             path('/versions/${item['id']}/delivery'),
             query: {'expected_version': item['version']}));
-        if (!mounted || dirty || selected?['version'] != item['version'])
+        if (!mounted || dirty || selected?['version'] != item['version']) {
           return;
+        }
         success = await deliverArtifact(widget.app, artifact, action);
       });
   @override
   Widget build(BuildContext context) => PopScope(
       canPop: !dirty,
       onPopInvokedWithResult: (didPop, _) async {
-        if (!didPop && await leaveEdit() && context.mounted)
+        if (!didPop && await leaveEdit() && context.mounted) {
           Navigator.pop(context);
+        }
       },
       child: Scaffold(
         appBar: AppBar(title: const Text('Listing')),

@@ -31,7 +31,7 @@ class StatementReviewService:
 
     def _review(self, owner: int, shop: int, review: int) -> StatementReview:
         item = self.repo.get(owner, shop, review)
-        if item is None:
+        if item is None or item.kind != "fees":
             raise NotFoundError()
         return item
 

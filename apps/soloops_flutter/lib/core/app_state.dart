@@ -17,23 +17,39 @@ String newRequestId() {
 }
 
 class AppState extends ChangeNotifier {
-  final api = ApiClient();
-  final device = DeviceBridge();
+  final ApiClient api;
+  final DeviceBridge device;
   Json? session;
   List<Json> shops = [];
   int? shopId;
   bool loading = true;
   String? notice;
   Future<bool> Function()? beforeNavigation;
-  Future<bool> canNavigate() async => await beforeNavigation?.call() ?? true;
+  final navigationChecks = <Future<bool> Function()>[];
+  bool _checkingNavigation = false;
+  Future<bool> canNavigate() async {
+    if (_checkingNavigation) return false;
+    _checkingNavigation = true;
+    try {
+      for (final check in navigationChecks.reversed.toList()) {
+        if (!await check()) return false;
+      }
+      return await beforeNavigation?.call() ?? true;
+    } finally {
+      _checkingNavigation = false;
+    }
+  }
+
   Json? get shop => shops.where((s) => s['id'] == shopId).firstOrNull;
   String shopPath(String path) {
     if (shopId == null) throw const ApiFailure('请先创建或选择一家店铺。');
     return '/shops/$shopId$path';
   }
 
-  AppState() {
-    api.onExpired = _expire;
+  AppState({ApiClient? api, DeviceBridge? device})
+      : api = api ?? ApiClient(),
+        device = device ?? DeviceBridge() {
+    this.api.onExpired = _expire;
   }
   Future<void> initialize() async {
     try {
@@ -88,18 +104,34 @@ class AppState extends ChangeNotifier {
     final data = objects(await api.get('/shops'));
     if (epoch != api.generation) return;
     shops = data;
-    if (!shops.any((s) => s['id'] == shopId))
+    if (!shops.any((s) => s['id'] == shopId)) {
       shopId = shops.firstOrNull?['id'] as int?;
+    }
     await device.saveSettings(api.baseUrl, shopId);
     notifyListeners();
   }
 
-  Future<void> selectShop(int id) async {
-    if (shopId == id || !await canNavigate()) return;
+  Future<void> selectShop(int id, {bool checkEdits = true}) async {
+    if (shopId == id || (checkEdits && !await canNavigate())) return;
     api.invalidate();
     shopId = id;
     notifyListeners();
     await device.saveSettings(api.baseUrl, shopId);
+  }
+
+  bool _checkingSession = false;
+  Future<void> checkSession() async {
+    if (_checkingSession || session == null) return;
+    _checkingSession = true;
+    final epoch = api.generation;
+    try {
+      final current = object(await api.get('/mobile/auth/session'));
+      if (epoch == api.generation && api.token != null) session = current;
+    } catch (_) {
+      // Expiry is handled centrally; a transient offline state keeps local input.
+    } finally {
+      _checkingSession = false;
+    }
   }
 
   Future<void> logout({bool all = false}) async {
@@ -115,6 +147,7 @@ class AppState extends ChangeNotifier {
   }
 
   void _expire() {
+    api.invalidate();
     api.token = null;
     session = null;
     shops = [];

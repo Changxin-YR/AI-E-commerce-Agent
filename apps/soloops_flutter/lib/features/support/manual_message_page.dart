@@ -1,3 +1,4 @@
+import '../../ui/business_time_fields.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -72,7 +73,7 @@ class _ManualMessagePageState extends BusinessPageState<ManualMessagePage> {
           child: PageBody(children: [
             ...feedback,
             FormInput('原消息标识', id, enabled: !busy),
-            FormInput('消息时间（ISO，含时区偏移）', sent, enabled: !busy),
+            BusinessDateTimeField('消息时间', sent, enabled: !busy),
             ChoiceField('来源渠道', channel, importChannels,
                 busy ? null : (v) => setState(() => channel = v)),
             ChoiceField('数据身份', identity, importIdentities,

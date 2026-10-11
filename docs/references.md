@@ -453,3 +453,11 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - [Flutter PopScope](https://api.flutter.dev/flutter/widgets/PopScope-class.html)：参考系统返回结果与离开保护，配合底部入口/切店保护客服未保存正文和自报证据；使用固定Flutter3.27.5实际已有API，兼容性待集中构建/设备验证。
 - [Flutter ListView.builder](https://api.flutter.dev/flutter/widgets/ListView/ListView.builder.html)：借鉴有界列表展示原则；当前业务使用服务端50条分页，金额明细每页50、来源每页30并延迟展开，保留完整可访问依据。Flutter API文档对应BSD-3-Clause项目，不引入第三方实现。
 - 契约参考本仓库Agent/Listing/Support/Inventory/Analytics/Overview的Vue组件、TypeScript DTO和Pydantic schema，移动页调用原业务服务。Firecrawl实际调用返回Insufficient credits，因此通过内置浏览工具读取上述官方资料。以上资料用于设计/API参考，不作为运行验收。
+
+
+## 鸿蒙 H11–H21 财务、审阅与业务时间（2026-10-11）
+
+- [Flutter TextFormField](https://api.flutter.dev/flutter/material/TextFormField-class.html)、[Dart BigInt](https://api.dart.dev/dart-core/BigInt-class.html)：表单与Controller生命周期、精确整数缩放；API参考后自主实现十进制输入/汇率与业务编辑页。Flutter/Dart项目BSD-3-Clause；本项目没有复制完整示例。
+- [SQLAlchemy versioning](https://docs.sqlalchemy.org/en/20/orm/versioning.html)、[Python decimal](https://docs.python.org/3/library/decimal.html)：参考并发版本与精确金额语义，实际沿用本仓库用户/店铺锁、expected version、request UUID和Decimal架构。SQLAlchemy MIT、Python PSF。
+- [timezone 0.10.1](https://pub.dev/packages/timezone/versions/0.10.1)、[其更新记录](https://pub.dev/packages/timezone/versions/0.10.1/changelog)：固定IANA 2025b数据与TZDateTime.from/getLocation用于业务日期。Dart3.6.2实际pub解析、测试与HAP编译成功；未依赖设备时区。许可证BSD-2-Clause；传递http1.6.0、http_parser4.1.2、web1.1.1的BSD-3-Clause声明与完整许可证放在 `apps/soloops_flutter/licenses/`。时区变更以服务器校验为准，后续升级需同步验证时区数据。
+- 复用当前仓库Vue/TypeScript/Pydantic业务契约，自主编写Flutter页面；H14根据V1.3补持久审阅域。Firecrawl实际提取返回Insufficient credits，官方资料使用内置浏览工具核验。

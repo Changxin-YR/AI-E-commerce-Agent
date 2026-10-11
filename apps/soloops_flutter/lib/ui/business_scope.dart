@@ -1,3 +1,4 @@
+import 'business_time_fields.dart';
 import 'package:flutter/material.dart';
 import '../core/app_state.dart';
 import '../features/imports/import_repository.dart';
@@ -46,8 +47,11 @@ class BusinessScope extends ChangeNotifier {
     final requestedIdentity = identity, requestedChannel = channel;
     final value = object(await app.api.get(app.shopPath('/business-rules'),
         query: {'channel': channel, 'data_identity': identity}));
-    if (_closed || requestedIdentity != identity || requestedChannel != channel)
+    if (_closed ||
+        requestedIdentity != identity ||
+        requestedChannel != channel) {
       return;
+    }
     rule = value;
     final values = object(value['values']);
     age.text = '${values['max_age_hours']}';
@@ -89,10 +93,12 @@ class BusinessScope extends ChangeNotifier {
     if (!RegExp(r'^-?\d+(\.\d{1,2})?$').hasMatch(margin.text.trim())) {
       throw const FormatException('请填写有效的毛利百分比。');
     }
-    if (num.parse(margin.text) < -1000 || num.parse(margin.text) > 100)
+    if (num.parse(margin.text) < -1000 || num.parse(margin.text) > 100) {
       throw const FormatException('毛利百分比须为 -1000 至 100。');
-    if (requireRule && rule == null)
+    }
+    if (requireRule && rule == null) {
       throw const FormatException('请先读取当前范围的经营规则。');
+    }
     return {
       'start_at': from,
       'end_at': to,
@@ -139,11 +145,13 @@ class ScopeFields extends StatelessWidget {
             scope.channel,
             {if (!operation) '': '全部渠道', ...importChannels},
             enabled ? (v) => scope.select(sourceChannel: v) : null),
-        FormInput('业务时区', scope.zone, enabled: enabled),
+        BusinessZoneField('业务时区', scope.zone, enabled: enabled),
         FormInput('币种', scope.currency, enabled: enabled),
         if (!sevenDays)
-          FormInput('开始时间（ISO，含时区偏移）', scope.start, enabled: enabled),
-        FormInput('结束时间（ISO，含时区偏移，不含终点）', scope.end, enabled: enabled),
+          BusinessDateTimeField('开始时间', scope.start,
+              zone: scope.zone, enabled: enabled),
+        BusinessDateTimeField('结束时间（不含终点）', scope.end,
+            zone: scope.zone, enabled: enabled),
         if (sevenDays) const Text('开始时间自动取结束时间前精确 7 天。'),
         FormInput('最低销量', scope.quantity,
             enabled: enabled, type: TextInputType.number),

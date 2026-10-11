@@ -43,13 +43,14 @@ class _AnalyticsPageState extends BusinessPageState<AnalyticsPage> {
   }
 
   void invalidate() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         selected = null;
         result = null;
         outdated = false;
         lineOffset = 0;
       });
+    }
   }
 
   Json payload() {
@@ -98,14 +99,17 @@ class _AnalyticsPageState extends BusinessPageState<AnalyticsPage> {
         }
         if (result != null) {
           final revision = await widget.app.api.get(path('/revision'));
-          if (mounted)
+          if (mounted) {
             outdated = outdated || revision != result!['source_revision'];
+          }
         }
       });
   Future<void> calculate({bool ask = false}) => perform(() async {
         final requested = payload();
-        if (ask && (question.text.trim().isEmpty || question.text.length > 200))
+        if (ask &&
+            (question.text.trim().isEmpty || question.text.length > 200)) {
           throw const FormatException('受控问题须为 1–200 字。');
+        }
         final value = object(await widget.app.api.post(
             path(ask ? '/ask' : '/calculate'),
             ask

@@ -1,3 +1,4 @@
+import '../../ui/business_time_fields.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../core/business_navigation.dart';
@@ -115,7 +116,9 @@ class _OperationTaskPageState extends BusinessPageState<OperationTaskPage> {
             taskActions[action]!,
             action == 'complete'
                 ? '将保存“已完成核对”状态。业务结果由新有效来源复检确定。'
-                : '将更新此事项的本地处理状态，并保留操作历史。')) return;
+                : '将更新此事项的本地处理状态，并保留操作历史。')) {
+      return;
+    }
     await perform(() async {
       final followUp =
           ['record_evidence', 'wait_source', 'recheck'].contains(action);
@@ -202,7 +205,9 @@ class _OperationTaskPageState extends BusinessPageState<OperationTaskPage> {
                   : () async {
                       if ((noteDirty || evidenceDirty) &&
                           !await confirmAction(
-                              context, '刷新事项', '未保存的处理记录与证据将丢失。')) return;
+                              context, '刷新事项', '未保存的处理记录与证据将丢失。')) {
+                        return;
+                      }
                       await load();
                     },
               icon: const Icon(Icons.refresh))
@@ -250,7 +255,7 @@ class _OperationTaskPageState extends BusinessPageState<OperationTaskPage> {
               const SectionTitle('处理记录'),
               FormInput('处理备注', note,
                   enabled: !busy, required: false, lines: 3),
-              FormInput('截止时间（可选，须含时区偏移）', due,
+              BusinessDateTimeField('截止时间（可选）', due,
                   enabled: !busy, required: false),
               Wrap(spacing: 8, runSpacing: 8, children: [
                 for (final a in allowed)
@@ -278,7 +283,7 @@ class _OperationTaskPageState extends BusinessPageState<OperationTaskPage> {
                     enabled: !busy, required: false, lines: 3),
                 FormInput('操作依据或凭据编号', evidenceRef,
                     enabled: !busy, required: false),
-                FormInput('操作发生时间（须含时区偏移）', occurred,
+                BusinessDateTimeField('操作发生时间', occurred,
                     enabled: !busy, required: false),
                 CheckboxListTile(
                     contentPadding: EdgeInsets.zero,

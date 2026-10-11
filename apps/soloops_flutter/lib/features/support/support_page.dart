@@ -1,3 +1,4 @@
+import '../../ui/business_time_fields.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../core/business_navigation.dart';
@@ -5,7 +6,6 @@ import '../../ui/business_widgets.dart';
 import '../../ui/common.dart';
 import '../../ui/content_evidence.dart';
 import '../../ui/reviewed_delivery.dart';
-import '../imports/import_repository.dart';
 import 'policies_page.dart';
 import 'manual_message_page.dart';
 
@@ -63,8 +63,9 @@ class _SupportPageState extends BusinessPageState<SupportPage> {
 
   @override
   void dispose() {
-    if (widget.app.beforeNavigation == leaveEdit)
+    if (widget.app.beforeNavigation == leaveEdit) {
       widget.app.beforeNavigation = null;
+    }
     for (final c in [search, reply, occurred, method, evidence, note]) {
       c.dispose();
     }
@@ -76,11 +77,12 @@ class _SupportPageState extends BusinessPageState<SupportPage> {
   }
 
   void actionChanged() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         actionConfirmed = false;
         requestId = null;
       });
+    }
   }
 
   void resetEvidence() {
@@ -200,14 +202,19 @@ class _SupportPageState extends BusinessPageState<SupportPage> {
   Future<void> mutate(String action) => perform(() async {
         Json value;
         if (action == 'edit') {
-          if (reply.text.trim().isEmpty || reply.text.length > 6000)
+          if (reply.text.trim().isEmpty || reply.text.length > 6000) {
             throw const FormatException('回复须为 1–6000 字。');
+          }
           value = object(await widget.app.api.post(
               path('/drafts/${draft!['id']}/edit'),
               {'expected_version': draft!['version'], 'reply': reply.text}));
         } else if (action == 'review') {
-          if (!reviewConfirmed || replyDirty || manualDirty || language.isEmpty)
+          if (!reviewConfirmed ||
+              replyDirty ||
+              manualDirty ||
+              language.isEmpty) {
             throw const FormatException('请核对全文和目标语言。');
+          }
           value = object(await widget.app.api
               .post(path('/drafts/${draft!['id']}/review'), {
             'expected_version': draft!['version'],
@@ -230,8 +237,9 @@ class _SupportPageState extends BusinessPageState<SupportPage> {
         final value = object(await widget.app.api.get(
             path('/drafts/${current['id']}/delivery'),
             query: {'expected_version': current['version']}));
-        if (!mounted || dirty || draft?['version'] != current['version'])
+        if (!mounted || dirty || draft?['version'] != current['version']) {
           return;
+        }
         success = await deliverArtifact(widget.app, value, action);
       });
   Future<void> readManual({bool more = false}) async {
@@ -246,14 +254,16 @@ class _SupportPageState extends BusinessPageState<SupportPage> {
   }
 
   Future<void> record() => perform(() async {
-        if (!reviewed || replyDirty || reviewConfirmed || !actionConfirmed)
+        if (!reviewed || replyDirty || reviewConfirmed || !actionConfirmed) {
           throw const FormatException('请先审阅版本并确认人工操作。');
+        }
         if (method.text.trim().length < 2 ||
             method.text.length > 80 ||
             evidence.text.trim().length < 2 ||
             evidence.text.length > 500 ||
-            note.text.length > 1000)
+            note.text.length > 1000) {
           throw const FormatException('方式须为 2–80 字，证据索引 2–500 字，备注最多 1000 字。');
+        }
         final at = awareDate(occurred.text, '人工操作时间', required: true);
         requestId ??= newRequestId();
         await widget.app.api
@@ -473,7 +483,7 @@ class _SupportPageState extends BusinessPageState<SupportPage> {
                   enabled: !busy && !dirty && reviewed, onAction: deliver),
               const SectionTitle('登记原渠道人工操作'),
               const Text('记录原渠道人工操作的自报证据；可填写证据编号或本机文件索引。此登记不等于平台回执。'),
-              FormInput('操作时间（ISO，含时区偏移）', occurred,
+              BusinessDateTimeField('操作时间', occurred,
                   enabled:
                       !busy && reviewed && !replyDirty && !reviewConfirmed),
               FormInput('操作方式', method,
@@ -551,8 +561,9 @@ class _SupportPageState extends BusinessPageState<SupportPage> {
     return PopScope(
         canPop: !dirty && !busy,
         onPopInvokedWithResult: (didPop, _) async {
-          if (!didPop && await leaveEdit() && context.mounted)
+          if (!didPop && await leaveEdit() && context.mounted) {
             Navigator.pop(context);
+          }
         },
         child: page);
   }

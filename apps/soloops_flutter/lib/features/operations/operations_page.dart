@@ -1,3 +1,4 @@
+import '../../ui/business_time_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../../core/app_state.dart';
@@ -64,12 +65,13 @@ class _OperationsPageState extends BusinessPageState<OperationsPage> {
   }
 
   void invalidatePreview() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         preview = null;
         requestId = null;
         scopeDirty = true;
       });
+    }
   }
 
   Json scope() {
@@ -88,8 +90,9 @@ class _OperationsPageState extends BusinessPageState<OperationsPage> {
         maxAge > 720) {
       throw const FormatException('最少件数须为正整数，库存有效小时数须为 1–720。');
     }
-    if (num.tryParse(margin.text) == null)
+    if (num.tryParse(margin.text) == null) {
       throw const FormatException('请填写有效的低毛利百分比。');
+    }
     if (rule == null) throw const FormatException('请先读取当前经营规则。');
     return {
       'start_at': from,
@@ -171,7 +174,9 @@ class _OperationsPageState extends BusinessPageState<OperationsPage> {
   Future<void> runCheck() async {
     if (preview == null) return;
     if (!await confirmAction(
-        context, '保存本次运营检查', '将保存检查结果和候选事项。候选须批准后才成为本地待办。')) return;
+        context, '保存本次运营检查', '将保存检查结果和候选事项。候选须批准后才成为本地待办。')) {
+      return;
+    }
     await perform(() async {
       requestId ??= newRequestId();
       final result = object(await widget.app.api.post(base('/runs'), {
@@ -253,9 +258,9 @@ class _OperationsPageState extends BusinessPageState<OperationsPage> {
                       setState(() => channel = v);
                       load(reset: true);
                     }),
-          FormInput('开始时间（包含，须含时区偏移）', start, enabled: !busy),
-          FormInput('结束时间（不包含，须含时区偏移）', end, enabled: !busy),
-          FormInput('业务时区', zone, enabled: !busy),
+          BusinessDateTimeField('开始时间（包含）', start, zone: zone, enabled: !busy),
+          BusinessDateTimeField('结束时间（不含终点）', end, zone: zone, enabled: !busy),
+          BusinessZoneField('业务时区', zone, enabled: !busy),
           FormInput('币种', currency, enabled: !busy),
           const Text('时间示例：2026-10-11T09:00:00+08:00；Z 表示 UTC。'),
           const SectionTitle('应用的经营规则'),

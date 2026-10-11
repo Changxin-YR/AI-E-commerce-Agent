@@ -21,7 +21,7 @@ class ImportGroupPage extends StatefulWidget {
 
 class _ImportGroupPageState extends BusinessPageState<ImportGroupPage> {
   late final repository = ImportRepository(widget.app.api, widget.app.shopId!);
-  Json? group;
+  Json? group, importedManifest;
   PreparedCsv? prepared;
   CsvSplitJob? job;
   StreamSubscription<Json>? subscription;
@@ -69,6 +69,7 @@ class _ImportGroupPageState extends BusinessPageState<ImportGroupPage> {
             throw const FormatException('原文件的名称、指纹或分片与当前组不一致。请选择建组时的原文件。');
           }
           prepared = result;
+          importedManifest = null;
           success =
               '本机文件已就绪：${result.manifest['total_rows']} 条记录，${result.parts.length} 片。';
         } finally {
@@ -79,9 +80,9 @@ class _ImportGroupPageState extends BusinessPageState<ImportGroupPage> {
         }
       });
   Future<void> create() => perform(() async {
-        if (prepared == null) return;
-        final value =
-            await repository.createGroup(widget.options, prepared!.manifest);
+        final manifest = prepared?.manifest ?? importedManifest;
+        if (manifest == null) return;
+        final value = await repository.createGroup(widget.options, manifest);
         if (mounted) group = value;
       }, message: '导入组已建立，请逐片上传、预览并确认。');
   Future<void> inspectBatch(int id) async {
@@ -130,7 +131,9 @@ class _ImportGroupPageState extends BusinessPageState<ImportGroupPage> {
 
   Future<void> revoke() async {
     if (!await confirmAction(
-        context, '撤销整个导入组', '将撤销本组所有分片及其衍生来源，按剩余有效批次恢复其他版本。')) return;
+        context, '撤销整个导入组', '将撤销本组所有分片及其衍生来源，按剩余有效批次恢复其他版本。')) {
+      return;
+    }
     await perform(() async {
       final result = await repository.revokeGroup(group!);
       if (mounted) {
@@ -140,8 +143,59 @@ class _ImportGroupPageState extends BusinessPageState<ImportGroupPage> {
     }, message: '整组已撤销。');
   }
 
+  Future<void> pickManifest() => perform(() async {
+        final file = await widget.app.device.pickFile();
+        if (file == null || !mounted) return;
+        final bytes = file['bytes'] as Uint8List;
+        if (bytes.length > 65536) {
+          throw const FormatException('分片清单不能超过 64 KiB。');
+        }
+        final raw = jsonDecode(utf8.decode(bytes));
+        if (raw is! Map) throw const FormatException('请选择 JSON 分片清单。');
+        final value = object(raw);
+        final parts = rows(value['parts']);
+        final fingerprint = RegExp(r'^[0-9a-f]{64}$');
+        if (value['format'] != 'soloops-split-v1' ||
+            value['source_filename'] is! String ||
+            (value['source_filename'] as String).isEmpty ||
+            (value['source_filename'] as String).length > 240 ||
+            !fingerprint.hasMatch('${value['source_sha256']}') ||
+            parts.isEmpty ||
+            parts.length > 20 ||
+            value['total_rows'] is! int ||
+            (value['total_rows'] as int) < 1 ||
+            (value['total_rows'] as int) > 40000) {
+          throw const FormatException('清单格式、指纹、总记录数或分片数无效。');
+        }
+        var total = 0;
+        final names = <String>{};
+        for (final part in parts) {
+          final name = part['filename'];
+          if (name is! String ||
+              name.length > 120 ||
+              !RegExp(r'^[^/\\]+\.csv$').hasMatch(name) ||
+              !names.add(name) ||
+              !fingerprint.hasMatch('${part['sha256']}') ||
+              part['rows'] is! int ||
+              (part['rows'] as int) < 1 ||
+              (part['rows'] as int) > 2000 ||
+              part['bytes'] is! int ||
+              (part['bytes'] as int) < 1 ||
+              (part['bytes'] as int) > 2097152) {
+            throw const FormatException('清单分片的文件名、记录数、大小或指纹无效。');
+          }
+          total += part['rows'] as int;
+        }
+        if (total != value['total_rows']) {
+          throw const FormatException('分片记录总数与清单不一致。');
+        }
+        prepared = null;
+        importedManifest = value;
+        success = '清单已读取，请核对来源并建组，再选择对应分片。相同清单与来源可回读已建组。';
+      });
   Future<void> saveManifest() => perform(() async {
-        final manifest = group?['manifest'] ?? prepared?.manifest;
+        final manifest =
+            group?['manifest'] ?? prepared?.manifest ?? importedManifest;
         final saved = await widget.app.device.saveFile(
             'manifest.json',
             Uint8List.fromList(utf8
@@ -151,7 +205,9 @@ class _ImportGroupPageState extends BusinessPageState<ImportGroupPage> {
   @override
   Widget build(BuildContext context) {
     final g = group;
-    final manifest = g == null ? prepared?.manifest : object(g['manifest']);
+    final manifest = g == null
+        ? (prepared?.manifest ?? importedManifest)
+        : object(g['manifest']);
     final source = g == null ? widget.options : object(g['options']);
     var start = 1;
     final partWidgets = <Widget>[];
@@ -214,6 +270,10 @@ class _ImportGroupPageState extends BusinessPageState<ImportGroupPage> {
                 onPressed: busy ? null : pickSource,
                 icon: const Icon(Icons.attach_file),
                 label: Text(g == null ? '选择原始 CSV' : '选择同一原文件以恢复')),
+          if (g == null && widget.groupId == null)
+            OutlinedButton(
+                onPressed: busy ? null : pickManifest,
+                child: const Text('选择已有 manifest.json 清单')),
           if (job != null) ...[
             LinearProgressIndicator(
                 value: progress == null || progress!['totalBytes'] == 0

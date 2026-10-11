@@ -16,6 +16,7 @@ class StatementReview(Base):
     shop_id: Mapped[int] = mapped_column(ForeignKey("shops.id"), index=True)
     data_identity: Mapped[str] = mapped_column(String(16))
     channel: Mapped[str] = mapped_column(String(20))
+    kind: Mapped[str] = mapped_column(String(16), default="fees", server_default="fees")
     status: Mapped[str] = mapped_column(String(16), default="active")
     version: Mapped[int] = mapped_column(default=1)
     content_version: Mapped[int] = mapped_column(default=1)

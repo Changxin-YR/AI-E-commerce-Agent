@@ -1,106 +1,53 @@
 # 鸿蒙完整业务版 · 实时进度
 
-更新：2026-10-11。工作区 `.local/worktrees/mobile-m0a`，分支 `feat/soloops-mobile-m0b`。目标：按V1.3连续完成R2全部业务，之后集中模拟器自查与联调。当前提交精确SHA由接续消息给出。
+更新：2026-10-11。实际工作区 `.local/worktrees/mobile-m0a`，分支 `feat/soloops-mobile-m0b`。执行 `docs/requirements/SoloOps-Mobile-V1.3.md`，21功能标识/149条API引用，H14补充6个路由操作另见 `harmony-api-supplement.md`。当前提交精确SHA由接续消息和context-memory/HARMONY.md给出。
 
-## 执行依据
+## 当前结果
 
-- 主计划 `docs/requirements/SoloOps-Mobile-V1.3.md`；范围21功能标识/149条API引用，19个R2业务路由+登录+B1。
-- 当前仅实施鸿蒙，API22模拟器可运行即可；Android、微信仅保留方案。
-- 用户要求先全部功能实现，再集中自查与联调；各模块提交用于上下文保存，不是停工门槛。
-- 上下文接近满时自主保存、提交、推送并创建接续对话；单一开发对话独占写入。
-- 当前按功能代码实现状态记录；没有业务构建/测试结论。原业务库保留，最终使用隔离MySQL/API及合成数据。
+H01–H21核心业务源码已覆盖，集中验证已经开始。H11–H20全部新业务页、H02冲突/onboarding、H04独立manifest恢复和H21时区/日期/导航/离开保护均已写入。Dart无问题，17Flutter测试、12CSV跨端对照、97后端定向测试、Ruff/mypy180 app文件和完整业务HAP构建通过。完整表见 `harmony-r2-coverage.md`，精确证据见 `harmony-validation.md/json`。
 
-## 目前源码覆盖
+**API22当前业务包尚未安装运行，完整卖家旅程与用户联调仍待做。** 不将历史M0技术证据当作本次业务结论。用户要求持续推进，不等待逐包批准或CI；Android与微信本轮仅方案，一次仅一台模拟器。
 
-完整表见 `harmony-r2-coverage.md`。
+## 下一步直接执行
 
-| 范围 | 当前状态 | 后续 |
-|---|---|---|
-| 移动会话/系统桥接/网络 | 已写入源码 | 未集中验证 |
-| H01 登录 | 核心表单与会话恢复/退出已写入 | 未验证 |
-| H02 资料/店铺 | 表单、建店/切店、onboarding读取 | 冲突回读、引导细节待补 |
-| H04 导入 | 全链核心源码已写入 | 未构建/业务验证；独立manifest导入按契约核对 |
-| H03 首页/运营/待办 | 核心表单、状态动作、证据和复检已写入 | 全路由与业务日期待补；未验证 |
-| H05 Agent/B1 | 模板/目标、上下文、预算授权、执行控制、B1两次节点审批/结果深链、历史、预授权增撤/使用/恢复 | 源码已写，未静态/运行验证 |
-| H06 Listing | 商品事实、生成、编辑版本、差异、审批、内部生效、当前版本复制/CSV保存分享 | 源码已写，未验证 |
-| H07 客服 | 手工消息→导入审阅、政策版本、消息/订单/政策、回复/接管/审阅/导出、人工证据与历史 | 源码已写，未验证 |
-| H08 库存 | 身份/渠道/SKU/时效、快照/来源、分页与低库存待办关联 | 源码已写，未验证 |
-| H09 分析 | 范围/受控问数、金额证据、历史成本录入撤销、持久报告/重算/核对待办 | 源码已写，未验证 |
-| H10 跨店总览 | 店铺/平台/市场/币种/日期/对比、日周30日摘要、店铺金额与来源、保存/历史/清除 | 源码已写，未验证 |
-| H11–H20 | 待继续实现；H16授权部分已在Agent内实现 | 下一项H11利润测算，然后费用、账单/核对/回款、规则、调度、商品质量/修订、外发 |
-| H21 共用 | 五入口、路由注册、表单、来源、业务证据、文件交付、客服离开保护 | 业务时区/日期、全部剩余路由、集中异常/布局检查 |
-| 集中自查/API22运行 | 尚未开始 | 全业务源码覆盖后进行 |
+1. 读取AGENTS顶部、V1.3、本账本和validation。复用现有worktree/分支；业务页面已完成核心实现，不再从H11重新开发。
+2. 新隔离MySQL已经运行：Docker `soloops-harmony-r2-mysql`，回环3315，数据库 `soloops_harmony_r2_test`，head `b42e83f516c0`。配置只在忽略目录 `.local/mobile-business/test.env` 与 `mysql.env`，不得输出或提交。此容器是tmpfs，停止会丢失合成测试库内容；只保存合成测试数据。现有业务库均未修改。编码/单测期间尚无隔离HTTP API。
+3. 启动独立API（建议新的回环端口如18443 HTTPS沿用本地测试CA，或debug回环HTTP），使用3315数据库、合成账号/样本、明确关闭实际模型/邮件/平台写入。模型/外发使用现有测试替身；需要worker验证时仅隔离调度。先保留pytest所得合成状态或按测试准备脚本安全重建本库，不能连接其他数据库。
+4. 启动DevEco Device Manager已有API22模拟器，RAM2048MiB；不并行开Android。API22历史可安装未签名x64调试HAP。当前路径 `apps/soloops_flutter/ohos/entry/build/default/outputs/default/entry-default-unsigned.hap`；SHA256 `32a7eb1c3ccca3207113f76d5f4c88a962b056c9dfcd95eec32f80b204f52c58`，103666758 bytes。HDC安装、HTTPS/HTTP映射、Asset登录/会话恢复/退出先验证。构建脚本 `scripts/mobile/build_ohos_probe.ps1`。
+5. 用真实移动界面走完整卖家链：初始化、模板/导入映射审阅纠错、分片/独立清单恢复、巡检/待办复检、Agent/B1双审批、Listing交付、客服政策/审阅/人工凭据、库存/分析/总览、利润/费用/账单/订单审阅/回款、规则授权、调度通知、质量/本地修订、替身外发。核对数据库真实结果，记录每项证据并修复失败。
+6. 专项：未知写入同UUID恢复、Agent进行中的暂停取消、版本冲突与来源清除、跨店来源/深链、前后台和重启、导出字节/分享消费时机、大字体/横屏/深浅色/长列表。新增EditGuard已覆盖费用/回款/规则/调度编辑/商品修订/外发/资料等，其他表单逐项在端上验证。对新发现的缺口继续实现。
+7. 当前仅97项受影响后端定向测试，不是全后端回归。后续按实际接口/端测问题补充必要验证；最后向用户交付可操作测试入口与联调说明。无需等CI。
 
-## 下一步直接做
+## 本轮源码（H11–H21）
 
-1. 读取AGENTS顶部、V1.3与本账本；复用当前worktree与分支继续。H05–H10源码已写，不再从旧只读列表起步。
-2. 从H11利润测算开始，读取Web的Profit视图及API/types、后端schema，完整落地场景输入/编辑、成本/税费/汇率、结果解释、场景历史及版本。随后H12费用与映射、H13账单、H14订单核对、H15结算回款。
-3. 接着H16经营规则管理（有限次授权已在 `agent/authorizations_panel.dart`）、H17定时/通知、H18商品质量、H19本地修订、H20测试外发；逐一注册业务路由和“我的”工具入口。
-4. 当前已注册：/imports、/（task/run）、/settings、/agent、/listings、/support、/inventory、/analytics、/overview。B1的分析和Listing结果已有目标页。剩余深链目标随对应模块接入。
-5. 全部业务实现后统一：Dart analyze/test、HAP构建、移动认证迁移/Web兼容、定向业务测试、CSV分片逐字节对照、API22完整卖家旅程、修复和用户联调。没有本轮业务端测结论。
-6. H21日期仍使用显式ISO偏移输入/API原时间。Overview按业务时区日历日期手填，快捷摘要从明确结束日向前1/7/30天。需补全友好日期选择、业务时区显示与合法输入反馈；不能采用设备时区替代业务时区。缓存timezone-0.10.0的SDK声明异常，可核对正确官方包或ArkTS Intl。
-7. 集中检查特别关注：Agent开始/节点动作与暂停取消并发、预算恢复对话框输入反馈、未知写入同请求ID恢复、跨店来源回读、客服未保存正文/自报证据的返回/切店/切入口、来源失效后回读、长列表和大字体。历史M0通过不代表这些业务通过。
+- `features/profit/`：最多5方案，9类固定或比例费用，空白未知/明确零、成本依据、手工汇率预览确认与BigInt舍入、结果/敏感性/保本原因、幂等存档/历史/清除。
+- `features/finance/`：费用增改/精确金额/原订单来源选择/撤销/清除；费用规则预览摘要/保存与版本历史；账单费用核对、订单销售口径与完整差异来源；通用版本审阅；回款手工登记/核对/窗外与未知证据/历史。未知写入保存原body和request_id用于核对。
+- H14后端：schemas/services/api `order_statement_reviews.py`，StatementReview.kind和repository分页域过滤；迁移b42e83f516c0。原费用审阅限制fees，新订单为orders，原清除/依赖和UUID版本架构共用。默认旧行fees，有orders时拒绝降级。6个接口操作见supplement。
+- `features/rules/`：经营规则范围/预算/依据/经营文本、版本增改/启停/重置/恢复，有限次授权沿用Agent页。
+- `features/schedules/`：计划周期/时区/免打扰/范围/规则、增改/启停/撤销/立即运行、通知已读/历史/深链/实际周期。
+- `features/products/`：质量范围预览/持久报告/来源/清除；本地修订批量名称/事实/差异/审批/应用结果/撤回/清除与导入批次深链。
+- `features/outbound/`：通道验证/配置状态、运营摘要、邮件全文/地址/内容hash、编辑/审批/限次授权、单次提交/回执核对/人工收件。代码已接API，但本轮未发真实邮件。
+- `core/business_time.dart` / `ui/business_time_fields.dart`：IANA时区、日期/时间选择、严格溢出校验、DST重复选择/缺失拒绝；FactLine业务时区显示、原值tooltip。依赖timezone0.10.1（2025b），Dart3.6.2解析和编译通过。
+- `ui/edit_guard.dart` / AppState：当前路由未保存输入/未知请求提示、返回/切店/深链联动；恢复前台核对会话、保留本地输入。ApiClient连接后再次检查generation，401失效在途请求。
+- H02：资料冲突/未知写入回读替换、onboarding下一步。H04：独立manifest验证/建组恢复/逐片选择；系统文件过滤增加JSON。
+- `product_app.dart`注册21个路径（包含fee-rules与订单核对别名），原19业务路由均可到达；五主入口与工具入口齐全。
 
-## 本轮新增源码（H05–H10）
+## 此前源码（已合入当前基线）
 
-- `features/agent/agent_page.dart`：10种模板、自然语言目标、技能与模型费率状态、业务范围/规则、商品/消息分页选择、完整事实/订单/政策上下文、各类模型数据授权、步数/时长/USD字符串预算。逐节点推进到审批或终态；控制与执行循环有epoch，批准后继续执行期间可暂停/取消。保存开始请求ID，未知启动结果可核对同次请求；失败后版本回读。
-- `agent_run_view.dart`：执行范围/来源/费用/步骤历史、运营候选、问数解释、Listing/客服候选。B1展示金额与成本口径、缺口、独立参数遗漏；分析存档与Listing草稿各自审批；verify输出分别深链。费用字符串原样保留。
-- `authorizations_panel.dart`：当前daily候选创建1–20次、1–168小时授权，按预览version绑定；读取/分页/指定ID，使用授权、按范围运行、撤销、消耗历史与新增候选撤回。
-- `features/listings/listings_page.dart`：商品分页、原事实与来源、草稿生成、完整前后差异、修改另存/历史恢复、版本审批、本地生效、当前有效版本复制/CSV保存分享。
-- `features/support/`：SupportPage替换主入口旧读取列表；消息/草稿历史、全订单关联确认与政策选择、本地和AI候选入口、回复编辑/人工接管/存档重开、全文与目标语言审阅、导出与人工交付自报证据/游标历史。PoliciesPage支持政策新版本和清除；ManualMessagePage以CSV原字节进入ImportBatchPage完成审阅、预览与提交。
-- `features/inventory/inventory_page.dart`：快照身份/渠道/时效/SKU、50条分页、来源详情、低库存待办按原对象关联及逐页查找；未知库存与未检查保留语义。
-- `features/analytics/`：本地calculate/ask、范围与成本口径、分析金额/来源、source revision刷新、持久报告保存/回读/重算、核对待办创建/完成/重开、订单行成本凭据upsert/revoke及历史、expected_version/revision/request_id。
-- `features/overview/overview_page.dart`：最多20店、平台/市场/币种筛选，显式业务日期与对比期，日周30日快捷窗口；分币种汇总、逐店本期/对比金额/库存/消息/待办/来源；预期修订保存、游标历史、回读/重算/清除。
-- `ui/business_scope.dart` / `content_evidence.dart`：业务范围表单与B1精确7天窗口；商品/政策/回复/金额证据组件。SKU与订单行每页50，来源每页30且展开时才枚举。SourceEvidence支持明确shopId和行切换epoch，供跨店回读。
-- `ui/reviewed_delivery.dart`：每次经服务端delivery接口核对版本，再调用Clipboard/ArkTS保存或分享原CSV；显示系统接管语义。
-- `ui/business_widgets.dart`：awareDate从operation_task_page迁移为公共函数，其他既有待办行为不变。
-- `core/app_state.dart` / `product_app.dart` / `account_pages.dart`：客服未保存修改保护覆盖系统返回、底部入口与切店/退出；AI/客服已换为正式页面，注册6个新增路由和工具入口。
-- 本轮没有新增依赖；只运行Dart格式化（已修复发现的语法问题）与git diff --check。尚未analyze/test/HAP构建/设备运行。
-
-
-## 本轮新增源码（H04/H03）
-
-- `lib/features/imports/import_repository.dart`：原16个导入相关路由封装；所有写入携带原业务version。
-- `imports_page.dart`：身份/类型/渠道/时区/导出时间、CSV/XLSX选择、CSV/XLSX模板下载、批次历史、分组游标。
-- `import_batch_page.dart`：字段映射、别名/候选预设、个人模板、关键字段语义审阅、分页源行/旧值/新值、逐行修正、预览/提交、撤销/清除、错误文件保存分享。映射/修正使审阅与更新确认失效。
-- `csv_split.dart`：独立isolate、可取消、进度、TransferableTypedData；严格跨块UTF-8、逻辑CSV记录、40MiB/40000记录/20片、单片2MiB/2000行、字段2000字符/64列、BOM/CRLF、SHA-256。
-- `import_group_page.dart`：原文件拆分/建组、清单保存、同一文件指纹恢复、逐片上传/打开、已有分片选择、覆盖/重叠回读、整组撤销。
-- `features/operations/operations_page.dart`：规则读取、范围表单、巡检预览与expected_preview_hash、request_id保存与未知结果同次核对、任务分页（50条）、历史/详情/来源。
-- `operation_task_page.dart`：approve/reject/ignore/defer/complete/reopen/edit/record_evidence/wait_source/recheck；snapshot/业务进展、版本/证据/操作历史；完成核对与业务已解决分开。
-- `features/workbench_page.dart`：三视图、身份/渠道/类型/分组、游标、recent_runs、onboarding、详情跳转。AI与客服主入口已由H05/H07正式页面替换。
-- `core/business_navigation.dart`：注册表；`product_app.dart`随后已扩展至H10的9个路径。跨店query不匹配时要求先切店，来源组件另支持显式shopId回读。
-- `ui/business_widgets.dart` / `source_evidence.dart`：可用表单、异步反馈、来源字段按analytics/sources真实回读。FormInput支持enabled；PageBody支持空列表下拉刷新。
-- 依赖新增crypto3.0.5、typed_data1.4.0，离线pub已解析，BSD声明保存licenses。只运行Dart格式化，未运行analyze/test或HAP构建。
-
-## 之前已有基础（仍未业务验证）
-
-- `backend/app/api/routes/mobile_auth.py`：移动login/session/logout/logout-all，不透明Bearer，复用会话hash；账号锁定+IP20次/分钟，绝对有效期。
-- `services/auth.py`：设备client_type、session_id、issued/last_used、当前设备/全部吊销；密码重置沿用同表会话删除。
-- dependencies/middleware：拒绝Cookie+Bearer混用；设备Bearer进入原服务；Web Cookie仍需CSRF和来源校验。Web session/logout拒绝Bearer。
-- `migrations/versions/a31e72d405bf_mobile_sessions.py`：接d93f6b210ac4，加列迁移。未对任何库执行。
-- `lib/core/api_client.dart`：45秒截止、8MiB响应、原字节分块上传、拒绝重定向、401、generation、未知写入不自动重放。debug仅回环HTTP；现有M0证书可注入loopback HTTPS。
-- AppState / DeviceBridge：账号/店铺、Asset持久会话、preferences地址/店铺、文件选择40MiB、保存分享。ArkTS API22类型/UTD仍待业务构建核对；share dismiss删除临时文件的消费时机待联调。
-- `main()`已改ProductApp，旧诊断SoloOpsApp保留历史测试；新业务测试应覆盖ProductApp。
+8abfb7a：H05–H10 Agent/B1、有限次授权、Listing、客服/政策/人工消息、库存、分析/成本、跨店总览；bfd2286：H04导入全核心与H03工作台/巡检/待办；58c4b44：移动Bearer认证/迁移、ArkTS桥接、Dart网络/登录/资料/店铺。审阅、预算、权限和来源失效沿用服务层。当前测试已包含这些源码编译，但不等同于端上业务通过。
 
 ## 环境与保护
 
-实际绝对工作区：
-`C:/Users/27363/Desktop/AIEcommerceAgent/.local/worktrees/mobile-m0a`。
-保存项目路径 `C:/Users/27363/Desktop/AI E-commerce Agent` 已过时。所有shell显式workdir；普通沙箱git可能报“must be run in a work tree”，用户已授权require_escalated在实际worktree继续。
+实际绝对路径 `C:/Users/27363/Desktop/AIEcommerceAgent/.local/worktrees/mobile-m0a`。保存项目路径 `C:/Users/27363/Desktop/AI E-commerce Agent` 已过时；所有shell显式workdir。实际worktree在沙箱写目录外，用户已授权使用require_escalated继续；普通沙箱git可能报 must be run in a work tree。
 
-- Flutter OH固定3.27.5-ohos-1.0.7 / Dart3.6.2，工具链 `.local/toolchains/flutter-oh-api22`。
-- PUB_CACHE `C:/Users/27363/Desktop/max/pub-cache`，PUB_HOSTED_URL `https://pub.flutter-io.cn`。Dart可直接调用SDK bin/cache/dart-sdk/bin/dart.exe。
-- Python主仓库 `backend/.venv/Scripts/python.exe`。SDK/构建 `scripts/mobile/build_ohos_probe.ps1`。本机SDK24编译，以API22运行判断兼容。
-- HDC在DevEco/sdk/default/openharmony/toolchains/hdc.exe；运行时优先Device Manager已有实例22，CLI冷启动曾挂住。
-- **保护本机未提交配置**：`apps/soloops_flutter/ohos/build-profile.json5`（签名）、`apps/soloops_weapp/project.config.json`（AppID）。不输出、不覆盖、不提交。
-- 模拟器一次一台，编码时关闭。鸿蒙22与Android均已关闭；22 RAM恢复2048MiB。DevEco可能保持打开。字体滑块1；浅色已切换，旋转锁ON在业务安装时顺手核对。
-- 旧M0 HTTPS夹具PID16356/44528已停止，HDC映射为空。本轮未启动新服务/设备。
-- 付费模型、真实邮件、真实平台写入不作为此次开发依赖；最终联调使用隔离替身和合成数据。
+- **本机未提交配置保护**：`apps/soloops_flutter/ohos/build-profile.json5`（签名）和 `apps/soloops_weapp/project.config.json`（AppID），不输出/覆盖/提交。
+- Flutter OH3.27.5-ohos-1.0.7/Dart3.6.2，工具链为本worktree内 `.local/toolchains/flutter-oh-api22`，不要误用主仓库同名路径。PUB_CACHE `C:/Users/27363/Desktop/max/pub-cache`，镜像pub.flutter-io.cn。
+- Python `C:/Users/27363/Desktop/AIEcommerceAgent/backend/.venv/Scripts/python.exe`。SDK24编译、API22运行；HDC `C:/Program Files/Huawei/DevEco Studio/sdk/default/openharmony/toolchains/hdc.exe`。
+- 当前鸿蒙22/Android均关闭，HDC映射在本轮没有新增；DevEco可能开着。优先Device Manager已有22，CLI冷启曾挂住。
+- 旧M0 HTTPS夹具已停止；本轮新建的只有3315合成MySQL。真实模型、真实邮件、实际平台写入为0。
+- 本机证据 `.local/mobile-business/`；最后原始日志文件名见validation.json。不提交完整日志、配置、数据库或HAP。
+- 历史API22 M0技术证据 `.local/mobile-m0b/20261011-ohos-acceptance/`，只供操作参考。
 
-## 历史技术证据
+## 保存与接续
 
-Android历史技术补齐016a1a5。鸿蒙M0曾在API22最终HAP通过26项新增断言和10项基础回归；HAP SHA256 `fc6a6ceed0bcdc4d35229943b4ddc9769276aa782fdef708f757fec1f545c742`。证据 `.local/mobile-m0b/20261011-ohos-acceptance/` 和 `.local/mobile-m0b/20261011T082953Z-ohos-emulator/results.json`。这些不代表当前业务版已验证。
-
-## 接续保存规则
-
-保存实现中代码时明确未测试状态和下一精确入口，提交/推送后给出精确SHA，更新context-memory；创建接续对话后旧对话停止工作区写入。持续沿用V1.3，不因新对话重置需求。
+上下文接近满时自主更新文档、提交推送任务文件、更新独立context-memory/HARMONY.md后创建接续聊天，给精确SHA。该记忆checkout `C:/Users/27363/Desktop/AIEcommerceAgent/.context-memory` 的README.md有用户MM改动，只用commit --only提交HARMONY.md。新对话唯一写入；创建之后旧对话停止工作区写入。

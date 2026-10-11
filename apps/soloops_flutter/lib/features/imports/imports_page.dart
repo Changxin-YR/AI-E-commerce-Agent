@@ -1,3 +1,4 @@
+import '../../ui/business_time_fields.dart';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
@@ -107,8 +108,9 @@ class _ImportsPageState extends BusinessPageState<ImportsPage> {
   }
 
   Future<void> upload() => perform(() async {
-        if (!(formKey.currentState?.validate() ?? false) || file == null)
+        if (!(formKey.currentState?.validate() ?? false) || file == null) {
           return;
+        }
         final bytes = file!['bytes'] as Uint8List;
         if (bytes.length > (catalog?['max_bytes'] as int? ?? 2097152)) {
           throw const FormatException(
@@ -162,9 +164,9 @@ class _ImportsPageState extends BusinessPageState<ImportsPage> {
                   help: '平台别名为映射候选，请按自己的报表核对。'),
               ChoiceField('数据身份', identity, importIdentities,
                   busy ? null : (v) => setState(() => identity = v)),
-              FormInput('文件时间使用的时区', timezone, enabled: !busy),
-              FormInput('导出时间（可选，须含时区偏移）', exportedAt,
-                  enabled: !busy, required: false),
+              BusinessZoneField('文件时间使用的时区', timezone, enabled: !busy),
+              BusinessDateTimeField('导出时间（可选）', exportedAt,
+                  zone: timezone, enabled: !busy, required: false),
               const Text('时间示例：2026-10-11T09:00:00+08:00'),
             ])),
         if (kind == 'statements')

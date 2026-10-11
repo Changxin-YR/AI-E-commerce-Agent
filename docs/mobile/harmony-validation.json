@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-11",
+  "phase": "static-unit-build",
+  "business_api22": "not_run",
+  "dart_analyze": "passed",
+  "flutter_tests": 17,
+  "csv_python_dart_cases": 12,
+  "backend_targeted_tests": 97,
+  "backend_duration_seconds": 64.18,
+  "mypy_app_files": 180,
+  "migration_head": "b42e83f516c0",
+  "test_database": "127.0.0.1:3315/soloops_harmony_r2_test",
+  "hap": {
+    "path": "apps/soloops_flutter/ohos/entry/build/default/outputs/default/entry-default-unsigned.hap",
+    "bytes": 103666758,
+    "sha256": "32a7eb1c3ccca3207113f76d5f4c88a962b056c9dfcd95eec32f80b204f52c58",
+    "mode": "debug unsigned x64",
+    "compile_sdk": 24,
+    "runtime_target": 22
+  },
+  "logs": [
+    "analyze-final.txt",
+    "flutter-final.txt",
+    "backend-final.txt",
+    "hap-build-final.txt",
+    "csv-diff-3094f9cb/results.json"
+  ]
+}

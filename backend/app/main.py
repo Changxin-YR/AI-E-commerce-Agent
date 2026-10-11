@@ -22,6 +22,7 @@ from app.api.routes import (
     listings,
     mobile_auth,
     operations,
+    order_statement_reviews,
     outbound,
     overview,
     product_edits,
@@ -90,6 +91,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(fee_rules.router, prefix="/api")
     application.include_router(statements.router, prefix="/api")
     application.include_router(statement_reviews.router, prefix="/api")
+    application.include_router(order_statement_reviews.router, prefix="/api")
     application.include_router(settlements.router, prefix="/api")
 
     @application.get("/api/health/live", tags=["健康检查"])

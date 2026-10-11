@@ -1,3 +1,4 @@
+import '../../ui/business_time_fields.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../ui/business_widgets.dart';
@@ -39,12 +40,13 @@ class _OrderCostPageState extends BusinessPageState<OrderCostPage> {
   }
 
   void invalidate() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         confirmed = false;
         requestId = null;
         pendingAction = null;
       });
+    }
   }
 
   Future<void> read() async {
@@ -69,7 +71,9 @@ class _OrderCostPageState extends BusinessPageState<OrderCostPage> {
   Future<void> save(String action) async {
     if (action == 'revoke' &&
         !await confirmAction(
-            context, '撤销订单行历史成本', '当前成本凭据将撤销，版本历史保留，采用该依据的分析需重算。')) return;
+            context, '撤销订单行历史成本', '当前成本凭据将撤销，版本历史保留，采用该依据的分析需重算。')) {
+      return;
+    }
     await perform(() async {
       Json? content;
       if (action == 'upsert') {
@@ -127,7 +131,7 @@ class _OrderCostPageState extends BusinessPageState<OrderCostPage> {
               enabled: !busy && data!['source_current'] == true),
           FormInput('凭据索引', evidence,
               enabled: !busy && data!['source_current'] == true),
-          FormInput('凭据时间（ISO，含时区偏移）', at,
+          BusinessDateTimeField('凭据时间', at,
               enabled: !busy && data!['source_current'] == true),
           CheckboxListTile(
               value: confirmed,

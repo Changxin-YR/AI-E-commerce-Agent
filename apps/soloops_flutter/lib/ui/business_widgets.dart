@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../core/app_state.dart';
 import 'common.dart';
+import '../core/business_time.dart';
+import 'business_time_fields.dart';
 
 class ChoiceField extends StatelessWidget {
   const ChoiceField(this.label, this.value, this.choices, this.onChanged,
@@ -17,6 +19,7 @@ class ChoiceField extends StatelessWidget {
         key: ValueKey('$label:$value:${choices.keys.join('|')}'),
         value: choices.containsKey(value) ? value : null,
         isExpanded: true,
+        itemHeight: null,
         decoration: InputDecoration(
             labelText: label, helperText: help, helperMaxLines: 6),
         items: choices.entries
@@ -39,12 +42,39 @@ class FactLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
-      child: SelectableText(
-          '$label：${value == null || value == '' ? '未知' : value}'));
+      child: Tooltip(
+          message: value == null ? '' : '$value',
+          child: SelectableText('$label：${businessTimeText(context, value)}')));
 }
 
 /// Shared request lifecycle; domain pages supply their own forms and details.
-abstract class BusinessPageState<T extends StatefulWidget> extends State<T> {
+abstract class BusinessPageState<T extends StatefulWidget> extends State<T>
+    with WidgetsBindingObserver {
+  DateTime? _pausedAt;
+  bool resumedData = false;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) _pausedAt = DateTime.now();
+    if (state == AppLifecycleState.resumed &&
+        _pausedAt != null &&
+        DateTime.now().difference(_pausedAt!) > const Duration(minutes: 1) &&
+        mounted) {
+      setState(() => resumedData = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   bool busy = false;
   String? error, success;
   Future<void> perform(Future<void> Function() action,
@@ -57,7 +87,12 @@ abstract class BusinessPageState<T extends StatefulWidget> extends State<T> {
     });
     try {
       await action();
-      if (mounted) setState(() => success = message ?? success);
+      if (mounted) {
+        setState(() {
+          success = message ?? success;
+          resumedData = false;
+        });
+      }
     } catch (e) {
       if (mounted) setState(() => error = '$e');
     } finally {
@@ -66,6 +101,7 @@ abstract class BusinessPageState<T extends StatefulWidget> extends State<T> {
   }
 
   List<Widget> get feedback => [
+        if (resumedData) const Text('页面保留离开前的数据和输入，可刷新当前记录核对最新状态。'),
         if (busy) const LinearProgressIndicator(),
         if (error != null) Notice(error!),
         if (success != null)
@@ -84,9 +120,10 @@ String? awareDate(String value, String label, {bool required = false}) {
     if (required) throw FormatException('请填写$label。');
     return null;
   }
-  if (!RegExp(r'(Z|[+-]\d{2}:\d{2})$').hasMatch(value.trim()) ||
-      DateTime.tryParse(value.trim()) == null) {
-    throw FormatException('$label须包含时区偏移，例如 2026-10-11T09:00:00+08:00。');
+  try {
+    BusinessTime.instant(value);
+  } on FormatException catch (e) {
+    throw FormatException('$label：${e.message}');
   }
   return value.trim();
 }
