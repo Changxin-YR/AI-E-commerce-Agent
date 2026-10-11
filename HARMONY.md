@@ -1,50 +1,32 @@
-# SoloOps 鸿蒙 R2 · 跨账号接续记忆
+# SoloOps 手机三端 · 跨账号接续记忆
 
-## 最新接续检查点（2026-10-11）
+## 最新接续检查点（2026-10-11 23:45，M0-C）
 
-- 鸿蒙分支最新提交已推送：`58f06d8456deb8c1a93b66aefacfa4267e09a0f8`。先读该SHA的docs/mobile/harmony-handoff.md顶部更新；下面账号切换记录为历史基线。
-- 已恢复停止后清空的专用tmpfs库：确认0张表后导入原已校验备份；费用1138仍v1/2.3456，批次1181–1187和迁移版本恢复。未提交本轮费用修订。
-- 合成API现在在本机127.0.0.1:18081；设备仍18080，使用hdc rport tcp:18080 tcp:18081。18080属于其他项目nx-keycloak，不停止它。
-- 固定HAP覆盖安装、Asset会话/店铺918/工作台恢复均通过。随后API22再次离线，模拟器日志出现主机空闲268MB与std::bad_alloc。用户已被询问资源安排；不要擅自停止其他任务Android或Docker。
-- HDC助手修复退出码0但[Fail]的错误检测；3项无数据库回归与Ruff通过。未扩大运行会清库的测试。剩余财务与H03–H21端测仍待继续。
-- 上下文接近满时继续按用户要求保存推送、创建接续聊天、传入准确SHA与上述交接文档；创建后旧聊天停止写入。当前还未创建接续聊天。
+- **当前业务分支：`feat/soloops-mobile-m0c`**，自 m0b 尖端 `40db69e` 分出；首个提交 `029b53b4e91891e71ee821fea89d7bc547b8fda1`（修 m0b 尖端 CI 红灯 I001 + 把 m0c 加入移动 CI 触发分支）。
+- **警告：m0b 尖端 `40db69e73a2a37660fbd4b7f90e109f5e195a9e1` 的 CI 是 failure**（run 38151032924，`scripts/mobile/tests/test_business_fixture.py:11` 触发 `I001`）。被它 revert 掉的 `abf1680` 才是 CI success。不要在 m0b 尖端上继续。
+- 实际 workdir 不变：`C:/Users/27363/Desktop/AIEcommerceAgent/.local/worktrees/mobile-m0a`（worktree 内分支已切到 m0c）。仓库 `Changxin-YR/AI-E-commerce-Agent`。
+- 先读：[完整接续交接](https://github.com/Changxin-YR/AI-E-commerce-Agent/blob/feat/soloops-mobile-m0c/docs/mobile/harmony-handoff.md) 与 `docs/mobile/harmony-implementation-progress.md` 顶部 M0-C 段。
 
-更新：2026-10-11。用户要求把完整进度保存到GitHub后切换账号。本聊天在保存检查点后停止业务写入；新账号可直接按下文接手，不依赖聊天历史。
+## 本机环境（M0-C 已恢复，可直接复用）
 
-## 准确起点
+- Docker：容器 `soloops-harmony-r2-mysql`（mysql:8.4，`/var/lib/mysql` 为 tmpfs，宿主 127.0.0.1:3315）。Docker Desktop 不运行会丢库，需重启容器后用 `.local/mobile-business/harmony-account-switch.sql`（424,238 B，SHA256 `e67ce2a4…7f82`）恢复；恢复后应为 67 表、head `b42e83f516c0`、批次 1181–1187 共 7 条。凭据仅在本机忽略文件 `.local/mobile-business/mysql.env`、`test.env`，不得输出或提交。
+- 合成 API：`python.exe .local/mobile-business/resume_api_18081.py`（内部 `business_fixture.build_app()`，监听 127.0.0.1:18081，不调用 prepare_samples）。18080 属于其他项目 nx-keycloak，勿占用。设备端仍访问 `http://127.0.0.1:18080`，靠 `hdc rport tcp:18080 tcp:18081` 映射。
+- 鸿蒙模拟器：`"C:/Program Files/Huawei/DevEco Studio/tools/emulator/Emulator.exe" -start 22`（HarmonyOS 6.0.2 / API22 / RAM 2048，实例目录 `%LOCALAPPDATA%/Huawei/Emulator/deployed/22`）；HDC `C:/Program Files/Huawei/DevEco Studio/sdk/default/openharmony/toolchains/hdc.exe`，target `127.0.0.1:5555`。
+- 固定 HAP：`.local/mobile-business/accepted-scope-fix.hap`，103,689,862 B，SHA256 `3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e`（SDK24 编译 / API22 运行），覆盖安装通过、无需重建。
+- 安卓：adb 只在 `C:/Users/27363/Desktop/max/android-sdk/platform-tools/adb.exe`（`%LOCALAPPDATA%/Android/Sdk/platform-tools` 里没有 adb.exe）；emulator 在 `%LOCALAPPDATA%/Android/Sdk/emulator/emulator.exe`；可用 AVD `KnowFlow_API34`（Android14/API34）。单模拟器约定：跑安卓前先停鸿蒙，反之亦然。
+- 微信开发者工具：`D:/微信开发工具/微信web开发者工具/微信开发者工具.exe`（v2.01.2510290），工程 `apps/soloops_weapp`，CLI `cli.bat`；`project.config.json`、`project.private.config.json`、`ohos/build-profile.json5` 为本机配置，不提交、不覆盖。
 
-- 仓库：[Changxin-YR/AI-E-commerce-Agent](https://github.com/Changxin-YR/AI-E-commerce-Agent)。
-- 业务分支：`feat/soloops-mobile-m0b`。
-- **已提交并推送的最新检查点：`7edb160c3f0c4b8d026d799e25970d8245492736`**。
-- **先读：[完整账号切换交接](https://github.com/Changxin-YR/AI-E-commerce-Agent/blob/7edb160c3f0c4b8d026d799e25970d8245492736/docs/mobile/harmony-handoff.md)**。内含工作区、环境、固定HAP、已验收事实、数据库备份、剩余清单和操作方法。
-- 核心业务代码修复提交`ac668c2bf14412add426a9b9cf23a7b6cb2513f4`；最新检查点补齐端测结果和设备助手。main不是当前鸿蒙进度分支。
+## 进度与下一步
 
-## 当前结果
+- 鸿蒙 R2：H01–H21 源码全覆盖；已端测 H01–H08、H11，以及 **H12 的费用修订 v1→v2(2.5678) 与订单行关联 v3（SYN-G1/SYN-CUP·批次1187源行2）**。仍待端测：H12 映射规则、H13 账单、H14 订单核对、H15 回款、H09/H10、H16–H20、H21 边界（横屏/大字体/深浅色/离开恢复/冲突/未知结果）。
+- 微信小程序：业务端第一波（core/登录/首页/待办/导入/AI/Listing/客服/库存）在本分支实施中；此前只有 M0 壳（2 页面、7/7 原生 UI 检查）。资质、类目、真实 AppID 后台材料仍 BLOCKED，不注册/不备案/不发布。
+- 安卓：M0 技术验收已完成（26 项断言 + 16 项基础运行 PASS，APK `1483dba9…c8b71`）；共享 Dart 业务层已随鸿蒙实现，业务端测未做。
+- 端测操作要点：费用页默认"数据身份"是 `user_import`；1138 属 `synthetic`，需切到"合成测试数据"再查询。UI 文本输入后必须回读字段值（曾出现浮点回显尾差）。`scripts/mobile/ohos_ui.py` 的 `dump` 保存布局+截图到 `.local/mobile-business/device/`；中文参数可用 `hdc shell "uitest uiInput click x y"` 直接按坐标操作。
 
-H01–H21核心源码覆盖完成；API22集中验收部分通过，尚未完成全部端测。按V1.3（21功能/149原API引用、H14补6操作）持续完成，不重写已实现模块，不等待逐包批准或CI。用户要求加快速度并保持质量，当前只运行合成模型/邮件替身，真实费用、邮件和平台写入0。
+## 保护与约定
 
-- 自动验证：23Flutter、12CSV跨端对照；后端全量基线890/529.36秒、定向97；新商品渠道契约1项；夹具隔离5项；Dart/Ruff/mypy180文件通过。完整后端基线通过后没有因小修复重复清库。
-- 端上：登录/资料/建店918/会话重启恢复；批次1181–1187全部committed、errors0；巡检184、事项195审批/复检/完成核对。
-- B1：257两次独立审批，7步、v10 succeeded；分析23与Listing92草稿分别落库。Listing91已批准、系统CSV保存603字节。
-- 客服43/v2 human_review/en审阅，系统分享接收后保存1294字节完整CSV。库存过期未知和低库存区分正确。
-- 利润存档5：售价25、成本8.1234、余额16.8766，费用/保本价未知。费用1138/v1 active，synthetic/generic，金额2.3456 USD，发生时间正确转UTC。
-- 已修复并回归：导入修正原值捕获、长表单离屏校验、B1跨渠道商品误选。
-
-## 下一步
-
-从已保存费用1138之后继续财务闭环：费用修订/订单关联/映射、账单、订单核对、回款；随后经营分析/成本、跨店总览、规则授权、计划通知、质量/本地修订、替身外发。补语义映射/分片manifest、AI预算/暂停取消/未知结果、客服政策/审阅失效/人工凭据、冲突/来源清除/跨店/生命周期和布局。具体已过与待验状态见handoff和coverage，不能将部分设备通过写成全部完成。
-
-## 本机关键保护
-
-实际workdir：`C:/Users/27363/Desktop/AIEcommerceAgent/.local/worktrees/mobile-m0a`；分支上述。保存项目带空格旧路径不作为本轮workdir。一个聊天独占这个worktree，其他平台使用独立副本。用户本轮已明确允许鸿蒙/安卓模拟器短时并行；不停止其他任务的模拟器。
-
-- 当前API22设备运行，HDC `127.0.0.1:5555`，API `127.0.0.1:18080`，入口`scripts/mobile/business_fixture.py`。最后设备页面为已保存费用1138。
-- Docker `soloops-harmony-r2-mysql`，3315/`soloops_harmony_r2_test`，head`b42e83f516c0`，仍运行。tmpfs停容器会丢数据；backend pytest会清表，不能对这份保留库重跑。
-- 账号切换前已本机备份`.local/mobile-business/harmony-account-switch.sql`，424238字节，SHA256`e67ce2a4bc09b8751c28f45855b3a162575327e44d8486c4ca88ccf29b377f82`。同电脑切换账号直接复用库；必要恢复仅限该专用库。
-- 固定已安装HAP `.local/mobile-business/accepted-scope-fix.hap`，SHA256`3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e`，103689862字节。SDK24编译/API22运行，工具链与恢复命令详见handoff。
-- 本机配置/日志/备份/HAP没有上传GitHub。保护未提交`apps/soloops_flutter/ohos/build-profile.json5`和`apps/soloops_weapp/project.config.json`，不输出/覆盖/提交。
-- context-memory checkout的README.md有用户MM改动，保持原样；后续仍只`commit --only HARMONY.md`。
-
-## 新账号可复制的提示
-
-请继续Changxin-YR/AI-E-commerce-Agent的鸿蒙API22完整R2验收。读取context-memory分支HARMONY.md，再读取feat/soloops-mobile-m0b分支docs/mobile/harmony-handoff.md；起点7edb160c3f0c4b8d026d799e25970d8245492736。复用指定worktree与合成环境，从费用1138后的财务闭环继续，按待验清单快速完成并保持质量；只使用本地模型/邮件替身。
+- 未提交、禁止覆盖的两项本机配置：`apps/soloops_flutter/ohos/build-profile.json5`、`apps/soloops_weapp/project.config.json`。
+- `pytest backend/tests` 会清表，**不得针对保留验收库运行**；端测与清表测试串行。
+- 真实模型、真实邮件、真实平台写入均为 0，只使用本地合成/替身。
+- 每包完成后提交推送并核对**准确 SHA 的 CI 成功**再继续（m0c 分支触发 `Verify mobile engineering`）。
+- 上下文接近上限时：先把进度/证据落盘、提交推送、更新本文件（在该 checkout 只用 `git commit --only HARMONY.md`，因为 README.md 有用户本机改动），再创建接续聊天并给出精确 SHA 与上述入口。
