@@ -2,6 +2,8 @@
 
 日期：2026-10-11，Asia/Shanghai。范围：本机工具链、隔离合成服务、APK 安装及认证。74 SO、32 原验收与四条 MVP 继续按 Android 计划逐包追踪。
 
+**A1 完成。** 准确代码 `d6c54bed66081dcee7a9b6c10549087e2a4d94b7` 的 [CI 38139535722](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38139535722) 全成功，包含186单元、lint/类型、资源同步、Android debug编译和release资源门禁。设备业务结果另由本页实际记录证明。
+
 ## 交付与环境
 
 - Java 21.0.10、compile/target SDK 36；独立 SDK、Gradle 缓存和 AVD 位于 `.local/android`。Java 使用已有 `D:/Javajdk`，模拟器及 API 34 镜像复用本机 SDK。
@@ -40,4 +42,4 @@ SHA256：`CD676937533F7FA36D64DB12D5D82A57D96302775BE9E01AC28DCD0FC882FDB9`。
 - File 字节上传、原生文件选择、分片与四条业务 MVP 在 A3/A4 验收。
 - WebView 冷启动曾超过 30 秒，等待扩为 120 次一秒重试；Playwright 使用 noDefaults 适配 WebView 上下文管理。全页截图会重复拼接，改用视口及 adb 原生截图。
 - 本机 SDK 已定位，缺失的 adb 单独安装到副本；Gradle 镜像下载已核实官方 SHA256。
-- 准确提交及 CI 由交接入口记录，推送后核对。
+- 准确代码 CI 已核对成功；后续验收文档提交使用 `[skip ci]`。

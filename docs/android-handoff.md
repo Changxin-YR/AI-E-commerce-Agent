@@ -5,7 +5,7 @@
 ## 当前交付
 
 A0 完成，代码 `84d86a7b213e6bf16d5bcc90aedbbd9a92360159` 的 CI 38137311083 成功。
-A1 本机和真实模拟器认证验收完成：Java 21、SDK 36、独立 AVD、FastAPI/MySQL、debug 本机白名单、release 门禁；40文件186单元、APK编译安装、7组设备认证均通过。A1 准确提交 CI 在推送后补充。
+A1 已完成：代码 `d6c54bed66081dcee7a9b6c10549087e2a4d94b7` 的 [CI 38139535722](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38139535722) 全部成功，包含前端校验、Android编译、HTTPS资源允许与本机资源release拒绝。Java 21、SDK 36、独立 AVD、FastAPI/MySQL已配置；40文件186单元、APK编译安装、7组真实设备认证均通过。后续 `[skip ci]` 提交只补验收记录。
 
 先读 `AGENTS.md`、`android-plan.md`、`android-a1-acceptance.md`、`android-local-testing.md`。74 SO、32 原验收和四条 MVP 继承原需求，不把网页结果当设备业务验收。后端业务源码未改。
 
