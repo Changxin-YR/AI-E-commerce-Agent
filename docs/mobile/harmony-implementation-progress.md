@@ -1,5 +1,15 @@
 # 鸿蒙完整业务版 · 实时进度
 
+## 2026-10-12 续测（M0-C 第二轮；环境复用未重建，优先于下文全部历史状态）
+
+- 环境核对通过、**未重建**：hdc `127.0.0.1:5555` 在线、`hdc rport tcp:18080 tcp:18081` 在位、合成 API 监听 18081（`SoloOps API`，132 路径）；固定 HAP 哈希 `31487267…ec0e` / 103,689,862 B 未变；保留库 67 表、head `b42e83f516c0`、批次 1181–1188 共 8 条；应用进程存活。
+- **CI 补齐核对（本轮）**：匿名 REST 在 shell 被限流（403），改用抓取工具读 `actions/runs?branch=feat/soloops-mobile-m0c`。确认 `029b53b`(run 38152019827)、`e67bf35`(38153782085)、`e385cb3`(38153989215)、`e1917f1`(38154570627)、`c305b0c`(38154608925) 的 **"Verify mobile engineering" 全部 success**；HARMONY.md 里"未逐一确认"的 4 个 SHA 已闭环。
+- **H19 商品本地修订端上通过**：上轮"选择商品行后已选择商品仍为 0"的根因查明——**"选择此商品"复选框是商品 `ExpansionTile` 的子项**，点行标题只会展开、不会勾选。展开后勾选 → 计数 1；批量前缀 `H19-` + 追加 `H19-APPEND` 应用到已选表单 → "创建修订差异预览" 得 **修订 #31 · v1 · 待审批**（当前有效商品数 0）；勾选"已核对全部商品的前后差异"后批准 → **v2 已应用**（当前有效商品数 1，`products` 1305 `Synthetic steel cup → H19-Synthetic steel cup`、`facts` 追加 `H19-APPEND`，输出批次 **#1189** `origin=manual_edit` committed）→ **v3 已撤销**（商品与批次 #1189 均回退 `revoked`）→ **v4 正文已清除**（`snapshot` NULL、`product_edit_sources` 0、批次 #1189 `cleared`）。差异页正确显示原/新名称、原/新参数与来源证据 `products-synthetic.xlsx · 源行 2 · 批次 #1182`。
+- **测试工具修正（本轮）**：`scripts/mobile/ohos_ui.py` 的 `hide-ime` 原按布局树里是否出现输入法包名判断，实测常测不到——键盘开着时继续滑动，滑动落在键盘按键上，把 `、` 连续打进"修订依据"（服务端回读 `H19-本地修订验证、、、…`，已重新输入修正）。现改为读 `WindowManagerService` 窗口列表中 `softKeyboard` 的 ZOrd（-1 为收起），并在 `findtap` 每次滑动前先收起键盘。
+- 另核：设备端弹过一次系统剪贴板权限框（"允许"soloops_flutter"复制来自剪贴板的内容？"，理由文案来自 `ohos/entry/.../element/string.json`），会抢焦点并使 `uitest dumpLayout -b <bundle>` 返回空树；已选"始终允许"解除，后续输入不再中断。
+- 数据库回读注意：`docker exec … mysql` 默认字符集会把中文显示成 `?`，需加 `--default-character-set=utf8mb4`；已用 `HEX()` 证实库内是正确 UTF-8，不是写入损坏。
+- 下一步：H12 映射规则撤销/清除 → H13 审阅结论预览/保存/版本/清除 → H14（先在 `user_import` 作用域导入订单行）→ H15 撤销/清除 → H16/H17/H09/H10/H18/H20 → H21 边界；微信端 wave 3。
+
 ## 2026-10-11 23:45 M0-C 新分支续接（优先于下文全部历史状态）
 
 - 新分支 `feat/soloops-mobile-m0c`（自 m0b 尖端 40db69e 分出）。首个提交 `029b53b4e91891e71ee821fea89d7bc547b8fda1`：恢复 `scripts/mobile/tests/test_business_fixture.py` 的导入顺序（修复 m0b 尖端 CI 红灯 `I001`），并把 `feat/soloops-mobile-m0c` 加入移动 CI 触发分支。**m0b 尖端 `40db69e` 的 CI 是 failure（run 38151032924），不要以它作为继续基线。**

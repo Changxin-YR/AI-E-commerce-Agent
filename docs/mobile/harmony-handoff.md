@@ -1,5 +1,16 @@
 # 鸿蒙 API22 R2 · 账号切换接续入口
 
+## 2026-10-12 早晨 M0-C 第三轮（优先于下文全部状态）
+
+- 环境**核对后直接复用，未重建**：hdc `127.0.0.1:5555` 在线；`hdc rport tcp:18080 tcp:18081` 在位；合成 API 监听 **18081**（`SoloOps API`，132 路径）；保留库 `soloops-harmony-r2-mysql` 67 表 / head `b42e83f516c0` / 批次 **1181–1188**；固定 HAP `.local/mobile-business/accepted-scope-fix.hap` 哈希 `3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e`（103,689,862 B）未变，设备上应用进程存活。
+- **CI 已闭环**：`feat/soloops-mobile-m0c` 的 `029b53b`(38152019827)、`e67bf35`(38153782085)、`e385cb3`(38153989215)、`e1917f1`(38154570627)、`c305b0c`(38154608925) 的 "Verify mobile engineering" 全部 **success**。注意：匿名 GitHub REST 从 shell 直接调会被限流 403，用抓取工具读同一 URL 即可。
+- **H19 商品本地修订已通过**：根因是"选择此商品"复选框在**折叠的 `ExpansionTile` 内**——点行标题只展开不勾选。流程：展开行 → 勾选（计数 1）→ 批量前缀/追加应用到已选表单 → 创建差异预览 **#31 v1 待审批** → 勾选核对后批准 **v2 已应用**（商品 1305 改名 + `facts` 追加，输出批次 **#1189** `origin=manual_edit`）→ **v3 已撤销**（商品与批次回退）→ **v4 正文已清除**（`snapshot` NULL、来源 0）。
+- **端上避坑（本轮新增，务必遵守）**：
+  - **键盘开着时不要滑动页面**——滑动会落在键盘上，把 `、` 连续打进当前输入框。`ohos_ui.py` 的 `hide-ime` 已修好（读 `WindowManagerService` 里 `softKeyboard` 的 ZOrd），`findtap` 每次滑动前也会先收键盘。
+  - 系统**剪贴板权限框**会抢焦点，使 `uitest dumpLayout -b <bundle>` 返回**空树**；已选"始终允许"解除。遇到空树先 `hidumper -s WindowManagerService -a '-a'` 看 `Focus window` 是不是 37（应用窗口）。
+  - 中文校验：`docker exec … mysql` 默认字符集把中文显示成 `?`，必须加 `--default-character-set=utf8mb4`；用 `HEX()` 判断库内真值。
+- **下一步顺序**：H12 映射规则撤销/清除 → H13 审阅结论预览/保存/版本/清除 → H14（先在 `user_import` 作用域导入订单行）→ H15 撤销/清除 → H16 停用/重置/恢复与 AI 授权 → H17 启停/撤销/立即运行/通知深链 → H09 分析、H10 总览、H18 历史回读/清除、H20 测试外发（仅替身）→ H21 边界。
+
 ## 2026-10-11 23:45 M0-C 接续环境复核（优先于下文历史状态）
 
 - 当前业务分支为 **`feat/soloops-mobile-m0c`**（自 m0b 尖端分出，worktree 不变：`.local/worktrees/mobile-m0a`）。首提交 `029b53b4e91891e71ee821fea89d7bc547b8fda1` 修复了 m0b 尖端 `40db69e` 的 CI 红灯（`scripts/mobile/tests/test_business_fixture.py` 导入顺序 `I001`）并把 m0c 加入 CI 触发分支；**m0b 尖端 CI 为 failure，勿以其为基线**。

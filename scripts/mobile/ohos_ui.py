@@ -63,6 +63,25 @@ def snapshot(label="current"):
     return items
 
 
+def keyboard_visible():
+    """Return True while the soft IME window is on screen (ZOrd other than -1)."""
+    output = hdc("shell", "hidumper -s WindowManagerService -a '-a'")
+    for line in output.splitlines():
+        parts = line.split()
+        if len(parts) > 7 and parts[0].startswith("softKeyboard"):
+            return parts[7] != "-1"
+    return False
+
+
+def hide_ime():
+    """Close the IME with system back before touching the page again."""
+    if keyboard_visible():
+        hdc("shell", "uitest", "uiInput", "keyEvent", "2")
+        time.sleep(0.5)
+        return True
+    return False
+
+
 def match(items, text):
     found = (
         [item for item in items if item["type"] == "TextInput"][int(text[7:]) : int(text[7:]) + 1]
@@ -110,9 +129,12 @@ if __name__ == "__main__":
     options = parser.parse_args()
     BUNDLE = options.bundle
     if options.action in ("findtap", "findtapup"):
+        # An open IME shrinks the page and swallows swipes as key presses.
+        hide_ime()
         previous = None
         unchanged = 0
         for _attempt in range(12):
+            hide_ime()
             current = snapshot()
             if not current:
                 raise RuntimeError(f"No active UI for {BUNDLE}; refusing to scroll")
@@ -175,10 +197,7 @@ if __name__ == "__main__":
         args = ["click", x, y] if options.action == "tap" else ["text", options.values[1]]
         print(hdc("shell", "uitest", "uiInput", *args).strip())
     elif options.action == "hide-ime":
-        hdc("shell", "uitest", "dumpLayout", "-p", REMOTE)
-        tree = hdc("shell", "cat", REMOTE)
-        if '"com.huawei.hmos.inputmethod"' in tree:
-            hdc("shell", "uitest", "uiInput", "keyEvent", "2")
+        hide_ime()
     elif options.action == "swipe":
         print(hdc("shell", "uitest", "uiInput", "swipe", *options.values).strip())
     elif options.action == "key":

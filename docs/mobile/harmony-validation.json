@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-11",
-  "phase": "m0c-environment-restored-finance-revision-order-linkage-passed",
+  "date": "2026-10-12",
+  "phase": "m0c-h19-product-local-edit-passed",
   "business_api22": "partial_passed",
   "dart_analyze": "passed",
   "flutter_tests": 23,
@@ -110,9 +110,47 @@
     "Settlement SYN-ST-001 with manual receipt BANK-SYN-001/PAY-SYN-001 100.0000 USD: per-receipt comparison consistent, difference 0.0000, saved with version history (settlements/receipts/revisions = 1 each)",
     "Business rule revision saved: max_age_hours 24 -> 12 with confirmed scope, persisted as business_rule_revisions id 24 (action=save, min_quantity 1, max_margin 20.00, USD)",
     "Operation schedule saved: operation_schedules id 24 active v1 daily 09:00 Asia/Shanghai, next_run_at 2026-10-12 01:00 UTC (= 09:00 +08:00); bound to rule 24; scheduler service honestly reported as not enabled",
-    "Product quality report saved: synthetic scope checked 4 products / 2 affected / 2 missing, all three check groups executed, product_quality_reports=1 and product_quality_sources=2"
+    "Product quality report saved: synthetic scope checked 4 products / 2 affected / 2 missing, all three check groups executed, product_quality_reports=1 and product_quality_sources=2",
+    "H19 product local edit: selection works only after expanding the product ExpansionTile (the '选择此商品' checkbox is one of its children, so tapping the row header alone never sets selected); counter went 0 -> 1",
+    "H19 bulk apply: prefix H19- and appended facts H19-APPEND applied to the selected product form; create produced product_edits id 31 v1 draft with 当前有效商品数 0",
+    "H19 approve: edit 31 became v2 applied, products id 1305 renamed to 'H19-Synthetic steel cup' with facts line H19-APPEND, output import batch 1189 committed with origin=manual_edit, 当前有效商品数 1",
+    "H19 withdraw: edit 31 became v3 revoked, product 1305 reverted to the original name and facts, batch 1189 status revoked",
+    "H19 clear: edit 31 became v4 cleared, snapshot NULL, product_edit_sources 0 rows, batch 1189 status cleared"
   ],
-  "pending": "H19 product selection control not identified (selection stayed 0); remaining H13 review conclusion, H14 differential path, H16 disable/reset, H17 enable/disable/run-now/notifications, H09/H10/H18 history, H20 outbound and H21 lifecycle/layout scenarios",
+  "pending": "H12 fee mapping rule revoke/clear; H13 statement review conclusion preview/save/version/clear; H14 order reconciliation differential path (import order rows into the user_import scope first); H15 settlement revoke/clear; H16 disable/reset/restore and AI authorization management; H17 schedule enable/disable/revoke/run-now/notification deep link; H09 analytics, H10 overview, H18 product quality history/clear, H20 outbound stub-only, H21 lifecycle/layout boundaries",
+  "session_2026_10_12": {
+    "environment_reused_without_rebuild": true,
+    "tables": 67,
+    "migration_head": "b42e83f516c0",
+    "import_batches_1181_to_1188": 8,
+    "hap_sha256_unchanged": true,
+    "device": "127.0.0.1:5555 online, app pid running, rport tcp:18080 -> tcp:18081 present",
+    "ci_verified": {
+      "feat/soloops-mobile-m0c": [
+        "029b53b4e91891e71ee821fea89d7bc547b8fda1 success (run 38152019827)",
+        "e67bf35f14d67820be43fb7d86e746afc76e8f87 success (run 38153782085)",
+        "e385cb30bac5382150fc867c9ab497021f99d8f0 success (run 38153989215)",
+        "e1917f112f79a22c058aaf1453e0c3913349b9bb success (run 38154570627)",
+        "c305b0c5ac44d8b9d9ad8f7dd758bb766f65f7b3 success (run 38154608925)"
+      ],
+      "note": "Anonymous GitHub REST API was rate limited from the shell; status read through the fetch tool instead. Workflow name 'Verify mobile engineering' (.github/workflows/mobile-m0a.yml)."
+    },
+    "h19_product_edit": {
+      "edit_id": 31,
+      "product_id": 1305,
+      "sku": "SYN-CUP",
+      "scope": "synthetic/generic",
+      "source_revision": 8,
+      "versions": ["v1 draft", "v2 applied", "v3 revoked", "v4 cleared"],
+      "output_batch_id": 1189,
+      "output_batch_origin": "manual_edit",
+      "final_batch_status": "cleared",
+      "change": "name Synthetic steel cup -> H19-Synthetic steel cup; facts appended H19-APPEND",
+      "reason": "H19-本地修订验证",
+      "source_evidence": "products-synthetic.xlsx row 2 batch 1182"
+    },
+    "tooling_fix": "scripts/mobile/ohos_ui.py hide-ime now decides from the WindowManagerService softKeyboard ZOrd column and findtap hides the IME before every swipe; the previous layout-tree package check missed the open IME, so swipes hit the keyboard and typed '、' into the 修订依据 field"
+  },
   "product_facts_contract_tests": 1,
   "delivered_files": [
     {
