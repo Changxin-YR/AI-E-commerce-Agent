@@ -1049,3 +1049,7 @@ Listing按product/source row/active baseline生成，编辑另存待审版本；
 ## 微信W05：Listing与人工交付
 
 Listing生成/编辑绑定source row与active baseline，决定携带审阅版本；GET回读后更新本地页面。事实确认在修改时失效；未保存文案保留到用户确认替换。ReviewedDelivery在每次复制/CSV分享前核验服务端当前版本，Vue同步watch及卸载epoch阻止上下文变化后的旧输出，临时分享文件finally清理。巡检页复用AppliedRules补齐当前规则版本及启用规则阈值。28项测试和类型通过，业务端到端待验。
+
+## 微信W06：客服源码检查点
+
+客服原生页复用SupportService与ReviewedDelivery。版本审阅绑定语言，回复变化使确认失效；生成绑定消息source row、订单行与政策ID；人工自报记录冻结request_id及内容便于同次恢复。政策组件与父页互斥操作，政策变化清除旧工作区证据。32项客户端测试和vue-tsc通过，生产构建在200模块转换后内存分配失败，待接续排查；IDE及数据库旅程未验。

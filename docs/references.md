@@ -489,3 +489,7 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 
 - 官方 https://docs.taro.zone/docs/apis/files/FileSystemManager 、https://docs.taro.zone/docs/apis/share/shareFileMessage 、https://docs.taro.zone/en/docs/apis/device/clipboard/setClipboardData 。按API声明实现小程序剪贴板和UTF-8临时CSV分享，finally清理临时文件。Taro MIT；未复制第三方实现。firecrawl服务本轮不可连接，使用官方网页检索核对。
 - Listing来源/基线与审批语义依据本仓库ListingService/ListingReview；CSV内容直接使用delivery返回值，保留服务端防公式注入和来源字段。
+
+## 微信W06客服原生输入（2026-10-11）
+
+- Taro官方Textarea文档：https://docs.taro.zone/docs/components/forms/textarea/ 。firecrawl因api.firecrawl.dev DNS ENOTFOUND失败，改用官方网页检索核对maxlength默认140及autoHeight；客服正文显式6000、政策4000、备注1000，长正文自动增高。仅API适配，未复制示例源码；Taro项目MIT。
