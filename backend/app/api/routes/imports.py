@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Query, Request, Response
 from openpyxl import Workbook
 from starlette.concurrency import run_in_threadpool
+from starlette.datastructures import UploadFile
 
 from app.api.dependencies import CurrentSession, UowDependency
 from app.core.errors import BusinessError
@@ -27,6 +28,42 @@ from app.services.import_parser import MAX_BYTES, MAX_ROWS
 from app.services.imports import ImportService
 
 router = APIRouter(tags=["文件导入"])
+
+
+async def multipart_bytes(request: Request) -> bytes:
+    # Bound the entire envelope before parsing, including clients without Content-Length.
+    body = bytearray()
+    async for chunk in request.stream():
+        if len(body) + len(chunk) > MAX_BYTES + 16384:
+            raise BusinessError("file_too_large", "文件不能超过 2 MiB，请拆分后上传", 413)
+        body.extend(chunk)
+
+    async def receive() -> dict[str, object]:
+        return {"type": "http.request", "body": bytes(body), "more_body": False}
+
+    bounded = Request(request.scope, receive)
+    async with bounded.form(max_files=1, max_fields=0) as form:
+        file = form.get("file")
+        if not isinstance(file, UploadFile) or len(form.multi_items()) != 1:
+            raise BusinessError("invalid_upload", "请选择一个 file 文件字段", 422)
+        data = await file.read(MAX_BYTES + 1)
+        if len(data) > MAX_BYTES:
+            raise BusinessError("file_too_large", "文件不能超过 2 MiB，请拆分后上传", 413)
+        return data
+
+
+@router.post("/shops/{shop_id}/imports/multipart", status_code=201)
+async def upload_multipart(
+    shop_id: int,
+    request: Request,
+    options: Annotated[UploadOptions, Query()],
+    current: CurrentSession,
+    uow: UowDependency,
+) -> BatchOutput:
+    data = await multipart_bytes(request)
+    return await run_in_threadpool(
+        ImportService(uow).upload, current.user_id, shop_id, options, data
+    )
 
 
 @router.get("/imports/catalog")

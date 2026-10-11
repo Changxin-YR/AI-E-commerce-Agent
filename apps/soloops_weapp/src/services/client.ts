@@ -51,7 +51,7 @@ export class ApiClient {
     await this.request<void>(all ? '/mobile/auth/logout-all' : '/mobile/auth/logout', 'POST')
     this.clear()
   }
-  async request<T>(path: string, method: RequestOptions['method'] = 'GET', data?: unknown, authenticated = true): Promise<T> {
+  async request<T>(path: string, method: RequestOptions['method'] = 'GET', data?: unknown, authenticated = true, transport: Transport = this.transport): Promise<T> {
     if (!path.startsWith('/') || path.startsWith('//') || path.includes('..')) throw new ApiError('无效的接口路径。')
     if (authenticated && (!this.token || Date.now() >= this.expiresAt)) {
       this.clear(); this.onExpired()
@@ -61,7 +61,7 @@ export class ApiClient {
     const header: Record<string, string> = { 'Content-Type': 'application/json', 'X-SoloOps-Client': 'weapp' }
     if (authenticated) header.Authorization = `Bearer ${this.token}`
     let response: { statusCode: number; data: unknown }
-    try { response = await this.transport({ url: `${this.server}/api${path}`, method, data, header, timeout: 30000 }) }
+    try { response = await transport({ url: `${this.server}/api${path}`, method, data, header, timeout: 30000 }) }
     catch {
       if (generation !== this.generation) throw new ApiError('上下文已切换，请刷新。', 0, 'stale_response')
       throw new ApiError('连接失败，请检查网络、服务地址及小程序合法域名配置。', 0, 'network_error')

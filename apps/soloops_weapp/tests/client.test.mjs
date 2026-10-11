@@ -3,6 +3,21 @@ import assert from 'node:assert/strict'
 import { ApiClient, normalizeServer } from '../src/services/client.ts'
 const loginResponse = { statusCode: 200, data: { access_token: 'synthetic-token', user_id: 1, username: 'seller', session_id: 'test', client_type: 'weapp', expires_at: new Date(Date.now() + 600000).toISOString() } }
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r }); return { promise, resolve } }
+
+test('file transport shares authentication, scope invalidation and current 401 handling', async () => {
+  const client = new ApiClient(async () => loginResponse)
+  await client.login('https://example.com', 'seller', 'secret')
+  const pending = deferred()
+  const request = client.request('/shops/1/imports/multipart', 'POST', undefined, true, async options => {
+    assert.equal(options.header.Authorization, 'Bearer synthetic-token')
+    return pending.promise
+  })
+  client.invalidateScope(); pending.resolve({ statusCode: 201, data: { id: 1 } })
+  await assert.rejects(request, error => error.code === 'stale_response')
+  let expired = false; client.onExpired = () => { expired = true }
+  await assert.rejects(client.request('/imports/1/errors.csv', 'GET', undefined, true, async () => ({ statusCode: 401, data: null })), error => error.status === 401)
+  assert.equal(expired, true)
+})
 test('HTTPS server normalization rejects embedded credentials and query strings', () => {
   assert.equal(normalizeServer(' https://example.com/api/ '), 'https://example.com')
   for (const address of ['http://example.com', 'https://a@b.com', 'https://a.com?token=x', 'https://a.com/#x', '//a.com']) assert.throws(() => normalizeServer(address))

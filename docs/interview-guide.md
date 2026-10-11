@@ -462,3 +462,7 @@ SDK24实际构建：`scripts/mobile/build_hap_windows.ps1`将构建输入复制�
 ## 微信会话与竞态
 
 `apps/soloops_weapp/src/services/client.ts` 展示HTTP成功回调与业务成功状态码的区别、内存Bearer、并发请求generation隔离及非幂等写操作不自动重试。测试在 `apps/soloops_weapp/tests/client.test.mjs`，包括旧401不使新上下文退出。
+
+## 微信大文件与上传边界
+
+`csv-split.ts`的UTF-8尾字节缓存、CSV引用状态机、增量指纹与分片预算区分物理换行和业务记录。`imports.py`薄适配把multipart提取限制在API层，仍由原ImportService负责用户/店铺归属、来源与版本语义。文件transport复用会话generation；断线后回查批次，避免自动重放副作用。

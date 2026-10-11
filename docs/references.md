@@ -467,3 +467,10 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - 官方资料：https://docs.taro.zone/docs/apis/network/request/ ，通过官方文档检索读取，核对 request 的 header、method、timeout、statusCode 语义。
 - 技术来源：Taro4（MIT，已有 `apps/soloops_weapp/licenses/TARO-LICENSE`）；采用已有框架API，未复制第三方业务代码。
 - 实现决定：请求层注入transport便于无设备测试；不透明Bearer仅内存保存；沿用后端mobile/auth和profile接口；HTTP失败单独判断，写操作不隐式重试；generation阻止切店和登录竞态。
+
+## 2026-10-11 微信W02：文件导入
+
+- Taro官方chooseMessageFile：https://docs.taro.zone/docs/apis/media/image/chooseMessageFile ，uploadFile：https://docs.taro.zone/docs/3.x/apis/network/upload/uploadFile 。Firecrawl网络连接失败、直接页面访问超时后，通过官方域名搜索读取接口参数；本地Taro4类型进一步验证filePath/name/header/timeout与tempFiles。
+- Taro MIT：复用系统选择/上传/下载/文件分享API，不复制业务示例。小程序multipart只做薄适配，复用原服务。
+- @noble/hashes 1.8.0，MIT，随包LICENSE存于apps/soloops_weapp/licenses/NOBLE-HASHES-LICENSE。增量SHA-256避免依赖小程序未保证提供的Web Crypto；测试与Node原生SHA-256对照。
+- CSV状态机复用仓库frontend/src/lib/csvSplit.ts；微信独立实现流读取、UTF-8解码及临时分片写入。没有复制外部业务代码。

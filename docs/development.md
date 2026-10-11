@@ -1033,3 +1033,7 @@ Listing按product/source row/active baseline生成，编辑另存待审版本；
 ## 微信W01（2026-10-11）
 
 微信端新增内存会话ApiClient、Vue经营初始化页面和共享店铺上下文。页面调用服务层，后端继续使用既有AuthService和ProfileService。generation在切店、退出或新登录时推进，使旧响应失效；401只影响对应会话上下文。9项transport替身测试及类型检查、生产编译通过。运行证据与剩余业务见 `mobile/wechat-implementation-progress.md`。
+
+## 微信W02（2026-10-11）
+
+微信导入页复用原ImportService领域逻辑；multipart封套有独立2MiB+16KiB预算，解析后文件再限2MiB，避免无限缓存。所有字段和身份作为既有UploadOptions查询参数处理。CSV状态机按逻辑记录拆分，增量SHA-256与严格UTF-8解码支持跨读取块的多字节字符；源文件与分片清单匹配才可续传。确认导入依赖有效预览、完整语义审阅和更新许可；写后GET回读。15项客户端、5项上传适配测试及编译通过；数据库/IDE验收待执行。
