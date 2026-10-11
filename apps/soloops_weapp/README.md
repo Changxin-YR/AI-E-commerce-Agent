@@ -1,4 +1,4 @@
-# SoloOps 微信小程序最小工程
+# SoloOps 微信卖家工作台
 
 Taro 4.3.0、Vue 3.5.43、TypeScript 5.9.3，Node 24.16.0 / npm 11.13.0。
 采用 Taro Vite runner 4.3.0 的 Vite 4 peer 依赖组合：Vite 4.5.14、
@@ -15,7 +15,7 @@ npm audit --json
 
 编译目录为 `dist/`。微信开发者工具导入本目录（`project.config.json` 指向 `dist/`）。
 `touristappid` 仅为本地工程占位，真实 AppID 和私有工具配置由开发者本机提供。
-合法域名校验保持启用；本页没有网络、登录、上传或 AI 调用。
+合法域名校验保持启用。当前业务覆盖登录、经营资料、文件导入、巡检待办、AI运营、Listing、客服、库存和经营分析；完整范围与待验项见 [微信进度账本](../../docs/mobile/wechat-implementation-progress.md)。
 开发工具加载和模拟器运行必须单独验收，编译成功不代表已在工具内运行。
 
 当前 npm 审计仍失败，详见 [`依赖审查`](../../docs/mobile/dependency-review.md)。
@@ -33,9 +33,8 @@ npm install --prefix .local/weapp-tools --save-exact miniprogram-automator@0.12.
 node scripts/mobile/check_weapp_load.cjs
 ```
 
-检查只读取启动页路径、SoloOps 标题和 M0-A 说明，超时55秒，结束时仅断开自动化连接。
-它不执行登录、上传或发布。IDE 加载与自动化通道分别记录：界面须实际显示 `pages/index/index`、SoloOps 和 M0-A；
-自动化必须完成页面断言才能标记该脚本 PASS。最新结果见 M0-A 报告。
+检查只读取启动页路径、卖家工作台品牌和“经营有据，行动有序。”标题，超时55秒，结束时仅断开自动化连接。
+它不执行登录、上传或发布。IDE加载与业务旅程分别验收；自动化完成页面断言才能标记该脚本PASS。当前业务页面的IDE验证状态见微信进度账本。
 
 ## 开发工具热重载
 

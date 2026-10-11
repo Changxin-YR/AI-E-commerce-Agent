@@ -498,3 +498,8 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 ## 微信W07实现参考（2026-10-11）
 
 Taro4.3.0（MIT）已安装types/api/ui/interaction.d.ts的enableAlertBeforeUnload/disableAlertBeforeUnload，types/compile/compiler.d.ts与vite-runner/dist/index.mini.js的compiler.vitePlugins；Vite4.5.14（MIT）reportCompressedSize关闭仅影响gzip体积报告。官方地址：https://developers.weixin.qq.com/miniprogram/dev/api/ui/interaction/wx.enableAlertBeforeUnload.html ，https://v4.vitejs.dev/config/build-options.html#build-reportcompressedsize 。Firecrawl在线提取因额度不足失败，未声称本轮在线阅读成功。库存字段复用仓库后端InventoryQuery/InventoryOutput及OperationTask，不复制外部实现。
+
+
+## 微信W08参考（2026-10-11）
+
+字段与流程对照仓库frontend/src/types/analytics.ts、AnalyticsView.vue、OrderCostEditor.vue，以及backend/app/schemas/analytics.py、order_costs.py和AnalyticsService。复用现有DTO，无新增依赖。官方Taro原生input/picker和返回提醒沿用现有版本；在线Firecrawl额度不足，本轮未额外获取官方网页。

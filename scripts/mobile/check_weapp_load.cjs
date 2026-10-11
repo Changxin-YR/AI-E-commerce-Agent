@@ -1,4 +1,4 @@
-// Checks the engineering startup page through WeChat's local automation SDK.
+// Checks the seller startup page through WeChat's local automation SDK.
 const assert = require('node:assert/strict')
 const path = require('node:path')
 const root = path.resolve(__dirname, '../..')
@@ -17,11 +17,11 @@ async function main() {
   assert.equal(page?.path, 'pages/index/index', 'Expected SoloOps startup route')
   const title = await page.$('.title')
   assert.ok(title, 'Startup title must exist')
-  assert.equal(await title.text(), 'SoloOps')
-  const description = await page.$('.description')
-  assert.ok(description, 'Startup description must exist')
-  assert.match(await description.text(), /M0-[AB]/)
-  console.log(JSON.stringify({ status: 'PASS', route: page.path, title: 'SoloOps',
+  assert.equal(await title.text(), '经营有据，行动有序。')
+  const brand = await page.$('.eyebrow')
+  assert.ok(brand, 'Seller workspace brand must exist')
+  assert.match(await brand.text(), /SOLOOPS.*卖家工作台/)
+  console.log(JSON.stringify({ status: 'PASS', route: page.path, title: '经营有据，行动有序。',
     scope: 'IDE startup page loaded; no business actions, account login or publication' }))
 }
 

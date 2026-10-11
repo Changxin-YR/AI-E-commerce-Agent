@@ -2,6 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import Taro, { useDidShow, useLoad, useUnload } from '@tarojs/taro'
 import { account, api } from '../../services/session'
+import { linkedAnalysisScope } from '../../services/analytics-policy'
 import { requestId, queryString } from '../../services/task-policy'
 import { agentLabels, agentReasons } from '../../services/agent-types'
 import type {
@@ -465,6 +466,10 @@ useDidShow(() => {
     if (id > 0) await readRun(id)
     if (templates.includes(query.value.mode as AgentTemplate))
       form.template = query.value.mode as AgentTemplate
+    if (query.value.mode && !id) {
+      Object.assign(form.scope, linkedAnalysisScope(form.scope, query.value))
+      consentOff()
+    }
     await readObjects(
       Number(query.value.product) || undefined,
       Number(query.value.message) || undefined,

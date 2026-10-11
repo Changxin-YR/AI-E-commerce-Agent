@@ -1058,3 +1058,8 @@ Listing生成/编辑绑定source row与active baseline，决定携带审阅版�
 ## 微信W07：库存与页面请求生命周期
 
 库存复用现有inventory及operations/tasks接口，按服务端low_inventory和精确SKU关联；分页不足时明确继续读取，缺少快照保持未知。scopedRequest在ApiClient账号/店铺隔离之上校验页面生命周期，避免卸载后继续GET或更新编辑状态。客服政策编辑状态上报父页，微信返回提醒覆盖未保存内容和未知写入。
+
+
+## 微信W08：可追溯分析与历史成本
+
+分析调用既有analytics业务接口，报告保存绑定来源revision并独立回读，持久报告与当前计算分别记录。成本编辑沿用expected_version/expected_revision/request_id，未知响应保留冻结请求供用户同次恢复；金额仅作为字符串传递，统计在后端Decimal计算。分析与AI深链共用范围校验，成本历史模式不直接进入AI。

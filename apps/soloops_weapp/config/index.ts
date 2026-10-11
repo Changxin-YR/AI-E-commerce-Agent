@@ -10,13 +10,15 @@ export default defineConfig({
   framework: 'vue3',
   compiler: {
     type: 'vite',
-    vitePlugins: [{
-      name: 'weapp-build-report',
-      config() {
-        // WeChat consumes emitted files directly; gzip reporting wastes build memory.
-        return { build: { reportCompressedSize: false } }
+    vitePlugins: [
+      {
+        name: 'weapp-build-report',
+        config() {
+          // WeChat consumes emitted files directly; gzip reporting wastes build memory.
+          return { build: { reportCompressedSize: false } }
+        },
       },
-    }],
+    ],
   },
   plugins: ['@tarojs/plugin-platform-weapp'],
   mini: {},
