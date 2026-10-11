@@ -4,7 +4,7 @@
 
 - **当前业务分支：`feat/soloops-mobile-m0c`**（自 m0b 尖端分出）。本分支已推送的提交：
   - `029b53b4e91891e71ee821fea89d7bc547b8fda1` 修 m0b 尖端 CI 红灯（`scripts/mobile/tests/test_business_fixture.py` 导入顺序 `I001`）+ 把 m0c 加入移动 CI 触发分支。**该 SHA 的 CI 已核实 success**（run 38152019827）。
-  - `374a7de` / `e67bf35` / `e385cb3` / `0f12ea9`：鸿蒙进度与验证记录、微信业务端第一波（38 文件）。
+  - `374a7de` 鸿蒙 M0-C 环境恢复与费用修订/订单关联记录；`0f12ea9` 微信业务端**第一波**（9 页，38 文件）；`e67bf35` 账单核对与映射规则记录；`e385cb3` 结算回款记录；`b849bb0` 订单核对部分结果与账本刷新；`251d391` 经营规则修订记录；`65cec44` 定时计划记录；`bbfd281` 商品质量报告记录；**`e1917f1` 微信业务端第二波**（11 页 + app.config/mine/links，25 文件 7,957 行）。
   - **警告：不要在 m0b 尖端 `40db69e` 上继续**，其 CI 是 failure。
 - 实际 workdir 不变：`C:/Users/27363/Desktop/AIEcommerceAgent/.local/worktrees/mobile-m0a`（worktree 内已切到 m0c）。仓库 `Changxin-YR/AI-E-commerce-Agent`。
 - 先读：`docs/mobile/harmony-handoff.md` 顶部 M0-C 段、`docs/mobile/harmony-implementation-progress.md` 顶部 M0-C 段、`docs/mobile/weapp-implementation.md`。
@@ -31,14 +31,18 @@
 | H13 账单 | 批次 **#1188** 导入 5 行（sale/fee/fee/payout/refund）；按类型合计正确；**凭据一致、差额 0.0000**；未匹配项保持"仅账单有记录·无法确定"；跨身份按作用域隔离 |
 | H15 回款 | 原账单 `SYN-ST-001` + `BANK-SYN-001/PAY-SYN-001` 100.0000 USD → **逐笔一致、差额 0.0000**，保存后 `settlements/settlement_receipts/settlement_revisions` 各 1 |
 | H14 订单核对 | 匹配可运行；当前 user_import/generic 作用域订单行为 0，结果保持"待核实·差异未知"（**未完成**） |
+| H16 规则授权 | 规则 `max_age_hours 24→12` + 业务文本 + 勾选核对 → 保存并启用；`business_rule_revisions` id=24（save/12/1/20.00/USD）。**停用/重置/恢复/授权管理未验** |
+| H17 定时 | 新建计划落库 `operation_schedules` id=24 active v1（daily 09:00 Asia/Shanghai，绑定规则 #24），`next_run_at`=01:00 UTC 即 09:00+08:00；服务未启用如实声明。**启停/撤销/立即运行/通知未验** |
+| H18 商品质量 | 合成作用域检查 4 商品/受影响 2/缺失 2，三组检查执行，保存后 `product_quality_reports`=1、`product_quality_sources`=2。**历史回读/清除未验** |
+| H19 本地修订 | **未通过**：作用域与"读取当前商品与来源"可用，但选择商品行后"已选择商品：0"未变化，批量/差异/审批路径未走到；原因待查（先读页面源码确认选择控件） |
 
-证据目录 `.local/mobile-business/device/`：`expense-revision-linkage-v3.json`、`statements-and-mapping-rule.json`、`statement-review-and-match.json`、`settlement-receipt-verification.json`。
+证据目录 `.local/mobile-business/device/`：`expense-revision-linkage-v3.json`、`statements-and-mapping-rule.json`、`statement-review-and-match.json`、`settlement-receipt-verification.json`、`order-reconciliation-partial.json`、`business-rule-revision.json`、`operation-schedule.json`。
 
 ## 仍待端测
 
-H12 映射规则撤销/清除 → H13 审阅结论预览/保存/版本/清除 → H14 结论保存与"有差异"路径（需先在 user_import 作用域导入订单行）→ H15 撤销/清除 → **H09 分析、H10 总览、H16 规则授权、H17 定时通知、H18 商品质量、H19 本地修订、H20 测试外发** → **H21 边界**（横屏/大字体/深浅色/离开恢复/冲突/未知结果）→ 完整卖家旅程与用户联调。
+H12 映射规则撤销/清除 → H13 审阅结论预览/保存/版本/清除 → H14 结论保存与"有差异"路径（需先在 user_import 作用域导入订单行）→ H15 撤销/清除 → **H16 停用/重置/恢复与 AI 授权管理** → **H17 启停/撤销/立即运行/通知深链** → **H09 分析、H10 总览、H18 商品质量、H19 本地修订、H20 测试外发** → **H21 边界**（横屏/大字体/深浅色/离开恢复/冲突/未知结果）→ 完整卖家旅程与用户联调。
 
-微信端：第一波 9 页已提交（type-check/build 通过，**未做运行时联调**）；第二波 12 个页面正在实施（`analytics/overview/profit/expenses/statements/settlements/rules/outbound/schedules/product_quality/product_edits` + mine 扩展）。真机需配置合法域名；automator 通道 M0 阶段即 60s 超时（exit 124）。
+微信端：**两波已提交**（`0f12ea9` 9 页 + `e1917f1` 11 页，共 20 个业务页，type-check 0 错误、build 成功、`dist/app.json` pages=22），**未做运行时联调**；wave 3 待做 `r2.order_reconciliation` 独立页与 `/fee-rules` 独立页、tabBar 图标、来源证据展开组件、开发者工具联调。真机需配置合法域名；automator 通道 M0 阶段即 60s 超时（exit 124）。
 
 安卓端：M0 技术验收已完成（26 断言 + 16 基础运行，APK `1483dba9…c8b71`）；共享 Dart 业务层已随鸿蒙实现，业务端测未做。
 
@@ -50,6 +54,10 @@ H12 映射规则撤销/清除 → H13 审阅结论预览/保存/版本/清除 �
 - 键盘开合会改变布局坐标；每次输入后先 `hide-ime` 再重新 `dump` 取坐标。`ohos_ui.py` 的 `@input:N` 可稳定定位第 N 个 TextInput。
 - `pytest backend/tests` 会清表，**禁止对保留验收库运行**；端测与清表测试串行。
 - 真实模型、真实邮件、真实平台写入保持 0，只使用本地合成/替身。
+
+## 新对话可直接复制的接续提示
+
+"请继续 `Changxin-YR/AI-E-commerce-Agent` 的 `feat/soloops-mobile-m0c` 分支（worktree `.local/worktrees/mobile-m0a`）。先读 `context-memory` 分支的 `HARMONY.md`、再读 `docs/mobile/harmony-handoff.md` 与 `docs/mobile/weapp-implementation.md` 顶部。按下面步骤恢复环境：启动 Docker 容器 `soloops-harmony-r2-mysql` 并从 `.local/mobile-business/harmony-account-switch.sql` 恢复库 → 起 `.local/mobile-business/resume_api_18081.py`（18081）→ `hdc rport tcp:18080 tcp:18081` → `Emulator.exe -start 22` → 校验 `.local/mobile-business/accepted-scope-fix.hap` 哈希后覆盖安装。然后按 H12 撤销/清除 → H13 审阅结论 → H14（先在 user_import 作用域导入订单行）→ H15 撤销/清除 → H09/H10/H16–H20 → H21 边界顺序端测；继续完成微信端第二波并做开发者工具运行时联调。只使用合成数据与本地替身，真实模型/邮件/平台写入保持 0；`pytest backend/tests` 不得对保留验收库运行。"
 
 ## 交接约定
 
