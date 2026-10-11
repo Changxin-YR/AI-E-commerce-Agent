@@ -15,7 +15,8 @@ export class CsvRecords {
   }
   private endField(): void {
     this.row.push(this.field)
-    if (this.row.length > 64) throw new Error('每条记录最多64列，请移除无关列。')
+    if (this.row.length > 64)
+      throw new Error('每条记录最多64列，请移除无关列。')
     this.field = ''
     this.length = 0
     this.state = 'start'
@@ -48,7 +49,8 @@ export class CsvRecords {
         this.used = true
         this.endField()
       } else {
-        if (this.state === 'closed') throw new Error('CSV引号闭合后须为逗号或换行，请重新导出。')
+        if (this.state === 'closed')
+          throw new Error('CSV引号闭合后须为逗号或换行，请重新导出。')
         this.used = true
         if (this.state === 'start' && char === '"') this.state = 'quoted'
         else {
@@ -59,9 +61,8 @@ export class CsvRecords {
     }
   }
   finish(): string[][] {
-    if (this.state === 'quoted') throw new Error('CSV存在未闭合引号，请核对多行字段。')
+    if (this.state === 'quoted')
+      throw new Error('CSV存在未闭合引号，请核对多行字段。')
     return this.used ? [this.endRow()] : []
   }
 }
-
-

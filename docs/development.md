@@ -1037,3 +1037,7 @@ Listing按product/source row/active baseline生成，编辑另存待审版本；
 ## 微信W02（2026-10-11）
 
 微信导入页复用原ImportService领域逻辑；multipart封套有独立2MiB+16KiB预算，解析后文件再限2MiB，避免无限缓存。所有字段和身份作为既有UploadOptions查询参数处理。CSV状态机按逻辑记录拆分，增量SHA-256与严格UTF-8解码支持跨读取块的多字节字符；源文件与分片清单匹配才可续传。确认导入依赖有效预览、完整语义审阅和更新许可；写后GET回读。15项客户端、5项上传适配测试及编译通过；数据库/IDE验收待执行。
+
+## 微信W03：收件箱、巡检与事项复核
+
+三类收件箱保留服务端view/bucket/kind与游标语义；筛选变更清空旧结果。巡检将已审scope与preview_hash绑定至同一request_id，断线后保留同次恢复入口，运行和待办写后GET回读。task-policy.ts复用后端状态矩阵；stale可复检及登记自报，cleared/unknown无动作。TaskReview区分本地completed、自报操作与新来源复检结论。导航仅映射已接入页面，来源批次支持shop/batch深链。20项测试与类型/构建通过，设备及数据库端到端待验。

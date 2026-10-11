@@ -466,3 +466,7 @@ SDK24实际构建：`scripts/mobile/build_hap_windows.ps1`将构建输入复制�
 ## 微信大文件与上传边界
 
 `csv-split.ts`的UTF-8尾字节缓存、CSV引用状态机、增量指纹与分片预算区分物理换行和业务记录。`imports.py`薄适配把multipart提取限制在API层，仍由原ImportService负责用户/店铺归属、来源与版本语义。文件transport复用会话generation；断线后回查批次，避免自动重放副作用。
+
+## 微信运营闭环
+
+workbench以范围绑定的游标读取三类工作收件箱。operations将范围预览哈希、request_id和保存后回读组成一次可恢复运行；待办处理使用版本号，业务复检与处理状态分开。task-policy.ts让未知状态默认不可操作；服务端仍是最终权限和来源校验方。TaskReview展示seller_reported与recheck来源，便于解释“完成核对”和“异常解除”的证据差异。

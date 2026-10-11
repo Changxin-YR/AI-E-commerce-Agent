@@ -474,3 +474,8 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - Taro MIT：复用系统选择/上传/下载/文件分享API，不复制业务示例。小程序multipart只做薄适配，复用原服务。
 - @noble/hashes 1.8.0，MIT，随包LICENSE存于apps/soloops_weapp/licenses/NOBLE-HASHES-LICENSE。增量SHA-256避免依赖小程序未保证提供的Web Crypto；测试与Node原生SHA-256对照。
 - CSV状态机复用仓库frontend/src/lib/csvSplit.ts；微信独立实现流读取、UTF-8解码及临时分片写入。没有复制外部业务代码。
+
+## 2026-10-11 微信W03：业务页面生命周期
+
+- 官方 https://docs.taro.zone/docs/composition-api 与 https://docs.taro.zone/docs/vue-page ，使用官方搜索核对useLoad读取页面查询与useDidShow前台刷新。Taro MIT，使用API，自主实现业务表单。
+- 业务字段与状态门禁依据仓库workbench/operations Pydantic schema、服务层与Vue组件；微信页面独立实现收件箱、巡检预览与版本化处理。保留未保存草稿并显式刷新确认。

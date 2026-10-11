@@ -20,6 +20,7 @@
         <button class="primary" @tap="Taro.navigateTo({ url: '/pages/settings/index' })">店铺与经营资料</button>
         <button :disabled="busy" @tap="refresh">刷新店铺</button>
         <button :disabled="!account.shopId" @tap="Taro.navigateTo({ url: '/pages/imports/index' })">文件导入与批次管理</button>
+        <button class="primary" :disabled="!account.shopId" @tap="Taro.navigateTo({ url: '/pages/workbench/index' })">今日首页与待办</button>
       </view>
       <view class="card"><text class="section-title">账号与会话</text><text class="hint">退出全部设备会撤销该账号的所有登录会话。</text><button :disabled="busy" @tap="logout(false)">退出当前设备</button><button class="danger" :disabled="busy" @tap="logout(true)">退出全部设备</button></view>
     </template>

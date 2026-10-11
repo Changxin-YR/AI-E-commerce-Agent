@@ -1,4 +1,9 @@
-export type ImportKind = 'products' | 'orders' | 'messages' | 'inventory' | 'statements'
+export type ImportKind =
+  | 'products'
+  | 'orders'
+  | 'messages'
+  | 'inventory'
+  | 'statements'
 export type SourceChannel = 'generic' | 'shopify' | 'amazon' | 'other'
 export interface FieldDefinition {
   key: string
@@ -65,7 +70,11 @@ export interface ImportBatch extends BatchSummary {
   headers: string[]
   examples: Record<string, string>
   mapping: Record<string, string>
-  suggestions: { field: string; column: string; confidence: 'exact' | 'candidate' }[]
+  suggestions: {
+    field: string
+    column: string
+    confidence: 'exact' | 'candidate'
+  }[]
   suggested_kind: ImportKind
   errors: string[]
   rows: ImportRow[]
