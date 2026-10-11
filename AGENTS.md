@@ -1,5 +1,11 @@
 # SoloOps 开发约定
 
+## 微信独立开发（2026-10-11最新用户授权）
+
+- 当前目录 `soloops-wechat`、分支 `feat/soloops-wechat-r2` 独立连续实现微信小程序完整R2业务。使用 Taro4/Vue3/TypeScript，功能清单沿用 `docs/requirements/SoloOps-Mobile-V1.3.md` 的 H01–H21，进度以 `docs/mobile/wechat-implementation-progress.md` 为准。
+- 用户已明确要求快速、高质量连续完成，并在上下文接近上限时完成当前小任务、提交推送、创建新聊天接续。微信实现无需等待安卓或鸿蒙；保护其他开发目录。
+- 本节覆盖下面历史指令中“微信仅整理方案”的时序限制。真实付费模型、邮件和平台写入继续使用隔离替身测试。
+
 ## 当前最高执行优先级（2026-10-11用户更新）
 
 - 当前连续开发鸿蒙API22完整R2业务版，以 `docs/requirements/SoloOps-Mobile-V1.3.md` 和 `docs/mobile/harmony-implementation-progress.md` 为准。先把全部功能实现，再集中模拟器自查与用户联调；无需真机，不按旧M0/M1逐包等待批准。必要后端移动认证、迁移和业务UI已获授权。

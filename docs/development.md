@@ -1029,3 +1029,7 @@ Agent以服务端run version和单节点advance驱动，进入waiting_approval�
 Listing按product/source row/active baseline生成，编辑另存待审版本；批准前核对事实和完整前后文。客服保留人工接管语义，编辑版本使审阅失效；审阅全文与目标语言后才经delivery接口读取导出内容。原渠道人工操作为seller_reported证据，使用request_id和expected_version保存；来源清除后依照服务端输出擦除正文。
 
 库存依据快照时效与安全阈值。分析区分当前成本估算和订单行历史成本，Decimal字符串传输；历史成本写入携带来源修订和版本。跨店总览分币种汇总，每家店的来源读取显式携带shopId，保存摘要逐店校验expected_revisions。金额明细与来源分页展示。以上模块已注册真实路由；本轮仅格式化和差异检查，全业务静态/构建/API22验证仍待剩余模块完成后集中执行。
+
+## 微信W01（2026-10-11）
+
+微信端新增内存会话ApiClient、Vue经营初始化页面和共享店铺上下文。页面调用服务层，后端继续使用既有AuthService和ProfileService。generation在切店、退出或新登录时推进，使旧响应失效；401只影响对应会话上下文。9项transport替身测试及类型检查、生产编译通过。运行证据与剩余业务见 `mobile/wechat-implementation-progress.md`。

@@ -458,3 +458,7 @@ SDK24实际构建：`scripts/mobile/build_hap_windows.ps1`将构建输入复制�
 - `features/support/support_page.dart`将草稿正文版本、全文语言审阅和人工自报交付证据分开；编辑后重新审阅，导出前服务端核对版本。自报证据不是平台回执。
 - `features/analytics/order_cost_page.dart`以Decimal字符串写成本，并同时使用expected_version、expected_revision与request_id，分别处理对象冲突、来源变化与重试身份。
 - `features/overview/overview_page.dart`避免跨币种相加；每店来源查询带shopId。证据明细分页，未知金额和缺口保留。上述为实现说明，运行结果待集中验证。
+
+## 微信会话与竞态
+
+`apps/soloops_weapp/src/services/client.ts` 展示HTTP成功回调与业务成功状态码的区别、内存Bearer、并发请求generation隔离及非幂等写操作不自动重试。测试在 `apps/soloops_weapp/tests/client.test.mjs`，包括旧401不使新上下文退出。

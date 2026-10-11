@@ -2,11 +2,12 @@
   "name": "soloops-weapp",
   "version": "0.0.1",
   "private": true,
-  "description": "SoloOps M0-A WeChat engineering shell",
+  "description": "SoloOps WeChat seller workspace",
   "engines": {
     "node": ">=24.16.0 <25"
   },
   "scripts": {
+    "test": "node --test tests/*.test.mjs",
     "type-check": "vue-tsc --noEmit",
     "build:weapp": "taro build --type weapp",
     "dev:weapp": "taro build --type weapp --watch"

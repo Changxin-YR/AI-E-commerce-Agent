@@ -2,7 +2,7 @@ name: Verify mobile engineering
 
 on:
   push:
-    branches: [feat/soloops-mobile-m0a, feat/soloops-mobile-m0b, main]
+    branches: [feat/soloops-mobile-m0a, feat/soloops-mobile-m0b, feat/soloops-wechat-r2, main]
     paths: ['apps/**', 'contracts/**', 'scripts/mobile/**', 'scripts/validate_ui_contract.py', 'docs/mobile/**', 'backend/**', 'frontend/src/router/**', '.github/workflows/mobile-m0a.yml']
   pull_request:
     branches: [main]
@@ -44,6 +44,7 @@ jobs:
           cache-dependency-path: apps/soloops_weapp/package-lock.json
       - run: npm ci
       - run: npm run type-check
+      - run: npm test
       - run: npm run build:weapp
       - name: Verify expected output files
         run: test -s dist/app.json && test -s dist/app.js && test -s dist/pages/index/index.wxml

@@ -461,3 +461,9 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - [SQLAlchemy versioning](https://docs.sqlalchemy.org/en/20/orm/versioning.html)、[Python decimal](https://docs.python.org/3/library/decimal.html)：参考并发版本与精确金额语义，实际沿用本仓库用户/店铺锁、expected version、request UUID和Decimal架构。SQLAlchemy MIT、Python PSF。
 - [timezone 0.10.1](https://pub.dev/packages/timezone/versions/0.10.1)、[其更新记录](https://pub.dev/packages/timezone/versions/0.10.1/changelog)：固定IANA 2025b数据与TZDateTime.from/getLocation用于业务日期。Dart3.6.2实际pub解析、测试与HAP编译成功；未依赖设备时区。许可证BSD-2-Clause；传递http1.6.0、http_parser4.1.2、web1.1.1的BSD-3-Clause声明与完整许可证放在 `apps/soloops_flutter/licenses/`。时区变更以服务器校验为准，后续升级需同步验证时区数据。
 - 复用当前仓库Vue/TypeScript/Pydantic业务契约，自主编写Flutter页面；H14根据V1.3补持久审阅域。Firecrawl实际提取返回Insufficient credits，官方资料使用内置浏览工具核验。
+
+## 2026-10-11 微信W01：会话与经营初始化
+
+- 官方资料：https://docs.taro.zone/docs/apis/network/request/ ，通过官方文档检索读取，核对 request 的 header、method、timeout、statusCode 语义。
+- 技术来源：Taro4（MIT，已有 `apps/soloops_weapp/licenses/TARO-LICENSE`）；采用已有框架API，未复制第三方业务代码。
+- 实现决定：请求层注入transport便于无设备测试；不透明Bearer仅内存保存；沿用后端mobile/auth和profile接口；HTTP失败单独判断，写操作不隐式重试；generation阻止切店和登录竞态。

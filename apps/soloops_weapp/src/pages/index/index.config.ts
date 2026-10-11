@@ -1,1 +1,1 @@
-export default definePageConfig({ navigationBarTitleText: '工程验证' })
+export default definePageConfig({ navigationBarTitleText: 'SoloOps 工作台' })
