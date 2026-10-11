@@ -147,7 +147,15 @@
     "H09 recalculation: switching the cost basis to 订单行历史成本依据 made 已知成本小计 16.2468 (= 2 x 8.1234) and 已知商品毛利行数 1 while the aggregates stayed 未知; source revision moved 12 -> 13",
     "H09 persistent report: saved_analyses 24 status=current; the earlier report 23 became stale",
     "H10 overview: day summary for 2026-10-11..2026-10-12 in USD reported 可核对净销售额 未知/不完整, 已知子集 0, 已观察订单 0 (an empty window is not treated as zero sales) with coverage and unknown-item disclosures; overview_reports 39 status=current",
-    "H10 not exercised: the saved-summary history list and clear action were not revisited on device"
+    "H10 not exercised: the saved-summary history list and clear action were not revisited on device",
+    "H20 channel connect: connect captured a synthetic verification mail in fixture-events.jsonl (no real transport), status became 等待邮箱验证码; the 8-digit code from the captured envelope verified the channel to 已验证 / 有效",
+    "H20 prerequisite run: the outbound page only accepts operations runs whose source_status is current, and run 184 was stale after the imports; running 今日运营 produced execution 259 (5 candidates, approval node approved) and the fresh run 检查 #185",
+    "H20 summary: outbound_messages 25 created from run 185 (subject SoloOps 测试经营摘要 · 检查 #185, content version 1, full text with per-check statuses and linked candidates 195-199)",
+    "H20 approval and send: single approval 25 mode=once was created, 按有效授权提交一次 set status accepted with receipt 7f1da7a8-30bd-551f-a2cf-6791128fed3b and consumed the authorization 1/1",
+    "H20 reconcile: 只读回查发送结果 reported 通道报告送达 and journalled mail_reconciled for the same receipt",
+    "H20 manual receipt: receipt_evidence SYN-RECEIPT-001-合成收件声明 stored on outbound_messages 25",
+    "H20 channel revoke: device showed 已撤销 and test_mail_channels 25.revoked_at was set (the status column itself stays active, revoked state derives from revoked_at)",
+    "H20 real mail: fixture journal shows two mail_captured and one mail_reconciled events with real_mail_calls 0; no real transport exists in the fixture"
   ],
   "pending": "H12 fee mapping rule revoke/clear; H13 statement review conclusion preview/save/version/clear; H14 order reconciliation differential path (import order rows into the user_import scope first); H15 settlement revoke/clear; H16 disable/reset/restore and AI authorization management; H17 schedule enable/disable/revoke/run-now/notification deep link; H09 analytics, H10 overview, H18 product quality history/clear, H20 outbound stub-only, H21 lifecycle/layout boundaries",
   "session_2026_10_12": {
