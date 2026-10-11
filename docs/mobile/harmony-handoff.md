@@ -10,7 +10,8 @@
   - 系统**剪贴板权限框**会抢焦点，使 `uitest dumpLayout -b <bundle>` 返回**空树**；已选"始终允许"解除。遇到空树先 `hidumper -s WindowManagerService -a '-a'` 看 `Focus window` 是不是 37（应用窗口）。
   - 中文校验：`docker exec … mysql` 默认字符集把中文显示成 `?`，必须加 `--default-character-set=utf8mb4`；用 `HEX()` 判断库内真值。
 - **H12 映射规则撤销/清除、H13 账单审阅结论已通过**：规则 #310 → `withdrawn` v2（`match_key` 置空）→ `cleared` v3（`content` NULL，历史正文全清，active 规则 0）；账单审阅 #187 → v1 `pending` 保存 → v2 改说明更新 → 历史点 v1 可回读快照 → v3 `cleared`（三版 `snapshot` 全 NULL）。注意：**有未匹配/异币种/未知分类时服务端只接受"仍待核对"结论**，选其他结论预览会被明确拒绝。
-- **下一步顺序**：H14（先在 `user_import` 作用域导入订单行）→ H15 撤销/清除 → H16 停用/重置/恢复与 AI 授权 → H17 启停/撤销/立即运行/通知深链 → H09 分析、H10 总览、H18 历史回读/清除、H20 测试外发（仅替身）→ H21 边界；微信端 wave 3 页面已落地待开发者工具联调。
+- **H14 订单核对"有差异"路径与结论保存已通过**：原障碍是 `user_import/generic` 无订单行。导入 `orders-user-import-synthetic.csv`（批次 #1191，`SYN-U1/U2/U3`）**必须用新订单号**——沿用 synthetic 作用域的 `SYN-G1..G3` 会被服务端按 `source_scope` 拒绝；再导入带 `order_id` 的账单 `statements-order-linked-synthetic.csv`（批次 #1192，`SYN-ST-002` sale 120.0000→`SYN-U1`、refund 8.0000→`SYN-U3`）。口径选「退款前折后商品款」+填依据后：`SYN-U1 · 账单销售款` = **金额差异 80.0000 USD**（订单可比 40.0000 vs 账单 120.0000）；保存为 `statement_reviews` **#188（kind=orders）**。**要点：账单行不带 `order_id` 就一定算不出差额**（按 `(order_id, entry_type)` 分组，无单号的单独成组判 `missing_order_reference`）。
+- **下一步顺序**：H15 撤销/清除 → H16 停用/重置/恢复与 AI 授权 → H17 启停/撤销/立即运行/通知深链 → H09 分析、H10 总览、H18 历史回读/清除、H20 测试外发（仅替身）→ H21 边界；微信端 wave 3 已通过 type-check/构建（24 页、tabBar 5 项带图标），待开发者工具联调。
 
 ## 2026-10-11 23:45 M0-C 接续环境复核（优先于下文历史状态）
 
