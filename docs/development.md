@@ -964,3 +964,11 @@ schedules/status保留worker_enabled并增加latest_timer，接口→SchedulesSe
 ## R2 修复包4：首次使用与管理员边界
 
 LoginView把账号获取与求助写成卖家可执行步骤；管理员CLI仍是创建/重置的正式入口。Dashboard按shop_count显示第一家店铺入口，profile_complete只表示档案状态；Settings等待nextTick后定位店铺区，每行使用RouterLink传shop到现有导入页，由服务端继续限定归属。档案可后补沿用ProfileService.create_shop原契约，没有增加授权旁路。first-use浏览器在正式CLI预建账号后全程操作页面，验证可选档案、店铺持久化、模板下载、实际导入和刷新来源回读。详见r2-fix-uat-01.md。
+
+## M0-A：客户端边界与静态契约
+
+apps/soloops_flutter 的 android/ohos 只承担平台启动桥接，共用 lib/main.dart；apps/soloops_weapp 是 Taro4/Vue3 的独立启动工程。版本锁和三端构建证据见 mobile/m0a-report.md。新客户端未接入业务数据，原后端与 Web 无业务变更。
+
+contracts/ui-contract.json 把原19个业务路由、登录和 B1 对应到五个移动入口，保留字段、服务端动作、审批/来源/人工交付语义。scripts/validate_ui_contract.py 读取现有路由和静态 OpenAPI，核对引用及结构；显式关闭模型、调度与外发，不启动 lifespan/数据库会话。JSON 是唯一编辑源，Markdown 自动生成并校验同步。12项变异测试验证错路由、错API、缺语义、缺写入保护等会被拒绝，不能作为移动业务 E2E。
+
+scripts/mobile/run_evidence.py 保留实际命令、日志、退出码和产物SHA256；export_evidence.py 重新核对哈希后导出脱离本机路径的清单。构建 PASS、运行 NOT_TESTED、工具环境 BLOCKED 和依赖审计 FAIL 分开记录。微信CLI退出0但正文报错的案例按实际加载失败记录。

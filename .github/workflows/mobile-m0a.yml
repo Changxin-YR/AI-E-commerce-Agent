@@ -1,0 +1,54 @@
+name: Verify mobile M0-A
+
+on:
+  push:
+    branches: [feat/soloops-mobile-m0a, main]
+    paths: ['apps/**', 'contracts/**', 'scripts/mobile/**', 'scripts/validate_ui_contract.py', 'docs/mobile/**', 'backend/**', 'frontend/src/router/**', '.github/workflows/mobile-m0a.yml']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+        with:
+          version: '0.12.18'
+      - run: uv sync --frozen --python 3.11
+        working-directory: backend
+      - name: Lint and validate static contract without database
+        working-directory: backend
+        run: |
+          uv run ruff check ../scripts/mobile ../scripts/validate_ui_contract.py
+          uv run ruff format --check ../scripts/mobile ../scripts/validate_ui_contract.py
+          uv run python ../scripts/validate_ui_contract.py
+          uv run python -m unittest discover -s ../scripts/mobile/tests -v
+  weapp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/soloops_weapp
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.16.0'
+          cache: npm
+          cache-dependency-path: apps/soloops_weapp/package-lock.json
+      - run: npm ci
+      - run: npm run type-check
+      - run: npm run build:weapp
+      - name: Verify expected output files
+        run: test -s dist/app.json && test -s dist/app.js && test -s dist/pages/index/index.wxml
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: soloops-weapp-dist
+          path: apps/soloops_weapp/dist
+          if-no-files-found: error

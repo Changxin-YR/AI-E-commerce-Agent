@@ -1,0 +1,5935 @@
+{
+  "schema_version": "1.0",
+  "phase": "M0-A",
+  "baseline_sha": "0a49a37dcd7f1ccf0acc2c0a225bfdc8d8bee686",
+  "scope": "现有 R2 页面/API 的静态契约；不构成移动业务实现或跨端 E2E 证据。",
+  "entries": [
+    {
+      "entry_id": "home",
+      "title": "首页",
+      "feature_ids": [
+        "r2.home",
+        "r2.analytics",
+        "r2.overview"
+      ]
+    },
+    {
+      "entry_id": "tasks",
+      "title": "待办",
+      "feature_ids": [
+        "r2.home",
+        "r2.agent"
+      ]
+    },
+    {
+      "entry_id": "ai",
+      "title": "AI",
+      "feature_ids": [
+        "r2.agent",
+        "r2.b1",
+        "r2.listings"
+      ]
+    },
+    {
+      "entry_id": "support",
+      "title": "客服",
+      "feature_ids": [
+        "r2.support"
+      ]
+    },
+    {
+      "entry_id": "mine",
+      "title": "我的",
+      "feature_ids": [
+        "r2.settings",
+        "r2.imports",
+        "r2.inventory",
+        "r2.profit",
+        "r2.expenses",
+        "r2.statements",
+        "r2.order_reconciliation",
+        "r2.settlements",
+        "r2.rules",
+        "r2.outbound",
+        "r2.schedules",
+        "r2.product_quality",
+        "r2.product_edits",
+        "r2.login"
+      ]
+    }
+  ],
+  "semantic_invariants": {
+    "not_submitted": {
+      "external_submission_confirmed": false
+    },
+    "seller_reported": {
+      "channel_confirmed": false
+    },
+    "stale": {
+      "requires_recheck": true
+    },
+    "candidate": {
+      "executed": false
+    },
+    "approval": {
+      "external_success": false
+    }
+  },
+  "display_semantics": {
+    "not_submitted": "仅本地结果，未向外部平台提交；不代表已发布或已发送。",
+    "seller_reported": "卖家自报操作证据；不等于渠道确认或买家收件。",
+    "stale": "来源已变化或过期，须重新核对；历史结果仍保留原口径。",
+    "candidate": "AI 生成候选仅供审阅，不代表操作已经执行。",
+    "approval": "审批通过仅授予当前节点执行许可，不代表外部操作成功。",
+    "completed_check": "事项 completed 表示已完成核对；异常解除需新有效来源复检支持。",
+    "money": "金额使用服务端 Decimal 字符串与币种；客户端不以浮点重新汇总；缺费用不称净利润。",
+    "time": "UTC 持久时间按明确 IANA 时区显示，统计区间为 [start,end)。",
+    "scheduler": "API 可达、enabled 配置和历史周期均不能单独证明调度进程正在运行。",
+    "unknown": "未知状态保留原值并提示重新核对，禁止推断成功或显示可执行危险动作。"
+  },
+  "guard_conditions": {
+    "web_origin": "现有写请求必须 X-SoloOps-Client: web；若有 Origin 须命中允许列表。登录也受此限制。",
+    "session": "使用当前有效服务端会话；现有 Web Cookie，不把客户端来源头视为身份。",
+    "scope": "后端校验当前用户及店铺归属；切店使在途响应失效。",
+    "csrf": "当前已认证写请求需正确 X-CSRF-Token；来源头和可选 Origin 规则见 web_origin。移动认证尚未实现。",
+    "version": "提交服务端要求的 version / expected_version / 预览哈希；409 后回读，不覆盖新版本。",
+    "source": "核对来源时效、身份、币种、渠道和覆盖区间；stale/cleared 阻止批准或交付。",
+    "risk": "R0–R3 由服务端受控业务服务判定；R3 不可审批绕过。",
+    "budget": "Agent 受技能白名单、步数、时长、费用、授权范围和幂等键限制。",
+    "listing_review": "批准当前草稿前确认商品事实和差异；交付须为当前有效的已批准版本。",
+    "support_review": "敏感混合意图人工接管；交付前全文审阅、语言确认且 reviewed_version == version。",
+    "seller_evidence": "自报须有操作时间、凭据引用、确认和版本；不能产生平台成功回执。",
+    "b1_two_nodes": "分析存档与 Listing 候选分别审批；第二节点拒绝保留第一结果；核对独立内容证据。",
+    "external": "真实外发需新的明确授权、已验证通道与收件对象、全文批准和单次去重；M0-A 不调用。",
+    "readback": "写入中防重入；断线结果未知先按记录 ID / request_id 回读，不能自动重放副作用。",
+    "file_boundary": "沿用每片 2 MiB / 2000 行及导入组 40 MiB / 40000 行 / 20 片；小程序上传适配尚未开发。"
+  },
+  "state_groups": {
+    "source": {
+      "current": "来源有效",
+      "stale": "来源已变化或过期，须重新核对；历史结果仍保留原口径。",
+      "cleared": "来源已清除"
+    },
+    "external": {
+      "not_submitted": "仅本地结果，未向外部平台提交；不代表已发布或已发送。"
+    },
+    "provenance": {
+      "seller_reported": "卖家自报操作证据；不等于渠道确认或买家收件。"
+    },
+    "agent": {
+      "ready": "ready",
+      "running": "running",
+      "waiting_approval": "waiting_approval",
+      "paused": "paused",
+      "cancelled": "cancelled",
+      "rejected": "rejected",
+      "blocked": "blocked",
+      "succeeded": "succeeded",
+      "circuit_open": "circuit_open",
+      "result_unknown": "result_unknown",
+      "waiting_configuration": "waiting_configuration",
+      "waiting_input": "waiting_input"
+    },
+    "listing": {
+      "draft": "待审批草稿",
+      "approved": "本地已批准",
+      "rejected": "已拒绝",
+      "superseded": "已被新版本替代"
+    },
+    "support": {
+      "draft": "待审阅草稿",
+      "human_review": "需要人工接管",
+      "archived": "已存档"
+    },
+    "task": {
+      "pending_approval": "待审批",
+      "open": "待处理",
+      "deferred": "已延期",
+      "completed": "已完成核对",
+      "ignored": "已忽略",
+      "rejected": "已拒绝"
+    },
+    "business": {
+      "pending_review": "pending_review",
+      "checked_pending": "checked_pending",
+      "evidence_recorded": "evidence_recorded",
+      "awaiting_source": "awaiting_source",
+      "resolved": "resolved",
+      "still_anomalous": "still_anomalous",
+      "ignored": "ignored",
+      "cleared": "cleared"
+    },
+    "analysis": {
+      "current": "当前依据",
+      "stale": "来源待核对",
+      "cleared": "来源已清除"
+    }
+  },
+  "error_states": {
+    "unauthenticated": "401：重新登录后只回读记录，不重放写入。",
+    "forbidden": "403：停止操作，核对权限/CSRF/来源。",
+    "not_found": "404：对象不可用，不泄露他店资源。",
+    "conflict": "409：回读当前版本及来源，重新审阅。",
+    "validation": "422：显示字段问题与修复入口。",
+    "network_unknown": "断线/超时：写结果未知，按 ID 回查后决策。",
+    "server_error": "显示服务端 request_id 与可执行恢复提示，不回显敏感正文。"
+  },
+  "apis": {
+    "preview_api_shops__shop_id__operations_preview_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/operations/preview",
+      "request_schema": "OperationScope-Input"
+    },
+    "run_api_shops__shop_id__operations_runs_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/operations/runs",
+      "request_schema": "RunInput"
+    },
+    "runs_api_shops__shop_id__operations_runs_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/operations/runs",
+      "request_schema": null
+    },
+    "get_run_api_shops__shop_id__operations_runs__run_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/operations/runs/{run_id}",
+      "request_schema": null
+    },
+    "tasks_api_shops__shop_id__operations_tasks_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/operations/tasks",
+      "request_schema": null
+    },
+    "get_task_api_shops__shop_id__operations_tasks__task_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/operations/tasks/{task_id}",
+      "request_schema": null
+    },
+    "change_task_api_shops__shop_id__operations_tasks__task_id__post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/operations/tasks/{task_id}",
+      "request_schema": "TaskInput"
+    },
+    "page_api_workbench_get": {
+      "method": "GET",
+      "path": "/api/workbench",
+      "request_schema": null
+    },
+    "get_profile_api_profile_get": {
+      "method": "GET",
+      "path": "/api/profile",
+      "request_schema": null
+    },
+    "save_profile_api_profile_put": {
+      "method": "PUT",
+      "path": "/api/profile",
+      "request_schema": "ProfileInput"
+    },
+    "onboarding_api_onboarding_get": {
+      "method": "GET",
+      "path": "/api/onboarding",
+      "request_schema": null
+    },
+    "list_shops_api_shops_get": {
+      "method": "GET",
+      "path": "/api/shops",
+      "request_schema": null
+    },
+    "create_shop_api_shops_post": {
+      "method": "POST",
+      "path": "/api/shops",
+      "request_schema": "ShopInput"
+    },
+    "get_shop_api_shops__shop_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}",
+      "request_schema": null
+    },
+    "catalog_api_imports_catalog_get": {
+      "method": "GET",
+      "path": "/api/imports/catalog",
+      "request_schema": null
+    },
+    "template_api_imports_templates__kind__get": {
+      "method": "GET",
+      "path": "/api/imports/templates/{kind}",
+      "request_schema": null
+    },
+    "mappings_api_imports_mappings_get": {
+      "method": "GET",
+      "path": "/api/imports/mappings",
+      "request_schema": null
+    },
+    "save_mapping_api_imports_mappings_post": {
+      "method": "POST",
+      "path": "/api/imports/mappings",
+      "request_schema": "MappingTemplateInput"
+    },
+    "upload_api_shops__shop_id__imports_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/imports",
+      "request_schema": null
+    },
+    "batches_api_shops__shop_id__imports_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/imports",
+      "request_schema": null
+    },
+    "batch_api_imports__batch_id__get": {
+      "method": "GET",
+      "path": "/api/imports/{batch_id}",
+      "request_schema": null
+    },
+    "preview_api_imports__batch_id__preview_post": {
+      "method": "POST",
+      "path": "/api/imports/{batch_id}/preview",
+      "request_schema": "PreviewInput"
+    },
+    "commit_api_imports__batch_id__commit_post": {
+      "method": "POST",
+      "path": "/api/imports/{batch_id}/commit",
+      "request_schema": "CommitInput"
+    },
+    "revoke_api_imports__batch_id__revoke_post": {
+      "method": "POST",
+      "path": "/api/imports/{batch_id}/revoke",
+      "request_schema": "VersionInput"
+    },
+    "clear_api_imports__batch_id__clear_post": {
+      "method": "POST",
+      "path": "/api/imports/{batch_id}/clear",
+      "request_schema": "VersionInput"
+    },
+    "error_report_api_imports__batch_id__errors_csv_get": {
+      "method": "GET",
+      "path": "/api/imports/{batch_id}/errors.csv",
+      "request_schema": null
+    },
+    "create_group_api_shops__shop_id__import_groups_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/import-groups",
+      "request_schema": "GroupInput"
+    },
+    "groups_api_shops__shop_id__import_groups_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/import-groups",
+      "request_schema": null
+    },
+    "group_api_import_groups__group_id__get": {
+      "method": "GET",
+      "path": "/api/import-groups/{group_id}",
+      "request_schema": null
+    },
+    "revoke_group_api_import_groups__group_id__revoke_post": {
+      "method": "POST",
+      "path": "/api/import-groups/{group_id}/revoke",
+      "request_schema": "VersionInput"
+    },
+    "cost_history_api_shops__shop_id__analytics_order_costs__row_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/analytics/order-costs/{row_id}",
+      "request_schema": null
+    },
+    "write_cost_api_shops__shop_id__analytics_order_costs__row_id__post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/analytics/order-costs/{row_id}",
+      "request_schema": "CostWrite"
+    },
+    "revision_api_shops__shop_id__analytics_revision_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/analytics/revision",
+      "request_schema": null
+    },
+    "get_saved_api_shops__shop_id__analytics_saved__analysis_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/analytics/saved/{analysis_id}",
+      "request_schema": null
+    },
+    "calculate_api_shops__shop_id__analytics_calculate_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/analytics/calculate",
+      "request_schema": "AnalysisInput-Input"
+    },
+    "ask_api_shops__shop_id__analytics_ask_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/analytics/ask",
+      "request_schema": "QuestionInput"
+    },
+    "save_api_shops__shop_id__analytics_saved_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/analytics/saved",
+      "request_schema": "SaveInput"
+    },
+    "list_saved_api_shops__shop_id__analytics_saved_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/analytics/saved",
+      "request_schema": null
+    },
+    "todo_api_shops__shop_id__analytics_saved__analysis_id__todo_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/analytics/saved/{analysis_id}/todo",
+      "request_schema": null
+    },
+    "source_api_shops__shop_id__analytics_sources__row_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/analytics/sources/{row_id}",
+      "request_schema": null
+    },
+    "change_todo_api_shops__shop_id__analytics_saved__analysis_id__todo_action_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/analytics/saved/{analysis_id}/todo/action",
+      "request_schema": "TodoAction"
+    },
+    "products_api_shops__shop_id__listings_products_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/listings/products",
+      "request_schema": null
+    },
+    "workspace_api_shops__shop_id__listings_products__product_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/listings/products/{product_id}",
+      "request_schema": null
+    },
+    "history_api_shops__shop_id__listings_versions_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/listings/versions",
+      "request_schema": null
+    },
+    "get_api_shops__shop_id__listings_versions__listing_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/listings/versions/{listing_id}",
+      "request_schema": null
+    },
+    "generate_api_shops__shop_id__listings_generate_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/listings/generate",
+      "request_schema": "GenerateInput"
+    },
+    "revise_api_shops__shop_id__listings_versions__listing_id__revise_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/listings/versions/{listing_id}/revise",
+      "request_schema": "ReviseInput"
+    },
+    "decide_api_shops__shop_id__listings_versions__listing_id__decision_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/listings/versions/{listing_id}/decision",
+      "request_schema": "DecisionInput"
+    },
+    "delivery_api_shops__shop_id__listings_versions__listing_id__delivery_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/listings/versions/{listing_id}/delivery",
+      "request_schema": null
+    },
+    "messages_api_shops__shop_id__support_messages_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/support/messages",
+      "request_schema": null
+    },
+    "workspace_api_shops__shop_id__support_messages__message_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/support/messages/{message_id}",
+      "request_schema": null
+    },
+    "generate_api_shops__shop_id__support_messages__message_id__generate_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/support/messages/{message_id}/generate",
+      "request_schema": "GenerateReply"
+    },
+    "policies_api_shops__shop_id__support_policies_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/support/policies",
+      "request_schema": null
+    },
+    "save_policy_api_shops__shop_id__support_policies_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/support/policies",
+      "request_schema": "PolicyInput"
+    },
+    "clear_policy_api_shops__shop_id__support_policies__policy_id__clear_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/support/policies/{policy_id}/clear",
+      "request_schema": null
+    },
+    "history_api_shops__shop_id__support_drafts_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/support/drafts",
+      "request_schema": null
+    },
+    "get_api_shops__shop_id__support_drafts__draft_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/support/drafts/{draft_id}",
+      "request_schema": null
+    },
+    "edit_api_shops__shop_id__support_drafts__draft_id__edit_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/support/drafts/{draft_id}/edit",
+      "request_schema": "EditReply"
+    },
+    "action_api_shops__shop_id__support_drafts__draft_id__action_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/support/drafts/{draft_id}/action",
+      "request_schema": "ReplyAction"
+    },
+    "review_api_shops__shop_id__support_drafts__draft_id__review_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/support/drafts/{draft_id}/review",
+      "request_schema": "ReviewReply"
+    },
+    "delivery_api_shops__shop_id__support_drafts__draft_id__delivery_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/support/drafts/{draft_id}/delivery",
+      "request_schema": null
+    },
+    "manual_actions_api_shops__shop_id__support_drafts__draft_id__manual_actions_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/support/drafts/{draft_id}/manual-actions",
+      "request_schema": null
+    },
+    "record_manual_action_api_shops__shop_id__support_drafts__draft_id__manual_actions_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/support/drafts/{draft_id}/manual-actions",
+      "request_schema": "RecordManualAction"
+    },
+    "inventory_api_shops__shop_id__inventory_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/inventory",
+      "request_schema": null
+    },
+    "skills_api_shops__shop_id__agent_skills_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/agent/skills",
+      "request_schema": null
+    },
+    "model_status_api_shops__shop_id__agent_model_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/agent/model",
+      "request_schema": null
+    },
+    "start_api_shops__shop_id__agent_runs_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/agent/runs",
+      "request_schema": "StartAgent-Input"
+    },
+    "runs_api_shops__shop_id__agent_runs_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/agent/runs",
+      "request_schema": null
+    },
+    "get_api_shops__shop_id__agent_runs__run_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/agent/runs/{run_id}",
+      "request_schema": null
+    },
+    "act_api_shops__shop_id__agent_runs__run_id__post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/agent/runs/{run_id}",
+      "request_schema": "AgentAction"
+    },
+    "calculate_api_shops__shop_id__profit_calculate_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/profit/calculate",
+      "request_schema": "StudyInput-Input"
+    },
+    "save_api_shops__shop_id__profit_saved_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/profit/saved",
+      "request_schema": "SaveStudyInput"
+    },
+    "list_saved_api_shops__shop_id__profit_saved_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/profit/saved",
+      "request_schema": null
+    },
+    "get_saved_api_shops__shop_id__profit_saved__study_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/profit/saved/{study_id}",
+      "request_schema": null
+    },
+    "clear_saved_api_shops__shop_id__profit_saved__study_id__delete": {
+      "method": "DELETE",
+      "path": "/api/shops/{shop_id}/profit/saved/{study_id}",
+      "request_schema": null
+    },
+    "create_api_shops__shop_id__expenses_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/expenses",
+      "request_schema": "ExpenseWrite"
+    },
+    "page_api_shops__shop_id__expenses_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/expenses",
+      "request_schema": null
+    },
+    "orders_api_shops__shop_id__expenses_orders_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/expenses/orders",
+      "request_schema": null
+    },
+    "summary_api_shops__shop_id__expenses_summary_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/expenses/summary",
+      "request_schema": "ExpenseScope"
+    },
+    "get_api_shops__shop_id__expenses__expense_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/expenses/{expense_id}",
+      "request_schema": null
+    },
+    "update_api_shops__shop_id__expenses__expense_id__post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/expenses/{expense_id}",
+      "request_schema": "ExpenseWrite"
+    },
+    "control_api_shops__shop_id__expenses__expense_id___action__post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/expenses/{expense_id}/{action}",
+      "request_schema": "ExpenseControl"
+    },
+    "preview_api_shops__shop_id__fee_rules_preview_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/fee-rules/preview",
+      "request_schema": "FeeRuleDraft"
+    },
+    "write_api_shops__shop_id__fee_rules_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/fee-rules",
+      "request_schema": "FeeRuleWrite"
+    },
+    "page_api_shops__shop_id__fee_rules_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/fee-rules",
+      "request_schema": null
+    },
+    "get_api_shops__shop_id__fee_rules__rule_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/fee-rules/{rule_id}",
+      "request_schema": null
+    },
+    "control_api_shops__shop_id__fee_rules__rule_id___action__post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/fee-rules/{rule_id}/{action}",
+      "request_schema": "ExpenseControl"
+    },
+    "reconcile_api_shops__shop_id__statements_reconcile_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/statements/reconcile",
+      "request_schema": "ExpenseScope"
+    },
+    "preview_api_shops__shop_id__statement_reviews_preview_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/statement-reviews/preview",
+      "request_schema": "ReviewDraft"
+    },
+    "write_api_shops__shop_id__statement_reviews_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/statement-reviews",
+      "request_schema": "ReviewWrite"
+    },
+    "page_api_shops__shop_id__statement_reviews_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/statement-reviews",
+      "request_schema": null
+    },
+    "get_api_shops__shop_id__statement_reviews__review_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/statement-reviews/{review_id}",
+      "request_schema": null
+    },
+    "read_current_api_shops__shop_id__statement_reviews__review_id__current_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/statement-reviews/{review_id}/current",
+      "request_schema": null
+    },
+    "control_api_shops__shop_id__statement_reviews__review_id___action__post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/statement-reviews/{review_id}/{action}",
+      "request_schema": "ExpenseControl"
+    },
+    "reconcile_orders_api_shops__shop_id__statements_orders_reconcile_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/statements/orders/reconcile",
+      "request_schema": "OrderReconciliationScope"
+    },
+    "preview_api_shops__shop_id__settlements_preview_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/settlements/preview",
+      "request_schema": "SettlementDraft"
+    },
+    "write_api_shops__shop_id__settlements_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/settlements",
+      "request_schema": "SettlementWrite"
+    },
+    "page_api_shops__shop_id__settlements_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/settlements",
+      "request_schema": null
+    },
+    "get_api_shops__shop_id__settlements__settlement_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/settlements/{settlement_id}",
+      "request_schema": null
+    },
+    "read_current_api_shops__shop_id__settlements__settlement_id__current_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/settlements/{settlement_id}/current",
+      "request_schema": null
+    },
+    "control_api_shops__shop_id__settlements__settlement_id___action__post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/settlements/{settlement_id}/{action}",
+      "request_schema": "ExpenseControl"
+    },
+    "create_api_shops__shop_id__authorizations_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/authorizations",
+      "request_schema": "CreateAuthorization"
+    },
+    "list_grants_api_shops__shop_id__authorizations_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/authorizations",
+      "request_schema": null
+    },
+    "get_api_shops__shop_id__authorizations__grant_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/authorizations/{grant_id}",
+      "request_schema": null
+    },
+    "revoke_api_shops__shop_id__authorizations__grant_id__revoke_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/authorizations/{grant_id}/revoke",
+      "request_schema": "RevokeAuthorization"
+    },
+    "revert_api_shops__shop_id__authorizations__grant_id__uses__use_id__revert_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/authorizations/{grant_id}/uses/{use_id}/revert",
+      "request_schema": null
+    },
+    "current_api_shops__shop_id__business_rules_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/business-rules",
+      "request_schema": null
+    },
+    "change_api_shops__shop_id__business_rules_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/business-rules",
+      "request_schema": "RuleChange"
+    },
+    "history_api_shops__shop_id__business_rules_history_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/business-rules/history",
+      "request_schema": null
+    },
+    "get_api_shops__shop_id__business_rules__version__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/business-rules/{version}",
+      "request_schema": null
+    },
+    "channel_api_shops__shop_id__outbound_channel_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/outbound/channel",
+      "request_schema": null
+    },
+    "connect_api_shops__shop_id__outbound_channel_connect_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/outbound/channel/connect",
+      "request_schema": "ConfirmMail"
+    },
+    "verify_api_shops__shop_id__outbound_channel__channel_id__verify_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/outbound/channel/{channel_id}/verify",
+      "request_schema": "VerifyMailbox"
+    },
+    "revoke_channel_api_shops__shop_id__outbound_channel__channel_id__revoke_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/outbound/channel/{channel_id}/revoke",
+      "request_schema": null
+    },
+    "messages_api_shops__shop_id__outbound_messages_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/outbound/messages",
+      "request_schema": null
+    },
+    "create_api_shops__shop_id__outbound_messages_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/outbound/messages",
+      "request_schema": "CreateMail"
+    },
+    "get_api_shops__shop_id__outbound_messages__message_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/outbound/messages/{message_id}",
+      "request_schema": null
+    },
+    "edit_api_shops__shop_id__outbound_messages__message_id__patch": {
+      "method": "PATCH",
+      "path": "/api/shops/{shop_id}/outbound/messages/{message_id}",
+      "request_schema": "EditMail"
+    },
+    "approve_api_shops__shop_id__outbound_messages__message_id__approve_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/outbound/messages/{message_id}/approve",
+      "request_schema": "ApproveMail"
+    },
+    "revoke_api_shops__shop_id__outbound_messages__message_id__approvals__approval_id__revoke_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/outbound/messages/{message_id}/approvals/{approval_id}/revoke",
+      "request_schema": null
+    },
+    "reject_api_shops__shop_id__outbound_messages__message_id__reject_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/outbound/messages/{message_id}/reject",
+      "request_schema": "MailVersion"
+    },
+    "send_api_shops__shop_id__outbound_messages__message_id__send_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/outbound/messages/{message_id}/send",
+      "request_schema": "SendMail"
+    },
+    "reconcile_api_shops__shop_id__outbound_messages__message_id__reconcile_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/outbound/messages/{message_id}/reconcile",
+      "request_schema": "ReconcileMail"
+    },
+    "receipt_api_shops__shop_id__outbound_messages__message_id__receipt_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/outbound/messages/{message_id}/receipt",
+      "request_schema": "ReceiptEvidence"
+    },
+    "calculate_api_overview_calculate_post": {
+      "method": "POST",
+      "path": "/api/overview/calculate",
+      "request_schema": "OverviewScope-Input"
+    },
+    "save_api_overview_reports_post": {
+      "method": "POST",
+      "path": "/api/overview/reports",
+      "request_schema": "OverviewSave"
+    },
+    "page_api_overview_reports_get": {
+      "method": "GET",
+      "path": "/api/overview/reports",
+      "request_schema": null
+    },
+    "get_api_overview_reports__report_id__get": {
+      "method": "GET",
+      "path": "/api/overview/reports/{report_id}",
+      "request_schema": null
+    },
+    "clear_api_overview_reports__report_id__clear_post": {
+      "method": "POST",
+      "path": "/api/overview/reports/{report_id}/clear",
+      "request_schema": "OverviewClear"
+    },
+    "status_api_shops__shop_id__schedules_status_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/schedules/status",
+      "request_schema": null
+    },
+    "schedules_api_shops__shop_id__schedules_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/schedules",
+      "request_schema": null
+    },
+    "create_api_shops__shop_id__schedules_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/schedules",
+      "request_schema": "CreateSchedule"
+    },
+    "history_api_shops__shop_id__schedules_history_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/schedules/history",
+      "request_schema": null
+    },
+    "read_api_shops__shop_id__schedules_history__item_id__read_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/schedules/history/{item_id}/read",
+      "request_schema": null
+    },
+    "act_api_shops__shop_id__schedules__schedule_id__post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/schedules/{schedule_id}",
+      "request_schema": "ScheduleAction"
+    },
+    "check_api_shops__shop_id__schedules__schedule_id__check_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/schedules/{schedule_id}/check",
+      "request_schema": "ManualCheck"
+    },
+    "preview_api_shops__shop_id__product_quality_preview_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/product-quality/preview",
+      "request_schema": "QualityScope"
+    },
+    "save_api_shops__shop_id__product_quality_reports_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/product-quality/reports",
+      "request_schema": "QualitySave"
+    },
+    "page_api_shops__shop_id__product_quality_reports_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/product-quality/reports",
+      "request_schema": null
+    },
+    "get_api_shops__shop_id__product_quality_reports__report_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/product-quality/reports/{report_id}",
+      "request_schema": null
+    },
+    "clear_api_shops__shop_id__product_quality_reports__report_id__clear_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/product-quality/reports/{report_id}/clear",
+      "request_schema": "QualityClear"
+    },
+    "create_api_shops__shop_id__product_edits_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/product-edits",
+      "request_schema": "EditCreate"
+    },
+    "page_api_shops__shop_id__product_edits_get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/product-edits",
+      "request_schema": null
+    },
+    "get_api_shops__shop_id__product_edits__edit_id__get": {
+      "method": "GET",
+      "path": "/api/shops/{shop_id}/product-edits/{edit_id}",
+      "request_schema": null
+    },
+    "approve_api_shops__shop_id__product_edits__edit_id__approve_post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/product-edits/{edit_id}/approve",
+      "request_schema": "EditDecision"
+    },
+    "control_api_shops__shop_id__product_edits__edit_id___action__post": {
+      "method": "POST",
+      "path": "/api/shops/{shop_id}/product-edits/{edit_id}/{action}",
+      "request_schema": "EditControl"
+    },
+    "login_api_auth_login_post": {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "request_schema": "LoginInput"
+    },
+    "current_session_api_auth_session_get": {
+      "method": "GET",
+      "path": "/api/auth/session",
+      "request_schema": null
+    },
+    "logout_api_auth_logout_post": {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "request_schema": null
+    }
+  },
+  "features": [
+    {
+      "feature_id": "r2.home",
+      "title": "今日 AI 运营",
+      "web_route": "/",
+      "entry": "home",
+      "so_ids": [
+        "SO-002",
+        "SO-004",
+        "SO-005",
+        "SO-068"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/DashboardView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "WorkPage",
+          "field": "items"
+        },
+        {
+          "schema": "WorkPage",
+          "field": "recent_runs"
+        },
+        {
+          "schema": "WorkPage",
+          "field": "counts"
+        },
+        {
+          "schema": "WorkPage",
+          "field": "view_counts"
+        },
+        {
+          "schema": "WorkPage",
+          "field": "read_at"
+        },
+        {
+          "schema": "TaskOutput",
+          "field": "id"
+        },
+        {
+          "schema": "TaskOutput",
+          "field": "version"
+        },
+        {
+          "schema": "TaskOutput",
+          "field": "status"
+        },
+        {
+          "schema": "TaskOutput",
+          "field": "source_status"
+        },
+        {
+          "schema": "TaskOutput",
+          "field": "business_state"
+        }
+      ],
+      "statuses": [
+        "task",
+        "business",
+        "source",
+        "external",
+        "provenance"
+      ],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "preview_api_shops__shop_id__operations_preview_post",
+          "api_ref": "preview_api_shops__shop_id__operations_preview_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "cost_mode",
+            "start_at",
+            "end_at",
+            "timezone",
+            "currency",
+            "data_identity",
+            "channel",
+            "intent",
+            "min_quantity",
+            "max_margin_percent",
+            "rule_revision_id",
+            "max_age_hours"
+          ],
+          "required_payload_fields": [
+            "start_at",
+            "end_at",
+            "timezone",
+            "currency",
+            "data_identity"
+          ]
+        },
+        {
+          "action_id": "run_api_shops__shop_id__operations_runs_post",
+          "api_ref": "run_api_shops__shop_id__operations_runs_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "seller_evidence"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "scope",
+            "expected_preview_hash"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "scope"
+          ]
+        },
+        {
+          "action_id": "runs_api_shops__shop_id__operations_runs_get",
+          "api_ref": "runs_api_shops__shop_id__operations_runs_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_run_api_shops__shop_id__operations_runs__run_id__get",
+          "api_ref": "get_run_api_shops__shop_id__operations_runs__run_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "tasks_api_shops__shop_id__operations_tasks_get",
+          "api_ref": "tasks_api_shops__shop_id__operations_tasks_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_task_api_shops__shop_id__operations_tasks__task_id__get",
+          "api_ref": "get_task_api_shops__shop_id__operations_tasks__task_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "change_task_api_shops__shop_id__operations_tasks__task_id__post",
+          "api_ref": "change_task_api_shops__shop_id__operations_tasks__task_id__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "seller_evidence"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version",
+            "action",
+            "note",
+            "due_at",
+            "evidence"
+          ],
+          "required_payload_fields": [
+            "version",
+            "action"
+          ],
+          "variants": {
+            "field": "action",
+            "values": [
+              "approve",
+              "reject",
+              "ignore",
+              "defer",
+              "complete",
+              "reopen",
+              "edit",
+              "record_evidence",
+              "wait_source",
+              "recheck"
+            ]
+          }
+        },
+        {
+          "action_id": "page_api_workbench_get",
+          "api_ref": "page_api_workbench_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "预览后保存候选，逐项审批；complete 仅完成核对，新来源 recheck 才能支持 resolved。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.settings",
+      "title": "店铺与经营资料",
+      "web_route": "/settings",
+      "entry": "mine",
+      "so_ids": [
+        "SO-001",
+        "SO-074"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/SettingsView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "ProfileOutput",
+          "field": "display_name"
+        },
+        {
+          "schema": "ProfileOutput",
+          "field": "currency"
+        },
+        {
+          "schema": "ProfileOutput",
+          "field": "timezone"
+        },
+        {
+          "schema": "ProfileOutput",
+          "field": "version"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "get_profile_api_profile_get",
+          "api_ref": "get_profile_api_profile_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "save_profile_api_profile_put",
+          "api_ref": "save_profile_api_profile_put",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "display_name",
+            "target_market",
+            "business_model",
+            "category",
+            "currency",
+            "timezone",
+            "language",
+            "version"
+          ],
+          "required_payload_fields": [
+            "display_name",
+            "target_market",
+            "business_model",
+            "category",
+            "currency",
+            "timezone",
+            "language",
+            "version"
+          ]
+        },
+        {
+          "action_id": "onboarding_api_onboarding_get",
+          "api_ref": "onboarding_api_onboarding_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "list_shops_api_shops_get",
+          "api_ref": "list_shops_api_shops_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "create_shop_api_shops_post",
+          "api_ref": "create_shop_api_shops_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "code",
+            "name",
+            "platform",
+            "market",
+            "currency",
+            "timezone"
+          ],
+          "required_payload_fields": [
+            "code",
+            "name",
+            "platform",
+            "market",
+            "currency",
+            "timezone"
+          ]
+        },
+        {
+          "action_id": "get_shop_api_shops__shop_id__get",
+          "api_ref": "get_shop_api_shops__shop_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.imports",
+      "title": "文件导入",
+      "web_route": "/imports",
+      "entry": "mine",
+      "so_ids": [
+        "SO-001",
+        "SO-008",
+        "SO-027",
+        "SO-041"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/ImportsView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "BatchOutput",
+          "field": "id"
+        },
+        {
+          "schema": "BatchOutput",
+          "field": "shop_id"
+        },
+        {
+          "schema": "BatchOutput",
+          "field": "data_identity"
+        },
+        {
+          "schema": "BatchOutput",
+          "field": "status"
+        },
+        {
+          "schema": "BatchOutput",
+          "field": "version"
+        },
+        {
+          "schema": "BatchOutput",
+          "field": "total_rows"
+        },
+        {
+          "schema": "BatchOutput",
+          "field": "error_rows"
+        },
+        {
+          "schema": "BatchOutput",
+          "field": "mapping"
+        },
+        {
+          "schema": "BatchOutput",
+          "field": "required_reviews"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "catalog_api_imports_catalog_get",
+          "api_ref": "catalog_api_imports_catalog_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "file_boundary"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "template_api_imports_templates__kind__get",
+          "api_ref": "template_api_imports_templates__kind__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "file_boundary"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "mappings_api_imports_mappings_get",
+          "api_ref": "mappings_api_imports_mappings_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "file_boundary"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "save_mapping_api_imports_mappings_post",
+          "api_ref": "save_mapping_api_imports_mappings_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "file_boundary"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "name",
+            "kind",
+            "source_channel",
+            "mapping"
+          ],
+          "required_payload_fields": [
+            "name",
+            "kind",
+            "source_channel",
+            "mapping"
+          ]
+        },
+        {
+          "action_id": "upload_api_shops__shop_id__imports_post",
+          "api_ref": "upload_api_shops__shop_id__imports_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "file_boundary"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "batches_api_shops__shop_id__imports_get",
+          "api_ref": "batches_api_shops__shop_id__imports_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "file_boundary"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "batch_api_imports__batch_id__get",
+          "api_ref": "batch_api_imports__batch_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "file_boundary"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "preview_api_imports__batch_id__preview_post",
+          "api_ref": "preview_api_imports__batch_id__preview_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "file_boundary"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version",
+            "mapping",
+            "corrections"
+          ],
+          "required_payload_fields": [
+            "version",
+            "mapping"
+          ]
+        },
+        {
+          "action_id": "commit_api_imports__batch_id__commit_post",
+          "api_ref": "commit_api_imports__batch_id__commit_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "file_boundary"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version",
+            "allow_updates",
+            "reviewed_fields"
+          ],
+          "required_payload_fields": [
+            "version"
+          ]
+        },
+        {
+          "action_id": "revoke_api_imports__batch_id__revoke_post",
+          "api_ref": "revoke_api_imports__batch_id__revoke_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "file_boundary"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version"
+          ],
+          "required_payload_fields": [
+            "version"
+          ]
+        },
+        {
+          "action_id": "clear_api_imports__batch_id__clear_post",
+          "api_ref": "clear_api_imports__batch_id__clear_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "file_boundary"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version"
+          ],
+          "required_payload_fields": [
+            "version"
+          ]
+        },
+        {
+          "action_id": "error_report_api_imports__batch_id__errors_csv_get",
+          "api_ref": "error_report_api_imports__batch_id__errors_csv_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "file_boundary"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "create_group_api_shops__shop_id__import_groups_post",
+          "api_ref": "create_group_api_shops__shop_id__import_groups_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "file_boundary"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "options",
+            "manifest"
+          ],
+          "required_payload_fields": [
+            "options",
+            "manifest"
+          ]
+        },
+        {
+          "action_id": "groups_api_shops__shop_id__import_groups_get",
+          "api_ref": "groups_api_shops__shop_id__import_groups_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "file_boundary"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "group_api_import_groups__group_id__get",
+          "api_ref": "group_api_import_groups__group_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "file_boundary"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "revoke_group_api_import_groups__group_id__revoke_post",
+          "api_ref": "revoke_group_api_import_groups__group_id__revoke_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "file_boundary"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version"
+          ],
+          "required_payload_fields": [
+            "version"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "现有 Web 原始 bytes 上传；Taro multipart 薄适配是后续阶段。大文件移交已有 Web 有界导入流程。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.analytics",
+      "title": "经营分析",
+      "web_route": "/analytics",
+      "entry": "home",
+      "so_ids": [
+        "SO-052",
+        "SO-053",
+        "SO-057"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/AnalyticsView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "AnalysisResult",
+          "field": "scope"
+        },
+        {
+          "schema": "AnalysisResult",
+          "field": "source_revision"
+        },
+        {
+          "schema": "AnalysisResult",
+          "field": "formula"
+        },
+        {
+          "schema": "AnalysisResult",
+          "field": "cost_basis"
+        },
+        {
+          "schema": "AnalysisResult",
+          "field": "fee_gaps"
+        },
+        {
+          "schema": "AnalysisResult",
+          "field": "summary"
+        },
+        {
+          "schema": "AnalysisResult",
+          "field": "lines"
+        },
+        {
+          "schema": "AnalysisResult",
+          "field": "ranking_available"
+        }
+      ],
+      "statuses": [
+        "analysis"
+      ],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "cost_history_api_shops__shop_id__analytics_order_costs__row_id__get",
+          "api_ref": "cost_history_api_shops__shop_id__analytics_order_costs__row_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "write_cost_api_shops__shop_id__analytics_order_costs__row_id__post",
+          "api_ref": "write_cost_api_shops__shop_id__analytics_order_costs__row_id__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "expected_version",
+            "expected_revision",
+            "action",
+            "content"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "expected_version",
+            "expected_revision"
+          ],
+          "variants": {
+            "field": "action",
+            "values": [
+              "upsert",
+              "revoke"
+            ]
+          }
+        },
+        {
+          "action_id": "revision_api_shops__shop_id__analytics_revision_get",
+          "api_ref": "revision_api_shops__shop_id__analytics_revision_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_saved_api_shops__shop_id__analytics_saved__analysis_id__get",
+          "api_ref": "get_saved_api_shops__shop_id__analytics_saved__analysis_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "calculate_api_shops__shop_id__analytics_calculate_post",
+          "api_ref": "calculate_api_shops__shop_id__analytics_calculate_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "cost_mode",
+            "start_at",
+            "end_at",
+            "timezone",
+            "currency",
+            "data_identity",
+            "channel",
+            "intent",
+            "min_quantity",
+            "max_margin_percent"
+          ],
+          "required_payload_fields": [
+            "start_at",
+            "end_at",
+            "timezone",
+            "currency",
+            "data_identity"
+          ]
+        },
+        {
+          "action_id": "ask_api_shops__shop_id__analytics_ask_post",
+          "api_ref": "ask_api_shops__shop_id__analytics_ask_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "scope",
+            "question"
+          ],
+          "required_payload_fields": [
+            "scope",
+            "question"
+          ]
+        },
+        {
+          "action_id": "save_api_shops__shop_id__analytics_saved_post",
+          "api_ref": "save_api_shops__shop_id__analytics_saved_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "scope",
+            "expected_revision"
+          ],
+          "required_payload_fields": [
+            "scope",
+            "expected_revision"
+          ]
+        },
+        {
+          "action_id": "list_saved_api_shops__shop_id__analytics_saved_get",
+          "api_ref": "list_saved_api_shops__shop_id__analytics_saved_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "todo_api_shops__shop_id__analytics_saved__analysis_id__todo_post",
+          "api_ref": "todo_api_shops__shop_id__analytics_saved__analysis_id__todo_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "source_api_shops__shop_id__analytics_sources__row_id__get",
+          "api_ref": "source_api_shops__shop_id__analytics_sources__row_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "change_todo_api_shops__shop_id__analytics_saved__analysis_id__todo_action_post",
+          "api_ref": "change_todo_api_shops__shop_id__analytics_saved__analysis_id__todo_action_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "expected_version",
+            "action"
+          ],
+          "required_payload_fields": [
+            "expected_version",
+            "action"
+          ],
+          "variants": {
+            "field": "action",
+            "values": [
+              "complete",
+              "reopen"
+            ]
+          }
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "保留销售、成本口径、费用缺口、原始行引用及旧快照；卖家历史成本依据另存版本，重算生成新结果。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.listings",
+      "title": "AI Listing",
+      "web_route": "/listings",
+      "entry": "ai",
+      "so_ids": [
+        "SO-018",
+        "SO-067"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/ListingsView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "ListingOutput",
+          "field": "id"
+        },
+        {
+          "schema": "ListingOutput",
+          "field": "shop_id"
+        },
+        {
+          "schema": "ListingOutput",
+          "field": "number"
+        },
+        {
+          "schema": "ListingOutput",
+          "field": "version"
+        },
+        {
+          "schema": "ListingOutput",
+          "field": "status"
+        },
+        {
+          "schema": "ListingOutput",
+          "field": "source_status"
+        },
+        {
+          "schema": "ListingOutput",
+          "field": "snapshot"
+        },
+        {
+          "schema": "ListingOutput",
+          "field": "external_status"
+        },
+        {
+          "schema": "ListingSnapshot",
+          "field": "product"
+        },
+        {
+          "schema": "ListingSnapshot",
+          "field": "before"
+        },
+        {
+          "schema": "ListingSnapshot",
+          "field": "proposed"
+        },
+        {
+          "schema": "ListingSnapshot",
+          "field": "missing"
+        },
+        {
+          "schema": "ListingSnapshot",
+          "field": "blockers"
+        },
+        {
+          "schema": "ListingContent",
+          "field": "title"
+        },
+        {
+          "schema": "ListingContent",
+          "field": "description"
+        },
+        {
+          "schema": "ListingDelivery",
+          "field": "plain_text"
+        },
+        {
+          "schema": "ListingDelivery",
+          "field": "csv_text"
+        },
+        {
+          "schema": "ListingDelivery",
+          "field": "filename"
+        },
+        {
+          "schema": "ListingDelivery",
+          "field": "source"
+        }
+      ],
+      "statuses": [
+        "listing",
+        "source",
+        "external"
+      ],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "products_api_shops__shop_id__listings_products_get",
+          "api_ref": "products_api_shops__shop_id__listings_products_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "listing_review"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "workspace_api_shops__shop_id__listings_products__product_id__get",
+          "api_ref": "workspace_api_shops__shop_id__listings_products__product_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "listing_review"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "history_api_shops__shop_id__listings_versions_get",
+          "api_ref": "history_api_shops__shop_id__listings_versions_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "listing_review"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__listings_versions__listing_id__get",
+          "api_ref": "get_api_shops__shop_id__listings_versions__listing_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "listing_review"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "generate_api_shops__shop_id__listings_generate_post",
+          "api_ref": "generate_api_shops__shop_id__listings_generate_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "listing_review"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "product_id",
+            "expected_source_row_id",
+            "expected_active_id"
+          ],
+          "required_payload_fields": [
+            "product_id",
+            "expected_source_row_id",
+            "expected_active_id"
+          ]
+        },
+        {
+          "action_id": "revise_api_shops__shop_id__listings_versions__listing_id__revise_post",
+          "api_ref": "revise_api_shops__shop_id__listings_versions__listing_id__revise_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "listing_review"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "expected_version",
+            "expected_active_id",
+            "content"
+          ],
+          "required_payload_fields": [
+            "expected_version",
+            "expected_active_id",
+            "content"
+          ]
+        },
+        {
+          "action_id": "decide_api_shops__shop_id__listings_versions__listing_id__decision_post",
+          "api_ref": "decide_api_shops__shop_id__listings_versions__listing_id__decision_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "listing_review"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "expected_version",
+            "decision",
+            "facts_confirmed"
+          ],
+          "required_payload_fields": [
+            "expected_version",
+            "decision"
+          ],
+          "variants": {
+            "field": "decision",
+            "values": [
+              "approve",
+              "reject"
+            ]
+          }
+        },
+        {
+          "action_id": "delivery_api_shops__shop_id__listings_versions__listing_id__delivery_get",
+          "api_ref": "delivery_api_shops__shop_id__listings_versions__listing_id__delivery_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "listing_review"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "生成/修订候选 → 当前版本事实确认 → 本地批准 → GET delivery 校验后复制/CSV。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.support",
+      "title": "AI 客服",
+      "web_route": "/support",
+      "entry": "support",
+      "so_ids": [
+        "SO-031",
+        "SO-032",
+        "SO-033"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/SupportView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "ReplyOutput",
+          "field": "id"
+        },
+        {
+          "schema": "ReplyOutput",
+          "field": "version"
+        },
+        {
+          "schema": "ReplyOutput",
+          "field": "status"
+        },
+        {
+          "schema": "ReplyOutput",
+          "field": "source_status"
+        },
+        {
+          "schema": "ReplyOutput",
+          "field": "snapshot"
+        },
+        {
+          "schema": "ReplyOutput",
+          "field": "reviewed_version"
+        },
+        {
+          "schema": "ReplyOutput",
+          "field": "reviewed_language"
+        },
+        {
+          "schema": "ReplyOutput",
+          "field": "external_status"
+        },
+        {
+          "schema": "ReplySnapshot",
+          "field": "message"
+        },
+        {
+          "schema": "ReplySnapshot",
+          "field": "orders"
+        },
+        {
+          "schema": "ReplySnapshot",
+          "field": "order_verified"
+        },
+        {
+          "schema": "ReplySnapshot",
+          "field": "policies"
+        },
+        {
+          "schema": "ReplySnapshot",
+          "field": "intents"
+        },
+        {
+          "schema": "ReplySnapshot",
+          "field": "reasons"
+        },
+        {
+          "schema": "ReplySnapshot",
+          "field": "handoff_summary"
+        },
+        {
+          "schema": "ReplySnapshot",
+          "field": "reply"
+        },
+        {
+          "schema": "ReplySnapshot",
+          "field": "model_facts"
+        }
+      ],
+      "statuses": [
+        "support",
+        "source",
+        "external",
+        "provenance"
+      ],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "messages_api_shops__shop_id__support_messages_get",
+          "api_ref": "messages_api_shops__shop_id__support_messages_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "workspace_api_shops__shop_id__support_messages__message_id__get",
+          "api_ref": "workspace_api_shops__shop_id__support_messages__message_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "generate_api_shops__shop_id__support_messages__message_id__generate_post",
+          "api_ref": "generate_api_shops__shop_id__support_messages__message_id__generate_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "expected_source_row_id",
+            "expected_order_row_ids",
+            "order_verified",
+            "policy_ids"
+          ],
+          "required_payload_fields": [
+            "expected_source_row_id"
+          ]
+        },
+        {
+          "action_id": "policies_api_shops__shop_id__support_policies_get",
+          "api_ref": "policies_api_shops__shop_id__support_policies_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "save_policy_api_shops__shop_id__support_policies_post",
+          "api_ref": "save_policy_api_shops__shop_id__support_policies_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "expected_policy_id",
+            "data"
+          ],
+          "required_payload_fields": [
+            "expected_policy_id",
+            "data"
+          ]
+        },
+        {
+          "action_id": "clear_policy_api_shops__shop_id__support_policies__policy_id__clear_post",
+          "api_ref": "clear_policy_api_shops__shop_id__support_policies__policy_id__clear_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "history_api_shops__shop_id__support_drafts_get",
+          "api_ref": "history_api_shops__shop_id__support_drafts_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__support_drafts__draft_id__get",
+          "api_ref": "get_api_shops__shop_id__support_drafts__draft_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "edit_api_shops__shop_id__support_drafts__draft_id__edit_post",
+          "api_ref": "edit_api_shops__shop_id__support_drafts__draft_id__edit_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "expected_version",
+            "reply"
+          ],
+          "required_payload_fields": [
+            "expected_version",
+            "reply"
+          ]
+        },
+        {
+          "action_id": "action_api_shops__shop_id__support_drafts__draft_id__action_post",
+          "api_ref": "action_api_shops__shop_id__support_drafts__draft_id__action_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "expected_version",
+            "action"
+          ],
+          "required_payload_fields": [
+            "expected_version",
+            "action"
+          ],
+          "variants": {
+            "field": "action",
+            "values": [
+              "handoff",
+              "archive",
+              "reopen"
+            ]
+          }
+        },
+        {
+          "action_id": "review_api_shops__shop_id__support_drafts__draft_id__review_post",
+          "api_ref": "review_api_shops__shop_id__support_drafts__draft_id__review_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "expected_version",
+            "target_language",
+            "confirmed"
+          ],
+          "required_payload_fields": [
+            "expected_version",
+            "target_language",
+            "confirmed"
+          ]
+        },
+        {
+          "action_id": "delivery_api_shops__shop_id__support_drafts__draft_id__delivery_get",
+          "api_ref": "delivery_api_shops__shop_id__support_drafts__draft_id__delivery_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "manual_actions_api_shops__shop_id__support_drafts__draft_id__manual_actions_get",
+          "api_ref": "manual_actions_api_shops__shop_id__support_drafts__draft_id__manual_actions_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "record_manual_action_api_shops__shop_id__support_drafts__draft_id__manual_actions_post",
+          "api_ref": "record_manual_action_api_shops__shop_id__support_drafts__draft_id__manual_actions_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "support_review",
+            "seller_evidence"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "method",
+            "evidence_ref",
+            "note",
+            "request_id",
+            "expected_version",
+            "occurred_at",
+            "confirmed"
+          ],
+          "required_payload_fields": [
+            "method",
+            "evidence_ref",
+            "request_id",
+            "expected_version",
+            "occurred_at",
+            "confirmed"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "订单/政策核验 → 多意图草稿 → 敏感人工接管 → 全文审阅 → 人工交付 → 自报证据；编辑使旧审阅失效。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.inventory",
+      "title": "库存快照",
+      "web_route": "/inventory",
+      "entry": "mine",
+      "so_ids": [
+        "SO-041"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/InventoryView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "InventoryOutput",
+          "field": "shop_id"
+        },
+        {
+          "schema": "InventoryOutput",
+          "field": "checked_at"
+        },
+        {
+          "schema": "InventoryOutput",
+          "field": "scope"
+        },
+        {
+          "schema": "InventoryOutput",
+          "field": "items"
+        },
+        {
+          "schema": "InventoryOutput",
+          "field": "note"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "inventory_api_shops__shop_id__inventory_get",
+          "api_ref": "inventory_api_shops__shop_id__inventory_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "无库存快照显示未知或未检查，不能显示零库存。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.agent",
+      "title": "受控 Agent",
+      "web_route": "/agent",
+      "entry": "ai",
+      "so_ids": [
+        "SO-003",
+        "SO-060",
+        "SO-062",
+        "SO-067",
+        "SO-068"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/AgentView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "AgentOutput",
+          "field": "id"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "shop_id"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "template"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "status"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "version"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "next_node"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "source_status"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "steps"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "budget"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "result"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "external_status"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "reason"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "spent_usd"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "reserved_usd"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "model_status"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "id"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "node"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "skill"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "status"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "reason"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "output"
+        }
+      ],
+      "statuses": [
+        "agent",
+        "source",
+        "external"
+      ],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "skills_api_shops__shop_id__agent_skills_get",
+          "api_ref": "skills_api_shops__shop_id__agent_skills_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "budget"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "model_status_api_shops__shop_id__agent_model_get",
+          "api_ref": "model_status_api_shops__shop_id__agent_model_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "budget"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "start_api_shops__shop_id__agent_runs_post",
+          "api_ref": "start_api_shops__shop_id__agent_runs_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "budget"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "authorization_id",
+            "template",
+            "margin_cost_mode",
+            "scope",
+            "goal",
+            "product_id",
+            "message_id",
+            "allow_model",
+            "allow_analysis_data",
+            "allow_listing_data",
+            "allow_support_data",
+            "allow_operation_data",
+            "expected_operation_hash",
+            "support_context",
+            "expected_product_source_row_id",
+            "budget"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "scope"
+          ]
+        },
+        {
+          "action_id": "runs_api_shops__shop_id__agent_runs_get",
+          "api_ref": "runs_api_shops__shop_id__agent_runs_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "budget"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__agent_runs__run_id__get",
+          "api_ref": "get_api_shops__shop_id__agent_runs__run_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "budget"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "act_api_shops__shop_id__agent_runs__run_id__post",
+          "api_ref": "act_api_shops__shop_id__agent_runs__run_id__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "budget"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version",
+            "action",
+            "authorization_id",
+            "budget"
+          ],
+          "required_payload_fields": [
+            "version",
+            "action"
+          ],
+          "variants": {
+            "field": "action",
+            "values": [
+              "advance",
+              "pause",
+              "resume",
+              "cancel",
+              "approve",
+              "reject",
+              "use_authorization"
+            ]
+          }
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "模型候选与持久业务结果分开；费用未知不重发；刷新按 run ID 回读。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.profit",
+      "title": "新品利润测算",
+      "web_route": "/profit",
+      "entry": "mine",
+      "so_ids": [
+        "SO-054"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/ProfitView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "SavedStudyOutput",
+          "field": "id"
+        },
+        {
+          "schema": "SavedStudyOutput",
+          "field": "title"
+        },
+        {
+          "schema": "SavedStudyOutput",
+          "field": "currency"
+        },
+        {
+          "schema": "SavedStudyOutput",
+          "field": "data_identity"
+        },
+        {
+          "schema": "SavedStudyOutput",
+          "field": "result"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "calculate_api_shops__shop_id__profit_calculate_post",
+          "api_ref": "calculate_api_shops__shop_id__profit_calculate_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "title",
+            "currency",
+            "data_identity",
+            "scenarios"
+          ],
+          "required_payload_fields": [
+            "title",
+            "currency",
+            "scenarios"
+          ]
+        },
+        {
+          "action_id": "save_api_shops__shop_id__profit_saved_post",
+          "api_ref": "save_api_shops__shop_id__profit_saved_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "title",
+            "currency",
+            "data_identity",
+            "scenarios",
+            "request_key"
+          ],
+          "required_payload_fields": [
+            "title",
+            "currency",
+            "scenarios",
+            "request_key"
+          ]
+        },
+        {
+          "action_id": "list_saved_api_shops__shop_id__profit_saved_get",
+          "api_ref": "list_saved_api_shops__shop_id__profit_saved_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_saved_api_shops__shop_id__profit_saved__study_id__get",
+          "api_ref": "get_saved_api_shops__shop_id__profit_saved__study_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "clear_saved_api_shops__shop_id__profit_saved__study_id__delete",
+          "api_ref": "clear_saved_api_shops__shop_id__profit_saved__study_id__delete",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.expenses",
+      "title": "费用与映射",
+      "web_route": "/expenses",
+      "entry": "mine",
+      "so_ids": [
+        "SO-056"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/ExpensesView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "ExpenseSaved",
+          "field": "id"
+        },
+        {
+          "schema": "ExpenseSaved",
+          "field": "shop_id"
+        },
+        {
+          "schema": "ExpenseSaved",
+          "field": "channel"
+        },
+        {
+          "schema": "ExpenseSaved",
+          "field": "data_identity"
+        },
+        {
+          "schema": "ExpenseSaved",
+          "field": "status"
+        },
+        {
+          "schema": "ExpenseSaved",
+          "field": "version"
+        },
+        {
+          "schema": "ExpenseSaved",
+          "field": "snapshot"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "create_api_shops__shop_id__expenses_post",
+          "api_ref": "create_api_shops__shop_id__expenses_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "confirm",
+            "data_identity",
+            "channel",
+            "version",
+            "content"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "confirm",
+            "data_identity",
+            "channel",
+            "content"
+          ]
+        },
+        {
+          "action_id": "page_api_shops__shop_id__expenses_get",
+          "api_ref": "page_api_shops__shop_id__expenses_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "orders_api_shops__shop_id__expenses_orders_get",
+          "api_ref": "orders_api_shops__shop_id__expenses_orders_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "summary_api_shops__shop_id__expenses_summary_post",
+          "api_ref": "summary_api_shops__shop_id__expenses_summary_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "data_identity",
+            "channel",
+            "start_at",
+            "end_at",
+            "timezone"
+          ],
+          "required_payload_fields": [
+            "data_identity",
+            "channel",
+            "start_at",
+            "end_at",
+            "timezone"
+          ]
+        },
+        {
+          "action_id": "get_api_shops__shop_id__expenses__expense_id__get",
+          "api_ref": "get_api_shops__shop_id__expenses__expense_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "update_api_shops__shop_id__expenses__expense_id__post",
+          "api_ref": "update_api_shops__shop_id__expenses__expense_id__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "confirm",
+            "data_identity",
+            "channel",
+            "version",
+            "content"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "confirm",
+            "data_identity",
+            "channel",
+            "content"
+          ]
+        },
+        {
+          "action_id": "control_api_shops__shop_id__expenses__expense_id___action__post",
+          "api_ref": "control_api_shops__shop_id__expenses__expense_id___action__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "version",
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "version",
+            "confirm"
+          ]
+        },
+        {
+          "action_id": "preview_api_shops__shop_id__fee_rules_preview_post",
+          "api_ref": "preview_api_shops__shop_id__fee_rules_preview_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "scope",
+            "rule_id",
+            "version",
+            "content"
+          ],
+          "required_payload_fields": [
+            "scope",
+            "content"
+          ]
+        },
+        {
+          "action_id": "write_api_shops__shop_id__fee_rules_post",
+          "api_ref": "write_api_shops__shop_id__fee_rules_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "scope",
+            "rule_id",
+            "version",
+            "content",
+            "preview_hash",
+            "request_id",
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "scope",
+            "content",
+            "preview_hash",
+            "request_id",
+            "confirm"
+          ]
+        },
+        {
+          "action_id": "page_api_shops__shop_id__fee_rules_get",
+          "api_ref": "page_api_shops__shop_id__fee_rules_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__fee_rules__rule_id__get",
+          "api_ref": "get_api_shops__shop_id__fee_rules__rule_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "control_api_shops__shop_id__fee_rules__rule_id___action__post",
+          "api_ref": "control_api_shops__shop_id__fee_rules__rule_id___action__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "version",
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "version",
+            "confirm"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.statements",
+      "title": "渠道账单",
+      "web_route": "/statements",
+      "entry": "mine",
+      "so_ids": [
+        "SO-055",
+        "SO-056"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/StatementsView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "StatementReconciliation",
+          "field": "scope"
+        },
+        {
+          "schema": "StatementReconciliation",
+          "field": "source_revision"
+        },
+        {
+          "schema": "StatementReconciliation",
+          "field": "totals"
+        },
+        {
+          "schema": "StatementReconciliation",
+          "field": "comparisons"
+        },
+        {
+          "schema": "StatementReconciliation",
+          "field": "checks"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "reconcile_api_shops__shop_id__statements_reconcile_post",
+          "api_ref": "reconcile_api_shops__shop_id__statements_reconcile_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "data_identity",
+            "channel",
+            "start_at",
+            "end_at",
+            "timezone"
+          ],
+          "required_payload_fields": [
+            "data_identity",
+            "channel",
+            "start_at",
+            "end_at",
+            "timezone"
+          ]
+        },
+        {
+          "action_id": "preview_api_shops__shop_id__statement_reviews_preview_post",
+          "api_ref": "preview_api_shops__shop_id__statement_reviews_preview_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "scope",
+            "review_id",
+            "version",
+            "conclusion"
+          ],
+          "required_payload_fields": [
+            "scope",
+            "conclusion"
+          ]
+        },
+        {
+          "action_id": "write_api_shops__shop_id__statement_reviews_post",
+          "api_ref": "write_api_shops__shop_id__statement_reviews_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "scope",
+            "review_id",
+            "version",
+            "conclusion",
+            "preview_hash",
+            "request_id",
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "scope",
+            "conclusion",
+            "preview_hash",
+            "request_id",
+            "confirm"
+          ]
+        },
+        {
+          "action_id": "page_api_shops__shop_id__statement_reviews_get",
+          "api_ref": "page_api_shops__shop_id__statement_reviews_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__statement_reviews__review_id__get",
+          "api_ref": "get_api_shops__shop_id__statement_reviews__review_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "read_current_api_shops__shop_id__statement_reviews__review_id__current_get",
+          "api_ref": "read_current_api_shops__shop_id__statement_reviews__review_id__current_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "control_api_shops__shop_id__statement_reviews__review_id___action__post",
+          "api_ref": "control_api_shops__shop_id__statement_reviews__review_id___action__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "version",
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "version",
+            "confirm"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.order_reconciliation",
+      "title": "订单账单核对",
+      "web_route": "/order-reconciliation",
+      "entry": "mine",
+      "so_ids": [
+        "SO-027",
+        "SO-055",
+        "SO-056"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/OrderReconciliationView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "OrderReconciliation",
+          "field": "scope"
+        },
+        {
+          "schema": "OrderReconciliation",
+          "field": "coverage"
+        },
+        {
+          "schema": "OrderReconciliation",
+          "field": "comparisons"
+        },
+        {
+          "schema": "OrderReconciliation",
+          "field": "checks"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "reconcile_orders_api_shops__shop_id__statements_orders_reconcile_post",
+          "api_ref": "reconcile_orders_api_shops__shop_id__statements_orders_reconcile_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "data_identity",
+            "channel",
+            "start_at",
+            "end_at",
+            "timezone",
+            "sale_basis",
+            "basis_note"
+          ],
+          "required_payload_fields": [
+            "data_identity",
+            "channel",
+            "start_at",
+            "end_at",
+            "timezone"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.settlements",
+      "title": "结算与回款",
+      "web_route": "/settlements",
+      "entry": "mine",
+      "so_ids": [
+        "SO-055"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/SettlementsView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "SettlementSaved",
+          "field": "id"
+        },
+        {
+          "schema": "SettlementSaved",
+          "field": "shop_id"
+        },
+        {
+          "schema": "SettlementSaved",
+          "field": "status"
+        },
+        {
+          "schema": "SettlementSaved",
+          "field": "version"
+        },
+        {
+          "schema": "SettlementSaved",
+          "field": "content_version"
+        },
+        {
+          "schema": "SettlementSaved",
+          "field": "snapshot"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "preview_api_shops__shop_id__settlements_preview_post",
+          "api_ref": "preview_api_shops__shop_id__settlements_preview_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "scope",
+            "settlement_id",
+            "version",
+            "content"
+          ],
+          "required_payload_fields": [
+            "scope",
+            "content"
+          ]
+        },
+        {
+          "action_id": "write_api_shops__shop_id__settlements_post",
+          "api_ref": "write_api_shops__shop_id__settlements_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "scope",
+            "settlement_id",
+            "version",
+            "content",
+            "preview_hash",
+            "request_id",
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "scope",
+            "content",
+            "preview_hash",
+            "request_id",
+            "confirm"
+          ]
+        },
+        {
+          "action_id": "page_api_shops__shop_id__settlements_get",
+          "api_ref": "page_api_shops__shop_id__settlements_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__settlements__settlement_id__get",
+          "api_ref": "get_api_shops__shop_id__settlements__settlement_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "read_current_api_shops__shop_id__settlements__settlement_id__current_get",
+          "api_ref": "read_current_api_shops__shop_id__settlements__settlement_id__current_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "control_api_shops__shop_id__settlements__settlement_id___action__post",
+          "api_ref": "control_api_shops__shop_id__settlements__settlement_id___action__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "version",
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "version",
+            "confirm"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.rules",
+      "title": "经营规则与授权",
+      "web_route": "/rules",
+      "entry": "mine",
+      "so_ids": [
+        "SO-066",
+        "SO-067"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/RulesView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "RuleRevision",
+          "field": "version"
+        },
+        {
+          "schema": "RuleRevision",
+          "field": "shop_id"
+        },
+        {
+          "schema": "RuleRevision",
+          "field": "channel"
+        },
+        {
+          "schema": "RuleRevision",
+          "field": "data_identity"
+        },
+        {
+          "schema": "RuleRevision",
+          "field": "active"
+        },
+        {
+          "schema": "RuleRevision",
+          "field": "values"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "create_api_shops__shop_id__authorizations_post",
+          "api_ref": "create_api_shops__shop_id__authorizations_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "execution_id",
+            "expected_version",
+            "skill",
+            "max_uses",
+            "valid_hours",
+            "confirmed"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "execution_id",
+            "expected_version",
+            "max_uses",
+            "valid_hours",
+            "confirmed"
+          ]
+        },
+        {
+          "action_id": "list_grants_api_shops__shop_id__authorizations_get",
+          "api_ref": "list_grants_api_shops__shop_id__authorizations_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__authorizations__grant_id__get",
+          "api_ref": "get_api_shops__shop_id__authorizations__grant_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "revoke_api_shops__shop_id__authorizations__grant_id__revoke_post",
+          "api_ref": "revoke_api_shops__shop_id__authorizations__grant_id__revoke_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version"
+          ],
+          "required_payload_fields": [
+            "version"
+          ]
+        },
+        {
+          "action_id": "revert_api_shops__shop_id__authorizations__grant_id__uses__use_id__revert_post",
+          "api_ref": "revert_api_shops__shop_id__authorizations__grant_id__uses__use_id__revert_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "current_api_shops__shop_id__business_rules_get",
+          "api_ref": "current_api_shops__shop_id__business_rules_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "change_api_shops__shop_id__business_rules_post",
+          "api_ref": "change_api_shops__shop_id__business_rules_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "channel",
+            "data_identity",
+            "expected_version",
+            "action",
+            "values",
+            "restore_version"
+          ],
+          "required_payload_fields": [
+            "expected_version"
+          ],
+          "variants": {
+            "field": "action",
+            "values": [
+              "save",
+              "revoke",
+              "reset",
+              "restore"
+            ]
+          }
+        },
+        {
+          "action_id": "history_api_shops__shop_id__business_rules_history_get",
+          "api_ref": "history_api_shops__shop_id__business_rules_history_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__business_rules__version__get",
+          "api_ref": "get_api_shops__shop_id__business_rules__version__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.outbound",
+      "title": "受控测试外发",
+      "web_route": "/outbound",
+      "entry": "mine",
+      "so_ids": [
+        "SO-031",
+        "SO-067"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/OutboundView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "MailOutput",
+          "field": "id"
+        },
+        {
+          "schema": "MailOutput",
+          "field": "shop_id"
+        },
+        {
+          "schema": "MailOutput",
+          "field": "status"
+        },
+        {
+          "schema": "MailOutput",
+          "field": "source_status"
+        },
+        {
+          "schema": "MailOutput",
+          "field": "version"
+        },
+        {
+          "schema": "MailOutput",
+          "field": "recipient"
+        },
+        {
+          "schema": "MailOutput",
+          "field": "approvals"
+        },
+        {
+          "schema": "MailOutput",
+          "field": "receipt_id"
+        },
+        {
+          "schema": "MailOutput",
+          "field": "provider_event"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "channel_api_shops__shop_id__outbound_channel_get",
+          "api_ref": "channel_api_shops__shop_id__outbound_channel_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "external",
+            "source"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "connect_api_shops__shop_id__outbound_channel_connect_post",
+          "api_ref": "connect_api_shops__shop_id__outbound_channel_connect_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "confirmed"
+          ],
+          "required_payload_fields": [
+            "confirmed"
+          ]
+        },
+        {
+          "action_id": "verify_api_shops__shop_id__outbound_channel__channel_id__verify_post",
+          "api_ref": "verify_api_shops__shop_id__outbound_channel__channel_id__verify_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "code"
+          ],
+          "required_payload_fields": [
+            "code"
+          ]
+        },
+        {
+          "action_id": "revoke_channel_api_shops__shop_id__outbound_channel__channel_id__revoke_post",
+          "api_ref": "revoke_channel_api_shops__shop_id__outbound_channel__channel_id__revoke_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "messages_api_shops__shop_id__outbound_messages_get",
+          "api_ref": "messages_api_shops__shop_id__outbound_messages_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "external",
+            "source"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "create_api_shops__shop_id__outbound_messages_post",
+          "api_ref": "create_api_shops__shop_id__outbound_messages_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "run_id",
+            "recipient"
+          ],
+          "required_payload_fields": [
+            "run_id"
+          ]
+        },
+        {
+          "action_id": "get_api_shops__shop_id__outbound_messages__message_id__get",
+          "api_ref": "get_api_shops__shop_id__outbound_messages__message_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "external",
+            "source"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "edit_api_shops__shop_id__outbound_messages__message_id__patch",
+          "api_ref": "edit_api_shops__shop_id__outbound_messages__message_id__patch",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version",
+            "subject",
+            "body"
+          ],
+          "required_payload_fields": [
+            "version",
+            "subject",
+            "body"
+          ]
+        },
+        {
+          "action_id": "approve_api_shops__shop_id__outbound_messages__message_id__approve_post",
+          "api_ref": "approve_api_shops__shop_id__outbound_messages__message_id__approve_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "confirmed",
+            "version",
+            "mode",
+            "valid_hours"
+          ],
+          "required_payload_fields": [
+            "confirmed",
+            "version",
+            "mode"
+          ]
+        },
+        {
+          "action_id": "revoke_api_shops__shop_id__outbound_messages__message_id__approvals__approval_id__revoke_post",
+          "api_ref": "revoke_api_shops__shop_id__outbound_messages__message_id__approvals__approval_id__revoke_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "reject_api_shops__shop_id__outbound_messages__message_id__reject_post",
+          "api_ref": "reject_api_shops__shop_id__outbound_messages__message_id__reject_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version"
+          ],
+          "required_payload_fields": [
+            "version"
+          ]
+        },
+        {
+          "action_id": "send_api_shops__shop_id__outbound_messages__message_id__send_post",
+          "api_ref": "send_api_shops__shop_id__outbound_messages__message_id__send_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version",
+            "approval_id"
+          ],
+          "required_payload_fields": [
+            "version",
+            "approval_id"
+          ]
+        },
+        {
+          "action_id": "reconcile_api_shops__shop_id__outbound_messages__message_id__reconcile_post",
+          "api_ref": "reconcile_api_shops__shop_id__outbound_messages__message_id__reconcile_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "receipt_id"
+          ],
+          "required_payload_fields": []
+        },
+        {
+          "action_id": "receipt_api_shops__shop_id__outbound_messages__message_id__receipt_post",
+          "api_ref": "receipt_api_shops__shop_id__outbound_messages__message_id__receipt_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "external",
+            "source"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "confirmed",
+            "evidence"
+          ],
+          "required_payload_fields": [
+            "confirmed",
+            "evidence"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "原测试外发页面及审批保留映射，M0-A 不发邮件。accepted 只表示提供商接收，收件证据另记。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.overview",
+      "title": "跨店经营总览",
+      "web_route": "/overview",
+      "entry": "home",
+      "so_ids": [
+        "SO-002"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/OverviewView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "OverviewSaved",
+          "field": "id"
+        },
+        {
+          "schema": "OverviewSaved",
+          "field": "status"
+        },
+        {
+          "schema": "OverviewSaved",
+          "field": "created_at"
+        },
+        {
+          "schema": "OverviewSaved",
+          "field": "scope"
+        },
+        {
+          "schema": "OverviewSaved",
+          "field": "snapshot"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "calculate_api_overview_calculate_post",
+          "api_ref": "calculate_api_overview_calculate_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "shop_ids",
+            "start_date",
+            "end_date",
+            "timezone",
+            "data_identity",
+            "comparison_start",
+            "comparison_end",
+            "currencies",
+            "max_age_hours",
+            "min_quantity",
+            "max_margin_percent"
+          ],
+          "required_payload_fields": [
+            "shop_ids",
+            "start_date",
+            "end_date",
+            "timezone",
+            "data_identity"
+          ]
+        },
+        {
+          "action_id": "save_api_overview_reports_post",
+          "api_ref": "save_api_overview_reports_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "scope",
+            "expected_revisions"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "scope",
+            "expected_revisions"
+          ]
+        },
+        {
+          "action_id": "page_api_overview_reports_get",
+          "api_ref": "page_api_overview_reports_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_overview_reports__report_id__get",
+          "api_ref": "get_api_overview_reports__report_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "clear_api_overview_reports__report_id__clear_post",
+          "api_ref": "clear_api_overview_reports__report_id__clear_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "confirm"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.schedules",
+      "title": "定时运营",
+      "web_route": "/schedules",
+      "entry": "mine",
+      "so_ids": [
+        "SO-006"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/SchedulesView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "ScheduleOutput",
+          "field": "id"
+        },
+        {
+          "schema": "ScheduleOutput",
+          "field": "shop_id"
+        },
+        {
+          "schema": "ScheduleOutput",
+          "field": "status"
+        },
+        {
+          "schema": "ScheduleOutput",
+          "field": "version"
+        },
+        {
+          "schema": "ScheduleOutput",
+          "field": "config"
+        },
+        {
+          "schema": "ScheduleOutput",
+          "field": "next_run_at"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "status_api_shops__shop_id__schedules_status_get",
+          "api_ref": "status_api_shops__shop_id__schedules_status_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "schedules_api_shops__shop_id__schedules_get",
+          "api_ref": "schedules_api_shops__shop_id__schedules_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "create_api_shops__shop_id__schedules_post",
+          "api_ref": "create_api_shops__shop_id__schedules_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "config",
+            "confirmed"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "config",
+            "confirmed"
+          ]
+        },
+        {
+          "action_id": "history_api_shops__shop_id__schedules_history_get",
+          "api_ref": "history_api_shops__shop_id__schedules_history_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "read_api_shops__shop_id__schedules_history__item_id__read_post",
+          "api_ref": "read_api_shops__shop_id__schedules_history__item_id__read_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "act_api_shops__shop_id__schedules__schedule_id__post",
+          "api_ref": "act_api_shops__shop_id__schedules__schedule_id__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version",
+            "action",
+            "config",
+            "confirmed"
+          ],
+          "required_payload_fields": [
+            "version",
+            "action"
+          ],
+          "variants": {
+            "field": "action",
+            "values": [
+              "pause",
+              "resume",
+              "revoke",
+              "edit"
+            ]
+          }
+        },
+        {
+          "action_id": "check_api_shops__shop_id__schedules__schedule_id__check_post",
+          "api_ref": "check_api_shops__shop_id__schedules__schedule_id__check_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "version"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "version"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "API 可达、enabled 配置和历史周期均不能单独证明调度进程正在运行。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.product_quality",
+      "title": "商品质量",
+      "web_route": "/product-quality",
+      "entry": "mine",
+      "so_ids": [
+        "SO-014"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/ProductQualityView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "QualitySaved",
+          "field": "id"
+        },
+        {
+          "schema": "QualitySaved",
+          "field": "shop_id"
+        },
+        {
+          "schema": "QualitySaved",
+          "field": "status"
+        },
+        {
+          "schema": "QualitySaved",
+          "field": "scope"
+        },
+        {
+          "schema": "QualitySaved",
+          "field": "snapshot"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "preview_api_shops__shop_id__product_quality_preview_post",
+          "api_ref": "preview_api_shops__shop_id__product_quality_preview_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "data_identity",
+            "channel",
+            "sku_prefix"
+          ],
+          "required_payload_fields": []
+        },
+        {
+          "action_id": "save_api_shops__shop_id__product_quality_reports_post",
+          "api_ref": "save_api_shops__shop_id__product_quality_reports_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "scope",
+            "expected_revision",
+            "expected_preview_hash",
+            "request_id",
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "scope",
+            "expected_revision",
+            "expected_preview_hash",
+            "request_id",
+            "confirm"
+          ]
+        },
+        {
+          "action_id": "page_api_shops__shop_id__product_quality_reports_get",
+          "api_ref": "page_api_shops__shop_id__product_quality_reports_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__product_quality_reports__report_id__get",
+          "api_ref": "get_api_shops__shop_id__product_quality_reports__report_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "clear_api_shops__shop_id__product_quality_reports__report_id__clear_post",
+          "api_ref": "clear_api_shops__shop_id__product_quality_reports__report_id__clear_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "confirm"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.product_edits",
+      "title": "商品本地修订",
+      "web_route": "/product-edits",
+      "entry": "mine",
+      "so_ids": [
+        "SO-008",
+        "SO-014",
+        "SO-067"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/ProductEditsView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "EditSaved",
+          "field": "id"
+        },
+        {
+          "schema": "EditSaved",
+          "field": "shop_id"
+        },
+        {
+          "schema": "EditSaved",
+          "field": "version"
+        },
+        {
+          "schema": "EditSaved",
+          "field": "status"
+        },
+        {
+          "schema": "EditSaved",
+          "field": "snapshot"
+        },
+        {
+          "schema": "EditSaved",
+          "field": "output_batch_id"
+        },
+        {
+          "schema": "EditSaved",
+          "field": "current_count"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "create_api_shops__shop_id__product_edits_post",
+          "api_ref": "create_api_shops__shop_id__product_edits_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "data_identity",
+            "channel",
+            "reason",
+            "changes",
+            "request_id"
+          ],
+          "required_payload_fields": [
+            "data_identity",
+            "channel",
+            "reason",
+            "changes",
+            "request_id"
+          ]
+        },
+        {
+          "action_id": "page_api_shops__shop_id__product_edits_get",
+          "api_ref": "page_api_shops__shop_id__product_edits_get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__product_edits__edit_id__get",
+          "api_ref": "get_api_shops__shop_id__product_edits__edit_id__get",
+          "guard_conditions": [
+            "session",
+            "scope"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "approve_api_shops__shop_id__product_edits__edit_id__approve_post",
+          "api_ref": "approve_api_shops__shop_id__product_edits__edit_id__approve_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version",
+            "expected_preview_hash",
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "version",
+            "expected_preview_hash",
+            "confirm"
+          ]
+        },
+        {
+          "action_id": "control_api_shops__shop_id__product_edits__edit_id___action__post",
+          "api_ref": "control_api_shops__shop_id__product_edits__edit_id___action__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version",
+            "confirm"
+          ],
+          "required_payload_fields": [
+            "version",
+            "confirm"
+          ]
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.login",
+      "title": "登录",
+      "web_route": "/login",
+      "entry": "mine",
+      "so_ids": [
+        "SO-074"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/LoginView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "SessionOutput",
+          "field": "user_id"
+        },
+        {
+          "schema": "SessionOutput",
+          "field": "username"
+        }
+      ],
+      "statuses": [],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "login_api_auth_login_post",
+          "api_ref": "login_api_auth_login_post",
+          "guard_conditions": [
+            "web_origin",
+            "risk",
+            "readback"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "username",
+            "password"
+          ],
+          "required_payload_fields": [
+            "username",
+            "password"
+          ]
+        },
+        {
+          "action_id": "current_session_api_auth_session_get",
+          "api_ref": "current_session_api_auth_session_get",
+          "guard_conditions": [
+            "session"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "logout_api_auth_logout_post",
+          "api_ref": "logout_api_auth_logout_post",
+          "guard_conditions": [
+            "session",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "服务端要求的当前记录/节点审批"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "读取既有记录、查看依据并按服务端允许的操作维护；原页面来源、版本和审批规则保持。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    },
+    {
+      "feature_id": "r2.b1",
+      "title": "B1 低毛利受控复核",
+      "web_route": "/agent",
+      "entry": "ai",
+      "so_ids": [
+        "SO-003",
+        "SO-018",
+        "SO-053",
+        "SO-057",
+        "SO-067",
+        "SO-068"
+      ],
+      "source_files": [
+        "frontend/src/router/index.ts",
+        "frontend/src/views/AgentView.vue"
+      ],
+      "client_status": {
+        "flutter": "NOT_TESTED",
+        "weapp": "NOT_TESTED"
+      },
+      "client_reason": "M0-A 仅启动壳，业务页面待后续授权阶段实现。",
+      "flutter_route": null,
+      "weapp_route": null,
+      "data_fields": [
+        {
+          "schema": "AgentOutput",
+          "field": "id"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "shop_id"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "template"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "status"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "version"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "source_status"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "next_node"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "steps"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "result"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "budget"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "external_status"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "reason"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "spent_usd"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "reserved_usd"
+        },
+        {
+          "schema": "AgentOutput",
+          "field": "model_status"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "id"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "node"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "skill"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "status"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "reason"
+        },
+        {
+          "schema": "StepOutput",
+          "field": "output"
+        }
+      ],
+      "statuses": [
+        "agent",
+        "source",
+        "external"
+      ],
+      "unknown_status_policy": "unknown",
+      "allowed_actions": [
+        {
+          "action_id": "start_api_shops__shop_id__agent_runs_post",
+          "api_ref": "start_api_shops__shop_id__agent_runs_post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "budget",
+            "b1_two_nodes"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "request_id",
+            "authorization_id",
+            "template",
+            "margin_cost_mode",
+            "scope",
+            "goal",
+            "product_id",
+            "message_id",
+            "allow_model",
+            "allow_analysis_data",
+            "allow_listing_data",
+            "allow_support_data",
+            "allow_operation_data",
+            "expected_operation_hash",
+            "support_context",
+            "expected_product_source_row_id",
+            "budget"
+          ],
+          "required_payload_fields": [
+            "request_id",
+            "scope"
+          ]
+        },
+        {
+          "action_id": "runs_api_shops__shop_id__agent_runs_get",
+          "api_ref": "runs_api_shops__shop_id__agent_runs_get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "budget",
+            "b1_two_nodes"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "get_api_shops__shop_id__agent_runs__run_id__get",
+          "api_ref": "get_api_shops__shop_id__agent_runs__run_id__get",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "source",
+            "budget",
+            "b1_two_nodes"
+          ],
+          "effect": "read",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。"
+        },
+        {
+          "action_id": "act_api_shops__shop_id__agent_runs__run_id__post",
+          "api_ref": "act_api_shops__shop_id__agent_runs__run_id__post",
+          "guard_conditions": [
+            "session",
+            "scope",
+            "web_origin",
+            "risk",
+            "readback",
+            "csrf",
+            "version",
+            "source",
+            "budget",
+            "b1_two_nodes"
+          ],
+          "effect": "server_controlled",
+          "after_success": "回读服务端记录与版本，按业务语义展示结果；不得由 HTTP 200 推断外部成功。",
+          "payload_fields": [
+            "version",
+            "action",
+            "authorization_id",
+            "budget"
+          ],
+          "required_payload_fields": [
+            "version",
+            "action"
+          ],
+          "variants": {
+            "field": "action",
+            "values": [
+              "advance",
+              "pause",
+              "resume",
+              "cancel",
+              "approve",
+              "reject",
+              "use_authorization"
+            ]
+          }
+        }
+      ],
+      "permissions": [
+        "当前用户会话",
+        "资源所属店铺",
+        "服务端 R0–R3 与审批规则"
+      ],
+      "approval_nodes": [
+        "analysis_todo",
+        "listing_draft"
+      ],
+      "display_semantics": [
+        "not_submitted",
+        "seller_reported",
+        "stale",
+        "candidate",
+        "approval",
+        "money",
+        "time",
+        "unknown"
+      ],
+      "behavior": "template=margin_review；精确7天范围。缺证据允许停止；低毛利不自动等同内容缺陷；analysis_todo 与 listing_draft 两次审批，verify 回读真实 record_id。",
+      "evidence_requirements": [
+        "相同服务端记录 ID",
+        "店铺与数据身份",
+        "服务端版本与来源状态",
+        "API 响应及持久回读"
+      ],
+      "empty_state": "没有符合当前范围的记录。显示调整范围或导入入口，不生成示例业务数字。",
+      "error_states": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "validation",
+        "network_unknown",
+        "server_error"
+      ]
+    }
+  ],
+  "manual_review": {
+    "date": "2026-10-11",
+    "coverage": "19 个业务路由、登录及 B1；核心四 MVP/B1 的状态、审批和人工交付语义人工对照源码。",
+    "limitations": "动态按钮和服务层全部前置条件不能由静态扫描证明；未来各端需真实操作/回读测试。"
+  }
+}

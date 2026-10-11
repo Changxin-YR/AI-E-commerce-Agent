@@ -1,0 +1,8 @@
+{
+  "miniprogramRoot": "dist/",
+  "projectname": "soloops-m0a",
+  "description": "SoloOps M0-A 工程验证",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "setting": { "urlCheck": true, "es6": true, "minified": true }
+}

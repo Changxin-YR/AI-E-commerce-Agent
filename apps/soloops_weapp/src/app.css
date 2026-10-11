@@ -1,0 +1,6 @@
+page { background: #f4f7f5; color: #18322a; font-family: sans-serif; }
+.startup { padding: 48rpx; }
+.title { display: block; font-size: 48rpx; font-weight: 600; margin-bottom: 24rpx; }
+.description { display: block; font-size: 30rpx; line-height: 1.7; margin-bottom: 40rpx; }
+.detail { margin-top: 32rpx; font-size: 28rpx; line-height: 1.7; }
+button { background: #315c52; color: #fff; }

@@ -1,0 +1,32 @@
+{
+  "repository": "https://atomgit.com/CPF-Flutter/flutter_flutter.git",
+  "tag": "3.27.4+ohos-1.0.9",
+  "commit": "cdb95e38dbc298aae697db043c14cdf29f584636",
+  "dart": "3.6.2",
+  "devtools": "2.40.0",
+  "upstream_engine": "e672b006cb34c921db85b8e2f482ed3144a4574b",
+  "ohos_engine": "e2a55248fa668df0fc074ce8f2e48d390da3caea",
+  "ohos_har": "e2a55248fa668df0fc074ce8f2e48d390da3caea",
+  "android": {
+    "java": "17.0.19+10",
+    "sdk_platform": 35,
+    "sdk_build_tools": "35.0.0",
+    "gradle": "8.3",
+    "android_gradle_plugin": "8.1.0",
+    "kotlin": "1.8.22"
+  },
+  "ohos_required": {
+    "deveco_or_command_line_tools": "26.0.0 Release",
+    "compile_sdk": "26.0.0",
+    "target_sdk": "26.0.0",
+    "compatible_sdk": "5.0.5(17)"
+  },
+  "ohos_observed": {
+    "deveco": "6.1.1.290",
+    "available_api": "24:default",
+    "ohpm": "6.1.2.285",
+    "node": "24.15.0",
+    "build_status": "BLOCKED",
+    "hvigor": "6.24.3"
+  }
+}

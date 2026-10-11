@@ -411,3 +411,10 @@ Vue Router的query更新与组件重建如何影响编辑？`AppShell`只让Agen
 ## R2 管理员预部署与卖家首次操作
 
 账号开通与业务建店分属不同职责。`app.cli`由管理员经AuthService执行；网页首次使用从已认证会话开始，Dashboard的shop_count控制入口，Settings按shop编号连接ImportsView。引导不会自动提交数据，深链不替代服务端店铺授权。为什么测试另建账号？first-use.spec.ts使用正式CLI提前建号，避免已有档案/店铺掩盖空状态，再由真实UI完成模板、预览确认与刷新；桌面有档案但无店铺、手机无档案都覆盖。
+
+## M0-A 跨端工程与证据判断
+
+- 同一Dart源码如何覆盖两端？apps/soloops_flutter/lib/main.dart配合android/ohos启动壳，SDK tag/commit和引擎版本显式锁定；平台插件和系统能力单独验证。
+- 静态契约能证明什么？scripts/validate_ui_contract.py核对路由、OpenAPI字段、动作和风险语义；12项变异测试证明错误会被拒绝，不证明各客户端真的执行了业务。
+- 为什么退出码0仍可能FAIL？微信开发工具open命令本次退出0但返回openProject/code10错误；run_evidence记录过程，报告按实际结果验收。doctor检测到SDK也不意味着其版本足以编译。
+- 如何保护R2？独立worktree和分支只新增客户端工程及静态校验；后端金额、权限、审批、导入和Web业务均保持。具体成功产物和阻塞见mobile/m0a-report.md。

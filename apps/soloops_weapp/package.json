@@ -1,0 +1,39 @@
+{
+  "name": "soloops-weapp",
+  "version": "0.0.1",
+  "private": true,
+  "description": "SoloOps M0-A WeChat engineering shell",
+  "engines": {
+    "node": ">=24.16.0 <25"
+  },
+  "scripts": {
+    "type-check": "vue-tsc --noEmit",
+    "build:weapp": "taro build --type weapp",
+    "dev:weapp": "taro build --type weapp --watch"
+  },
+  "dependencies": {
+    "@babel/runtime": "7.28.4",
+    "@tarojs/components": "4.3.0",
+    "@tarojs/helper": "4.3.0",
+    "@tarojs/plugin-framework-vue3": "4.3.0",
+    "@tarojs/plugin-platform-weapp": "4.3.0",
+    "@tarojs/runtime": "4.3.0",
+    "@tarojs/shared": "4.3.0",
+    "@tarojs/taro": "4.3.0",
+    "vue": "3.5.43"
+  },
+  "devDependencies": {
+    "@babel/core": "7.29.7",
+    "@tarojs/cli": "4.3.0",
+    "@tarojs/vite-runner": "4.3.0",
+    "@types/node": "24.7.2",
+    "@vitejs/plugin-vue": "4.6.2",
+    "@vitejs/plugin-vue-jsx": "3.1.0",
+    "babel-preset-taro": "4.3.0",
+    "postcss": "8.5.29",
+    "terser": "5.44.0",
+    "typescript": "5.9.3",
+    "vite": "4.5.14",
+    "vue-tsc": "3.1.1"
+  }
+}

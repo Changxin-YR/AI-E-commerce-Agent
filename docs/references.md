@@ -387,3 +387,11 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - Vue Router官方[导航](https://router.vuejs.org/guide/essentials/navigation.html)与Vue官方[nextTick](https://vuejs.org/api/general.html#nexttick)（MIT）：参考显式query/hash和异步数据渲染后的定位。建店后只传shop编号到既有导入页；设置页等待店铺渲染再定位。入口不恢复权限、不自动提交业务。
 - MDN [autocomplete](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/autocomplete)（文档CC BY-SA）：保留username/current-password，继续支持浏览器密码管理；登录帮助说明向管理员领取网址/账号及求助，不把安装或数据库操作放入卖家步骤。
 - Firecrawl已知fetch failed，使用官方web读取作为回退。文档仅供接口/设计参考，代码自行实现，无新依赖；管理员正式CLI及安全门禁沿用原实现。
+
+## M0-A 三端最小工程（2026-10-11）
+
+- [CPF Flutter OH](https://atomgit.com/CPF-Flutter/flutter_flutter) tag `3.27.4+ohos-1.0.9`，完整 SHA `cdb95e38dbc298aae697db043c14cdf29f584636`，Dart3.6.2。读取发布说明与模板，Android/OHOS共享 Dart 启动壳。SDK BSD 类型通知保留在 apps/soloops_flutter/licenses；实际 HAP 阻塞与版本配套见 mobile/m0a-report.md。
+- [Taro 官方 Vue3 文档](https://docs.taro.zone/docs/vue3)和[4.3.0模板](https://github.com/NervJS/taro/blob/v4.3.0/packages/taro-cli/templates/default/package.json.tmpl)，MIT。参考工程配置，依据 npm manifest 的 peer 约束选择 Vite4 组合，自行编写启动页；许可证和依赖审计见 mobile/dependency-review.md。
+- [Dart HttpClient](https://api.dart.dev/dart-io/HttpClient-class.html)、[Flutter Clipboard](https://api.flutter.dev/flutter/services/Clipboard-class.html)及 CPF 四个插件仓库用于候选核对；固定提交、约束、安全发现与替代方案见 mobile/plugin-matrix.md；未将社区支持声明当作本项目端测证据。
+- 工信部105号通知与官方解读、腾讯云备案文档用于资质核对；来源和未决项见 mobile/weapp-compliance.md。微信现行类目和域名细则未取得可读官方正文，未据二手文章放行。
+- Firecrawl优先尝试返回402额度不足，改用内置web及官方Git源码；微信浏览器文档读取被站点安全策略阻止，保留核验阻塞。

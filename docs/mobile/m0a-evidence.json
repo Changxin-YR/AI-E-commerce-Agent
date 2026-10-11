@@ -1,0 +1,387 @@
+{
+  "schema_version": "1.0",
+  "phase": "M0-A",
+  "baseline_sha": "0a49a37dcd7f1ccf0acc2c0a225bfdc8d8bee686",
+  "branch": "feat/soloops-mobile-m0a",
+  "raw_logs": "Local ignored .local/mobile-m0a; paths relative to repository root",
+  "status_policy": "Explicit assessment; exit 0 alone does not prove successful operation",
+  "records": [
+    {
+      "name": "locked-sdk-version",
+      "started_utc": "2026-10-11T01:17:41.859545+00:00",
+      "finished_utc": "2026-10-11T01:19:37.511354+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh/bin/flutter.bat",
+        "--version",
+        "--machine"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T011741Z-locked-sdk-version.log",
+      "log_sha256": "81f5540d61c2f0453176f552c232d210c67fccdbd1e18b9f1a8098af4ec5e786",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "locked-template",
+      "started_utc": "2026-10-11T01:19:37.602596+00:00",
+      "finished_utc": "2026-10-11T01:19:55.205595+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh/bin/flutter.bat",
+        "create",
+        "--platforms",
+        "android,ohos",
+        "--org",
+        "dev.soloops",
+        "--project-name",
+        "soloops_flutter",
+        "--no-pub",
+        ".local/platform-template"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T011937Z-locked-template.log",
+      "log_sha256": "26165969adb8be411844ddd179dd7b84b73765bdb453051a26f724c464a97874",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "flutter-pub-get",
+      "started_utc": "2026-10-11T01:20:24.497387+00:00",
+      "finished_utc": "2026-10-11T01:20:29.676202+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh/bin/flutter.bat",
+        "pub",
+        "get"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T012024Z-flutter-pub-get.log",
+      "log_sha256": "00f1fdc3ce1e83ee8128a3cfdde9584d3cb7b23de6b53ca2f96951e494fdca31",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "locked-doctor",
+      "started_utc": "2026-10-11T01:30:17.094580+00:00",
+      "finished_utc": "2026-10-11T01:30:20.751896+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh/bin/flutter.bat",
+        "doctor",
+        "-v"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T013017Z-locked-doctor.log",
+      "log_sha256": "d04d300ac5a58cde568a54b6c636f80f2ccac693a1cf3ebabc12676a8efaff68",
+      "artifacts": [],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "android-final-apk",
+      "started_utc": "2026-10-11T01:32:54.313875+00:00",
+      "finished_utc": "2026-10-11T01:33:05.063751+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh/bin/flutter.bat",
+        "build",
+        "apk",
+        "--debug",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T013254Z-android-final-apk.log",
+      "log_sha256": "d1328ee9bab8dfb38600cd19470159b779b0591a2aa4529d52e0be73750736b0",
+      "artifacts": [
+        {
+          "path": "apps/soloops_flutter/build/app/outputs/flutter-apk/app-debug.apk",
+          "bytes": 86763598,
+          "sha256": "8705feac7d87f53a9926b4e50e8ad9b0a6ce1ffd914c33c9ade3edbbab0f1aa8"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "ohos-hap",
+      "started_utc": "2026-10-11T01:27:58.864440+00:00",
+      "finished_utc": "2026-10-11T01:29:13.370067+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh/bin/flutter.bat",
+        "build",
+        "hap",
+        "--debug",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 1,
+      "log": ".local/mobile-m0a/20261011T012758Z-ohos-hap.log",
+      "log_sha256": "1707a3a192ffe04318ac01a5d3b3059f5017968bd0bb2c27ab4e69090f511376",
+      "artifacts": [],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "flutter-analyze",
+      "started_utc": "2026-10-11T01:29:42.219524+00:00",
+      "finished_utc": "2026-10-11T01:30:08.112619+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh/bin/flutter.bat",
+        "analyze",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T012942Z-flutter-analyze.log",
+      "log_sha256": "053cd18e9efb1bd508ac80677a88c9bf2f9af6e45a6759a927ebb35ac339493e",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "flutter-widget-test",
+      "started_utc": "2026-10-11T01:30:08.293017+00:00",
+      "finished_utc": "2026-10-11T01:30:16.906036+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh/bin/flutter.bat",
+        "test",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T013008Z-flutter-widget-test.log",
+      "log_sha256": "06616575adfdf6e40147d10a38fc3ff429e0190573c1c60ac13f7256b8145615",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "weapp-final-type-check",
+      "started_utc": "2026-10-11T01:31:54.210982+00:00",
+      "finished_utc": "2026-10-11T01:32:00.784327+00:00",
+      "command": [
+        "npm.cmd",
+        "run",
+        "type-check"
+      ],
+      "cwd": "apps/soloops_weapp",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T013154Z-weapp-final-type-check.log",
+      "log_sha256": "b3147afafbdef0e8475ef2ad208b293c871a6530baa3a5e2848d9060ac56a4c1",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "weapp-final-build",
+      "started_utc": "2026-10-11T01:32:00.955490+00:00",
+      "finished_utc": "2026-10-11T01:32:20.420792+00:00",
+      "command": [
+        "npm.cmd",
+        "run",
+        "build:weapp"
+      ],
+      "cwd": "apps/soloops_weapp",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T013200Z-weapp-final-build.log",
+      "log_sha256": "0d32c424e35f8d7a8b6a78637a1537d4ef520b75c69bdce5a858668ee862959d",
+      "artifacts": [
+        {
+          "path": "apps/soloops_weapp/dist/app-origin.wxss",
+          "bytes": 335,
+          "sha256": "52a6aded92bccd903aeb601197d7627c927fe704d92927c9f05f6b5020d7c294"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/app.js",
+          "bytes": 431,
+          "sha256": "83d2091eb045f11a57b870a0e7419b3034456e009b7cdb4d96c1a342ebb63c65"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/app.json",
+          "bytes": 223,
+          "sha256": "f1d1dd73f74d72941745010d1c99d14a899dc7c908659119c73be952125fd59f"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/app.wxss",
+          "bytes": 27,
+          "sha256": "f5c248cb1c700b6cfc2648b2ee399be39618335bbc4e03b2ad2f8de548b0e456"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/babelHelpers.js",
+          "bytes": 6287,
+          "sha256": "f25a943afb87ec9fe629cd978a13d34f6194c10f0aa049d2317f732896fed825"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/base.wxml",
+          "bytes": 55590,
+          "sha256": "915560910765559cf118d43996858e4b05b76e34176771998d476dbf7cb06fcc"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/comp.js",
+          "bytes": 127,
+          "sha256": "e87e77cb62cc8c136db3d0a7a392b4354f90d25e8830b848fee1253549caa811"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/comp.json",
+          "bytes": 108,
+          "sha256": "af05838ce72c4d583b4078c931531d76e80a7bcc31fb57eb46a9baba6cecadd6"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/comp.wxml",
+          "bytes": 140,
+          "sha256": "904495b6e07f81d74f23d713c7f42a7450189f56879e329e5353e18d08201165"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/pages/index/index.js",
+          "bytes": 1099,
+          "sha256": "752cc6e247ffac01ff4f65878f2bdda3c00e759b7cc1e7cf8b766d65653a35f4"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/pages/index/index.json",
+          "bytes": 99,
+          "sha256": "d581481957b6f71f5343d593aa58934294206bb8c8549abdaa2186930ff45a4a"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/pages/index/index.wxml",
+          "bytes": 80,
+          "sha256": "38b0088b8c33e0f5dd9b2a934df461c91ad48cc818bb5dce849a336fae6e7ff6"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/project.config.json",
+          "bytes": 246,
+          "sha256": "983ae94ae28922ae0e7f27c7aff1ec61140e15eb2a0a0469397f9a24ac7f2f16"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/taro.js",
+          "bytes": 177590,
+          "sha256": "cf29c0d9de174c13055c5af6bf90599cf4048349bb8142b0d0d355818d27a27f"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/utils.wxs",
+          "bytes": 997,
+          "sha256": "e4ebe8c13a8ed5d58ae32d378f1f1947d51d796a620987d43bfc438631372728"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "weapp-final-audit",
+      "started_utc": "2026-10-11T01:32:20.605903+00:00",
+      "finished_utc": "2026-10-11T01:32:23.058242+00:00",
+      "command": [
+        "npm.cmd",
+        "audit",
+        "--json"
+      ],
+      "cwd": "apps/soloops_weapp",
+      "exit_code": 1,
+      "log": ".local/mobile-m0a/20261011T013220Z-weapp-final-audit.log",
+      "log_sha256": "872b1520a496e5e44e47831234927ccd678379dc2eae5aef7a1689afa214dc0b",
+      "artifacts": [],
+      "status": "FAIL"
+    },
+    {
+      "name": "weapp-devtools-open",
+      "started_utc": "2026-10-11T01:32:44.037965+00:00",
+      "finished_utc": "2026-10-11T01:32:51.443707+00:00",
+      "command": [
+        "WECHAT_DEVTOOLS_CLI",
+        "open",
+        "--project",
+        "apps/soloops_weapp"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T013244Z-weapp-devtools-open.log",
+      "log_sha256": "5deaccc7857c100ae6e341835b23c1e6386f7757a75061fd220aaf2d50439683",
+      "artifacts": [],
+      "status": "FAIL"
+    },
+    {
+      "name": "python-lint",
+      "started_utc": "2026-10-11T01:42:02.931571+00:00",
+      "finished_utc": "2026-10-11T01:42:03.092291+00:00",
+      "command": [
+        "python",
+        "-m",
+        "ruff",
+        "check",
+        "--config",
+        "backend/pyproject.toml",
+        "scripts/mobile",
+        "scripts/validate_ui_contract.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T014202Z-python-lint.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "python-format",
+      "started_utc": "2026-10-11T01:42:03.262426+00:00",
+      "finished_utc": "2026-10-11T01:42:03.423467+00:00",
+      "command": [
+        "python",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "--config",
+        "backend/pyproject.toml",
+        "scripts/mobile",
+        "scripts/validate_ui_contract.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T014203Z-python-format.log",
+      "log_sha256": "f114d83b30c5c657ee43a847a45bafccaea255d82673feb87c26d252c61e29c1",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "ui-contract",
+      "started_utc": "2026-10-11T01:42:03.597279+00:00",
+      "finished_utc": "2026-10-11T01:42:06.508051+00:00",
+      "command": [
+        "python",
+        "scripts/validate_ui_contract.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T014203Z-ui-contract.log",
+      "log_sha256": "eee52fd4c22ec1bbba7547e6fe4491577fd4fd99bef79a6cd791557ef9714fcc",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "ui-contract-tests",
+      "started_utc": "2026-10-11T01:42:06.694693+00:00",
+      "finished_utc": "2026-10-11T01:42:09.467734+00:00",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mobile/tests",
+        "-v"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": ".local/mobile-m0a/20261011T014206Z-ui-contract-tests.log",
+      "log_sha256": "e278d1920139f413a0356d7e0e2d1bf548cc9f84615b61a71afa6d0f3287ff8c",
+      "artifacts": [],
+      "status": "PASS"
+    }
+  ],
+  "archive": {
+    "path": ".local/mobile-m0a/soloops-weapp-dist.zip",
+    "bytes": 69161,
+    "sha256": "9e8b9b110827f77339e73783f12225adfdd46a139e4ee3ecb300126d8581bbf0"
+  },
+  "source_sha256": {
+    "apps/soloops_flutter/lib/main.dart": "ebdde6ec6177b3466baa050c9e841b96b2b4c304dcacaeef7a06923c0e413f50",
+    "apps/soloops_flutter/pubspec.yaml": "2ef934335900ba8b2edacabd942d15db7bb4cecde43c56ca74c15e6648f18c88",
+    "apps/soloops_flutter/pubspec.lock": "88918a763cd2eec3f018503b9576b25f8a09b86519691866ef28b11cdf04c779",
+    "apps/soloops_weapp/package.json": "7a093d0998aa04b3c7ad99066db3fd1db910833acac4c3721303b24840a64640",
+    "apps/soloops_weapp/package-lock.json": "e3acb01b24a25cabb23a378c6d80dda1df324bd9efb328ed32d321522d47048b",
+    "apps/soloops_weapp/src/pages/index/index.vue": "4d7aed0ca30038a21585ce2f5e6ab8bbff5d65cfc56b3606dcead1da85c92570"
+  }
+}
