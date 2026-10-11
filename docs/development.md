@@ -1041,3 +1041,7 @@ Listing按product/source row/active baseline生成，编辑另存待审版本；
 ## 微信W03：收件箱、巡检与事项复核
 
 三类收件箱保留服务端view/bucket/kind与游标语义；筛选变更清空旧结果。巡检将已审scope与preview_hash绑定至同一request_id，断线后保留同次恢复入口，运行和待办写后GET回读。task-policy.ts复用后端状态矩阵；stale可复检及登记自报，cleared/unknown无动作。TaskReview区分本地completed、自报操作与新来源复检结论。导航仅映射已接入页面，来源批次支持shop/batch深链。20项测试与类型/构建通过，设备及数据库端到端待验。
+
+## 微信W04：受控AI运营
+
+单节点请求携带审阅版本；审批不会自动跨过后续节点。B1从已完成verify步骤提取独立持久记录，第二审批拒绝不会覆盖第一结果。AgentResult分别GET回读真实业务记录。启动冻结输入和request_id用于同次恢复；确定性客户端错误可修正后重新提交，操作未知先读当前版本。AppliedRules读取当前版本和阈值，数据许可随着输入变化失效。24项客户端测试及类型通过；IDE与数据库联调待验。

@@ -479,3 +479,8 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 
 - 官方 https://docs.taro.zone/docs/composition-api 与 https://docs.taro.zone/docs/vue-page ，使用官方搜索核对useLoad读取页面查询与useDidShow前台刷新。Taro MIT，使用API，自主实现业务表单。
 - 业务字段与状态门禁依据仓库workbench/operations Pydantic schema、服务层与Vue组件；微信页面独立实现收件箱、巡检预览与版本化处理。保留未保存草稿并显式刷新确认。
+
+## 微信W04参考（2026-10-11）
+
+- Taro Vue页面与组合式生命周期：https://docs.taro.zone/docs/vue-page 、https://docs.taro.zone/en/docs/composition-api 。借鉴：useLoad解析深链，useDidShow只回读，useUnload失效本页工作；沿用项目Taro4/Vue3原生组件。Taro MIT，本文仅参考API语义，未复制第三方页面代码。
+- firecrawl --status 已认证但账户请求 fetch failed，改用官方网页搜索核对上述文档。业务DTO与审批规则复用本仓库Agent/Authorizations服务与Web实现。
