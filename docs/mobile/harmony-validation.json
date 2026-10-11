@@ -155,7 +155,13 @@
     "H20 reconcile: 只读回查发送结果 reported 通道报告送达 and journalled mail_reconciled for the same receipt",
     "H20 manual receipt: receipt_evidence SYN-RECEIPT-001-合成收件声明 stored on outbound_messages 25",
     "H20 channel revoke: device showed 已撤销 and test_mail_channels 25.revoked_at was set (the status column itself stays active, revoked state derives from revoked_at)",
-    "H20 real mail: fixture journal shows two mail_captured and one mail_reconciled events with real_mail_calls 0; no real transport exists in the fixture"
+    "H20 real mail: fixture journal shows two mail_captured and one mail_reconciled events with real_mail_calls 0; no real transport exists in the fixture",
+    "H21 leave/resume: HOME moved focus to the desktop (app window ZOrd -1) and aa start brought the app back on the same page with session and page state intact",
+    "H21 offline read: with the hdc rport removed the app showed 暂时无法连接服务，请刷新重试。",
+    "H21 unknown write result: after loading expense 1139, removing the rport and tapping 撤销费用, the app did not silently retry; it held the same request and switched the button to 核对同次写入 while disabling 撤销费用/清除正文与依据, and expenses 1139 stayed active v1 (no partial write)",
+    "H21 same-request recovery: restoring the rport and tapping 核对同次写入 completed that same request exactly once, giving expenses 1139 withdrawn v2",
+    "H21 not done: landscape, large font and dark mode could not be driven on this host (param get/set persist.global.colorMode|fontScale fail with errNum 106/1002, com.huawei.hmos.settings has no ability startable via aa start, and hidumper -s DisplayManagerService exposes no rotation predicate); a dedicated 409 version-conflict case was not run (version gates were exercised indirectly in H17 and via stale source guards in H15/H18)",
+    "H21 environment fix discovered: restore the device link with hdc rport (reverse), not hdc fport; using fport leaves the app unable to reach the API and the rport entry shows [Reverse] in fport ls"
   ],
   "pending": "H12 fee mapping rule revoke/clear; H13 statement review conclusion preview/save/version/clear; H14 order reconciliation differential path (import order rows into the user_import scope first); H15 settlement revoke/clear; H16 disable/reset/restore and AI authorization management; H17 schedule enable/disable/revoke/run-now/notification deep link; H09 analytics, H10 overview, H18 product quality history/clear, H20 outbound stub-only, H21 lifecycle/layout boundaries",
   "session_2026_10_12": {

@@ -21,10 +21,13 @@
 - **H20 测试外发端上通过（全程替身，真实邮件 0）**：连通道 → 替身 `SyntheticMail` 把验证信写进 `.local/mobile-business/fixture-events.jsonl`（`mail_captured`），取出 8 位码 → **已验证 / 有效**。**关键前置**：页面只接受 `source_status=current` 的运营检查，原运行 184 因来源修订变化变 `stale` 被过滤；先跑「今日运营」得到**执行 #259**（5 个候选）→ **检查 #185** → 创建 **外发摘要 #25**（等待审批、内容版本 1、全文含 checked/partial/not_checked 与关联候选 #195–#199）→「保存单次批准」得 **限 1 次**审批 →「按有效授权提交一次」→ `accepted` + **通道回执 `7f1da7a8…`** + 授权**已消耗 1/1** →「只读回查」得 **通道报告送达** → 人工收件证据 `SYN-RECEIPT-001-合成收件声明` 落库 →「撤销通道」得**已撤销**（`revoked_at` 落库）。日志 `mail_captured`×2、`mail_reconciled`×1、`real_mail_calls: 0`。
 - 附注：`test_mail_channels.status` 在撤销后仍为 `active`，撤销态由 `revoked_at` 派生——属实现方式，已如实记录不当作缺陷。
 - 调试用只读接口探针（本机 18081）需带 `X-SoloOps-Client: mobile` 与 `Origin: http://127.0.0.1:18080`，`client_type` 只接受 `ohos|android|weapp`；token 存在 `.local/mobile-business/token.txt`（本机文件，不提交）。
+- **H21 边界本轮验证三项**：①**离开恢复**——HOME 退桌面（焦点窗口 13、应用窗口 ZOrd -1）后 `aa start` 重入，**回到原页面、会话与页面状态保持**；②**断线错误**——撤掉 `hdc rport` 后读接口显示 **"暂时无法连接服务，请刷新重试。"**；③**未知结果与同次请求恢复**——先加载费用 #1139，再断链点「撤销费用」，应用**不静默重试**，按钮变 **"核对同次写入"**、撤销/清除置灰，此刻库内 `expenses 1139` 仍 `active` v1（**无半写**）；恢复链路后点"核对同次写入"补交同一次请求 → **#1139 withdrawn v2**（恰好一次，无重复）。**注意 #1139 因此已由 active 变为 withdrawn**（原 H12 证据仍保留在文档中，主费用 1138 未动）。
+- **H21 未做**：横屏、大字体、深浅色（`param get/set persist.global.colorMode|fontScale` 均不可用，errNum 106/1002；`com.huawei.hmos.settings` 无 `aa start` 可启动入口；`hidumper -s DisplayManagerService` 无旋转指令）与独立的 409 版本冲突用例。
+- **重要环境坑**：恢复设备链路必须用 **`hdc rport tcp:18080 tcp:18081`（Reverse）**，不能用 `fport`——用错方向时应用完全连不上 API，`fport ls` 里正确条目显示 `[Reverse]`。
 - **测试工具修正（本轮）**：`scripts/mobile/ohos_ui.py` 的 `hide-ime` 原按布局树里是否出现输入法包名判断，实测常测不到——键盘开着时继续滑动，滑动落在键盘按键上，把 `、` 连续打进"修订依据"（服务端回读 `H19-本地修订验证、、、…`，已重新输入修正）。现改为读 `WindowManagerService` 窗口列表中 `softKeyboard` 的 ZOrd（-1 为收起），并在 `findtap` 每次滑动前先收起键盘。
 - 另核：设备端弹过一次系统剪贴板权限框（"允许"soloops_flutter"复制来自剪贴板的内容？"，理由文案来自 `ohos/entry/.../element/string.json`），会抢焦点并使 `uitest dumpLayout -b <bundle>` 返回空树；已选"始终允许"解除，后续输入不再中断。
 - 数据库回读注意：`docker exec … mysql` 默认字符集会把中文显示成 `?`，需加 `--default-character-set=utf8mb4`；已用 `HEX()` 证实库内是正确 UTF-8，不是写入损坏。
-- 下一步：H21 边界（横屏/大字体/深浅色/离开恢复/冲突/未知结果）→ 补 H09 ask、H10 历史摘要列表/清除；微信端 wave 3 页面已落地并通过 type-check/构建，**开发者工具运行时联调仍未做**。
+- 下一步：补 H21 的横屏/大字体/深浅色与 409 冲突用例（需手写 Settings UI 或 DevEco 模拟器工具栏）→ 补 H09 ask、H10 历史摘要列表/清除；微信端 wave 3 页面已落地并通过 type-check/构建，**开发者工具运行时联调仍未做**。
 
 ## 2026-10-11 23:45 M0-C 新分支续接（优先于下文全部历史状态）
 
