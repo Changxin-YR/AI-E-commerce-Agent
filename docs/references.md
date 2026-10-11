@@ -393,3 +393,5 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - https://capacitorjs.com/docs/apis/cookies ：Cookie 生命周期需要 Android 实测；前端不存储 bearer token。
 - https://capacitorjs.com/docs/getting-started/environment-setup ：使用 Android SDK 36，安装包模板要求 Java 21。
 - Firecrawl 本次因 api.firecrawl.dev DNS 失败，改用官方网页浏览核对。
+
+- https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md ：GitHub 官方 MIT 镜像清单列出 Java 21、SDK 36 与 build-tools 36.0.0；安卓 CI 固定 ubuntu-24.04 并检查工具目录。

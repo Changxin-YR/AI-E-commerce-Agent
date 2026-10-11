@@ -24,6 +24,6 @@
 
 ## 下一步
 
-本地业务提交 `f857d87`。推送到 `https://github.com/Changxin-YR/AI-E-commerce-Agent` 的 `android/capacitor-m0` 被自动审批拦截，要求用户确认具体上传目的地；已向用户请求确认，当前尚未推送、尚无本分支 CI 结果。收到授权后再推送；本地工具链准备可以独立推进。origin 仍指向初始本地克隆源，获得授权后再改为 GitHub 地址。
+用户已明确授权将安卓代码和文档推送到 `https://github.com/Changxin-YR/AI-E-commerce-Agent` 的 `android/capacitor-m0` 并运行 CI；origin 已设置且分支已推送。首轮 CI 38137158092 的前端/180单元/资源同步通过，原生步骤因 ubuntu-latest 缺 sdkmanager 失败；已按官方 runner 镜像清单固定 ubuntu-24.04 并检查其预装 SDK 36。最终 CI 结果见包级验收。
 
 先读取本文件、`android-plan.md` 和 `android-a0-acceptance.md`，核对 Git HEAD/status 与准确提交 CI。只写安卓副本。隔离数据库、端口、卷、测试账号及模型/邮件替身；不复用其他聊天正在使用的数据实例。新包补 Android 返回键/网络恢复/上传前，先查看对应官方文档并更新参考记录。
