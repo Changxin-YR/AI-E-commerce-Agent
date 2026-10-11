@@ -234,7 +234,7 @@ async function change(grant: InternalAuthorization, useId?: number): Promise<voi
         </button>
         <button
           v-if="!grant.revoked_at"
-          class="button secondary"
+          class="button secondary danger"
           :disabled="busy || loading"
           @click="change(grant)"
         >
@@ -263,7 +263,7 @@ async function change(grant: InternalAuthorization, useId?: number): Promise<voi
             />将本次未处理的新增候选设为已拒绝；额度不返还</label
           >
           <button
-            class="button secondary"
+            class="button secondary danger"
             :disabled="busy || loading || !restoreConfirm[use.id]"
             @click="change(grant, use.id)"
           >

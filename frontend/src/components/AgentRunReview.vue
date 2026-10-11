@@ -256,7 +256,7 @@ const actionLabels: Record<string, string> = {
         >
           批准当前节点
         </button>
-        <button class="button secondary" :disabled="busy" @click="emit('action', 'reject')">
+        <button class="button secondary danger" :disabled="busy" @click="emit('action', 'reject')">
           拒绝当前节点
         </button>
       </div>
@@ -286,7 +286,7 @@ const actionLabels: Record<string, string> = {
       >
         暂停任务
       </button>
-      <button v-if="stoppable" class="button secondary" @click="emit('action', 'cancel')">
+      <button v-if="stoppable" class="button secondary danger" @click="emit('action', 'cancel')">
         取消任务
       </button>
       <RouterLink

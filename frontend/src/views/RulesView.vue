@@ -117,232 +117,234 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>经营规则</h1>
-      <p>把经营判断写清楚，每次检查都有可回看的版本。</p>
+  <div class="solo-page page-rules">
+    <div class="page-heading">
+      <div>
+        <h1>经营规则</h1>
+        <p>把经营判断写清楚，每次检查都有可回看的版本。</p>
+      </div>
+      <span class="outline-label">卖家确认 · 版本留存</span>
     </div>
-    <span class="outline-label">卖家确认 · 版本留存</span>
-  </div>
-  <FeedbackBanner :message="error" />
-  <p v-if="info" role="status">{{ info }}</p>
-  <p v-if="!shops.length">请先在经营资料中添加店铺。</p>
-  <section v-else class="form-panel" aria-label="规则范围">
-    <fieldset :disabled="busy">
-      <legend>生效范围</legend>
-      <div class="form-grid">
-        <div class="form-field">
-          <label for="rule-shop">规则店铺</label
-          ><select id="rule-shop" v-model="shopId" @change="load">
-            <option v-for="shop in shops" :key="shop.id" :value="shop.id">
-              {{ shop.name }} · {{ shop.code }}
-            </option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label for="rule-channel">规则渠道</label
-          ><select id="rule-channel" v-model="channel" @change="load">
-            <option value="generic">通用 / 自建表</option>
-            <option value="shopify">Shopify</option>
-            <option value="amazon">Amazon</option>
-            <option value="other">其他来源</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label for="rule-identity">规则数据身份</label
-          ><select id="rule-identity" v-model="identity" @change="load">
-            <option value="user_import">用户导入文件</option>
-            <option value="synthetic">合成测试数据</option>
-          </select>
-        </div>
-      </div>
-      <button type="button" class="button secondary small" @click="load">重新读取规则</button>
-    </fieldset>
-  </section>
-  <form v-if="form && current" class="form-panel section-block" @submit.prevent="change('save')">
-    <fieldset :disabled="busy">
-      <legend>检查阈值 · 当前版本 #{{ current.version }}</legend>
-      <p>
-        {{
-          current.active ? '当前已启用经营约束' : '当前未启用经营约束，可按次填写检查阈值'
-        }}。保存后用于所选范围的今日运营、Agent 检查；独立问数、库存页与利润试算保留各自显式口径。
-      </p>
-      <div class="form-grid">
-        <div class="form-field">
-          <label for="rule-age">库存有效小时</label
-          ><input
-            id="rule-age"
-            v-model.number="form.max_age_hours"
-            type="number"
-            min="1"
-            max="720"
-            required
-          />
-        </div>
-        <div class="form-field">
-          <label for="rule-quantity">低毛利最少销量</label
-          ><input
-            id="rule-quantity"
-            v-model.number="form.min_quantity"
-            type="number"
-            min="1"
-            max="1000000"
-            required
-          />
-        </div>
-        <div class="form-field">
-          <label for="rule-margin">低毛利阈值（%）</label
-          ><input
-            id="rule-margin"
-            v-model="form.max_margin_percent"
-            type="text"
-            inputmode="decimal"
-            required
-          />
-        </div>
-      </div>
-      <p>毛利率不高于阈值才产生核对候选；费用缺失仍标未知。库存安全数量来自每条快照。</p>
-      <details class="scope-options">
-        <summary>经营偏好与预算记录</summary>
-        <p>
-          以下是卖家手填参考，保留依据与版本供人工核对；尚未用于生成文案、选仓、物流或广告投放。广告金额是计划值，未授权支出。
-        </p>
-        <div class="form-grid">
-          <div v-for="(label, key) in noteLabels" :key="key" class="form-field">
-            <label :for="`rule-${key}`">{{ label }}</label
-            ><textarea
-              :id="`rule-${key}`"
-              v-model="form.notes[key]"
-              :maxlength="
-                key === 'target_site' || key === 'warehouse'
-                  ? 200
-                  : key === 'logistics'
-                    ? 500
-                    : 1000
-              "
-              rows="3"
-            />
-          </div>
-        </div>
+    <FeedbackBanner :message="error" />
+    <p v-if="info" role="status">{{ info }}</p>
+    <p v-if="!shops.length">请先在经营资料中添加店铺。</p>
+    <section v-else class="form-panel" aria-label="规则范围">
+      <fieldset :disabled="busy">
+        <legend>生效范围</legend>
         <div class="form-grid">
           <div class="form-field">
-            <label for="rule-ad-budget">每日广告计划金额（留空为未知）</label
-            ><input
-              id="rule-ad-budget"
-              v-model="form.advertising_daily_budget"
-              inputmode="decimal"
-            />
-          </div>
-          <div class="form-field">
-            <label for="rule-currency">预算币种</label
-            ><select id="rule-currency" v-model="form.currency">
-              <option
-                v-for="c in ['USD', 'CNY', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'HKD', 'SGD']"
-                :key="c"
-              >
-                {{ c }}
+            <label for="rule-shop">规则店铺</label
+            ><select id="rule-shop" v-model="shopId" @change="load">
+              <option v-for="shop in shops" :key="shop.id" :value="shop.id">
+                {{ shop.name }} · {{ shop.code }}
               </option>
             </select>
           </div>
+          <div class="form-field">
+            <label for="rule-channel">规则渠道</label
+            ><select id="rule-channel" v-model="channel" @change="load">
+              <option value="generic">通用 / 自建表</option>
+              <option value="shopify">Shopify</option>
+              <option value="amazon">Amazon</option>
+              <option value="other">其他来源</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="rule-identity">规则数据身份</label
+            ><select id="rule-identity" v-model="identity" @change="load">
+              <option value="user_import">用户导入文件</option>
+              <option value="synthetic">合成测试数据</option>
+            </select>
+          </div>
         </div>
-      </details>
-      <div class="form-field">
-        <label for="rule-basis">规则与偏好依据</label
-        ><textarea id="rule-basis" v-model="form.basis" maxlength="500" rows="3" required />
-      </div>
-      <p>
-        默认写入须逐次审批。保存异常候选的有界 R1 预授权在 Agent
-        执行台单独管理；文本偏好只用于记录经营依据。
-      </p>
-      <label class="check-label"
-        ><input
-          v-model="confirmed"
-          type="checkbox"
-        />我已核对范围与数值，同意保存或恢复后用于后续检查</label
-      >
-      <div class="form-actions">
-        <button class="button primary" :disabled="!confirmed">保存并启用规则</button
-        ><button
-          class="button secondary"
-          type="button"
-          :disabled="!confirmed || !current.active"
-          @click="change('revoke')"
-        >
-          撤销当前规则</button
-        ><button
-          class="button secondary"
-          type="button"
-          :disabled="!confirmed"
-          @click="change('reset')"
-        >
-          重置到初始口径
-        </button>
-      </div>
-      <p class="panel-footnote">
-        撤销/重置停止约束并恢复 24 小时、1 件、20%
-        的初始值，偏好当前值清空；历史保留。旧检查和待审任务须重新运行，已完成记录继续可查。
-      </p>
-    </fieldset>
-  </form>
-  <section class="form-panel section-block" aria-label="规则历史">
-    <h2>规则历史与依据</h2>
-    <p>恢复会建立新版本；不会改写历史检查使用的数值。</p>
-    <div class="form-actions">
-      <button
-        v-for="row in history"
-        :key="row.version"
-        class="button secondary small"
-        @click="inspected = row"
-      >
-        #{{ row.version }} · {{ labels[row.action] }}
-      </button>
-    </div>
-    <button
-      v-if="history.length === 50"
-      class="button secondary small"
-      :disabled="busy"
-      @click="more"
-    >
-      更早 50 条
-    </button>
-    <article v-if="inspected" class="data-note section-block" aria-label="历史规则详情">
-      <div>
-        <h3>版本 #{{ inspected.version }} · {{ labels[inspected.action] }}</h3>
+        <button type="button" class="button secondary small" @click="load">重新读取规则</button>
+      </fieldset>
+    </section>
+    <form v-if="form && current" class="form-panel section-block" @submit.prevent="change('save')">
+      <fieldset :disabled="busy">
+        <legend>检查阈值 · 当前版本 #{{ current.version }}</legend>
         <p>
           {{
-            inspected.created_at
-              ? supportTime(
-                  inspected.created_at,
-                  shops.find((s) => s.id === shopId)?.timezone ?? 'Asia/Shanghai',
-                )
-              : ''
-          }}
-          · 前版 #{{ inspected.previous_version
-          }}<span v-if="inspected.restored_from"> · 恢复自 #{{ inspected.restored_from }}</span>
+            current.active ? '当前已启用经营约束' : '当前未启用经营约束，可按次填写检查阈值'
+          }}。保存后用于所选范围的今日运营、Agent 检查；独立问数、库存页与利润试算保留各自显式口径。
         </p>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="rule-age">库存有效小时</label
+            ><input
+              id="rule-age"
+              v-model.number="form.max_age_hours"
+              type="number"
+              min="1"
+              max="720"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="rule-quantity">低毛利最少销量</label
+            ><input
+              id="rule-quantity"
+              v-model.number="form.min_quantity"
+              type="number"
+              min="1"
+              max="1000000"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="rule-margin">低毛利阈值（%）</label
+            ><input
+              id="rule-margin"
+              v-model="form.max_margin_percent"
+              type="text"
+              inputmode="decimal"
+              required
+            />
+          </div>
+        </div>
+        <p>毛利率不高于阈值才产生核对候选；费用缺失仍标未知。库存安全数量来自每条快照。</p>
+        <details class="scope-options">
+          <summary>经营偏好与预算记录</summary>
+          <p>
+            以下是卖家手填参考，保留依据与版本供人工核对；尚未用于生成文案、选仓、物流或广告投放。广告金额是计划值，未授权支出。
+          </p>
+          <div class="form-grid">
+            <div v-for="(label, key) in noteLabels" :key="key" class="form-field">
+              <label :for="`rule-${key}`">{{ label }}</label
+              ><textarea
+                :id="`rule-${key}`"
+                v-model="form.notes[key]"
+                :maxlength="
+                  key === 'target_site' || key === 'warehouse'
+                    ? 200
+                    : key === 'logistics'
+                      ? 500
+                      : 1000
+                "
+                rows="3"
+              />
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="rule-ad-budget">每日广告计划金额（留空为未知）</label
+              ><input
+                id="rule-ad-budget"
+                v-model="form.advertising_daily_budget"
+                inputmode="decimal"
+              />
+            </div>
+            <div class="form-field">
+              <label for="rule-currency">预算币种</label
+              ><select id="rule-currency" v-model="form.currency">
+                <option
+                  v-for="c in ['USD', 'CNY', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'HKD', 'SGD']"
+                  :key="c"
+                >
+                  {{ c }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </details>
+        <div class="form-field">
+          <label for="rule-basis">规则与偏好依据</label
+          ><textarea id="rule-basis" v-model="form.basis" maxlength="500" rows="3" required />
+        </div>
         <p>
-          库存有效 {{ inspected.values.max_age_hours }} 小时 · 最少
-          {{ inspected.values.min_quantity }} 件 · 低毛利 {{ inspected.values.max_margin_percent }}%
+          默认写入须逐次审批。保存异常候选的有界 R1 预授权在 Agent
+          执行台单独管理；文本偏好只用于记录经营依据。
         </p>
-        <p>依据：{{ inspected.values.basis }}</p>
-        <p v-for="(label, key) in noteLabels" :key="key">
-          {{ label }}：{{ inspected.values.notes[key] || '未填写' }}
-        </p>
-        <p>
-          广告计划：{{ inspected.values.advertising_daily_budget ?? '未知' }}
-          {{ inspected.values.currency }}
-        </p>
-        <button
-          v-if="inspected.active"
-          class="button secondary"
-          :disabled="busy || !confirmed"
-          @click="change('restore')"
+        <label class="check-label"
+          ><input
+            v-model="confirmed"
+            type="checkbox"
+          />我已核对范围与数值，同意保存或恢复后用于后续检查</label
         >
-          将此版本恢复为新规则
+        <div class="form-actions">
+          <button class="button primary" :disabled="!confirmed">保存并启用规则</button
+          ><button
+            class="button secondary danger"
+            type="button"
+            :disabled="!confirmed || !current.active"
+            @click="change('revoke')"
+          >
+            撤销当前规则</button
+          ><button
+            class="button secondary danger"
+            type="button"
+            :disabled="!confirmed"
+            @click="change('reset')"
+          >
+            重置到初始口径
+          </button>
+        </div>
+        <p class="panel-footnote">
+          撤销/重置停止约束并恢复 24 小时、1 件、20%
+          的初始值，偏好当前值清空；历史保留。旧检查和待审任务须重新运行，已完成记录继续可查。
+        </p>
+      </fieldset>
+    </form>
+    <section class="form-panel section-block" aria-label="规则历史">
+      <h2>规则历史与依据</h2>
+      <p>恢复会建立新版本；不会改写历史检查使用的数值。</p>
+      <div class="form-actions">
+        <button
+          v-for="row in history"
+          :key="row.version"
+          class="button secondary small"
+          @click="inspected = row"
+        >
+          #{{ row.version }} · {{ labels[row.action] }}
         </button>
       </div>
-    </article>
-  </section>
+      <button
+        v-if="history.length === 50"
+        class="button secondary small"
+        :disabled="busy"
+        @click="more"
+      >
+        更早 50 条
+      </button>
+      <article v-if="inspected" class="data-note section-block" aria-label="历史规则详情">
+        <div>
+          <h3>版本 #{{ inspected.version }} · {{ labels[inspected.action] }}</h3>
+          <p>
+            {{
+              inspected.created_at
+                ? supportTime(
+                    inspected.created_at,
+                    shops.find((s) => s.id === shopId)?.timezone ?? 'Asia/Shanghai',
+                  )
+                : ''
+            }}
+            · 前版 #{{ inspected.previous_version
+            }}<span v-if="inspected.restored_from"> · 恢复自 #{{ inspected.restored_from }}</span>
+          </p>
+          <p>
+            库存有效 {{ inspected.values.max_age_hours }} 小时 · 最少
+            {{ inspected.values.min_quantity }} 件 · 低毛利 {{ inspected.values.max_margin_percent }}%
+          </p>
+          <p>依据：{{ inspected.values.basis }}</p>
+          <p v-for="(label, key) in noteLabels" :key="key">
+            {{ label }}：{{ inspected.values.notes[key] || '未填写' }}
+          </p>
+          <p>
+            广告计划：{{ inspected.values.advertising_daily_budget ?? '未知' }}
+            {{ inspected.values.currency }}
+          </p>
+          <button
+            v-if="inspected.active"
+            class="button secondary"
+            :disabled="busy || !confirmed"
+            @click="change('restore')"
+          >
+            将此版本恢复为新规则
+          </button>
+        </div>
+      </article>
+    </section>
+  </div>
 </template>
 
 <style scoped>
