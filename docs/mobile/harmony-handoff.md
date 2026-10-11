@@ -12,7 +12,9 @@
 - **H12 映射规则撤销/清除、H13 账单审阅结论已通过**：规则 #310 → `withdrawn` v2（`match_key` 置空）→ `cleared` v3（`content` NULL，历史正文全清，active 规则 0）；账单审阅 #187 → v1 `pending` 保存 → v2 改说明更新 → 历史点 v1 可回读快照 → v3 `cleared`（三版 `snapshot` 全 NULL）。注意：**有未匹配/异币种/未知分类时服务端只接受"仍待核对"结论**，选其他结论预览会被明确拒绝。
 - **H14 订单核对"有差异"路径与结论保存已通过**：原障碍是 `user_import/generic` 无订单行。导入 `orders-user-import-synthetic.csv`（批次 #1191，`SYN-U1/U2/U3`）**必须用新订单号**——沿用 synthetic 作用域的 `SYN-G1..G3` 会被服务端按 `source_scope` 拒绝；再导入带 `order_id` 的账单 `statements-order-linked-synthetic.csv`（批次 #1192，`SYN-ST-002` sale 120.0000→`SYN-U1`、refund 8.0000→`SYN-U3`）。口径选「退款前折后商品款」+填依据后：`SYN-U1 · 账单销售款` = **金额差异 80.0000 USD**（订单可比 40.0000 vs 账单 120.0000）；保存为 `statement_reviews` **#188（kind=orders）**。**要点：账单行不带 `order_id` 就一定算不出差额**（按 `(order_id, entry_type)` 分组，无单号的单独成组判 `missing_order_reference`）。
 - **H15 结算回款撤销/清除已通过**：导入新账单批次 #1192 后原结算 49 自动转 **`stale`**（设备显示"来源变化 · 待重核"）→「撤销记录」得 **v3 `withdrawn`** →「清除正文」得 **v4 `cleared`**（v1 create/v3 withdraw/v4 clear 三条 `snapshot` 全 NULL）。
-- **下一步顺序**：H16 停用/重置/恢复与 AI 授权 → H17 启停/撤销/立即运行/通知深链 → H09 分析、H10 总览、H18 历史回读/清除、H20 测试外发（仅替身）→ H21 边界；微信端 wave 3 已通过 type-check/构建（24 页、tabBar 5 项带图标），待开发者工具联调。
+- **H16 规则停用/重置/恢复已通过**：`business_rule_revisions` #25 revoke（回默认 24h）→ #26 reset → #27 restore（`restored_from_id=24`、12h）。**AI 授权面板可进入且空态如实**（"暂无授权，可在今日运营流程的待审批候选下创建"）；创建有限次授权需先跑今日运营产生待审批候选，本轮未创建。
+- **H17 计划启停/立即运行/通知深链/撤销已通过**：暂停→paused v2（`next_run_at` NULL）；**恢复被规则版本门禁挡住**（提示"经营规则版本已变化，请刷新规则并重新检查"）→ 修改计划重绑 #27 存为 v3 → 恢复 active v4（`next_run_at`=01:00 UTC=09:00+08:00）；立即执行一次→`schedule_occurrences` #27/execution 258/succeeded/no_findings；通知「查看运行进度与审批」**深链直达执行 #258**；标记已读写入 `read_at`；撤销→revoked v5。**注意：自动调度服务本身未启用，"到点自动运行"仍无法端测。**
+- **下一步顺序**：H09 分析、H10 总览、H18 历史回读/清除、H20 测试外发（仅替身）→ H21 边界；微信端 wave 3 已通过 type-check/构建（24 页、tabBar 5 项带图标），待开发者工具联调。
 
 ## 2026-10-11 23:45 M0-C 接续环境复核（优先于下文历史状态）
 

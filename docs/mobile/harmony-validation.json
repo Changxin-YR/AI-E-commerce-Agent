@@ -128,7 +128,18 @@
     "H14 review save: statement_reviews 188 kind=orders v1 active with the pending conclusion and 3 sources",
     "H15 source-change linkage: after importing statement batch 1192, settlement 49 turned stale and the device list showed 来源变化 · 待重核",
     "H15 withdraw: settlement 49 withdrawn at v3, settlement_revisions gained v3 withdraw",
-    "H15 clear: settlement 49 cleared at v4; the create, withdraw and clear revisions all have NULL snapshot and the device body/evidence inputs were emptied"
+    "H15 clear: settlement 49 cleared at v4; the create, withdraw and clear revisions all have NULL snapshot and the device body/evidence inputs were emptied",
+    "H16 disable: business_rule_revisions 25 action=revoke reverted the thresholds to the 24h default",
+    "H16 reset: business_rule_revisions 26 action=reset",
+    "H16 restore: business_rule_revisions 27 action=restore with restored_from_id 24 and max_age_hours 12 (selected from the on-device 规则版本历史 list)",
+    "H16 authorization panel: 管理 AI 运营授权 opens the R1 limited-use panel, states 暂无授权，可在今日运营流程的待审批候选下创建 and refreshes cleanly, matching internal_authorizations=0; no authorization was created because that needs a pending candidate from a daily operations run",
+    "H17 pause: operation_schedules 24 paused at v2 with next_run_at NULL, device showed 下次 未安排 and disabled 立即执行一次/暂停",
+    "H17 resume guard: resume was refused with 经营规则版本已变化，请刷新规则并重新检查 because the plan still bound rule 24; the modify form already showed 绑定经营规则：#27, and saving with the confirmation box re-bound config.rule_revision_id=27 as v3",
+    "H17 resume: after rebinding the rule, resume set the schedule active at v4 with next_run_at 2026-10-12 01:00 UTC (09:00 +08:00)",
+    "H17 run now: schedule_occurrences 27 created with trigger=manual, schedule_version=4, execution_id=258, status=succeeded, reason=no_findings",
+    "H17 notification deep link: 查看运行进度与审批 opened 执行 #258 · 已完成 with its step records (检查数据 · 步骤完成 data_check 62 ms, 本次检查未产生异常候选)",
+    "H17 mark read: 标记已读 set schedule_occurrences.read_at",
+    "H17 revoke: operation_schedules 24 revoked at v5 with next_run_at NULL, device showed 每日运营检查 · 已撤销"
   ],
   "pending": "H12 fee mapping rule revoke/clear; H13 statement review conclusion preview/save/version/clear; H14 order reconciliation differential path (import order rows into the user_import scope first); H15 settlement revoke/clear; H16 disable/reset/restore and AI authorization management; H17 schedule enable/disable/revoke/run-now/notification deep link; H09 analytics, H10 overview, H18 product quality history/clear, H20 outbound stub-only, H21 lifecycle/layout boundaries",
   "session_2026_10_12": {
