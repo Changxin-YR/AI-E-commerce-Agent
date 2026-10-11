@@ -9,7 +9,7 @@
 - H11–H20核心原生业务页面全部实现：多方案利润/汇率、费用与映射、账单与订单审阅、回款、规则、计划通知、商品质量/修订、测试外发。H02补资料冲突回读与onboarding，H04补独立manifest恢复，H21补业务时区/日期、全部路由/query、离开保护/前台会话核对。详细文件/行为在progress。
 - H14增加OrderStatementReviewService/schema/router，StatementReview.kind默认fees、订单审阅orders，原版本/幂等/来源清除共用；迁移head **b42e83f516c0** 接移动会话 **a31e72d405bf**。
 - 本次验证：Dart analyze无问题，**17 Flutter tests**；**12组CSV Python/Dart逐字节一致**；**97后端定向/64.18秒**，包括移动Bearer/Web兼容、订单/费用审阅、订单核对、迁移回退/升级/Alembic差异和数据保护；Ruff规则/185文件格式、mypy180 app文件通过。
-- 完整业务SDK24 x64 debug未签名HAP编译通过，103684966 bytes，SHA256 **32a7eb1c3ccca3207113f76d5f4c88a962b056c9dfcd95eec32f80b204f52c58**。实际文件大小/哈希以validation.json为准。当前业务尚未安装到API22；全部端到端业务与用户联调仍待做，历史M0通过不替代。
+- 完整业务SDK24 x64 debug未签名HAP编译通过，103666758 bytes，SHA256 **32a7eb1c3ccca3207113f76d5f4c88a962b056c9dfcd95eec32f80b204f52c58**。实际文件大小/哈希以validation.json为准。当前业务尚未安装到API22；全部端到端业务与用户联调仍待做，历史M0通过不替代。
 
 ## 立即下一步
 
