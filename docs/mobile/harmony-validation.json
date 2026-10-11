@@ -139,7 +139,15 @@
     "H17 run now: schedule_occurrences 27 created with trigger=manual, schedule_version=4, execution_id=258, status=succeeded, reason=no_findings",
     "H17 notification deep link: 查看运行进度与审批 opened 执行 #258 · 已完成 with its step records (检查数据 · 步骤完成 data_check 62 ms, 本次检查未产生异常候选)",
     "H17 mark read: 标记已读 set schedule_occurrences.read_at",
-    "H17 revoke: operation_schedules 24 revoked at v5 with next_run_at NULL, device showed 每日运营检查 · 已撤销"
+    "H17 revoke: operation_schedules 24 revoked at v5 with next_run_at NULL, device showed 每日运营检查 · 已撤销",
+    "H18 history readback: report 31 turned stale after the H19 product edits; opening it showed source revision 8, 4/2 products, 2/0 missing/pending and the per-product findings",
+    "H18 clear: product_quality_reports 31 cleared, product_quality_sources 0, device showed 已存报告：#31 · 正文已清除",
+    "H09 analytics default basis: 3 paid order lines, 6 units, net sales 115.0000 (= 120.0000 - 5.0000 refund); cost, gross profit and margin all stayed 未知 and 完整排行可用 false",
+    "H09 order-line historical cost: registered 8.1234 USD for SYN-U1/1 with evidence SYN-COST-001 and evidence_at 2026-10-08T09:00:00+08:00; order_cost_revisions 3 upsert/active on source batch 1191 row 20152",
+    "H09 recalculation: switching the cost basis to 订单行历史成本依据 made 已知成本小计 16.2468 (= 2 x 8.1234) and 已知商品毛利行数 1 while the aggregates stayed 未知; source revision moved 12 -> 13",
+    "H09 persistent report: saved_analyses 24 status=current; the earlier report 23 became stale",
+    "H10 overview: day summary for 2026-10-11..2026-10-12 in USD reported 可核对净销售额 未知/不完整, 已知子集 0, 已观察订单 0 (an empty window is not treated as zero sales) with coverage and unknown-item disclosures; overview_reports 39 status=current",
+    "H10 not exercised: the saved-summary history list and clear action were not revisited on device"
   ],
   "pending": "H12 fee mapping rule revoke/clear; H13 statement review conclusion preview/save/version/clear; H14 order reconciliation differential path (import order rows into the user_import scope first); H15 settlement revoke/clear; H16 disable/reset/restore and AI authorization management; H17 schedule enable/disable/revoke/run-now/notification deep link; H09 analytics, H10 overview, H18 product quality history/clear, H20 outbound stub-only, H21 lifecycle/layout boundaries",
   "session_2026_10_12": {
