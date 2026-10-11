@@ -13,11 +13,12 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 
 def make_app():
-    from app.core.config import Settings
-    from app.main import create_app
     from fastapi.responses import JSONResponse
     from sqlalchemy import event
     from sqlalchemy.engine import Engine
+
+    from app.core.config import Settings
+    from app.main import create_app
 
     @event.listens_for(Engine, "do_connect")
     def deny_database(*_args, **_kwargs):

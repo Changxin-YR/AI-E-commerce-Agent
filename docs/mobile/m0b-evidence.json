@@ -415,8 +415,8 @@
     },
     {
       "name": "tooling-tests",
-      "started_utc": "2026-10-11T06:10:42.473814+00:00",
-      "finished_utc": "2026-10-11T06:10:51.119739+00:00",
+      "started_utc": "2026-10-11T06:29:15.475848+00:00",
+      "finished_utc": "2026-10-11T06:29:24.988073+00:00",
       "command": [
         "python",
         "-m",
@@ -430,20 +430,20 @@
       "exit_code": 0,
       "timeout_seconds": 60.0,
       "timed_out": false,
-      "log": ".local/mobile-m0b/20261011T061042Z-tooling-tests.log",
-      "log_sha256": "52f787d3cde5545b4e73127a747a8dda52bb8a5b408ec07acea30743ceaf8a4a",
+      "log": ".local/mobile-m0b/20261011T062915Z-tooling-tests.log",
+      "log_sha256": "837820ecacaa6a50ebeeb25c075947c29a358cb1ca0ce22ce478c3df35839b8d",
       "artifacts": [],
       "status": "PASS"
     },
     {
       "name": "python-lint",
-      "started_utc": "2026-10-11T06:23:29.059957+00:00",
-      "finished_utc": "2026-10-11T06:23:29.642099+00:00",
+      "started_utc": "2026-10-11T06:29:14.995191+00:00",
+      "finished_utc": "2026-10-11T06:29:15.051295+00:00",
       "command": [
         "ruff",
         "check",
         "--config",
-        "backend/pyproject.toml",
+        "scripts/mobile/ruff.toml",
         "scripts/mobile",
         "scripts/validate_ui_contract.py"
       ],
@@ -451,21 +451,21 @@
       "exit_code": 0,
       "timeout_seconds": null,
       "timed_out": false,
-      "log": ".local/mobile-m0b/20261011T062329Z-python-lint.log",
+      "log": ".local/mobile-m0b/20261011T062914Z-python-lint.log",
       "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
       "artifacts": [],
       "status": "PASS"
     },
     {
       "name": "python-format",
-      "started_utc": "2026-10-11T06:23:29.839766+00:00",
-      "finished_utc": "2026-10-11T06:23:29.867808+00:00",
+      "started_utc": "2026-10-11T06:29:15.239750+00:00",
+      "finished_utc": "2026-10-11T06:29:15.284179+00:00",
       "command": [
         "ruff",
         "format",
         "--check",
         "--config",
-        "backend/pyproject.toml",
+        "scripts/mobile/ruff.toml",
         "scripts/mobile",
         "scripts/validate_ui_contract.py"
       ],
@@ -473,7 +473,7 @@
       "exit_code": 0,
       "timeout_seconds": null,
       "timed_out": false,
-      "log": ".local/mobile-m0b/20261011T062329Z-python-format.log",
+      "log": ".local/mobile-m0b/20261011T062915Z-python-format.log",
       "log_sha256": "75b7030be9d7de96bf4e76e79b1f03f14af8899d169fd8d79564d59167d1ab80",
       "artifacts": [],
       "status": "PASS"

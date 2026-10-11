@@ -50,6 +50,8 @@
 3. 微信热重载：Taro 生成 dist 期间出现短暂缺少 app.json/JS 文件错误；完整构建结束后点击“编译”，M0-B 页面加载，最后控制台 Errors:0。官方 automator 通道仍60秒超时，因此脚本通道 BLOCKED，界面验收独立记录 PASS。
 4. 微信工具警告：灰度基础库3.17.4、SharedArrayBuffer 弃用提示、windowInfoChanged 监听器计数、worker reportRealtimeAction 不支持。已保留观察；内存泄漏与长期稳定性 NOT_TESTED，后续用稳定基础库和长时测试判断。
 
+5. CI 导入排序：首次远端检查因工作目录不同，将本地 `app` 模块分类不同而报 I001。新增 mobile 专用 Ruff 配置继承后端规则，显式声明 `app` 为 first-party，并统一本地与 CI 命令；原后端配置保持。
+
 ## 复现命令
 
 以下在 worktree 根执行。先将锁定 Flutter OH、JDK17、Android SDK35、DevEco 的 Node/OHPM/Hvigor 加入本机环境；具体版本见 `apps/soloops_flutter/toolchain.lock.json`。Python 使用现有 backend 虚拟环境（cryptography 来自锁定的 pymysql[rsa] 依赖）。
@@ -88,7 +90,7 @@ python scripts/mobile/check_ohos_emulator.py --hdc $HDC --target 127.0.0.1:5555 
 
 小程序实际构建命令：`npm run type-check`、`npm run build:weapp`（目录 `apps/soloops_weapp`）。Taro 重建 dist 期间 IDE 热重载可能读到暂时缺失的文件，应待完整构建结束后执行 IDE 完整编译。随后使用原生工具点击启动页→环境信息→运行合成诊断→返回，并从右上角退出后选择模拟场景1001恢复。截图和事件逐项核对。`node scripts/mobile/check_weapp_load.cjs` 本轮实际运行60秒超时（exit124），未标记脚本通过。
 
-公共检查：`python scripts/validate_ui_contract.py`、`python -m unittest discover -s scripts/mobile/tests -v`，以及按 `backend/pyproject.toml` 配置运行 Ruff。CI 增加对 M0-B 分支的触发，仍只代表契约与小程序构建检查，不代表远端 APK/HAP 或模拟器验收。
+公共检查：`python scripts/validate_ui_contract.py`、`python -m unittest discover -s scripts/mobile/tests -v`，以及按 `scripts/mobile/ruff.toml`（继承后端规则，固定本地 app 导入分类）配置运行 Ruff。CI 增加对 M0-B 分支的触发，仍只代表契约与小程序构建检查，不代表远端 APK/HAP 或模拟器验收。
 
 ## 产物与证据
 
