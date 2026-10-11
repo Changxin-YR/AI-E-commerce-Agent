@@ -116,20 +116,23 @@
         <FactLine label="结算编号" :value="item.settlement_id" />
         <FactLine label="订单号" :value="item.order_id" />
         <FactLine label="备注" :value="item.note" />
-        <FactLine label="源行" :value="`${item.source.filename} · 第 ${item.source.row_number} 行 · 批次 ${item.source.batch_id}`" />
+        <SourceEvidence
+          :source="item.source"
+          :zone="result.scope.timezone"
+          hint="打开下方的“查看来源与转换”，可按同一批次与源行回读原始值与转换结果。"
+        />
         <ActionButton label="查看来源与转换" :disabled="busy" @tap="openSource(item.source.row_id)" />
       </view>
     </template>
 
     <template v-if="source !== null">
       <text class="section-title">源行原始值与转换结果</text>
-      <FactLine label="来源" :value="`${source.reference.filename} · 第 ${source.reference.row_number} 行（${source.batch_status}）`" />
-      <view v-for="(value, key) in source.raw" :key="`raw:${key}`">
-        <FactLine :label="`原始 ${key}`" :value="value" />
-      </view>
-      <view v-for="(value, key) in source.normalized" :key="`norm:${key}`">
-        <FactLine :label="`转换后 ${key}`" :value="value" />
-      </view>
+      <SourceEvidence
+        :source="source.reference"
+        :zone="zone"
+        :detail="{ batch_status: source.batch_status, raw: source.raw, normalized: source.normalized }"
+        :hint="`批次状态：${labelOf(batchStatuses, source.batch_status)}。原始值、修正值与转换后为服务端返回的同批次明细。`"
+      />
       <ActionButton label="关闭来源面板" :disabled="busy" @tap="source = null" />
     </template>
 
@@ -223,10 +226,11 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import PageShell from '../../ui/PageShell.vue'
 import FactLine from '../../ui/FactLine.vue'
 import ActionButton from '../../ui/ActionButton.vue'
+import SourceEvidence from '../../ui/SourceEvidence.vue'
 import { inputValue, pickerValue } from '../../ui/forms'
 import { ApiError, apiGet, apiPost, asObject, asRows, newRequestId } from '../../core/api'
 import { businessTimeText, isValidDate, moneyText, todayInZone, zonedIsoFromParts } from '../../core/format'
-import { importChannels, importIdentities, labelOf } from '../../core/labels'
+import { batchStatuses, importChannels, importIdentities, labelOf } from '../../core/labels'
 import { openPage } from '../../core/links'
 import { ensureSession, perform, shopPath, shopTimezone, state } from '../../core/store'
 

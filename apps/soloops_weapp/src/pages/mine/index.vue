@@ -151,6 +151,8 @@
       <ActionButton label="新品利润测算" @tap="openPage('/pages/profit/index')" />
       <ActionButton label="实际费用" @tap="openPage('/pages/expenses/index')" />
       <ActionButton label="渠道账单" @tap="openPage('/pages/statements/index')" />
+      <ActionButton label="订单账单核对" @tap="openPage('/pages/order_reconciliation/index')" />
+      <ActionButton label="费用映射规则" @tap="openPage('/pages/fee_rules/index')" />
       <ActionButton label="结算回款" @tap="openPage('/pages/settlements/index')" />
     </view>
 

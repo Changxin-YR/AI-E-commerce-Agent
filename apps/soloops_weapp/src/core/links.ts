@@ -21,7 +21,7 @@ export const tabEntries: TabEntry[] = [
   { key: 'mine', title: '我的', page: '/pages/mine/index' },
 ]
 
-/** Web 路由 → 小程序页面。第二波已补齐 R2 业务页面。 */
+/** Web 路由 → 小程序页面。第三波补齐订单账单核对与费用映射规则。 */
 const BUSINESS_ROUTES: Record<string, string> = {
   '/': '/pages/tasks/index',
   '/imports': '/pages/imports/index',
@@ -41,6 +41,8 @@ const BUSINESS_ROUTES: Record<string, string> = {
   '/schedules': '/pages/schedules/index',
   '/product-quality': '/pages/product_quality/index',
   '/product-edits': '/pages/product_edits/index',
+  '/order-reconciliation': '/pages/order_reconciliation/index',
+  '/fee-rules': '/pages/fee_rules/index',
 }
 
 /** 制表符页无法接收参数，用挂起意图在目标页 onShow 时取用。 */

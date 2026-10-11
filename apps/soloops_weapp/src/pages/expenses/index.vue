@@ -209,6 +209,7 @@
             <FactLine label="来源修订" :value="history.snapshot.content.expected_source_revision" />
           </template>
           <text v-else class="hint">正文已清除</text>
+          <SourceEvidence v-if="history.snapshot?.source" :source="history.snapshot.source" :zone="zone" />
         </view>
         <text v-if="(record.history ?? []).length === 0" class="hint">服务端未返回版本历史。</text>
       </template>
@@ -316,6 +317,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import PageShell from '../../ui/PageShell.vue'
 import FactLine from '../../ui/FactLine.vue'
 import ActionButton from '../../ui/ActionButton.vue'
+import SourceEvidence from '../../ui/SourceEvidence.vue'
 import { inputValue, pickerValue } from '../../ui/forms'
 import { ApiError, apiGet, apiPost, asObject, asRows, newRequestId } from '../../core/api'
 import { businessTimeText, factText, isDecimalInput, isValidDate, moneyText, todayInZone, zonedIsoFromParts } from '../../core/format'

@@ -23,6 +23,9 @@ export default defineAppConfig({
     'pages/schedules/index',
     'pages/product_quality/index',
     'pages/product_edits/index',
+    // 第三波（R2 财务细分）：订单账单核对 / 费用映射规则。
+    'pages/order_reconciliation/index',
+    'pages/fee_rules/index',
     'pages/index/index',
     'pages/diagnostics/index',
   ],
@@ -33,17 +36,43 @@ export default defineAppConfig({
     backgroundColor: '#f4f7f5',
   },
   // 5 大入口：首页 / 待办 / AI / 客服 / 我的（与契约 entries 一致）。
+  // 图标为 src/assets/tabbar 下的 81×81 单色 PNG，构建时由 Taro 按 iconPath 复制到包内同名路径。
   tabBar: {
     color: '#56736a',
     selectedColor: '#315c52',
     backgroundColor: '#ffffff',
     borderStyle: 'black',
     list: [
-      { pagePath: 'pages/home/index', text: '首页' },
-      { pagePath: 'pages/tasks/index', text: '待办' },
-      { pagePath: 'pages/agent/index', text: 'AI' },
-      { pagePath: 'pages/support/index', text: '客服' },
-      { pagePath: 'pages/mine/index', text: '我的' },
+      {
+        pagePath: 'pages/home/index',
+        text: '首页',
+        iconPath: 'assets/tabbar/home.png',
+        selectedIconPath: 'assets/tabbar/home-active.png',
+      },
+      {
+        pagePath: 'pages/tasks/index',
+        text: '待办',
+        iconPath: 'assets/tabbar/tasks.png',
+        selectedIconPath: 'assets/tabbar/tasks-active.png',
+      },
+      {
+        pagePath: 'pages/agent/index',
+        text: 'AI',
+        iconPath: 'assets/tabbar/agent.png',
+        selectedIconPath: 'assets/tabbar/agent-active.png',
+      },
+      {
+        pagePath: 'pages/support/index',
+        text: '客服',
+        iconPath: 'assets/tabbar/support.png',
+        selectedIconPath: 'assets/tabbar/support-active.png',
+      },
+      {
+        pagePath: 'pages/mine/index',
+        text: '我的',
+        iconPath: 'assets/tabbar/mine.png',
+        selectedIconPath: 'assets/tabbar/mine-active.png',
+      },
     ],
   },
 })

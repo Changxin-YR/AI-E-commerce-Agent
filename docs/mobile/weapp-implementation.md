@@ -60,10 +60,26 @@ feature → 主要 api_ref（均带 `/api/shops/{shop_id}` 前缀，`r2.overview
 
 **验证（本机，主代理复核）**：`npm run type-check` exit 0（0 错误）；`npm run build:weapp` 成功（`✓ built in 6.23s`），`dist/app.json` `pages=22`、`tabBar=5`，11 个新页面标题正确；70 处接口路径与 `contracts/ui-contract.json` / 后端路由一致；未新增依赖；金额按十进制字符串处理，未用 `parseFloat/toFixed` 算钱；`r2.outbound` 仅界面与接口，未真实发送。
 
-## 下一波（wave 3）
+## wave 3
 
-`r2.order_reconciliation` 独立页面与「我的」入口、`/fee-rules` 独立页（现并入实际费用页）、tabBar 图标、"来源证据展开"组件；**微信开发者工具运行时联调**（登录、列表、写操作真实链路）并把结果写入文档；真机需在 MP 后台配置合法域名（`http://127.0.0.1:18080` 仅开发者工具可用）。
+新增/修改（`apps/soloops_weapp/src/`）：
+
+- `pages/order_reconciliation/{index.vue,index.config.ts}`（r2.order_reconciliation 独立页）：`POST {shopPath}/statements/orders/reconcile`，载荷 `data_identity`/`channel`/`start_at`/`end_at`/`timezone`/`sale_basis`/`basis_note`；展示 `scope`/`coverage`/`comparisons`/`checks` 与订单行、账单行明细；`sale_basis != unknown` 时前端前置校验 `basis_note` 必填（与后端 `Literal` 约束一致）；金额一律十进制字符串透传，未知显示「未知」。
+- `pages/fee_rules/{index.vue,index.config.ts}`（r2.expenses 的 `/fee-rules` 独立页）：`GET/POST {shopPath}/fee-rules`、`POST /fee-rules/preview`、`GET /fee-rules/{id}`、`POST /fee-rules/{id}/{action}`；**必须先预览再保存**（改动表单或范围即作废 `preview_hash`）；必填留空不提交；断线/超时提示「结果未知，请回读」。
+- `ui/SourceEvidence.vue`：来源证据展开组件，接入 `statements`、`expenses`、`product_quality`、`order_reconciliation` 四页；组件自身不发请求，避免对同一来源重复读取。
+- `assets/tabbar/*.png`：10 个 tabBar 图标，**81×81、8 位 RGBA（colortype 6，透明底）、361–710 B**；`app.config.ts` 为 tabBar 5 项补 `iconPath`/`selectedIconPath`。
+- `app.config.ts` 注册 2 个新页面；`core/links.ts` 增加 `/order-reconciliation`、`/fee-rules` 映射；`pages/mine/index.vue` 在「经营与财务」分组追加 2 个入口。
+
+**验证（本机，主代理独立复核）**：`npm run type-check`（vue-tsc --noEmit）exit 0；`npm run build:weapp` exit 0（`✓ built in 6.49s`）；`dist/app.json` `pages=24`、`tabBar=5` 且 5 项均带 `iconPath`/`selectedIconPath`，构建产物 `dist/assets/tabbar/` 10 个 PNG 全部落盘；图标尺寸/色深用 PNG 头逐字节校验通过；未新增依赖、未改 `package.json`。
+
+**与 Flutter 端的有意差异（如实记录，不得写成"已对齐"）**：`contracts/ui-contract.json` 的 `r2.order_reconciliation` 只声明 `statements/orders/reconcile` 一个动作，因此小程序订单核对页**只读、不提供"保存审阅"**；Flutter 端另有 `ReviewPanel(orders: true)` 走 `/order-statement-reviews`（后端存在该路由，但不在契约动作内）。同理 `fee-rules/{id}/{action}` 服务端只接受 `withdraw`/`clear`，小程序按此实现，未臆造 `save`/`revoke` 路径。
+
+## 仍待验证（不得写成通过）
+
+- **未做微信开发者工具运行时联调**：本机已装开发者工具（`D:/微信开发工具/微信web开发者工具/微信开发者工具.exe`，含 `cli.bat`），但本轮尚未完成"打开工程→编译→登录/列表/写操作真实链路"的运行时验证；上述结论仅来自 type-check、构建与产物结构校验。
+- 真机需在 MP 后台把服务域名加入合法域名；`http://127.0.0.1:18080` 仅供开发者工具使用（并需关闭域名校验）。
+- automator 通道在 M0 阶段即 60s 超时（exit 124），未复测。
 
 ## 保护
 
-`apps/soloops_weapp/project.config.json`（真实 AppID）与 `project.private.config.json` 为本机配置，不提交、不覆盖；`dist/` 为构建产物，已在 `.gitignore` 中。
+`apps/soloops_weapp/project.config.json`（真实 AppID）与 `project.private.config.json` 为本机配置，不提交、不覆盖（本轮已核 mtime 仍为 2026-10-11 12:20，未被改动）；`dist/` 为构建产物，已在 `.gitignore` 中。

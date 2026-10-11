@@ -68,7 +68,7 @@
           label="相似 SKU"
           :value="(product.similar_skus ?? []).length === 0 ? '无' : `${(product.similar_skus ?? []).join('、')} · 共 ${product.similar_sku_count} 个`"
         />
-        <FactLine label="来源" :value="`${product.source.filename} · 第 ${product.source.row_number} 行 · 批次 ${product.source.batch_id}`" />
+        <SourceEvidence :source="product.source" :zone="zone" />
         <view v-for="issue in product.issues ?? []" :key="`${product.product_id}:${issue.code}:${issue.field}`" class="card">
           <text class="card__title">{{ issue.status === 'missing' ? '缺失' : '待审' }} · {{ issue.field }}</text>
           <text class="hint">{{ issue.reason }}</text>
@@ -137,6 +137,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import PageShell from '../../ui/PageShell.vue'
 import FactLine from '../../ui/FactLine.vue'
 import ActionButton from '../../ui/ActionButton.vue'
+import SourceEvidence from '../../ui/SourceEvidence.vue'
 import { inputValue, pickerValue } from '../../ui/forms'
 import { ApiError, apiGet, apiPost, asObject, asRows, newRequestId } from '../../core/api'
 import { businessTimeText, moneyText } from '../../core/format'
