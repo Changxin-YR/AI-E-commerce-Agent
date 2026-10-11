@@ -43,3 +43,17 @@ jobs:
           test -d "$ANDROID_HOME/platforms/android-36"
           test -d "$ANDROID_HOME/build-tools/36.0.0"
           bash gradlew assembleDebug --no-daemon
+          bash gradlew :app:verifyReleaseWebBundle --no-daemon
+      - name: Reject local-test assets in release builds
+        working-directory: frontend
+        env:
+          VITE_SOLOOPS_API_ORIGIN: http://10.0.2.2:8011
+        run: |
+          npm run android:sync:local
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          if bash android/gradlew -p android :app:preReleaseBuild --no-daemon > release-gate.log 2>&1; then
+            echo 'Local-test assets unexpectedly accepted for release'
+            exit 1
+          fi
+          grep -F 'Release requires npm run android:sync with an HTTPS API origin.' release-gate.log

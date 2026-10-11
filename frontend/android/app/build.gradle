@@ -44,6 +44,19 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
+// A local-test web bundle must never enter a release APK, even after cap sync.
+tasks.register('verifyReleaseWebBundle') {
+    doLast {
+        def metadata = file('src/main/assets/public/soloops-build.json')
+        if (!metadata.exists() || new groovy.json.JsonSlurper().parse(metadata).mode != 'android') {
+            throw new GradleException('Release requires npm run android:sync with an HTTPS API origin.')
+        }
+    }
+}
+tasks.matching { it.name == 'preReleaseBuild' }.configureEach {
+    dependsOn 'verifyReleaseWebBundle'
+}
+
 try {
     def servicesJSON = file('google-services.json')
     if (servicesJSON.text) {

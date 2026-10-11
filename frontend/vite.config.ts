@@ -7,11 +7,26 @@ import { normalizeApiOrigin } from './src/lib/apiEndpoint.ts'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  if (mode === 'android') {
-    normalizeApiOrigin(loadEnv(mode, process.cwd(), 'VITE_').VITE_SOLOOPS_API_ORIGIN)
+  if (mode === 'android' || mode === 'android-local') {
+    normalizeApiOrigin(
+      loadEnv(mode, process.cwd(), 'VITE_').VITE_SOLOOPS_API_ORIGIN,
+      mode === 'android-local',
+    )
   }
   return {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      {
+        name: 'soloops-build-mode',
+        generateBundle() {
+          this.emitFile({
+            type: 'asset',
+            fileName: 'soloops-build.json',
+            source: JSON.stringify({ mode }),
+          })
+        },
+      },
+    ],
     server: {
       host: '127.0.0.1',
       port: 5173,

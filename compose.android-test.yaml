@@ -1,0 +1,21 @@
+name: soloops-android-a1
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: soloops_android_test
+      MYSQL_USER: soloops_android
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Use .local/android/mysql.env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Use .local/android/mysql.env}
+    ports:
+      - "127.0.0.1:3311:3306"
+    volumes:
+      - android-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_as_cs"]
+volumes:
+  android-mysql:

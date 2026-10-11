@@ -1,5 +1,9 @@
 # P0 验收矩阵
 
+## Android A1（2026-10-11）
+
+新增 API 34 设备认证基线：真实 APK 登录/会话恢复/退出/错误反馈，以及原生 fetch 的 CSRF 拒绝通过；186前端单元和本机 debug 构建通过。见 [A1 验收](android-a1-acceptance.md)。原32项与业务MVP的设备验收仍按 Android A2–A6 推进。
+
 ## R2 基础版修复收尾（2026-10-10）
 
 P2-01及UAT-01～04对应四个修复包完成，原A-01至A-32集合保留。最后业务提交a84ffa3的[CI38057461269](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38057461269)通过880后端、158单元、91浏览器和静态检查；本地完整回归、四流程38份回读、B1两组双内部结果及迁移保护通过。全部合成/替身，无新增真实外部调用；处理分类、延期条件和精确证据见[最终报告](r2-fixes-final-report.md)。

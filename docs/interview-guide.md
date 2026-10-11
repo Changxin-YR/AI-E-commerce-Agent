@@ -411,3 +411,7 @@ Vue Router的query更新与组件重建如何影响编辑？`AppShell`只让Agen
 ## R2 管理员预部署与卖家首次操作
 
 账号开通与业务建店分属不同职责。`app.cli`由管理员经AuthService执行；网页首次使用从已认证会话开始，Dashboard的shop_count控制入口，Settings按shop编号连接ImportsView。引导不会自动提交数据，深链不替代服务端店铺授权。为什么测试另建账号？first-use.spec.ts使用正式CLI提前建号，避免已有档案/店铺掩盖空状态，再由真实UI完成模板、预览确认与刷新；桌面有档案但无店铺、手机无档案都覆盖。
+
+## Android A1：原生会话与调试边界
+
+为什么前端 HTTPS 校验之外还要有原生配置？前端只约束调用入口，Android Network Security Config 控制底层明文请求；debug 仅允许模拟器宿主地址，release 校验资源 mode 防止误打本机包。为什么不能只看单元通过？Capacitor fetch 经过原生 HTTP 与系统 Cookie 管理器；必须安装 APK，强制停止后回读会话，并验证服务端 CSRF。A1 在 API 34 完成这些实测，上传字节及文件选择继续由 A3 验证。

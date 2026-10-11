@@ -16,7 +16,8 @@
     "format": "prettier --write src/ e2e/ *.ts *.json index.html",
     "build:android": "vue-tsc --build && vite build --mode android",
     "android:sync": "npm run build:android && cap sync android",
-    "android:open": "cap open android"
+    "android:open": "cap open android",
+    "android:sync:local": "vue-tsc --build && vite build --mode android-local && cap sync android"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

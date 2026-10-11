@@ -26,7 +26,12 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   const native = Capacitor.isNativePlatform()
   let url: string
   try {
-    url = apiEndpoint(path, native, import.meta.env.VITE_SOLOOPS_API_ORIGIN)
+    url = apiEndpoint(
+      path,
+      native,
+      import.meta.env.VITE_SOLOOPS_API_ORIGIN,
+      import.meta.env.MODE === 'android-local',
+    )
   } catch (error) {
     throw new ApiError(errorMessage(error), 0, 'api_configuration_error', '')
   }

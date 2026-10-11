@@ -2,6 +2,21 @@ import { describe, expect, it } from 'vitest'
 import { apiEndpoint, normalizeApiOrigin } from '@/lib/apiEndpoint'
 
 describe('Android API origin', () => {
+  it('allows only the isolated emulator origin in local debug mode', () => {
+    expect(apiEndpoint('/auth/session', true, 'http://10.0.2.2:8011', true)).toBe(
+      'http://10.0.2.2:8011/api/auth/session',
+    )
+    expect(() => normalizeApiOrigin('http://10.0.2.2:8011')).toThrow()
+  })
+  it.each([
+    'http://10.0.2.2:8000',
+    'http://10.0.2.3:8011',
+    'http://localhost:8011',
+    'http://10.0.2.2:8011/api',
+    'http://user@10.0.2.2:8011',
+  ])('rejects debug origin outside the allowlist: %s', (origin) => {
+    expect(() => normalizeApiOrigin(origin, true)).toThrow()
+  })
   it('preserves browser same-origin routing', () => {
     expect(apiEndpoint('/auth/session', false)).toBe('/api/auth/session')
   })

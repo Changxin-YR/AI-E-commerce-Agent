@@ -1,5 +1,5 @@
 /** Native builds have a fixed HTTPS API origin, separate from bundled UI assets. */
-export function normalizeApiOrigin(value: string | undefined): string {
+export function normalizeApiOrigin(value: string | undefined, localDebug = false): string {
   if (!value?.trim()) throw new Error('安卓应用尚未配置服务地址，请联系管理员。')
   let url: URL
   try {
@@ -8,7 +8,7 @@ export function normalizeApiOrigin(value: string | undefined): string {
     throw new Error('服务地址必须是有效的 HTTPS 地址。')
   }
   if (
-    url.protocol !== 'https:' ||
+    (url.protocol !== 'https:' && !(localDebug && url.origin === 'http://10.0.2.2:8011')) ||
     url.username ||
     url.password ||
     url.search ||
@@ -23,11 +23,16 @@ export function normalizeApiOrigin(value: string | undefined): string {
   return url.origin
 }
 
-export function apiEndpoint(path: string, native: boolean, origin?: string): string {
+export function apiEndpoint(
+  path: string,
+  native: boolean,
+  origin?: string,
+  localDebug = false,
+): string {
   if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\')) {
     throw new Error('无效的业务接口路径。')
   }
-  const prefix = native ? normalizeApiOrigin(origin) : ''
+  const prefix = native ? normalizeApiOrigin(origin, localDebug) : ''
   const target = `${prefix}/api${path}`
   const parsed = new URL(target, 'https://localhost')
   if (!parsed.pathname.startsWith('/api/')) throw new Error('业务接口路径超出允许范围。')

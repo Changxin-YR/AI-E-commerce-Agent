@@ -395,3 +395,9 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - Firecrawl 本次因 api.firecrawl.dev DNS 失败，改用官方网页浏览核对。
 
 - https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md ：GitHub 官方 MIT 镜像清单列出 Java 21、SDK 36 与 build-tools 36.0.0；安卓 CI 固定 ubuntu-24.04 并检查工具目录。
+
+## Android A1（2026-10-11）
+- https://developer.android.com/tools/sdkmanager ：参考按 sdk_root 安装版本化 SDK 包；构建依赖放副本 `.local/android/sdk`。复用本机已接受的 SDK license。
+- https://developer.android.com/privacy-and-security/security-config ：按域名限制明文连接；仅 debug source set 增加 `10.0.2.2`，release 保持 HTTPS，并校验前端构建模式。
+- https://developer.android.com/studio/run/emulator-networking ：模拟器通过 `10.0.2.2` 连接宿主回环；本包后端监听 `127.0.0.1:8011`。
+- Android 文档 CC BY 4.0、示例 Apache 2.0；参考配置语义，自行实现。Firecrawl 额度不足，改用网页工具读取官方资料。
