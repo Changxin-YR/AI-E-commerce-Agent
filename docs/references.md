@@ -399,3 +399,7 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - M0-A API22复核：[CPF 1.0.7 固定提交发布说明](https://atomgit.com/CPF-Flutter/flutter_flutter/blob/6e545c2ce6ec9e303868dece5012d1d928890b57/release-notes/Flutter%203.27.4-ohos%201.0.7%20ReleaseNote.md) 明确构建API22、最低运行API12；按该版本锁定共享SDK。微信本地启动页验证使用官方 npm 包 [miniprogram-automator 0.12.1](https://www.npmjs.com/package/miniprogram-automator/v/0.12.1)，MIT，独立本机工具依赖；只检查启动路由和标题。连接失败已如实记录。
 
 - M0-A SDK24实际配套依据：已安装Huawei SDK `sdk-pkg.json`（API24 / 6.1.1.125）与 `sdkApiVersionMap.json`（24映射6.1.1(24)）；固定CPF源码 `packages/flutter_tools/lib/src/ohos/hvigor.dart` 的 assembleHap 与 checkOhosSignedInfo 用于区分原生编译和签名检查。[Huawei SDK下载](https://developer.huawei.com/consumer/cn/download)。适配为项目级无空格源码快照与SDK提交校验，未改第三方SDK源码或许可证。实际未签名产物与元数据见SDK24证据。
+
+- M0-A IDE 收尾（2026-10-11）：[Gradle Java 兼容表](https://docs.gradle.org/current/userguide/compatibility.html)和[Gradle 8.3 发布说明](https://docs.gradle.org/8.3/release-notes.html)确认运行 JVM 的版本边界，项目沿用 JDK17。固定 Flutter OH 提交的 `ohos_builder.dart` 中 `copyFlutterBuildInfoFile` / `copyFramesCfgFile` 确认两份配置向 rawfile 的迁移；按 BSD 模板来源保留原内容，不修改第三方 SDK。微信完整构建后的 IDE 显示通过实际窗口核对，热重载错误和完整编译结果分开记录。
+
+- 腾讯云 COS 小程序快速入门：https://cloud.tencent.com/document/product/436/31953 。读取官方域名白名单配置说明，仅用于 request / uploadFile 配置入口依据；具体微信主体、类目及完整 HTTPS 准入继续单独核对。

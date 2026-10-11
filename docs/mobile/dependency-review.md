@@ -7,7 +7,7 @@
 - Flutter SDK 采用 CPF 官方发布 tag 和完整 SHA；来源与 Android/OH 工具版本见 `apps/soloops_flutter/toolchain.lock.json`。`pubspec.lock` 已提交，当前仅 Flutter、flutter_test 与 flutter_lints5.0.0；插件矩阵候选尚未加入工程。
 - Taro 各直接包统一4.3.0，Vue3.5.43，TypeScript5.9.3，Vite4.5.14。根据已安装 `@tarojs/vite-runner` 和框架插件 manifest 的 Vite4 peer 约束选插件Vue4.6.2/JSX3.1.0。没有使用忽略 peer 冲突的安装参数。
 - Node24.16.0、npm11.13.0；lockfile 固定完整依赖及 integrity。CI 使用 `npm ci`，同时进行类型检查和微信目标编译。
-- Flutter 平台模板含开发签名示例和 OH 模板测试文件；它们不构成已签名发布或已运行设备测试。未加入发布证书、密钥、真实 AppID、API URL 或客户资料。
+- Flutter 平台模板含开发签名示例和 OH 模板测试文件；它们不构成已签名发布或已运行设备测试。提交内容不包含发布证书、密钥、真实 AppID、API URL 或客户资料；微信导入生成的本机 AppID 配置保留在工作区并排除提交。
 - `dist`、`build`、SDK、原始日志、依赖缓存、`local.properties`、微信私有配置和签名文件均受忽略规则保护。工程只有启动页和环境说明，无业务 API 请求。
 
 ## 安全审计
@@ -47,3 +47,5 @@
 API22复核：当前Flutter OH固定3.27.5-ohos-1.0.7，Dart版本和pubspec.lock不变。`miniprogram-automator@0.12.1`（MIT）仅安装在被忽略的`.local/weapp-tools`，不进入小程序依赖或产物；它仅检查本地启动页，本次连接BLOCKED。
 
 SDK24复核：沿用已锁定Flutter OH 1.0.7与Dart依赖，新增本机无空格构建脚本。HAP包内编译SDK为6.1.1.125、target24；编译PASS但上游ArkTS仍有弃用/异常处理/NAPI告警。未签名包不构成安装或发布验收。证据工具超时回归PASS，未引入新的应用运行时依赖。
+
+本次收尾沿用上述依赖锁，未新增应用依赖；Android APK、SDK24 原目录未签名 HAP、微信目标重新编译 PASS。微信启动页的原生 UI 观察 PASS，automator 通道仍超时 BLOCKED，二者分别归档。证据导出工具增加 Hvigor 参数内绝对路径的规范化与拒绝外部私有路径的回归测试，合计15项工具/契约测试 PASS。

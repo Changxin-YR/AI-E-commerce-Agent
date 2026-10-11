@@ -137,3 +137,5 @@ SO-001/006/067/068/074的既有能力通过G-04独立空库首次安装和真实
 M0-A API22复核（2026-10-11）：Flutter OH 1.0.7 + compile/target22；Android编译PASS，HAP因SDK组件缺失BLOCKED。小程序编译PASS，IDE加载BLOCKED。真实业务/设备状态仍NOT_TESTED。证据：`docs/mobile/m0a-sdk22-evidence.json`。
 
 当前M0-A SDK24复核（2026-10-11）：Android APK编译PASS；OHOS compile/target24，未签名HAP编译PASS、签名BLOCKED；微信目标编译PASS、IDE加载BLOCKED。设备/业务运行仍NOT_TESTED。证据：`docs/mobile/m0a-sdk24-evidence.json`。
+
+M0-A 当前收尾（2026-10-11）：Android APK、SDK24 未签名 HAP、微信目标编译均 PASS；Android IDE 同步和微信 IDE 最小启动页 PASS。静态契约21功能/149 API及15项工具/契约测试 PASS。移动设备与真实业务运行 NOT_TESTED；小程序资质完整核对 BLOCKED、安全审计 FAIL。最新证据见[报告](mobile/m0a-report.md)，原 SO 业务范围不变。

@@ -980,3 +980,7 @@ scripts/mobile/run_evidence.py 保留实际命令、日志、退出码和产物S
 ### M0-A · SDK24编译复核（2026-10-11）
 
 compile/target现为6.1.1(24)。Flutter OH 1.0.7与共享Dart保持锁定。新增Windows HAP构建脚本，以无空格SDK及逐文件校验的临时源码快照解决OHPM/Flutter-Hvigor的空格路径错误；仓库源码目录不变。Flutter包装命令因签名退出1，Hvigor未签名构建退出0，生成93,888,452字节HAP，编译PASS。微信CLI导入70秒超时且页面连接失败，加载BLOCKED。证据工具新增进程树超时终止及回归测试，13项测试PASS。设备/签名仍待后续授权。
+
+### M0-A · 三端构建与 IDE 收尾（2026-10-11）
+
+无空格物理仓库中重新构建 Android APK、SDK24 未签名 HAP、Taro 微信目标，均 PASS。Android Studio 选择 JVM17 后，将 Gradle 用户缓存配置为本任务独立目录，实际同步 BUILD SUCCESSFUL；微信完整 dist 后重新编译，启动页原生 UI 观察 PASS，automator 超时独立记 BLOCKED。Flutter OH 自动迁移的 buildinfo / framesconfig 归位 rawfile，内容不变；证据导出支持 Hvigor 参数内路径并补回归，15项工具/契约测试及静态校验 PASS。最新命令、哈希及 IDE 观察见 mobile/m0a-closeout-evidence.json、mobile/m0a-ide-evidence.json；整体仍因资质核对 BLOCKED，停止于 M0-A。

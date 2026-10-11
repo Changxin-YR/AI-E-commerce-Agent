@@ -20,6 +20,9 @@ def digest(path: Path) -> str:
 def portable_command(command: list[str]) -> list[str]:
     result = []
     for arg in command:
+        key, separator, value = arg.partition("=")
+        prefix = key + separator if separator else ""
+        arg = value if separator else arg
         if Path(arg).is_absolute():
             try:
                 arg = relative(arg)
@@ -31,7 +34,7 @@ def portable_command(command: list[str]) -> list[str]:
                     arg = "WECHAT_DEVTOOLS_CLI"
                 else:
                     raise ValueError(f"unmapped external tool: {name}") from None
-        result.append(arg.replace("\\", "/"))
+        result.append(prefix + arg.replace("\\", "/"))
     return result
 
 

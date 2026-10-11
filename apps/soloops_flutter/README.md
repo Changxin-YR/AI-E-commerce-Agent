@@ -51,3 +51,30 @@ SDK24 仍有上游 ArkTS 弃用/异常处理告警，设备兼容性留待后续
 `build/ohos/hap/entry-default-unsigned.hap`。
 构建快照清单与分步退出码在 `.local/mobile-m0a/hap-source-manifest.json`、
 `hap-build-results.json`；完整结果见 [`M0-A报告`](../../docs/mobile/m0a-report.md)。
+
+## IDE 导入与完整路径
+
+仓库和 Flutter SDK 的物理路径均应无空格。Android Studio 打开 `android/`，
+DevEco Studio 打开 `ohos/`，两端页面仍来自同一 `lib/main.dart`。
+
+Android Studio 提示 Gradle 8.3 与 JVM21 不兼容时，选择 **Use JVM 17**。
+也可在 Settings > Build, Execution, Deployment > Build Tools > Gradle 中选择 JDK17。
+本机 `.gradle/config.properties` 的 `java.home` 和 `local.properties` 均保持忽略，
+使用者按安装位置设置；仅改 Java 编译目标不能替代 Gradle 运行时 JVM 配置。
+若全局 Gradle 缓存报缺失 `metadata.bin`，可把 IDE 的 Gradle 用户主目录设置为本仓库
+`.local/gradle` 的绝对路径，与命令行 `GRADLE_USER_HOME` 对齐，然后重新同步。
+这是本机 IDE 设置，不提交到 Git，也无需删除其他工程的缓存。
+
+Flutter OH 1.0.7 会把 `buildinfo.json5` 和 `framesconfig.json` 从
+`entry/src/main/resources/base/profile/` 迁到 `entry/src/main/resources/rawfile/`。
+工程现已采用 SDK 使用的目标位置，配置语义不变；`flutter_assets/` 仍是被忽略的构建产物。
+
+无空格仓库可直接在 `ohos/` 执行未签名构建（需先 `flutter pub get`，并按上述说明配置工具）：
+
+```powershell
+$packageConfig = (Resolve-Path ../.dart_tool/package_config.json).Path
+hvigorw.bat assembleHap -p product=default -p buildMode=debug --no-daemon -p FLUTTER_TARGET=lib/main.dart -p TARGET_PLATFORM=ohos-arm64 -p DART_OBFUSCATION=false -p TRACK_WIDGET_CREATION=true -p TREE_SHAKE_ICONS=false -p "PACKAGE_CONFIG=$packageConfig"
+```
+
+原生输出位于 `ohos/entry/build/default/outputs/default/entry-default-unsigned.hap`。
+实际签名和安装仍需单独验收。

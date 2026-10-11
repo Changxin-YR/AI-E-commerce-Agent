@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "phase": "M0-A",
+  "observed_date": "2026-10-11",
+  "records": [
+    {
+      "name": "weapp-ide-startup",
+      "evidence_type": "native_ui_observation",
+      "status": "PASS",
+      "tool_version": "2.01.2510290",
+      "base_library": "3.17.4",
+      "route": "pages/index/index",
+      "visible_text": [
+        "SoloOps",
+        "M0-A · 微信小程序最小工程",
+        "查看环境信息"
+      ],
+      "result": "Full IDE compile after complete Taro dist rendered the startup page; missing-JS hot-reload errors no longer shown.",
+      "screenshot": {
+        "path": ".local/mobile-m0a/closeout-weapp-loaded.png",
+        "bytes": 93806,
+        "sha256": "25237a71fcd7718ec08fb41d89957909caf9d1e357edb8f7d6801f044122e4fc"
+      },
+      "scope": "Local IDE startup only; not automator success, device test or business E2E."
+    },
+    {
+      "name": "android-ide-sync",
+      "evidence_type": "native_ui_observation_and_ide_log_excerpt",
+      "status": "PASS",
+      "observed_local_time": "2026-10-11 12:57 Asia/Shanghai",
+      "ide": "Android Studio 2025.3.4",
+      "gradle_jvm": "JBR 17.0.14",
+      "gradle_user_home": ".local/gradle",
+      "visible_text": [
+        "app",
+        "gradle",
+        "Gradle Scripts",
+        "BUILD SUCCESSFUL in 1m 59s"
+      ],
+      "screenshot": {
+        "path": ".local/mobile-m0a/closeout-android-sync.png",
+        "bytes": 102056,
+        "sha256": "e7699a71d58ed07081c78f7ffdee3a5fe291871e7cfb7164942246c1311b2b5c"
+      },
+      "ide_log_excerpt": {
+        "path": ".local/mobile-m0a/closeout-android-ide-sync.log",
+        "bytes": 703,
+        "sha256": "0f34edb71316acc1b3eb9dcbade7106e47378083077315672607e8cccaf4bb8a"
+      },
+      "scope": "IDE import and Gradle sync only; APK CLI build uses Temurin 17.0.19. No device run."
+    },
+    {
+      "name": "ohos-ide-project-import",
+      "evidence_type": "native_ui_observation",
+      "status": "PASS",
+      "ide": "DevEco Studio 6.1.1.290",
+      "visible_text": [
+        "ohos",
+        "AppScope",
+        "entry",
+        "build-profile.json5"
+      ],
+      "existing_user_run_log": "IDE retains 12:19 install/start output and successfully launched message; selected emulator API22.",
+      "screenshot": {
+        "path": ".local/mobile-m0a/closeout-ohos-project.png",
+        "bytes": 124646,
+        "sha256": "5e7a0726dba6ad80f4ef7116e82180a3ddd519211226322232ac42c5a05effa1"
+      },
+      "scope": "Project import observation only; no install/run action performed by this closeout, no independent emulator page or interaction acceptance."
+    }
+  ]
+}

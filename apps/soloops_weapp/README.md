@@ -34,5 +34,15 @@ node scripts/mobile/check_weapp_load.cjs
 ```
 
 检查只读取启动页路径、SoloOps 标题和 M0-A 说明，超时55秒，结束时仅断开自动化连接。
-它不执行登录、上传或发布。当前 CLI 已连接 IDE，但导入停在 preparing；实际自动化
-连接失败，项目加载状态 BLOCKED。必须取得页面断言成功的真实结果后才能改为 PASS。
+它不执行登录、上传或发布。IDE 加载与自动化通道分别记录：界面须实际显示 `pages/index/index`、SoloOps 和 M0-A；
+自动化必须完成页面断言才能标记该脚本 PASS。最新结果见 M0-A 报告。
+
+## 开发工具热重载
+
+`npm run build:weapp` 完整重建 `dist/`。IDE 自动热重载可能在目录重建中读取到暂时缺失的
+`comp.js`、`babelHelpers.js`、`taro.js`、`app.js`。先等 Taro 命令成功退出、确认这些文件存在，
+再点击微信开发者工具“编译”进行完整编译。不要在构建进行中把临时缺文件错误当作最终结果。
+持续编辑可使用 `npm run dev:weapp`；完整构建验收仍单独记录命令、退出码与产物。
+
+真实 AppID 由开发者本机提供。提交时显式选择任务文件，保留本机 `project.config.json`
+和 `project.private.config.json` 设置，不把账号关联配置包含在工程验收提交中。

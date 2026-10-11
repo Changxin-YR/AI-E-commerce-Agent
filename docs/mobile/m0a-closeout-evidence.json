@@ -1,0 +1,329 @@
+{
+  "schema_version": "1.0",
+  "phase": "M0-A",
+  "baseline_sha": "0a49a37dcd7f1ccf0acc2c0a225bfdc8d8bee686",
+  "branch": "feat/soloops-mobile-m0a",
+  "raw_logs": "Local ignored .local/mobile-m0a; paths relative to repository root",
+  "status_policy": "Explicit assessment; exit 0 alone does not prove successful operation",
+  "records": [
+    {
+      "name": "closeout-android-apk",
+      "started_utc": "2026-10-11T04:24:07.348862+00:00",
+      "finished_utc": "2026-10-11T04:24:56.597920+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "build",
+        "apk",
+        "--debug",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "timeout_seconds": 600.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T042407Z-closeout-android-apk.log",
+      "log_sha256": "ecd404e7b23070114c7682121001e42915a5ba28db0aaed85e377c6d840ae6b6",
+      "artifacts": [
+        {
+          "path": "apps/soloops_flutter/build/app/outputs/flutter-apk/app-debug.apk",
+          "bytes": 86743929,
+          "sha256": "050e3a3fb8efd78a39a0fb86861c147ae6c8e3020b6c949c93f6533b66ec29d2"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "closeout-ohos-unsigned",
+      "started_utc": "2026-10-11T04:26:20.878667+00:00",
+      "finished_utc": "2026-10-11T04:27:54.678803+00:00",
+      "command": [
+        "hvigorw.bat",
+        "assembleHap",
+        "-p",
+        "product=default",
+        "-p",
+        "buildMode=debug",
+        "--no-daemon",
+        "-p",
+        "FLUTTER_TARGET=lib/main.dart",
+        "-p",
+        "TARGET_PLATFORM=ohos-arm64",
+        "-p",
+        "DART_OBFUSCATION=false",
+        "-p",
+        "TRACK_WIDGET_CREATION=true",
+        "-p",
+        "TREE_SHAKE_ICONS=false",
+        "-p",
+        "PACKAGE_CONFIG=apps/soloops_flutter/.dart_tool/package_config.json"
+      ],
+      "cwd": "apps/soloops_flutter/ohos",
+      "exit_code": 0,
+      "timeout_seconds": 360.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T042620Z-closeout-ohos-unsigned.log",
+      "log_sha256": "ce427130002c6cca614a1e2d0bf2189c0047e1f8c5f532ab5f94b2dcf97b6b8d",
+      "artifacts": [
+        {
+          "path": "apps/soloops_flutter/ohos/entry/build/default/outputs/default/entry-default-unsigned.hap",
+          "bytes": 93929716,
+          "sha256": "57bed61d412a61804c9ac901a9b1b8bc22858da199d889fc30cd28a0af3b0867"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "closeout-weapp-types",
+      "started_utc": "2026-10-11T04:27:32.306465+00:00",
+      "finished_utc": "2026-10-11T04:27:43.044736+00:00",
+      "command": [
+        "npm.cmd",
+        "run",
+        "type-check"
+      ],
+      "cwd": "apps/soloops_weapp",
+      "exit_code": 0,
+      "timeout_seconds": 90.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T042732Z-closeout-weapp-types.log",
+      "log_sha256": "b3147afafbdef0e8475ef2ad208b293c871a6530baa3a5e2848d9060ac56a4c1",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closeout-weapp-build",
+      "started_utc": "2026-10-11T04:27:43.234882+00:00",
+      "finished_utc": "2026-10-11T04:28:16.552092+00:00",
+      "command": [
+        "npm.cmd",
+        "run",
+        "build:weapp"
+      ],
+      "cwd": "apps/soloops_weapp",
+      "exit_code": 0,
+      "timeout_seconds": 150.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T042743Z-closeout-weapp-build.log",
+      "log_sha256": "810a7db90b18117a9db85f5e6c435db31334486a890a133d78335e94331ed04d",
+      "artifacts": [
+        {
+          "path": "apps/soloops_weapp/dist/app-origin.wxss",
+          "bytes": 335,
+          "sha256": "52a6aded92bccd903aeb601197d7627c927fe704d92927c9f05f6b5020d7c294"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/app.js",
+          "bytes": 431,
+          "sha256": "83d2091eb045f11a57b870a0e7419b3034456e009b7cdb4d96c1a342ebb63c65"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/app.json",
+          "bytes": 223,
+          "sha256": "f1d1dd73f74d72941745010d1c99d14a899dc7c908659119c73be952125fd59f"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/app.wxss",
+          "bytes": 27,
+          "sha256": "f5c248cb1c700b6cfc2648b2ee399be39618335bbc4e03b2ad2f8de548b0e456"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/babelHelpers.js",
+          "bytes": 6287,
+          "sha256": "f25a943afb87ec9fe629cd978a13d34f6194c10f0aa049d2317f732896fed825"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/base.wxml",
+          "bytes": 55590,
+          "sha256": "915560910765559cf118d43996858e4b05b76e34176771998d476dbf7cb06fcc"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/comp.js",
+          "bytes": 127,
+          "sha256": "e87e77cb62cc8c136db3d0a7a392b4354f90d25e8830b848fee1253549caa811"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/comp.json",
+          "bytes": 108,
+          "sha256": "af05838ce72c4d583b4078c931531d76e80a7bcc31fb57eb46a9baba6cecadd6"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/comp.wxml",
+          "bytes": 140,
+          "sha256": "904495b6e07f81d74f23d713c7f42a7450189f56879e329e5353e18d08201165"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/pages/index/index.js",
+          "bytes": 1099,
+          "sha256": "752cc6e247ffac01ff4f65878f2bdda3c00e759b7cc1e7cf8b766d65653a35f4"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/pages/index/index.json",
+          "bytes": 99,
+          "sha256": "d581481957b6f71f5343d593aa58934294206bb8c8549abdaa2186930ff45a4a"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/pages/index/index.wxml",
+          "bytes": 80,
+          "sha256": "38b0088b8c33e0f5dd9b2a934df461c91ad48cc818bb5dce849a336fae6e7ff6"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/project.config.json",
+          "bytes": 897,
+          "sha256": "72edf66604efdc0715fa25ec3e6e4866bbcec30220dfe8eee3fadbc457689ef5"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/taro.js",
+          "bytes": 177590,
+          "sha256": "cf29c0d9de174c13055c5af6bf90599cf4048349bb8142b0d0d355818d27a27f"
+        },
+        {
+          "path": "apps/soloops_weapp/dist/utils.wxs",
+          "bytes": 997,
+          "sha256": "e4ebe8c13a8ed5d58ae32d378f1f1947d51d796a620987d43bfc438631372728"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "closeout-weapp-auto",
+      "started_utc": "2026-10-11T04:24:06.632022+00:00",
+      "finished_utc": "2026-10-11T04:24:11.333442+00:00",
+      "command": [
+        "WECHAT_DEVTOOLS_CLI",
+        "auto",
+        "--project",
+        "apps/soloops_weapp",
+        "--auto-port",
+        "9420"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": 70.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T042406Z-closeout-weapp-auto.log",
+      "log_sha256": "bc91930f812a0a7caeae480cf5383a105ba29bc1142aaf26d6b8391cc888a2b6",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closeout-weapp-load",
+      "started_utc": "2026-10-11T04:24:38.122805+00:00",
+      "finished_utc": "2026-10-11T04:25:39.131373+00:00",
+      "command": [
+        "node",
+        "scripts/mobile/check_weapp_load.cjs"
+      ],
+      "cwd": ".",
+      "exit_code": 1,
+      "timeout_seconds": 65.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T042438Z-closeout-weapp-load.log",
+      "log_sha256": "c80260db63d1b3f6a82722e174b3abf50639c29d1be137ae91e04e6d6efde8b0",
+      "artifacts": [],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "closeout-weapp-page",
+      "started_utc": "2026-10-11T04:45:13.341471+00:00",
+      "finished_utc": "2026-10-11T04:46:13.887876+00:00",
+      "command": [
+        "node",
+        "scripts/mobile/check_weapp_load.cjs"
+      ],
+      "cwd": ".",
+      "exit_code": 1,
+      "timeout_seconds": 65.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T044513Z-closeout-weapp-page.log",
+      "log_sha256": "c80260db63d1b3f6a82722e174b3abf50639c29d1be137ae91e04e6d6efde8b0",
+      "artifacts": [],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "closeout-tools-tests",
+      "started_utc": "2026-10-11T04:48:28.638576+00:00",
+      "finished_utc": "2026-10-11T04:48:37.812667+00:00",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mobile/tests",
+        "-v"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": 120.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T044828Z-closeout-tools-tests.log",
+      "log_sha256": "d28dfe92eb4515ff048fe300ffedfe4655a21436a4522a8b756e56611beb5455",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closeout-ui-contract",
+      "started_utc": "2026-10-11T04:48:38.000079+00:00",
+      "finished_utc": "2026-10-11T04:48:40.670350+00:00",
+      "command": [
+        "python",
+        "scripts/validate_ui_contract.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": 90.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T044838Z-closeout-ui-contract.log",
+      "log_sha256": "eee52fd4c22ec1bbba7547e6fe4491577fd4fd99bef79a6cd791557ef9714fcc",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closeout-python-lint",
+      "started_utc": "2026-10-11T04:48:40.849750+00:00",
+      "finished_utc": "2026-10-11T04:48:41.012774+00:00",
+      "command": [
+        "python",
+        "-m",
+        "ruff",
+        "check",
+        "--config",
+        "backend/pyproject.toml",
+        "scripts/mobile",
+        "scripts/validate_ui_contract.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": 60.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T044840Z-closeout-python-lint.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closeout-python-format",
+      "started_utc": "2026-10-11T04:48:41.172820+00:00",
+      "finished_utc": "2026-10-11T04:48:41.320491+00:00",
+      "command": [
+        "python",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "--config",
+        "backend/pyproject.toml",
+        "scripts/mobile",
+        "scripts/validate_ui_contract.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": 60.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0a/20261011T044841Z-closeout-python-format.log",
+      "log_sha256": "0321fffcb91606a42c0a19d8c1121d5c544379d663821fce616c71a7bb62f6b5",
+      "artifacts": [],
+      "status": "PASS"
+    }
+  ]
+}
