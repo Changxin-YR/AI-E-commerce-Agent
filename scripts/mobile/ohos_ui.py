@@ -4,6 +4,7 @@ import argparse
 import json
 import re
 import subprocess
+import time
 from pathlib import Path
 
 HDC = r"C:/Program Files/Huawei/DevEco Studio/sdk/default/openharmony/toolchains/hdc.exe"
@@ -84,10 +85,24 @@ def match(items, text):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "action", choices=["dump", "tap", "findtap", "findtapup", "input", "screen", "swipe", "key"]
+        "action",
+        choices=[
+            "dump",
+            "tap",
+            "findtap",
+            "findtapup",
+            "input",
+            "screen",
+            "swipe",
+            "key",
+            "hide-ime",
+        ],
     )
     parser.add_argument("values", nargs="*")
     parser.add_argument("--bundle", default=BUNDLE)
+    parser.add_argument(
+        "--quiet", action="store_true", help="Skip the redundant post-action layout dump"
+    )
     options = parser.parse_args()
     BUNDLE = options.bundle
     if options.action in ("findtap", "findtapup"):
@@ -150,9 +165,16 @@ if __name__ == "__main__":
         x, y = match(snapshot(), options.values[0])
         if options.action == "input":
             hdc("shell", "uitest", "uiInput", "click", x, y)
+            time.sleep(0.4)
             hdc("shell", "uitest", "uiInput", "keyEvent", "2072", "2017")
+            time.sleep(0.4)
         args = ["click", x, y] if options.action == "tap" else ["text", options.values[1]]
         print(hdc("shell", "uitest", "uiInput", *args).strip())
+    elif options.action == "hide-ime":
+        hdc("shell", "uitest", "dumpLayout", "-p", REMOTE)
+        tree = hdc("shell", "cat", REMOTE)
+        if '"com.huawei.hmos.inputmethod"' in tree:
+            hdc("shell", "uitest", "uiInput", "keyEvent", "2")
     elif options.action == "swipe":
         print(hdc("shell", "uitest", "uiInput", "swipe", *options.values).strip())
     elif options.action == "key":
@@ -163,6 +185,8 @@ if __name__ == "__main__":
         remote = "/data/local/tmp/soloops-r2-screen.png"
         hdc("shell", "uitest", "screenCap", "-p", remote)
         hdc("file", "recv", remote, str(OUTPUT / (name + ".png")))
+    if options.quiet and options.action != "dump":
+        raise SystemExit(0)
     label = options.values[0] if options.action == "dump" and options.values else "current"
     for index, item in enumerate(snapshot(label)):
         print(f"{index} {item['type']} {item['bounds']} enabled={item['enabled']} {item['text']!r}")

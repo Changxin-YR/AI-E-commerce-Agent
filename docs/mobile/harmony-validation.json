@@ -1,6 +1,6 @@
 {
   "date": "2026-10-11",
-  "phase": "api22-business-in-progress",
+  "phase": "account-switch-checkpoint",
   "business_api22": "partial_passed",
   "dart_analyze": "passed",
   "flutter_tests": 23,
@@ -52,7 +52,13 @@
     "b1-db.json",
     "device/b1-amazon-empty-products.json",
     "device/b1-final-ready.json",
-    "device/listing-save-ready.png"
+    "device/listing-save-ready.png",
+    "account-switch-db.json",
+    "device/account-switch-expense.json",
+    "device/support-draft.json",
+    "device/support-share-consumer.json",
+    "device/inventory-results.json",
+    "device/profit-calculated.json"
   ],
   "backend_full_tests": 890,
   "backend_full_duration_seconds": 529.36,
@@ -82,8 +88,25 @@
     "orders 1187 generic: 3 new",
     "B1 source channel filtering: Amazon excludes generic products",
     "Listing 91: edited, approved, system CSV save",
-    "B1 run 257: distinct analysis_todo and listing_draft approvals; succeeded, analysis 23, draft 92"
+    "B1 run 257: distinct analysis_todo and listing_draft approvals; succeeded, analysis 23, draft 92",
+    "Support 43 v2: human review, English full review, system share receiver saved complete CSV",
+    "Inventory: expired SYN-BOX unknown, SYN-CUP below threshold, linked task 195",
+    "Profit study 5: 25 - 8.1234 = 16.8766, unknown fees and break-even retained, saved",
+    "Expense 1138: synthetic/generic, 2.3456 USD saved, timestamp converted to UTC"
   ],
   "pending": "Remaining H03-H21 business journeys and lifecycle/layout/source/conflict/unknown-result scenarios",
-  "product_facts_contract_tests": 1
+  "product_facts_contract_tests": 1,
+  "delivered_files": [
+    {
+      "kind": "listing",
+      "bytes": 603,
+      "sha256": "2fe05827cc88c2cbb4f5c1a278b929f86782d4a941a3c3558451fde5e04e9f64"
+    },
+    {
+      "kind": "support_share_receiver",
+      "bytes": 1294,
+      "sha256": "4d38ef10d2bb800a32f5da396304ea4c6ac3d3892b6908bb822546285c42af50"
+    }
+  ],
+  "next": "Resume remaining H04/H05/H07/H09-H20 and H21 boundary/device journeys from harmony-handoff.md; no full regression rerun against preserved acceptance database."
 }

@@ -41,3 +41,9 @@
 B1范围修复已完成：ProductFacts提供真实来源渠道并兼容旧快照；B1仅允许同身份、同渠道商品，范围或流程变化时清除不匹配选择，启动前再次校验。2项Flutter范围回归、1项无数据库DTO兼容测试通过。scope修复包已在API22安装并恢复会话，双审批业务验证继续进行。
 
 API22 B1双审批通过：同渠道订单批次1187新增3行；Listing 91编辑后批准、系统CSV保存通过。B1执行257完成7步、version10，两个approve分别绑定analysis_todo和listing_draft；分析23已存档、Listing 92仍为draft且基线91仍approved。只读数据库回查见b1-db.json。实际模型/邮件/平台写入保持0。
+
+## 账号切换检查点（2026-10-11）
+
+接续统一入口为 `harmony-handoff.md`。客服43/v2保持human_review并完成en全文审阅；系统分享接收方“另存为”保存CSV，取回1294字节、完整2行。Listing91系统保存CSV取回603字节、完整2行，哈希见validation.json。库存页面确认BOX过期为未知、CUP低于阈值并链接195。利润存档5保存售价25、成本8.1234，余额16.8766、余额率67.5064%，费用及保本价未知。费用1138/v1 active，synthetic/generic，金额2.3456 USD，发生时间12:00+08:00持久为04:00 UTC。均已只读数据库回查（account-switch-db.json）。
+
+本次停止在费用1138保存后的页面，业务数据已持久化。合成数据库本机备份 `.local/mobile-business/harmony-account-switch.sql`，424238字节；SHA256 `e67ce2a4bc09b8751c28f45855b3a162575327e44d8486c4ca88ccf29b377f82`。备份与原始日志不入Git，GitHub保留脱敏结论、复现代码与接续步骤。API22其他业务与边界场景仍未全部验收。
