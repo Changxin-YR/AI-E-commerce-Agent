@@ -9,6 +9,13 @@ import 'agent_labels.dart';
 import 'agent_run_view.dart';
 import 'authorizations_panel.dart';
 
+bool agentProductMatchesScope(Json candidate,
+        {required String template,
+        required String identity,
+        required String channel}) =>
+    candidate['source']?['data_identity'] == identity &&
+    (template != 'margin_review' || candidate['source_channel'] == channel);
+
 class AgentPage extends StatefulWidget {
   const AgentPage(this.app,
       {super.key, this.query = const {}, this.embedded = false});
@@ -91,6 +98,9 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
     }
   }
 
+  bool productInScope(Json candidate) => agentProductMatchesScope(candidate,
+      template: template, identity: scope.identity, channel: scope.channel);
+
   void changed() {
     if (mounted) {
       setState(() {
@@ -98,8 +108,7 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
         allowData = false;
         operationContext = null;
         pendingStart = null;
-        if (product != null &&
-            product!['source']['data_identity'] != scope.identity) {
+        if (product != null && !productInScope(product!)) {
           product = null;
         }
         if (supportContext != null &&
@@ -220,9 +229,8 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
         supportContext == null) {
       throw const FormatException('请选择消息。');
     }
-    if (product != null &&
-        product!['source']['data_identity'] != scope.identity) {
-      throw const FormatException('商品数据身份不匹配。');
+    if (product != null && !productInScope(product!)) {
+      throw const FormatException('商品不属于当前数据身份或复核渠道，请重新选择。');
     }
     if (supportContext != null &&
         (supportContext!['message']['source']['data_identity'] !=
@@ -472,6 +480,9 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
                   ? null
                   : (v) => setState(() {
                         template = v;
+                        if (product != null && !productInScope(product!)) {
+                          product = null;
+                        }
                         consentChanged();
                         operationContext = null;
                       })),
@@ -517,8 +528,7 @@ class _AgentPageState extends BusinessPageState<AgentPage> {
                   product == null ? '' : '${product!['product_id']}',
                   {
                     '': '未选择',
-                    for (final p in products.where(
-                        (p) => p['source']['data_identity'] == scope.identity))
+                    for (final p in products.where(productInScope))
                       '${p['product_id']}': '${p['sku']} · ${p['name']}',
                     if (product != null)
                       '${product!['product_id']}':

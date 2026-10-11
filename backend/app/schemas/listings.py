@@ -18,6 +18,7 @@ class ProductFacts(OutputModel):
     sku: str
     name: str
     facts: str
+    source_channel: str | None = None
     source: SourceReference
 
 

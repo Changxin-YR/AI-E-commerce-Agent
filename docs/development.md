@@ -1032,3 +1032,6 @@ Listing按product/source row/active baseline生成，编辑另存待审版本；
 
 ## API22导入与表单集中修复（2026-10-11）
 后端全量890项与Flutter21项通过，API22已开始真实业务验收。ImportRowEditor在initState捕获原始基线，按映射列预填，保存只返回变化字段；取消离开保留本地输入。PageBody在承载Form时保持所有字段挂载，解决离屏上传无响应和必填校验遗漏。两类问题均补回归；设备/数据库事实及后续待验范围见mobile/harmony-validation.md。scripts/mobile/business_fixture.py限定专用合成库、回环HTTP和模型/邮件替身，支持可复现端测。
+
+## B1商品渠道证据（2026-10-11）
+API22执行256被服务端scope_mismatch阻断，定位为移动选择器只按身份筛选。ProductFacts新增可空来源渠道，当前商品从批次回读；旧持久快照省略字段仍可解析。AgentPage统一用同一谓词处理下拉候选、范围/模板变化和提交校验，仅B1需要同渠道。2项Flutter范围回归与1项无数据库契约回归通过；完整设备结果以harmony-validation为准。

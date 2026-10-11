@@ -463,3 +463,6 @@ SDK24实际构建：`scripts/mobile/build_hap_windows.ps1`将构建输入复制�
 - late变量的初始化表达式在首次访问时执行；若用来捕获控制器原始值，可能在保存时读到新值。ImportRowEditor将基线在initState固定，测试同时覆盖映射别名和空字符串修正。
 - ListView默认构造也会销毁离屏元素。GlobalKey无法阻止Form卸载，外部Form中的子字段卸载还会注销验证器。PageBody让完整Form使用单一滚动Column，数据列表仍按需渲染；回归验证离屏空字段拒绝提交、填入后可提交。
 - 设备上的点击成功不等于业务写入成功。导入验证同时核对UI状态、HTTP返回、批次计数及测试库source_row/corrections，详细证据见mobile/harmony-validation.md。
+
+## 范围证据与向后兼容
+B1必须同时匹配身份与渠道，界面候选、已选值失效和提交门禁应共用范围判定。ProductFacts.source_channel由后端来源批次提供；None兼容旧快照，但不被解释为任意渠道。Flutter范围回归验证跨渠道/未知渠道拒绝及其它Listing流程兼容，无数据库Python回归验证真实来源字段输出与历史DTO解析。

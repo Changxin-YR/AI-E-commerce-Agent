@@ -38,6 +38,7 @@ def product_facts(evidence: ProductEvidence) -> ProductFacts:
         sku=product.sku,
         name=product.name,
         facts=product.facts,
+        source_channel=batch.source_channel,
         source=reference(row, batch),
     )
 

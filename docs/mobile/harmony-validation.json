@@ -3,7 +3,7 @@
   "phase": "api22-business-in-progress",
   "business_api22": "partial_passed",
   "dart_analyze": "passed",
-  "flutter_tests": 21,
+  "flutter_tests": 23,
   "csv_python_dart_cases": 12,
   "backend_targeted_tests": 97,
   "backend_duration_seconds": 64.18,
@@ -12,12 +12,13 @@
   "test_database": "127.0.0.1:3315/soloops_harmony_r2_test",
   "hap": {
     "path": "apps/soloops_flutter/ohos/entry/build/default/outputs/default/entry-default-unsigned.hap",
-    "bytes": 103688494,
-    "sha256": "94fa230e202ac1829bd207b3bc6e11ed230b44f70311a2ef1c3c874dd518f1ac",
+    "bytes": 103689862,
+    "sha256": "3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e",
     "mode": "debug unsigned x64",
     "compile_sdk": 24,
     "runtime_target": 22,
-    "verified_copy": ".local/mobile-business/accepted-form-fix.hap"
+    "verified_copy": ".local/mobile-business/accepted-scope-fix.hap",
+    "device_install": "passed; B1 double approval passed"
   },
   "logs": [
     "analyze-final.txt",
@@ -43,7 +44,15 @@
     "device/messages-upload-offscreen.json",
     "device/inventory-committed.json",
     "device/messages-committed.json",
-    "device/task195-rechecked.json"
+    "device/task195-rechecked.json",
+    "flutter-scope-fix.txt",
+    "analyze-scope-fix.txt",
+    "hap-build-scope-fix.txt",
+    "device/scope-fix-home.json",
+    "b1-db.json",
+    "device/b1-amazon-empty-products.json",
+    "device/b1-final-ready.json",
+    "device/listing-save-ready.png"
   ],
   "backend_full_tests": 890,
   "backend_full_duration_seconds": 529.36,
@@ -69,7 +78,12 @@
     "messages 1186: 2 new",
     "offscreen form upload: batch 1186 created",
     "operation run 184: 3 candidates",
-    "task 195: approve, recheck waits for newer source, local complete"
+    "task 195: approve, recheck waits for newer source, local complete",
+    "orders 1187 generic: 3 new",
+    "B1 source channel filtering: Amazon excludes generic products",
+    "Listing 91: edited, approved, system CSV save",
+    "B1 run 257: distinct analysis_todo and listing_draft approvals; succeeded, analysis 23, draft 92"
   ],
-  "pending": "Remaining H03-H21 business journeys and lifecycle/layout/source/conflict/unknown-result scenarios"
+  "pending": "Remaining H03-H21 business journeys and lifecycle/layout/source/conflict/unknown-result scenarios",
+  "product_facts_contract_tests": 1
 }

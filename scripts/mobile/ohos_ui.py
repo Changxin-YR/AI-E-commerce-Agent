@@ -111,8 +111,24 @@ if __name__ == "__main__":
             )
             try:
                 x, y = match(current, options.values[0])
+                if int(y) < 440:
+                    hdc(
+                        "shell", "uitest", "uiInput", "swipe", "1050", "800", "1050", "1400", "1400"
+                    )
+                    continue
                 if int(y) > bottom - 80:
-                    raise ValueError("Clipped at viewport edge")
+                    hdc(
+                        "shell",
+                        "uitest",
+                        "uiInput",
+                        "swipe",
+                        "1050",
+                        "2000",
+                        "1050",
+                        "1400",
+                        "1400",
+                    )
+                    continue
             except ValueError:
                 hdc(
                     "shell",

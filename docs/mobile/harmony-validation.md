@@ -4,17 +4,17 @@
 
 | 检查 | 结果 | 本机证据（.local/mobile-business/） |
 |---|---|---|
-| Dart analyze | 无问题 | analyze-form-fix.txt |
-| Flutter test --no-pub | 21 passed | flutter-form-fix.txt |
+| Dart analyze | 无问题 | analyze-scope-fix.txt |
+| Flutter test --no-pub | 23 passed | flutter-scope-fix.txt |
 | Python/Dart CSV对照 | 12组清单与分片字节一致 | csv-diff-3094f9cb/results.json |
 | 后端全量 | 890 passed / 529.36秒 | backend-full.txt、backend-full.xml |
 | 本地夹具隔离 | 5 passed | fixture-tests.txt |
 | 后端Ruff / mypy | 规则通过 / 180 app文件无类型问题 | 前轮本机命令结果 |
 | 迁移 | head b42e83f516c0；升级/回退/差异检查已覆盖 | 后端定向97项与全量回归 |
-| SDK24 x64 HAP | BUILD SUCCESSFUL / 25.873秒 | hap-build-form-fix.txt |
+| SDK24 x64 HAP | BUILD SUCCESSFUL / 53.629秒 | hap-build-scope-fix.txt |
 | API22手机 | 安装、启动、会话恢复及部分业务通过 | device/布局与下面各项证据 |
 
-本轮固定安装包 `.local/mobile-business/accepted-form-fix.hap`，103688494 bytes，SHA256 `94fa230e202ac1829bd207b3bc6e11ed230b44f70311a2ef1c3c874dd518f1ac`；未签名debug x64，SDK24编译/API22运行。构建源输出仍为 `apps/soloops_flutter/ohos/entry/build/default/outputs/default/entry-default-unsigned.hap`。安装前校验固定副本，避免IDE后续构建覆盖。
+本轮固定安装包 `.local/mobile-business/accepted-scope-fix.hap`，103689862 bytes，SHA256 `3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e`；未签名debug x64，SDK24编译/API22运行。构建源输出仍为 `apps/soloops_flutter/ohos/entry/build/default/outputs/default/entry-default-unsigned.hap`。安装前校验固定副本，避免IDE后续构建覆盖。
 
 ## 已完成的真实设备操作
 
@@ -37,3 +37,7 @@
 后续继续库存/客服/账单导入、巡检待办复检、AI/B1双审批及暂停取消、Listing交付、客服政策审阅、分析/财务/规则/质量/定时/替身外发；补齐未知结果重试、冲突/来源清除/切店、系统分享消费时机、前后台/重启、横屏/深浅色/大字体。当前部分设备证据不代表全部业务通过；其他设备类型仍未验证。
 
 库存1185新增3条、客服消息1186新增2条；六个批次均committed且error_rows为0，见journey-db.json。巡检184生成195–197三个候选；195完成审批、复检、完成核对，version4。复检保持等待新有效库存来源，未误标业务解决。B1执行256因商品generic与订单amazon渠道不匹配被正确阻断；移动选择范围改进与双审批仍在继续。
+
+B1范围修复已完成：ProductFacts提供真实来源渠道并兼容旧快照；B1仅允许同身份、同渠道商品，范围或流程变化时清除不匹配选择，启动前再次校验。2项Flutter范围回归、1项无数据库DTO兼容测试通过。scope修复包已在API22安装并恢复会话，双审批业务验证继续进行。
+
+API22 B1双审批通过：同渠道订单批次1187新增3行；Listing 91编辑后批准、系统CSV保存通过。B1执行257完成7步、version10，两个approve分别绑定analysis_todo和listing_draft；分析23已存档、Listing 92仍为draft且基线91仍approved。只读数据库回查见b1-db.json。实际模型/邮件/平台写入保持0。

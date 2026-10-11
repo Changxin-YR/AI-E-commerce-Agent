@@ -470,3 +470,6 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 ### Flutter表单离屏生命周期（2026-10-11）
 - 官方：[ListView child elements lifecycle](https://api.flutter.dev/flutter/widgets/ListView-class.html#child-elements-lifecycle)。Dart API文档用于理解生命周期；Flutter框架BSD-3-Clause，本文未复制实现。
 - 借鉴与适配：普通ListView构造同样按视口创建/销毁子树。API22复现导入Form离屏后currentState为空；外层Form的字段离屏时注册也会丢失。PageBody识别自身Form祖先或直接Form子项，改为单一滚动Column维持完整校验；普通数据列表保留ListView。两种嵌套结构均补充离屏必填拒绝/填写后成功回归。
+
+## B1商品范围与快照兼容（2026-10-11）
+- [Pydantic默认值](https://docs.pydantic.dev/latest/concepts/fields/#default-values)：V2可空类型仍需显式默认值才能兼容缺字段。ProductFacts.source_channel采用None默认值，当前数据读取batch.source_channel；历史快照未知渠道不参与B1。依据本仓库MarginReviewService身份/渠道契约自主适配，Pydantic MIT；未复制第三方实现。Firecrawl额度已耗尽，使用官方网页核对。

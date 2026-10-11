@@ -4,16 +4,16 @@
 
 ## 当前结果
 
-H01–H21核心业务源码已覆盖，集中验证已经开始。H11–H20全部新业务页、H02冲突/onboarding、H04独立manifest恢复和H21时区/日期/导航/离开保护均已写入。Dart无问题，21Flutter测试、12CSV跨端对照、97后端定向测试、Ruff/mypy180 app文件和完整业务HAP构建通过。完整表见 `harmony-r2-coverage.md`，精确证据见 `harmony-validation.md/json`。
+H01–H21核心业务源码已覆盖，集中验证已经开始。H11–H20全部新业务页、H02冲突/onboarding、H04独立manifest恢复和H21时区/日期/导航/离开保护均已写入。Dart无问题，23Flutter测试、12CSV跨端对照、97后端定向测试、Ruff/mypy180 app文件和完整业务HAP构建通过。完整表见 `harmony-r2-coverage.md`，精确证据见 `harmony-validation.md/json`。
 
-**API22集中端测进行中：登录/经营资料/建店、重启恢复、商品CSV/XLSX、逐行纠错和订单导入已通过。完整卖家旅程与用户联调仍待做。** 不将历史M0技术证据当作本次业务结论。用户要求持续推进，不等待逐包批准或CI；Android与微信本轮仅方案，一次仅一台模拟器。
+**API22集中端测进行中：登录/经营资料/建店、重启恢复、商品CSV/XLSX、逐行纠错和订单导入已通过。完整卖家旅程与用户联调仍待做。** 不将历史M0技术证据当作本次业务结论。用户要求持续推进，不等待逐包批准或CI；Android与微信本轮仅方案，用户已于本轮明确允许鸿蒙与独立安卓任务的模拟器短时并行。
 
 ## 下一步直接执行
 
 1. 读取AGENTS顶部、V1.3、本账本和validation。复用现有worktree/分支；业务页面已完成核心实现，不再从H11重新开发。
 2. 新隔离MySQL已经运行：Docker `soloops-harmony-r2-mysql`，回环3315，数据库 `soloops_harmony_r2_test`，head `b42e83f516c0`。配置只在忽略目录 `.local/mobile-business/test.env` 与 `mysql.env`，不得输出或提交。此容器是tmpfs，停止会丢失合成测试库内容；只保存合成测试数据。现有业务库均未修改。独立HTTP API已在127.0.0.1:18080运行，入口scripts/mobile/business_fixture.py；实际模型和邮件全部替身。
 3. 复用正在运行的独立API（127.0.0.1:18080）、3315测试库、harmony_r2账号与店铺918。合成样本在.local/mobile-business/samples；设备浏览器Download/浏览器中已有本轮CSV/XLSX。pytest会清表，与端测串行；当前端测数据要保留。
-4. 启动DevEco Device Manager已有API22模拟器，RAM2048MiB；不并行开Android。API22历史可安装未签名x64调试HAP。当前路径 `apps/soloops_flutter/ohos/entry/build/default/outputs/default/entry-default-unsigned.hap`；SHA256 `94fa230e202ac1829bd207b3bc6e11ed230b44f70311a2ef1c3c874dd518f1ac`，103688494 bytes。HDC安装、HTTPS/HTTP映射、Asset登录/会话恢复/退出先验证。构建脚本 `scripts/mobile/build_ohos_probe.ps1`。
+4. 启动DevEco Device Manager已有API22模拟器，RAM2048MiB；本轮已获短时并行许可。API22历史可安装未签名x64调试HAP。当前路径 `apps/soloops_flutter/ohos/entry/build/default/outputs/default/entry-default-unsigned.hap`；SHA256 `3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e`，103689862 bytes。HDC安装、HTTPS/HTTP映射、Asset登录/会话恢复/退出先验证。构建脚本 `scripts/mobile/build_ohos_probe.ps1`。
 5. 用真实移动界面走完整卖家链：初始化、模板/导入映射审阅纠错、分片/独立清单恢复、巡检/待办复检、Agent/B1双审批、Listing交付、客服政策/审阅/人工凭据、库存/分析/总览、利润/费用/账单/订单审阅/回款、规则授权、调度通知、质量/本地修订、替身外发。核对数据库真实结果，记录每项证据并修复失败。
 6. 专项：未知写入同UUID恢复、Agent进行中的暂停取消、版本冲突与来源清除、跨店来源/深链、前后台和重启、导出字节/分享消费时机、大字体/横屏/深浅色/长列表。新增EditGuard已覆盖费用/回款/规则/调度编辑/商品修订/外发/资料等，其他表单逐项在端上验证。对新发现的缺口继续实现。
 7. 后端全量890项已通过（529.36秒），5项本地验收夹具隔离测试通过。后续按实际接口/端测问题补充必要验证；最后向用户交付可操作测试入口与联调说明。无需等CI。
@@ -58,6 +58,12 @@ H01–H21核心业务源码已覆盖，集中验证已经开始。H11–H20全�
 
 锁定脚本构建HAP已安装API22，冷启动保留登录与店铺918。构建和安装需紧邻校验HAP哈希，DevEco默认构建可能覆盖输出并造成Flutter ArkTS模块缺失；正确重建并覆盖安装已恢复。设备助手scripts/mobile/ohos_ui.py保存布局/截图，空前台或禁用目标拒绝操作。
 
-长表单离屏故障：PageBody保持Form与校验字段挂载，普通记录仍用ListView。两种嵌套Form回归先失败后通过；21项Flutter与Dart通过。固定安装副本.local/mobile-business/accepted-form-fix.hap已装API22。库存批次1185已上传，后续状态见validation。
+长表单离屏故障：PageBody保持Form与校验字段挂载，普通记录仍用ListView。两种嵌套Form回归先失败后通过；23项Flutter与Dart通过。固定安装副本.local/mobile-business/accepted-scope-fix.hap已装API22。库存批次1185已上传，后续状态见validation。
 
 端测推进：库存1185新增3、客服1186新增2；六批次全部committed。巡检184及低库存事项195审批/复检/完成核对通过，业务结论保持待新来源。下一步B1目标商品渠道筛选（256被scope_mismatch正确阻断），随后Listing有效基线与B1双审批。
+
+## B1范围修复与设备恢复（2026-10-11）
+
+ProductFacts增加可空source_channel，当前商品从真实批次提供渠道，历史快照缺失字段保持可读。B1按身份和渠道筛选，在切换范围/流程与启动前均复核；其余Listing流程保留身份范围。23项Flutter、1项无数据库契约回归、Dart、Ruff和mypy180文件通过。固定scope修复包已校验并安装API22，会话/店铺恢复，继续同渠道订单和双审批端测。
+
+API22 B1双审批通过：同渠道订单批次1187新增3行；Listing 91编辑后批准、系统CSV保存通过。B1执行257完成7步、version10，两个approve分别绑定analysis_todo和listing_draft；分析23已存档、Listing 92仍为draft且基线91仍approved。只读数据库回查见b1-db.json。实际模型/邮件/平台写入保持0。

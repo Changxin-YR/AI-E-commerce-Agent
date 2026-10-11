@@ -94,7 +94,9 @@ abstract class BusinessPageState<T extends StatefulWidget> extends State<T>
         });
       }
     } catch (e) {
-      if (mounted) setState(() => error = '$e');
+      if (mounted) {
+        setState(() => error = e is FormatException ? e.message : '$e');
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
