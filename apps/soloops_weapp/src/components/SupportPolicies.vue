@@ -2,6 +2,7 @@
 import { onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import Taro from '@tarojs/taro'
 import { account, api } from '../services/session'
+import { scopedRequest } from '../services/scoped-request'
 import { queryString } from '../services/task-policy'
 import { awareTimestamp } from '../services/support-policy'
 import {
@@ -10,7 +11,11 @@ import {
   type PolicyData,
 } from '../services/support-types'
 const props = defineProps<{ market: string; disabled: boolean }>()
-const emit = defineEmits<{ changed: []; working: [value: boolean] }>()
+const emit = defineEmits<{
+  changed: []
+  working: [value: boolean]
+  editing: [value: boolean]
+}>()
 const items = ref<Policy[]>([]),
   search = ref(''),
   offset = ref(0),
@@ -42,6 +47,10 @@ const options = {
   data_identity: ['user_import', 'synthetic'],
 } as const
 let alive = true
+const request = scopedRequest(api, () =>
+  alive ? `${account.shopId}:${account.session?.session_id}` : null,
+)
+watch(editing, (value) => emit('editing', value), { flush: 'sync' })
 onBeforeUnmount(() => {
   alive = false
 })
@@ -74,7 +83,7 @@ function pick(field: keyof typeof options, event: unknown) {
   Object.assign(form, { [field]: options[field][index] })
 }
 async function run(work: () => Promise<void>) {
-  if (busy.value || props.disabled) return
+  if (busy.value || props.disabled || !alive) return
   busy.value = true
   emit('working', true)
   error.value = ''
@@ -86,11 +95,11 @@ async function run(work: () => Promise<void>) {
         cause instanceof Error ? cause.message : '政策操作失败，请刷新核对。'
   } finally {
     busy.value = false
-    emit('working', false)
+    if (alive) emit('working', false)
   }
 }
 async function load(page = 0) {
-  const values = await api.request<Policy[]>(
+  const values = await request<Policy[]>(
     `${base()}?${queryString({ q: search.value, offset: page })}`,
   )
   if (!alive) return
@@ -99,7 +108,7 @@ async function load(page = 0) {
   unknown.value = false
 }
 async function edit(item?: Policy) {
-  if (busy.value || props.disabled) return
+  if (busy.value || props.disabled || !alive) return
   if (editing.value) {
     const answer = await Taro.showModal({
       title: '替换政策编辑',
@@ -112,6 +121,17 @@ async function edit(item?: Policy) {
   expected.value = item?.id || null
   editing.value = true
 }
+async function cancel() {
+  if (busy.value || props.disabled || unknown.value) return
+  const answer = await Taro.showModal({
+    title: '取消政策编辑',
+    content: '放弃未保存的政策内容？',
+  })
+  if (answer.confirm && alive) {
+    editing.value = false
+    Object.assign(form, defaults())
+  }
+}
 async function save() {
   await run(async () => {
     if (unknown.value) throw new Error('请先刷新政策核对上次保存结果。')
@@ -122,7 +142,7 @@ async function save() {
     if (!/^[A-Z]{2}$/.test(form.market))
       throw new Error('市场须为两位大写国家代码。')
     unknown.value = true
-    await api.request<Policy>(base(), 'POST', {
+    await request<Policy>(base(), 'POST', {
       expected_policy_id: expected.value,
       data: { ...form, valid_from: from, valid_until: until },
     })
@@ -149,7 +169,7 @@ async function clear(item: Policy) {
     )
       return
     unknown.value = true
-    await api.request<Policy>(`${base()}/${item.id}/clear`, 'POST')
+    await request<Policy>(`${base()}/${item.id}/clear`, 'POST')
     await load(offset.value)
     emit('changed')
   })
@@ -250,6 +270,9 @@ onMounted(() => {
         @tap="save"
       >
         保存政策版本并回读
+      </button>
+      <button :disabled="busy || disabled || unknown" @tap="cancel">
+        取消编辑
       </button>
     </view>
     <text v-if="!items.length" class="muted">暂无匹配政策。</text

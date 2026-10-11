@@ -493,3 +493,8 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 ## 微信W06客服原生输入（2026-10-11）
 
 - Taro官方Textarea文档：https://docs.taro.zone/docs/components/forms/textarea/ 。firecrawl因api.firecrawl.dev DNS ENOTFOUND失败，改用官方网页检索核对maxlength默认140及autoHeight；客服正文显式6000、政策4000、备注1000，长正文自动增高。仅API适配，未复制示例源码；Taro项目MIT。
+
+
+## 微信W07实现参考（2026-10-11）
+
+Taro4.3.0（MIT）已安装types/api/ui/interaction.d.ts的enableAlertBeforeUnload/disableAlertBeforeUnload，types/compile/compiler.d.ts与vite-runner/dist/index.mini.js的compiler.vitePlugins；Vite4.5.14（MIT）reportCompressedSize关闭仅影响gzip体积报告。官方地址：https://developers.weixin.qq.com/miniprogram/dev/api/ui/interaction/wx.enableAlertBeforeUnload.html ，https://v4.vitejs.dev/config/build-options.html#build-reportcompressedsize 。Firecrawl在线提取因额度不足失败，未声称本轮在线阅读成功。库存字段复用仓库后端InventoryQuery/InventoryOutput及OperationTask，不复制外部实现。

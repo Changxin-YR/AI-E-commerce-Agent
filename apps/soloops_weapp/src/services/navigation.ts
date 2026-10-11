@@ -5,6 +5,7 @@ import { queryString } from './task-policy'
 export const routes: Record<string, string> = {
   '/': '/pages/operations/index',
   '/imports': '/pages/imports/index',
+  '/inventory': '/pages/inventory/index',
   '/support': '/pages/support/index',
   '/listings': '/pages/listings/index',
   '/agent': '/pages/agent/index',

@@ -1053,3 +1053,8 @@ Listing生成/编辑绑定source row与active baseline，决定携带审阅版�
 ## 微信W06：客服源码检查点
 
 客服原生页复用SupportService与ReviewedDelivery。版本审阅绑定语言，回复变化使确认失效；生成绑定消息source row、订单行与政策ID；人工自报记录冻结request_id及内容便于同次恢复。政策组件与父页互斥操作，政策变化清除旧工作区证据。32项客户端测试和vue-tsc通过，生产构建在200模块转换后内存分配失败，待接续排查；IDE及数据库旅程未验。
+
+
+## 微信W07：库存与页面请求生命周期
+
+库存复用现有inventory及operations/tasks接口，按服务端low_inventory和精确SKU关联；分页不足时明确继续读取，缺少快照保持未知。scopedRequest在ApiClient账号/店铺隔离之上校验页面生命周期，避免卸载后继续GET或更新编辑状态。客服政策编辑状态上报父页，微信返回提醒覆盖未保存内容和未知写入。

@@ -2,6 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import Taro, { useDidShow, useLoad, useUnload } from '@tarojs/taro'
 import { account, api } from '../../services/session'
+import { scopedRequest } from '../../services/scoped-request'
 import { ApiError } from '../../services/client'
 import { queryString, requestId } from '../../services/task-policy'
 import { openLink } from '../../services/navigation'
@@ -29,6 +30,7 @@ const search = ref(''),
   offset = ref(0),
   actionBusy = ref(false),
   policyBusy = ref(false),
+  policyEditing = ref(false),
   error = ref(''),
   notice = ref(''),
   unknown = ref(false)
@@ -72,6 +74,7 @@ const timezone = computed(() => shop.value?.timezone || 'Asia/Shanghai')
 const base = () => `/shops/${account.shopId}/support`
 let epoch = 0,
   alive = true
+const request = scopedRequest(api, () => (alive ? epoch : null))
 function checked(event: unknown) {
   return Boolean((event as { detail: { value: boolean } }).detail.value)
 }
@@ -104,6 +107,11 @@ watch(
   () => [account.shopId, account.session?.session_id],
   () => {
     epoch++
+    policyEditing.value = false
+    policyBusy.value = false
+    error.value = notice.value = ''
+    reply.value = ''
+    confirmed.value = false
     messages.value = []
     history.value = []
     workspace.value = undefined
@@ -122,12 +130,29 @@ watch(
 useLoad((value) => {
   params.value = value as Record<string, string>
 })
+watch(
+  () =>
+    dirty.value ||
+    evidenceDirty.value ||
+    !!pendingManual.value ||
+    policyEditing.value ||
+    unknown.value ||
+    busy.value,
+  (protect) => {
+    if (!alive) return
+    if (protect)
+      Taro.enableAlertBeforeUnload({
+        message: '有未保存内容或待核对操作，离开前请确认。',
+      })
+    else Taro.disableAlertBeforeUnload()
+  },
+)
 useUnload(() => {
   alive = false
   epoch++
 })
 async function perform(work: () => Promise<void>) {
-  if (busy.value) return
+  if (busy.value || !alive) return
   if (!account.session || !account.shopId) {
     error.value = '请先登录并选择店铺。'
     return
@@ -148,6 +173,7 @@ async function perform(work: () => Promise<void>) {
 }
 async function discard() {
   if (pendingManual.value) throw new Error('请先核对或恢复待确认的人工记录。')
+  if (policyEditing.value) throw new Error('请先保存或取消政策编辑。')
   if (!dirty.value && !evidenceDirty.value) return true
   const token = epoch
   const answer = await Taro.showModal({
@@ -167,28 +193,28 @@ function adopt(value: ReplyDraft) {
   confirmed.value = false
 }
 async function list(page = offset.value) {
-  messages.value = await api.request<MessageFacts[]>(
+  messages.value = await request<MessageFacts[]>(
     `${base()}/messages?${queryString({ q: search.value, offset: page })}`,
   )
   offset.value = page
-  history.value = await api.request<ReplyDraft[]>(`${base()}/drafts`)
+  history.value = await request<ReplyDraft[]>(`${base()}/drafts`)
 }
 async function readRecords(before?: number) {
   if (!selected.value) return
-  const values = await api.request<ManualActionRecord[]>(
+  const values = await request<ManualActionRecord[]>(
     `${base()}/drafts/${selected.value.id}/manual-actions?${queryString({ before })}`,
   )
   records.value = before ? [...records.value, ...values] : values
   moreRecords.value = values.length === 50
 }
 async function read(id: number) {
-  adopt(await api.request<ReplyDraft>(`${base()}/drafts/${id}`))
+  adopt(await request<ReplyDraft>(`${base()}/drafts/${id}`))
   await readRecords()
 }
 async function choose(id: number) {
   await perform(async () => {
     if (!(await discard())) return
-    workspace.value = await api.request<SupportWorkspace>(
+    workspace.value = await request<SupportWorkspace>(
       `${base()}/messages/${id}`,
     )
     selected.value = undefined
@@ -211,7 +237,7 @@ async function refresh() {
     await list()
     if (selected.value) await read(selected.value.id)
     if (workspace.value)
-      workspace.value = await api.request<SupportWorkspace>(
+      workspace.value = await request<SupportWorkspace>(
         `${base()}/messages/${workspace.value.message.id}`,
       )
     verified.value = false
@@ -229,7 +255,7 @@ async function generate() {
     if (!workspace.value || unknown.value || !(await discard())) return
     if (policies.value.length > 10) throw new Error('最多选择10条适用政策。')
     unknown.value = true
-    const result = await api.request<ReplyDraft>(
+    const result = await request<ReplyDraft>(
       `${base()}/messages/${workspace.value.message.id}/generate`,
       'POST',
       {
@@ -281,7 +307,7 @@ async function mutate(
       data = { expected_version: item.version, action: kind }
     }
     unknown.value = true
-    const result = await api.request<ReplyDraft>(path, 'POST', data)
+    const result = await request<ReplyDraft>(path, 'POST', data)
     adopt(result)
     await read(result.id)
     await list()
@@ -319,7 +345,7 @@ async function recordManual() {
     }
     const pending = pendingManual.value
     try {
-      await api.request<ManualActionRecord>(
+      await request<ManualActionRecord>(
         `${base()}/drafts/${pending.draft}/manual-actions`,
         'POST',
         pending.data,
@@ -342,7 +368,7 @@ async function recordManual() {
 async function delivery(): Promise<ManualDelivery> {
   if (!selected.value || !actions.value?.deliver)
     throw new Error('请先完成当前版本审阅。')
-  return api.request<ManualDelivery>(
+  return request<ManualDelivery>(
     `${base()}/drafts/${selected.value.id}/delivery?expected_version=${selected.value.version}`,
   )
 }
@@ -372,7 +398,12 @@ function policiesChanged() {
 }
 useDidShow(() => {
   void perform(async () => {
-    if (dirty.value || evidenceDirty.value || pendingManual.value) {
+    if (
+      dirty.value ||
+      evidenceDirty.value ||
+      pendingManual.value ||
+      policyEditing.value
+    ) {
       notice.value = '保留当前未保存内容，请核对后继续。'
       return
     }
@@ -382,7 +413,7 @@ useDidShow(() => {
     const id = Number(params.value.draft || selected.value?.id)
     if (id > 0) await read(id)
     else if (Number(params.value.message) > 0)
-      workspace.value = await api.request<SupportWorkspace>(
+      workspace.value = await request<SupportWorkspace>(
         `${base()}/messages/${Number(params.value.message)}`,
       )
     params.value = {}
@@ -697,6 +728,7 @@ useDidShow(() => {
       :market="shop?.market || ''"
       :disabled="actionBusy || dirty || evidenceDirty || !!pendingManual"
       @working="policyBusy = $event"
+      @editing="policyEditing = $event"
       @changed="policiesChanged"
     />
   </view>
