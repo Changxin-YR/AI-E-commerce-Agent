@@ -461,3 +461,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - [SQLAlchemy versioning](https://docs.sqlalchemy.org/en/20/orm/versioning.html)、[Python decimal](https://docs.python.org/3/library/decimal.html)：参考并发版本与精确金额语义，实际沿用本仓库用户/店铺锁、expected version、request UUID和Decimal架构。SQLAlchemy MIT、Python PSF。
 - [timezone 0.10.1](https://pub.dev/packages/timezone/versions/0.10.1)、[其更新记录](https://pub.dev/packages/timezone/versions/0.10.1/changelog)：固定IANA 2025b数据与TZDateTime.from/getLocation用于业务日期。Dart3.6.2实际pub解析、测试与HAP编译成功；未依赖设备时区。许可证BSD-2-Clause；传递http1.6.0、http_parser4.1.2、web1.1.1的BSD-3-Clause声明与完整许可证放在 `apps/soloops_flutter/licenses/`。时区变更以服务器校验为准，后续升级需同步验证时区数据。
 - 复用当前仓库Vue/TypeScript/Pydantic业务契约，自主编写Flutter页面；H14根据V1.3补持久审阅域。Firecrawl实际提取返回Insufficient credits，官方资料使用内置浏览工具核验。
+
+## 鸿蒙 API22 集中端测：导入修正（2026-10-11）
+
+- [Dart late variables](https://dart.dev/language/variables#late-variables) 和 [Flutter State.initState](https://api.flutter.dev/flutter/widgets/State/initState.html)：核对延迟初始化与一次性State初始化语义。错误行编辑基线改在initState捕获，源值按当前mapping回显，并保护未保存修正。文档CC BY 4.0、代码示例BSD-3-Clause；本次实现自主编写。固定Dart3.6.2/Flutter OH3.27.5测试验证。
+- Firecrawl优先提取返回Insufficient credits，随后以内置浏览工具读取上述官方文档。
+
+### Flutter表单离屏生命周期（2026-10-11）
+- 官方：[ListView child elements lifecycle](https://api.flutter.dev/flutter/widgets/ListView-class.html#child-elements-lifecycle)。Dart API文档用于理解生命周期；Flutter框架BSD-3-Clause，本文未复制实现。
+- 借鉴与适配：普通ListView构造同样按视口创建/销毁子树。API22复现导入Form离屏后currentState为空；外层Form的字段离屏时注册也会丢失。PageBody识别自身Form祖先或直接Form子项，改为单一滚动Column维持完整校验；普通数据列表保留ListView。两种嵌套结构均补充离屏必填拒绝/填写后成功回归。

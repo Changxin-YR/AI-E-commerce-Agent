@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../ui/common.dart';
 import '../../ui/business_widgets.dart';
+import '../../ui/edit_guard.dart';
 import 'import_repository.dart';
 
 class ImportBatchPage extends StatefulWidget {
@@ -135,8 +136,9 @@ class _ImportBatchPageState extends BusinessPageState<ImportBatchPage> {
     final result = await Navigator.push<Json>(
         context,
         MaterialPageRoute(
-            builder: (_) => ImportRowEditor(row, fields,
-                object(corrections['${row['row_number']}'] ?? {}))));
+            builder: (_) => ImportRowEditor(
+                row, fields, object(corrections['${row['row_number']}'] ?? {}),
+                mapping: mapping, app: widget.app)));
     if (result != null && mounted) {
       setState(() {
         corrections['${row['row_number']}'] = result;
@@ -166,7 +168,7 @@ class _ImportBatchPageState extends BusinessPageState<ImportBatchPage> {
         for (final field in fields) ...[
           Text('${field['label']}',
               style: Theme.of(context).textTheme.titleSmall),
-          FactLine('源值', raw[field['key']]),
+          FactLine('源值', raw[mapping[field['key']]]),
           if (rowCorrections.containsKey(field['key']))
             FactLine('修正值', rowCorrections[field['key']]),
           FactLine('转换后', normalized[field['key']]),
@@ -398,21 +400,34 @@ class _ImportBatchPageState extends BusinessPageState<ImportBatchPage> {
 }
 
 class ImportRowEditor extends StatefulWidget {
-  const ImportRowEditor(this.row, this.fields, this.corrections, {super.key});
-  final Json row, corrections;
+  const ImportRowEditor(this.row, this.fields, this.corrections,
+      {super.key, required this.mapping, this.app});
+  final Json row, corrections, mapping;
+  final AppState? app;
   final List<Json> fields;
   @override
   State<ImportRowEditor> createState() => _ImportRowEditorState();
 }
 
 class _ImportRowEditorState extends State<ImportRowEditor> {
-  late final inputs = {
-    for (final f in widget.fields)
-      f['key'] as String: TextEditingController(
-          text:
-              '${widget.corrections[f['key']] ?? widget.row['raw'][f['key']] ?? ''}')
-  };
-  late final initial = {for (final e in inputs.entries) e.key: e.value.text};
+  late final Map<String, TextEditingController> inputs;
+  late final Map<String, String> initial;
+  bool saved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initial = {
+      for (final f in widget.fields)
+        f['key'] as String:
+            '${widget.corrections[f['key']] ?? widget.row['raw'][widget.mapping[f['key']]] ?? ''}'
+    };
+    inputs = {
+      for (final e in initial.entries)
+        e.key: TextEditingController(text: e.value)
+    };
+  }
+
   @override
   void dispose() {
     for (final c in inputs.values) {
@@ -422,28 +437,36 @@ class _ImportRowEditorState extends State<ImportRowEditor> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(title: Text('修正源行 ${widget.row['row_number']}')),
-      body: PageBody(children: [
-        const Text('修正只用于当前批次。保存后须重新预览并确认导入。'),
-        const SizedBox(height: 16),
-        for (final f in widget.fields) ...[
-          FormInput('${f['label']}', inputs[f['key']]!,
-              required: false,
-              lines: f['key'] == 'body' || f['key'] == 'note' ? 4 : 1),
-          Text('${f['help']}'),
-          const SizedBox(height: 12),
-        ],
-        FilledButton(
-            onPressed: () {
-              final result = {...widget.corrections};
-              for (final e in inputs.entries) {
-                if (e.value.text != initial[e.key]) {
-                  result[e.key] = e.value.text;
-                }
-              }
-              Navigator.pop(context, result);
-            },
-            child: const Text('保存修正，返回预览')),
-      ]));
+  Widget build(BuildContext context) => EditGuard(
+      app: widget.app,
+      controllers: inputs.values.toList(),
+      dirty: () =>
+          !saved && inputs.entries.any((e) => e.value.text != initial[e.key]),
+      child: Scaffold(
+          appBar: AppBar(title: Text('修正源行 ${widget.row['row_number']}')),
+          body: PageBody(children: [
+            const Text('修正只用于当前批次。保存后须重新预览并确认导入。'),
+            const SizedBox(height: 16),
+            for (final f in widget.fields) ...[
+              FormInput('${f['label']}', inputs[f['key']]!,
+                  required: false,
+                  lines: f['key'] == 'body' || f['key'] == 'note' ? 4 : 1),
+              Text('${f['help']}'),
+              const SizedBox(height: 12),
+            ],
+            FilledButton(
+                onPressed: () {
+                  final result = {...widget.corrections};
+                  for (final e in inputs.entries) {
+                    if (e.value.text != initial[e.key]) {
+                      result[e.key] = e.value.text;
+                    }
+                  }
+                  setState(() => saved = true);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) Navigator.pop(context, result);
+                  });
+                },
+                child: const Text('保存修正，返回预览')),
+          ])));
 }

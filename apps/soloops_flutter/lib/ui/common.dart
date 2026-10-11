@@ -23,11 +23,24 @@ class PageBody extends StatelessWidget {
   const PageBody({super.key, required this.children});
   final List<Widget> children;
   @override
-  Widget build(BuildContext context) => SafeArea(
-      child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(20),
-          children: children));
+  Widget build(BuildContext context) {
+    // Form validators must remain registered even when fields scroll offscreen.
+    // Data-only pages keep lazy list rendering for their paginated records.
+    final containsForm =
+        Form.maybeOf(context) != null || children.any((child) => child is Form);
+    return SafeArea(
+        child: containsForm
+            ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: children))
+            : ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                children: children));
+  }
 }
 
 class SectionTitle extends StatelessWidget {

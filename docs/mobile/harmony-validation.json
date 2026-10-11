@@ -1,9 +1,9 @@
 {
   "date": "2026-10-11",
-  "phase": "static-unit-build",
-  "business_api22": "not_run",
+  "phase": "api22-business-in-progress",
+  "business_api22": "partial_passed",
   "dart_analyze": "passed",
-  "flutter_tests": 17,
+  "flutter_tests": 21,
   "csv_python_dart_cases": 12,
   "backend_targeted_tests": 97,
   "backend_duration_seconds": 64.18,
@@ -12,17 +12,64 @@
   "test_database": "127.0.0.1:3315/soloops_harmony_r2_test",
   "hap": {
     "path": "apps/soloops_flutter/ohos/entry/build/default/outputs/default/entry-default-unsigned.hap",
-    "bytes": 103666758,
-    "sha256": "32a7eb1c3ccca3207113f76d5f4c88a962b056c9dfcd95eec32f80b204f52c58",
+    "bytes": 103688494,
+    "sha256": "94fa230e202ac1829bd207b3bc6e11ed230b44f70311a2ef1c3c874dd518f1ac",
     "mode": "debug unsigned x64",
     "compile_sdk": 24,
-    "runtime_target": 22
+    "runtime_target": 22,
+    "verified_copy": ".local/mobile-business/accepted-form-fix.hap"
   },
   "logs": [
     "analyze-final.txt",
     "flutter-final.txt",
     "backend-final.txt",
     "hap-build-final.txt",
-    "csv-diff-3094f9cb/results.json"
-  ]
+    "csv-diff-3094f9cb/results.json",
+    "backend-full.txt",
+    "backend-full.xml",
+    "fixture-tests.txt",
+    "flutter-r2-device-fix.txt",
+    "analyze-r2-device-fix.txt",
+    "hap-build-recover.txt",
+    "correction-db.json",
+    "device/recovered-launch.json",
+    "device/correction-committed.json",
+    "device/orders-committed.json",
+    "flutter-form-fix.txt",
+    "analyze-form-fix.txt",
+    "form-repro-tests.txt",
+    "hap-build-form-fix.txt",
+    "journey-db.json",
+    "device/messages-upload-offscreen.json",
+    "device/inventory-committed.json",
+    "device/messages-committed.json",
+    "device/task195-rechecked.json"
+  ],
+  "backend_full_tests": 890,
+  "backend_full_duration_seconds": 529.36,
+  "fixture_tests": 5,
+  "runtime": {
+    "api": 22,
+    "device": "127.0.0.1:5555",
+    "test_api": "http://127.0.0.1:18080",
+    "shop_id": 918,
+    "model": "synthetic-r2-local",
+    "mail": "synthetic capture only"
+  },
+  "device_passed": [
+    "synthetic login/profile/shop creation",
+    "session restored after emulator restart and HAP reinstall",
+    "system template save",
+    "CSV product import 1181: 3 new",
+    "XLSX product import 1182: 3 unchanged",
+    "row correction 1183: 1 new and database readback",
+    "row editor cancelled back retains input",
+    "orders 1184: 3 new",
+    "inventory 1185: 3 new",
+    "messages 1186: 2 new",
+    "offscreen form upload: batch 1186 created",
+    "operation run 184: 3 candidates",
+    "task 195: approve, recheck waits for newer source, local complete"
+  ],
+  "pending": "Remaining H03-H21 business journeys and lifecycle/layout/source/conflict/unknown-result scenarios"
 }

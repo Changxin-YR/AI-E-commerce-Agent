@@ -1029,3 +1029,6 @@ Agent以服务端run version和单节点advance驱动，进入waiting_approval�
 Listing按product/source row/active baseline生成，编辑另存待审版本；批准前核对事实和完整前后文。客服保留人工接管语义，编辑版本使审阅失效；审阅全文与目标语言后才经delivery接口读取导出内容。原渠道人工操作为seller_reported证据，使用request_id和expected_version保存；来源清除后依照服务端输出擦除正文。
 
 库存依据快照时效与安全阈值。分析区分当前成本估算和订单行历史成本，Decimal字符串传输；历史成本写入携带来源修订和版本。跨店总览分币种汇总，每家店的来源读取显式携带shopId，保存摘要逐店校验expected_revisions。金额明细与来源分页展示。以上模块已注册真实路由；本轮仅格式化和差异检查，全业务静态/构建/API22验证仍待剩余模块完成后集中执行。
+
+## API22导入与表单集中修复（2026-10-11）
+后端全量890项与Flutter21项通过，API22已开始真实业务验收。ImportRowEditor在initState捕获原始基线，按映射列预填，保存只返回变化字段；取消离开保留本地输入。PageBody在承载Form时保持所有字段挂载，解决离屏上传无响应和必填校验遗漏。两类问题均补回归；设备/数据库事实及后续待验范围见mobile/harmony-validation.md。scripts/mobile/business_fixture.py限定专用合成库、回环HTTP和模型/邮件替身，支持可复现端测。
