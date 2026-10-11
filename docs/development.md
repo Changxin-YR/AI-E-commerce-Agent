@@ -1000,3 +1000,13 @@ Android 增加 debug 平台通道：Keystore AES-GCM 安全密文、隔离的非
 ## 鸿蒙完整业务版开发（2026-10-11）
 
 按用户最新指令，移动实现改为鸿蒙API22优先、全部R2功能实现后集中自查。总体架构与21项功能清单见 `requirements/SoloOps-Mobile-V1.3.md`，实时源码状态见 `mobile/harmony-implementation-progress.md`。本次增加同表隔离的移动Bearer会话与增量迁移、Asset设备桥接、Dart网络/状态层和登录/资料/店铺页面。业务会话仅存摘要，Web Cookie/CSRF继续存在；切换店铺废弃在途响应。当前为实现中版本，数据库迁移与完整业务验收尚未执行。
+
+## 鸿蒙 H04 导入和 H03 运营（源码实现中，2026-10-11）
+
+导入采用 ImportRepository 对原接口作业务封装，来源表单、批次详情、纠错子页、分组页面分别维护自己的状态。映射或纠错变化会清空语义审阅与覆盖确认，重新预览后才允许提交；批次与组操作携带服务端版本。大CSV在独立isolate中严格解析完整记录并生成与Web一致的分片清单，恢复时核对原文件名称、SHA-256与每片信息；服务端仍复用原ImportService和ImportGroupService。
+
+运营页面读取当前经营规则，按来源身份/渠道/币种/显式时区时间范围预览，保存时携带expected_preview_hash与request_id；未知结果可用同一请求标识核对。待办页面实现处理状态与业务复核两个层次：审批/拒绝/忽略/延期/完成核对/重开/备注，人工自报凭据、等待新来源、按原对象复检。SourceEvidence从原analytics source接口回读来源字段，不将自报操作作为外部业务已解决的证明。
+
+工作台添加身份、渠道、业务类型、分组及三种工作视图过滤，保留服务端游标和recent_runs；首页与待办分别使用稳定key。businessRoutes集中注册业务深链，目前导入、运营事项/检查、经营设置已接入，其他目标随对应模块实现继续注册。
+
+本次只做离线依赖解析与Dart格式化，全部业务功能实现后再集中构建/测试/模拟器联调。API22仍关闭；原业务数据库未执行迁移。完整状态与下一起点以 mobile/harmony-implementation-progress.md 为准。

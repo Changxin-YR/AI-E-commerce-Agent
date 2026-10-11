@@ -434,3 +434,10 @@ SDK24实际构建：`scripts/mobile/build_hap_windows.ps1`将构建输入复制�
 ## 鸿蒙移动业务适配（开发中）
 
 关注 `api/dependencies.py` 的Cookie与Bearer通道区分、`mobile_auth.py` 的设备登录、`AuthService` 的索引会话吊销，以及Flutter `core/api_client.dart` 的请求世代与结果未知处理。ArkTS `DeviceBridge.ets` 将凭据交给系统Asset，普通设置交给preferences。当前仅代码实现事实，运行结果以后续API22集中验证为准。
+
+## CSV记录边界与业务复核（鸿蒙源码实现中）
+
+- CSV不能按物理换行拆文件。features/imports/csv_split.dart保存quoted/closed状态，跨64KiB UTF-8块识别CRLF和双引号，按完整记录生成带BOM、CRLF的分片；原字节指纹与标准化分片指纹独立保存。
+- CPU解析放在isolate，进度由SendPort返回；取消直接终止worker，TransferableTypedData转移字节所有权。文件上限和单元格限制仍需同时存在，后台计算本身不等于无限可承载。
+- operation_task_page.dart区分本地“完成核对”和“新有效证据支持已解决”。用户凭据有provenance，复检固定原对象/规则/范围并记录来源修订；UI状态以API回读为准。
+- operations_page.dart把preview_hash与request_id传回服务端，分别用于预览一致性和重试身份；写入结果未知时复用原请求标识。上述为设计和源码说明，端上行为待集中验证。

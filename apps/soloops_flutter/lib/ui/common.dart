@@ -24,7 +24,10 @@ class PageBody extends StatelessWidget {
   final List<Widget> children;
   @override
   Widget build(BuildContext context) => SafeArea(
-      child: ListView(padding: const EdgeInsets.all(20), children: children));
+      child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          children: children));
 }
 
 class SectionTitle extends StatelessWidget {
@@ -42,18 +45,21 @@ class FormInput extends StatelessWidget {
       this.lines = 1,
       this.required = true,
       this.secret = false,
+      this.enabled = true,
       this.type});
   final String label;
   final TextEditingController controller;
   final int lines;
   final bool required;
   final bool secret;
+  final bool enabled;
   final TextInputType? type;
   @override
   Widget build(BuildContext context) => Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
           controller: controller,
+          enabled: enabled,
           obscureText: secret,
           autocorrect: !secret,
           enableSuggestions: !secret,

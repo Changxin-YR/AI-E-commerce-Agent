@@ -66,3 +66,7 @@ SDK24复核：沿用已锁定Flutter OH 1.0.7与Dart依赖，新增本机无空�
 - DocumentViewPicker 文件读取最多2MiB，分块读取与 finally 关闭；分享仅合成26字节样本，经系统面板取消和清理。渠道交付仍 NOT_TESTED。
 - 最终 SDK24 x64 HAP 构建和 API22 安装 PASS；26项端上断言 PASS。上游 SDK 弃用告警仍存在，不从编译成功推导生产准入。
 - 微信审计与 automator 调查将在下一端执行；当前微信审计状态沿用 FAIL。
+
+## 鸿蒙业务导入依赖增量（2026-10-11）
+
+新增直接依赖 crypto 3.0.5，传递 typed_data 1.4.0，从原PUB_CACHE离线解析并更新pubspec.lock。读取两个固定版本完整LICENSE，均为BSD-3-Clause，副本在 apps/soloops_flutter/licenses/CRYPTO-LICENSE 与 TYPED-DATA-LICENSE。用途仅为来源文件、分片指纹核验。未新增原生文件插件；文档选择、保存、分享沿用已写入的ArkTS系统桥接。pub get --offline与Dart格式化已完成，新增业务源码尚未做编译、功能测试或API22运行。

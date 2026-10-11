@@ -141,3 +141,7 @@ M0-A API22复核（2026-10-11）：Flutter OH 1.0.7 + compile/target22；Android
 M0-A 当前收尾（2026-10-11）：Android APK、SDK24 未签名 HAP、微信目标编译均 PASS；Android IDE 同步和微信 IDE 最小启动页 PASS。静态契约21功能/149 API及15项工具/契约测试 PASS。移动设备与真实业务运行 NOT_TESTED；小程序资质完整核对 BLOCKED、安全审计 FAIL。最新证据见[报告](mobile/m0a-report.md)，原 SO 业务范围不变。
 
 M0-B 模拟器验证（2026-10-11）：Android API34、OHOS API22（SDK24/x64构建）、微信 DevTools 的最小壳运行基线 PASS。Android16项、OHOS10项记录及微信7项原生UI观察有实际证据；微信 automator 通道 BLOCKED。共享 Dart 与独立 Taro 合成诊断不增加 SO 业务实现。真机、未覆盖插件和正式业务状态保持 NOT_TESTED，资质暂缓。见 [M0-B实际报告](mobile/m0b-report.md)，74SO/32验收/47长期模块范围保持。
+
+## 鸿蒙 V1.3 移动实现增量（2026-10-11）
+
+移动业务覆盖独立记录在 [鸿蒙覆盖矩阵](mobile/harmony-r2-coverage.md)。H04文件导入与H03运营工作台/待办核心动作已写入源码，运行状态为未验证；跨模块深链随目标页面逐项补齐。本增量不改变原Web验收结果。

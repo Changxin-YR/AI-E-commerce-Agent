@@ -438,3 +438,10 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - FastAPI Bearer依赖：https://fastapi.tiangolo.com/tutorial/security/first-steps/ 。沿用依赖注入，校验服务端持久会话；自主实现不透明token适配。
 - OWASP会话管理：https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html 。绝对过期、服务端吊销、传输和存储保护；不复制正文或新增第三方实现。
 - 用户提供的三端V1.2已归档 `requirements/SoloOps-Mobile-V1.2-reference.md`；本轮执行计划为V1.3。Firecrawl额度耗尽，本次官方资料通过浏览工具核验。
+
+## 鸿蒙 H04 文件导入与 H03 运营工作台（2026-10-11）
+
+- [Dart Isolate](https://api.dart.dev/dart-isolate/Isolate/run.html)、[Utf8Decoder](https://api.dart.dev/dart-convert/Utf8Decoder-class.html)：借鉴后台计算、跨块严格UTF-8解码与可传输数据语义，使用固定Dart3.6.2的 Isolate.spawn / TransferableTypedData 实现可取消任务。分片规则适配仓库已有 csvSplit.ts / import_split.py，按逻辑CSV记录、2000行/2MiB、20片/40000行限制，自行移植。
+- [Dart crypto 3.0.5](https://pub.dev/packages/crypto/versions/3.0.5)：固定此版本为本地文件与分片SHA-256校验；新增传递 typed_data 1.4.0。两者缓存完整LICENSE均为BSD-3-Clause，声明保存 apps/soloops_flutter/licenses/，使用离线pub锁定。
+- [Flutter Navigator](https://docs.flutter.dev/cookbook/navigation/navigation-basics) 和 [State.mounted](https://api.flutter.dev/flutter/widgets/State/mounted.html)：业务详情以原生页面栈返回；异步结果在mounted与账号/店铺generation成立时采用。文档CC BY 4.0、示例BSD-3-Clause；页面自行实现，没有复制第三方界面。
+- 本次Firecrawl状态读取显示已认证但fetch failed，结合既有额度记录，官方API资料改由内置web读取。以上为接口/设计依据，固定SDK端上业务兼容性待全量实现后的集中构建确认。

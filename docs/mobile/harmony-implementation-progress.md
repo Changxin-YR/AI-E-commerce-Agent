@@ -1,66 +1,83 @@
 # 鸿蒙完整业务版 · 实时进度
 
-更新：2026-10-11。工作区 `.local/worktrees/mobile-m0a`，分支 `feat/soloops-mobile-m0b`。当前目标：按V1.3连续完成R2全部业务功能，之后集中模拟器自查与联调。
+更新：2026-10-11。工作区 `.local/worktrees/mobile-m0a`，分支 `feat/soloops-mobile-m0b`。目标：按V1.3连续完成R2全部业务，之后集中模拟器自查与联调。当前提交精确SHA由接续消息给出。
 
-## 最新用户决策
+## 执行依据
 
-- 鸿蒙先做完整功能，API22模拟器运行即可；Android、微信只规划，当前不实现。
-- 先全部实现再集中自查，不按M0/M1停工等待；真机/资质不作为开发条件。
-- 上下文接近满时自主创建接续对话，持久记忆、同一计划、单写入工作区。
-- 桌面与后台一次一个模拟器；本轮不运行Android。
+- 主计划 `docs/requirements/SoloOps-Mobile-V1.3.md`；范围21功能标识/149条API引用，19个R2业务路由+登录+B1。
+- 当前仅实施鸿蒙，API22模拟器可运行即可；Android、微信仅保留方案。
+- 用户要求先全部功能实现，再集中自查与联调；各模块提交用于上下文保存，不是停工门槛。
+- 上下文接近满时自主保存、提交、推送并创建接续对话；单一开发对话独占写入。
+- 当前按功能代码实现状态记录；没有业务构建/测试结论。原业务库保留，最终使用隔离MySQL/API及合成数据。
 
-## 已有工程基础
+## 目前源码覆盖
 
-Android历史技术补齐已保存于016a1a5；鸿蒙M0本次新增26项断言和10项基础回归在最终HAP上通过。HAP SHA256 `fc6a6ceed0bcdc4d35229943b4ddc9769276aa782fdef708f757fec1f545c742`，API22。深色、1.3字体和横屏已实测。原始证据 `.local/mobile-m0b/20261011-ohos-acceptance/`，基础 `.local/mobile-m0b/20261011T082953Z-ohos-emulator/results.json`。当前不继续扩大M0测试。
+完整表见 `harmony-r2-coverage.md`。
 
-业务实现前只有诊断页，没有任何已完成的移动业务流程。最新源码开始补齐会话、网络与业务基础；进度按下表逐项填写，不以骨架代表完成。
-
-| 范围 | 实现状态 | 后续工作 |
+| 范围 | 当前状态 | 后续 |
 |---|---|---|
-| V1.3 主体方案和三端功能分工 | 已落盘 | 按清单连续实现 |
-| 移动会话/系统桥接/网络 | 代码已实现，未集中验证 | `/mobile/auth/*`、Bearer、Asset凭据、文件选择/保存/分享；业务联调阶段再构建验证 |
-| 五入口和业务导航 | 基础代码已实现 | 首页/待办读取、AI记录/消息读取、我的资料；继续补完整子路由和动作 |
-| H01/H02 登录、经营档案、店铺 | 核心表单代码已实现，未端测 | 过期恢复/退出/全端退出、创建/切店/资料保存；初始化向导与冲突回读待补 |
-| H03–H20 业务表单、操作和回读 | 待实现（少量列表基础） | 下一步直接实现H04导入，再核心流程与剩余R2页面 |
-| 全量自查与API22运行 | 功能实现后执行 | 不提前逐项卡门槛 |
+| 移动会话/系统桥接/网络 | 已写入源码 | 未集中验证 |
+| H01 登录 | 核心表单与会话恢复/退出已写入 | 未验证 |
+| H02 资料/店铺 | 表单、建店/切店、onboarding读取 | 冲突回读、引导细节待补 |
+| H04 导入 | 全链核心源码已写入 | 未构建/业务验证；独立manifest导入按契约核对 |
+| H03 首页/运营/待办 | 核心表单、状态动作、证据和复检已写入 | 跨模块目标页与业务日期显示待补；未验证 |
+| H05–H20 | 待继续实现；AI/客服仅旧读取列表 | 下一项H05 Agent/B1，再H06 Listing、H07客服 |
+| H21 共用 | 五入口、网络、业务注册路由、共用表单/来源展开 | 全部业务路由注册、业务时区/日期、集中异常/布局检查 |
+| 集中自查/API22运行 | 尚未开始 | 全业务源码覆盖后进行 |
+
+## 下一步直接做
+
+1. 读取AGENTS顶部、V1.3与本账本；复用本worktree与分支继续。
+2. 实现H05：`frontend/src/views/AgentView.vue`、`components/AgentRunReview.vue`、`components/InternalAuthorizations.vue`、`api/agent.ts`、`types/agent.ts`，以及对应authorization API/types/backend schemas。自然语言目标、模板/技能/模型状态、预算与数据授权、产品/消息上下文、启动/执行步骤、暂停/继续/取消/重试、逐节点审批、历史回读全部落实。
+3. B1为 `margin_review` 模板。读取types剩余MarginEvidence及Web专用组件，完整实现两次审批、金额/成本来源/适用规则与结果深链；按已存在API校验合法payload，不写通用JSON编辑器。
+4. 将 `product_app.dart` 的AI入口从RecordListPage替换为正式AgentPage，并在businessRoutes注册 `/agent`，支持execution、authorization与mode等query。接着H06 Listing、H07客服，再V1.3后续H08–H20。
+5. H03目前含发往Agent/Listing/客服/库存/分析等目标的真实链接，目标未注册时只提示页面接入中；必须在对应业务模块实现时补齐，不能算深链已全覆盖。
+6. 全部实现后统一：静态检查、HAP构建、认证/迁移/业务定向测试、CSV分片与Python/Web逐字节对照、API22完整卖家旅程、修复和用户联调。构建阻碍实现时可提前使用必要类型反馈。
+7. 日期当前输入显式ISO偏移、展示API时间字符串；H21需补业务时区友好显示和日期选择。本机timezone-0.10.0缓存pubspec标记sdk <3.0.0，不应直接引用该缓存。可核对正确官方包或通过ArkTS Intl实现；不要把设备时区当业务时区。
+
+## 本轮新增源码（H04/H03）
+
+- `lib/features/imports/import_repository.dart`：原16个导入相关路由封装；所有写入携带原业务version。
+- `imports_page.dart`：身份/类型/渠道/时区/导出时间、CSV/XLSX选择、CSV/XLSX模板下载、批次历史、分组游标。
+- `import_batch_page.dart`：字段映射、别名/候选预设、个人模板、关键字段语义审阅、分页源行/旧值/新值、逐行修正、预览/提交、撤销/清除、错误文件保存分享。映射/修正使审阅与更新确认失效。
+- `csv_split.dart`：独立isolate、可取消、进度、TransferableTypedData；严格跨块UTF-8、逻辑CSV记录、40MiB/40000记录/20片、单片2MiB/2000行、字段2000字符/64列、BOM/CRLF、SHA-256。
+- `import_group_page.dart`：原文件拆分/建组、清单保存、同一文件指纹恢复、逐片上传/打开、已有分片选择、覆盖/重叠回读、整组撤销。
+- `features/operations/operations_page.dart`：规则读取、范围表单、巡检预览与expected_preview_hash、request_id保存与未知结果同次核对、任务分页（50条）、历史/详情/来源。
+- `operation_task_page.dart`：approve/reject/ignore/defer/complete/reopen/edit/record_evidence/wait_source/recheck；snapshot/业务进展、版本/证据/操作历史；完成核对与业务已解决分开。
+- `features/workbench_page.dart`：三视图、身份/渠道/类型/分组、游标、recent_runs、onboarding、详情跳转。旧RecordListPage仍暂用于AI和客服。
+- `core/business_navigation.dart`：注册表；`product_app.dart`现注册 /imports、/（task/run）、/settings。跨店query不匹配时要求先切店，防止在错误上下文打开。
+- `ui/business_widgets.dart` / `source_evidence.dart`：可用表单、异步反馈、来源字段按analytics/sources真实回读。FormInput支持enabled；PageBody支持空列表下拉刷新。
+- 依赖新增crypto3.0.5、typed_data1.4.0，离线pub已解析，BSD声明保存licenses。只运行Dart格式化，未运行analyze/test或HAP构建。
+
+## 之前已有基础（仍未业务验证）
+
+- `backend/app/api/routes/mobile_auth.py`：移动login/session/logout/logout-all，不透明Bearer，复用会话hash；账号锁定+IP20次/分钟，绝对有效期。
+- `services/auth.py`：设备client_type、session_id、issued/last_used、当前设备/全部吊销；密码重置沿用同表会话删除。
+- dependencies/middleware：拒绝Cookie+Bearer混用；设备Bearer进入原服务；Web Cookie仍需CSRF和来源校验。Web session/logout拒绝Bearer。
+- `migrations/versions/a31e72d405bf_mobile_sessions.py`：接d93f6b210ac4，加列迁移。未对任何库执行。
+- `lib/core/api_client.dart`：45秒截止、8MiB响应、原字节分块上传、拒绝重定向、401、generation、未知写入不自动重放。debug仅回环HTTP；现有M0证书可注入loopback HTTPS。
+- AppState / DeviceBridge：账号/店铺、Asset持久会话、preferences地址/店铺、文件选择40MiB、保存分享。ArkTS API22类型/UTD仍待业务构建核对；share dismiss删除临时文件的消费时机待联调。
+- `main()`已改ProductApp，旧诊断SoloOpsApp保留历史测试；新业务测试应覆盖ProductApp。
 
 ## 环境与保护
 
-实际绝对工作区 `C:/Users/27363/Desktop/AIEcommerceAgent/.local/worktrees/mobile-m0a`，保存项目路径 `C:/Users/27363/Desktop/AI E-commerce Agent` 已过时；shell一律显式workdir，按现有方式require_escalated。
+实际绝对工作区：
+`C:/Users/27363/Desktop/AIEcommerceAgent/.local/worktrees/mobile-m0a`。
+保存项目路径 `C:/Users/27363/Desktop/AI E-commerce Agent` 已过时。所有shell显式workdir；普通沙箱git可能报“must be run in a work tree”，用户已授权require_escalated在实际worktree继续。
 
-Python复用主仓库 `backend/.venv/Scripts/python.exe`；Flutter在本worktree `.local/toolchains/flutter-oh-api22`，PUB_CACHE `C:/Users/27363/Desktop/max/pub-cache`。SDK/构建见 `scripts/mobile/build_ohos_probe.ps1`。HDC为DevEco/sdk/default/openharmony/toolchains/hdc.exe，API22实例22。
+- Flutter OH固定3.27.5-ohos-1.0.7 / Dart3.6.2，工具链 `.local/toolchains/flutter-oh-api22`。
+- PUB_CACHE `C:/Users/27363/Desktop/max/pub-cache`，PUB_HOSTED_URL `https://pub.flutter-io.cn`。Dart可直接调用SDK bin/cache/dart-sdk/bin/dart.exe。
+- Python主仓库 `backend/.venv/Scripts/python.exe`。SDK/构建 `scripts/mobile/build_ohos_probe.ps1`。本机SDK24编译，以API22运行判断兼容。
+- HDC在DevEco/sdk/default/openharmony/toolchains/hdc.exe；运行时优先Device Manager已有实例22，CLI冷启动曾挂住。
+- **保护本机未提交配置**：`apps/soloops_flutter/ohos/build-profile.json5`（签名）、`apps/soloops_weapp/project.config.json`（AppID）。不输出、不覆盖、不提交。
+- 模拟器一次一台，编码时关闭。鸿蒙22与Android均已关闭；22 RAM恢复2048MiB。DevEco可能保持打开。字体滑块1；浅色已切换，旋转锁ON在业务安装时顺手核对。
+- 旧M0 HTTPS夹具PID16356/44528已停止，HDC映射为空。本轮未启动新服务/设备。
+- 付费模型、真实邮件、真实平台写入不作为此次开发依赖；最终联调使用隔离替身和合成数据。
 
-本机 `ohos/build-profile.json5` 含签名配置、微信 `project.config.json` 含真实AppID：保留、不输出、不提交。密钥、日志、包、截图只保存在忽略目录。
+## 历史技术证据
 
-模拟器在连续UI测试时发生guest低内存退出，Android当时已关闭；RAM曾临时3072MiB，目前已恢复原2048MiB。当前停止实例22。字体滑块已恢复1；浅色切换已发起，旋转锁尚待恢复ON，业务安装阶段顺手恢复。避免花时间扩大M0测试。CLI启动易挂在InitFeatureConfig，DevEco Device Manager启动22可靠。
+Android历史技术补齐016a1a5。鸿蒙M0曾在API22最终HAP通过26项新增断言和10项基础回归；HAP SHA256 `fc6a6ceed0bcdc4d35229943b4ddc9769276aa782fdef708f757fec1f545c742`。证据 `.local/mobile-m0b/20261011-ohos-acceptance/` 和 `.local/mobile-m0b/20261011T082953Z-ohos-emulator/results.json`。这些不代表当前业务版已验证。
 
+## 接续保存规则
 
-## 接续必须直接做的工作
-
-1. 先读本账本、`docs/requirements/SoloOps-Mobile-V1.3.md`、当前AGENTS。原V1.2参考已入库，无需再次查Downloads，也不要重读整个M0日志。不得再次问用户是否进入M1。
-2. 当前代码没有业务构建/测试结果：按用户“先全部实现后集中自查”执行，只做过源文件格式化。H01/H02源代码和基础列表不等于全功能完成。不要把历史M0结果算给当前业务包。
-3. 立即实现导入：读取 `frontend/src/views/ImportsView.vue`、`components/ImportMapping.vue`、`ImportRows.vue`、`ImportSemanticsReview.vue`、`ImportGroups.vue` 与 `frontend/src/api/imports.ts` / `types/imports.ts`。Flutter新建 `features/imports/`，真实调用原上传/预览/提交/撤销/清除和分组接口。鸿蒙可直接原字节上传，本轮无需微信multipart。
-4. 然后完整实现首页/待办动作、Agent/B1、Listing、客服，再V1.3其余页面。`RecordListPage`只有读取列表，必须替换/扩展为完整业务模块；工作台卡片也尚无详情深链与动作。不允许用通用JSON编辑器或空页面冒充业务功能。
-5. 使用现有Web API模块、types、页面组件逐项移植交互与合法payload；服务端业务判断复用。已有OpenAPI契约覆盖149条引用；最后更新移动覆盖矩阵。
-6. 业务全覆盖后再构建HAP、静态和定向后端检查、启动隔离MySQL/API/合成样本，在API22模拟器集中运行卖家旅程，修复缺点后与用户联调。Android/微信本轮不构建不启动。可用已有后端E2E配置/种子模式，不打印本机env秘密，不对原业务库直接跑迁移。
-
-## 本次业务代码位置与设计
-
-- `backend/app/api/routes/mobile_auth.py`：移动login/session/logout/logout-all。Bearer不透明随机值，复用会话表hash；账号持久锁定+进程内IP20次/分钟限制；绝对到期沿用session_hours。新路由无Cookie。
-- `backend/app/services/auth.py`：设备client_type、session_id、issued/last_used、单设备/全端吊销。沿用用户行锁与索引删除；密码重置原逻辑自动删除同表全端会话。
-- `backend/app/api/dependencies.py` / middleware：拒绝Cookie+Bearer混用；合法设备Bearer进入原业务层；Web Cookie仍需CSRF与来源校验。Web `/auth/session`、logout拒绝Bearer。后续集中验证认证兼容与并发。
-- `backend/migrations/versions/a31e72d405bf_mobile_sessions.py`：接d93f6b210ac4的加列迁移，尚未对任何库执行。降级先使设备token失效，再删除移动字段。
-- `lib/core/api_client.dart`：Dart HttpClient、45秒请求截止、8MiB响应界限、原字节分块上传、拒绝跟随重定向、401重登、generation防迟到响应、写入未知不自动重放。HTTPS；debug仅回环地址可HTTP。debug回环HTTPS可使用现有M0证书。
-- `lib/core/app_state.dart`：账号与店铺状态、Asset恢复/保存、logout、UUID。`device_bridge.dart`连接 `soloops/device`。
-- `ohos/.../DeviceBridge.ets`：正式Asset会话alias与M0合成alias分开；preferences仅地址和店铺；csv/xlsx选择<=40MiB、保存、分享。API22桥接需在集中构建时确认ArkTS类型与UTD。share dismiss当前删除临时文件，联调需核对实际消费时机。
-- `lib/product_app.dart`：绿色中性主题、深浅色、五入口；`main()`已改为ProductApp，旧SoloOpsApp诊断组件保留给历史测试。后续新增业务测试不能只跑旧诊断widget测试。
-- `lib/features/account_pages.dart`：登录、资料编辑、店铺创建、单设备/全端退出；`workbench_page.dart`读取工作台/AI/客服列表。表单/列表已有代码但尚未构建或端测。
-- `lib/ui/common.dart`：共用输入、反馈、确认、店铺选择组件。
-
-## 本地资源状态
-
-鸿蒙22已停止，Android未运行；RAM配置已恢复2048MiB。旧M0 HTTPS夹具PID16356/44528已停止，HDC映射为空。DevEco可以保持打开但没有本轮模拟器常驻。下次业务模拟器启动时可顺手确认浅色、字体滑块1、旋转锁ON。工具CLI冷启动曾无窗口挂起，优先已有DevEco Device Manager的22实例。
-
-## 持续交接约定
-
-本次以进度提交保存开发中源码，完整业务/模拟器自查未开始。接续不得先花时间追旧CI或M0显示遗留；按V1.3继续代码实现。提交SHA由新对话启动消息给出，不能把父提交当当前SHA。工作区只由接续对话写入，旧对话交接后停止。
+保存实现中代码时明确未测试状态和下一精确入口，提交/推送后给出精确SHA，更新context-memory；创建接续对话后旧对话停止工作区写入。持续沿用V1.3，不因新对话重置需求。

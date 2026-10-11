@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/app_state.dart';
+import 'core/business_navigation.dart';
+import 'features/imports/imports_page.dart';
+import 'features/operations/operations_page.dart';
+import 'features/operations/operation_task_page.dart';
 import 'features/account_pages.dart';
 import 'features/workbench_page.dart';
 import 'ui/common.dart';
@@ -16,6 +20,18 @@ class _ProductAppState extends State<ProductApp> {
   @override
   void initState() {
     super.initState();
+    businessRoutes.addAll({
+      '/imports': (app, q) => ImportsPage(app,
+          kind: q['kind'] ?? 'products',
+          identity: q['identity'] ?? 'user_import',
+          channel: q['channel'] ?? 'generic',
+          batchId: int.tryParse(q['batch'] ?? '')),
+      '/': (app, q) => int.tryParse(q['task'] ?? '') != null
+          ? OperationTaskPage(app, int.parse(q['task']!))
+          : OperationsPage(app, query: q),
+      '/settings': (app, q) => Scaffold(
+          appBar: AppBar(title: const Text('经营设置')), body: SettingsPage(app)),
+    });
     app.initialize();
   }
 
@@ -88,8 +104,8 @@ class _BusinessShellState extends State<BusinessShell> {
   Widget build(BuildContext context) {
     final app = widget.app;
     final pages = <Widget>[
-      WorkbenchPage(app),
-      WorkbenchPage(app, tasksOnly: true),
+      WorkbenchPage(app, key: const ValueKey('home')),
+      WorkbenchPage(app, key: const ValueKey('tasks'), tasksOnly: true),
       RecordListPage(app,
           path: '/agent/runs',
           title: 'AI 运营记录',
