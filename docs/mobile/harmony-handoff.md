@@ -1,5 +1,13 @@
 # 鸿蒙 API22 R2 · 账号切换接续入口
 
+## 2026-10-11 23:45 M0-C 接续环境复核（优先于下文历史状态）
+
+- 当前业务分支为 **`feat/soloops-mobile-m0c`**（自 m0b 尖端分出，worktree 不变：`.local/worktrees/mobile-m0a`）。首提交 `029b53b4e91891e71ee821fea89d7bc547b8fda1` 修复了 m0b 尖端 `40db69e` 的 CI 红灯（`scripts/mobile/tests/test_business_fixture.py` 导入顺序 `I001`）并把 m0c 加入 CI 触发分支；**m0b 尖端 CI 为 failure，勿以其为基线**。
+- 本机环境已按上文命令完整恢复：Docker `soloops-harmony-r2-mysql`（127.0.0.1:3315，tmpfs）从 `harmony-account-switch.sql` 恢复 67 表/head `b42e83f516c0`/批次 1181–1187；合成 API 监听 **18081**（`build_app()` 直连，不跑 prepare_samples）；`hdc rport tcp:18080 tcp:18081`；API22 模拟器运行中，固定 HAP 哈希未变（31487267…ec0e）并已覆盖安装。
+- 设备状态：会话/店铺 918 恢复；费用 1138 已完成 **v1→v2 修订（2.5678）** 与 **v3 订单行关联（SYN-G1 / SYN-CUP，批次 #1187 源行 2）**，数据库回读 `v3/cv3/active`，证据 `.local/mobile-business/device/expense-revision-linkage-v3.json`。
+- 提醒：费用页需先把"数据身份"切到"合成测试数据"才能看到 1138（默认 `user_import` 会显示"当前范围没有记录"）。
+- 下一步：H12 费用映射规则 → H13 渠道账单 → H14 订单核对 → H15 回款 → H09/H10/H16–H20 → H21 边界/布局。
+
 ## 2026-10-11 21:35 接续环境复核（优先于下文历史状态）
 
 - 已 fetch 并核对 GitHub 与本地起点 `7edb160c3f0c4b8d026d799e25970d8245492736`，继续同一鸿蒙分支和 worktree。

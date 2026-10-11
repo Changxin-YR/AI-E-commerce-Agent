@@ -1,6 +1,6 @@
 {
   "date": "2026-10-11",
-  "phase": "environment-restored-device-memory-blocked",
+  "phase": "m0c-environment-restored-finance-revision-order-linkage-passed",
   "business_api22": "partial_passed",
   "dart_analyze": "passed",
   "flutter_tests": 23,
@@ -76,7 +76,7 @@
     "mail": "synthetic capture only",
     "device_api": "http://127.0.0.1:18080",
     "port_mapping": "device tcp:18080 -> host tcp:18081",
-    "device_status": "offline after host low-memory and std::bad_alloc logs"
+    "device_status": "online; API22 emulator healthy after M0-C restore (2048 MiB, host free >7 GB)"
   },
   "device_passed": [
     "synthetic login/profile/shop creation",
@@ -99,9 +99,12 @@
     "Support 43 v2: human review, English full review, system share receiver saved complete CSV",
     "Inventory: expired SYN-BOX unknown, SYN-CUP below threshold, linked task 195",
     "Profit study 5: 25 - 8.1234 = 16.8766, unknown fees and break-even retained, saved",
-    "Expense 1138: synthetic/generic, 2.3456 USD saved, timestamp converted to UTC"
+    "Expense 1138: synthetic/generic, 2.3456 USD saved, timestamp converted to UTC",
+    "M0-C restore: session and shop 918 recovered on fixed HAP reinstall after tmpfs database rebuild",
+    "Expense 1138 revision: v2 update to 2.5678 while occurred_at stayed 12:00+08:00 / 04:00 UTC; history keeps v1",
+    "Expense 1138 order linkage: v3 allocation=order_line on SYN-G1 / SYN-CUP, source batch 1187 row 2 (file_import)"
   ],
-  "pending": "Remaining H03-H21 business journeys and lifecycle/layout/source/conflict/unknown-result scenarios",
+  "pending": "Remaining H13-H20 business journeys (fee mapping, statements, reconciliation, settlements, analytics, overview, rules, schedules, product quality/edits, outbound) and H21 lifecycle/layout/conflict/unknown-result scenarios",
   "product_facts_contract_tests": 1,
   "delivered_files": [
     {
@@ -115,7 +118,7 @@
       "sha256": "4d38ef10d2bb800a32f5da396304ea4c6ac3d3892b6908bb822546285c42af50"
     }
   ],
-  "next": "Resume remaining H04/H05/H07/H09-H20 and H21 boundary/device journeys from harmony-handoff.md; no full regression rerun against preserved acceptance database.",
+  "next": "Continue H12 fee mapping rules, then H13 statements, H14 order reconciliation and H15 settlements on the running API22 device; then H09/H10/H16-H20 and H21 boundaries. Never rerun full pytest against the preserved acceptance database.",
   "hdc_helper_tests": 3,
   "environment_recovery": {
     "database_empty_before_restore": true,
@@ -126,6 +129,17 @@
     "import_batches_1181_to_1187": 7,
     "hap_reinstall": "passed",
     "session_restore": "passed",
-    "device_journey": "blocked pending available memory"
+    "device_journey": "resumed on M0-C; expense revision and order linkage passed"
+  },
+  "m0c_recovery": {
+    "branch": "feat/soloops-mobile-m0c",
+    "ci_fix_commit": "029b53b4e91891e71ee821fea89d7bc547b8fda1",
+    "docker_container": "soloops-harmony-r2-mysql (tmpfs /var/lib/mysql, 127.0.0.1:3315)",
+    "tables_after_restore": 67,
+    "api_entry": "scripts/mobile/business_fixture.py build_app on 127.0.0.1:18081",
+    "port_mapping": "hdc rport tcp:18080 tcp:18081",
+    "hap_reinstall": "passed at unchanged sha256",
+    "expense_1138_final": "v3 active, amount 2.5678, allocation order_line",
+    "evidence": "device/expense-revision-linkage-v3.json"
   }
 }

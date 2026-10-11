@@ -1,5 +1,16 @@
 # 鸿蒙完整业务版 · 实时进度
 
+## 2026-10-11 23:45 M0-C 新分支续接（优先于下文全部历史状态）
+
+- 新分支 `feat/soloops-mobile-m0c`（自 m0b 尖端 40db69e 分出）。首个提交 `029b53b4e91891e71ee821fea89d7bc547b8fda1`：恢复 `scripts/mobile/tests/test_business_fixture.py` 的导入顺序（修复 m0b 尖端 CI 红灯 `I001`），并把 `feat/soloops-mobile-m0c` 加入移动 CI 触发分支。**m0b 尖端 `40db69e` 的 CI 是 failure（run 38151032924），不要以它作为继续基线。**
+- Docker 未运行导致 3315 tmpfs 库再次清空；已启动容器 `soloops-harmony-r2-mysql` 并从已校验备份 `harmony-account-switch.sql` 恢复：67 表、head `b42e83f516c0`、批次 1181–1187 共 7 条、店铺 2 家。
+- 合成 API 以 `business_fixture.build_app()` 直接监听 **127.0.0.1:18081**（未调用 `prepare_samples`，保留样本日期），设备经 `hdc rport tcp:18080 tcp:18081` 访问 18080。
+- API22 模拟器 `Emulator.exe -start 22` 启动成功（HarmonyOS 6.0.2/API22）；固定 HAP 哈希未变（103,689,862 B / `31487267…ec0e`），覆盖安装通过；会话、店铺 `HarmonyR2Main`(918)、首页计数 5/1/3 均恢复。
+- **本轮新增端测通过**：费用 1138 由 v1(2.3456) 修订为 v2(2.5678)，发生时间保持 12:00+08:00→04:00 UTC 且 v1 历史保留；随后 v3 关联订单行 `SYN-G1 / 1 · SYN-CUP`（来源 `orders-generic-synthetic.csv` 批次 #1187 源行 2），数据库回读 `v3/cv3/active`。证据 `.local/mobile-business/device/expense-revision-linkage-v3.json`。
+- 操作要点：费用页默认"数据身份"是 `user_import`，费用 1138 属于 `synthetic`，必须先在"数据身份"里切到"合成测试数据"再查询，否则显示"当前范围没有记录"。
+- 微信小程序业务端第一波（core/登录/首页/待办/导入/AI/Listing/客服/库存）在同一分支并行实施。
+- 下一步顺序：H12 费用映射规则 → H13 渠道账单 → H14 订单核对 → H15 回款 → H09/H10/H16–H20 → H21 边界与布局。
+
 ## 2026-10-11 21:35 接续环境复核（优先于下文历史状态）
 
 - 已 fetch 并核对 GitHub 与本地起点 `7edb160c3f0c4b8d026d799e25970d8245492736`，继续同一鸿蒙分支和 worktree。
