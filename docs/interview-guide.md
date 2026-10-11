@@ -441,3 +441,12 @@ SDK24实际构建：`scripts/mobile/build_hap_windows.ps1`将构建输入复制�
 - CPU解析放在isolate，进度由SendPort返回；取消直接终止worker，TransferableTypedData转移字节所有权。文件上限和单元格限制仍需同时存在，后台计算本身不等于无限可承载。
 - operation_task_page.dart区分本地“完成核对”和“新有效证据支持已解决”。用户凭据有provenance，复检固定原对象/规则/范围并记录来源修订；UI状态以API回读为准。
 - operations_page.dart把preview_hash与request_id传回服务端，分别用于预览一致性和重试身份；写入结果未知时复用原请求标识。上述为设计和源码说明，端上行为待集中验证。
+
+
+## 鸿蒙 Agent审批与证据复用（源码实现中）
+
+- `features/agent/agent_page.dart`中将“批准已审版本”与“控制正在运行的任务”区分：审批携带界面当前version，暂停取消回读最新version；驱动与控制epoch防止旧异步循环继续推进。
+- `agent_run_view.dart`展示B1金额/成本/费用缺口与独立参数遗漏，不把两个内部写入合并为一次批准；verify结果各自链接至分析与Listing。
+- `features/support/support_page.dart`将草稿正文版本、全文语言审阅和人工自报交付证据分开；编辑后重新审阅，导出前服务端核对版本。自报证据不是平台回执。
+- `features/analytics/order_cost_page.dart`以Decimal字符串写成本，并同时使用expected_version、expected_revision与request_id，分别处理对象冲突、来源变化与重试身份。
+- `features/overview/overview_page.dart`避免跨币种相加；每店来源查询带shopId。证据明细分页，未知金额和缺口保留。上述为实现说明，运行结果待集中验证。

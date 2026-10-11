@@ -445,3 +445,11 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - [Dart crypto 3.0.5](https://pub.dev/packages/crypto/versions/3.0.5)：固定此版本为本地文件与分片SHA-256校验；新增传递 typed_data 1.4.0。两者缓存完整LICENSE均为BSD-3-Clause，声明保存 apps/soloops_flutter/licenses/，使用离线pub锁定。
 - [Flutter Navigator](https://docs.flutter.dev/cookbook/navigation/navigation-basics) 和 [State.mounted](https://api.flutter.dev/flutter/widgets/State/mounted.html)：业务详情以原生页面栈返回；异步结果在mounted与账号/店铺generation成立时采用。文档CC BY 4.0、示例BSD-3-Clause；页面自行实现，没有复制第三方界面。
 - 本次Firecrawl状态读取显示已认证但fetch failed，结合既有额度记录，官方API资料改由内置web读取。以上为接口/设计依据，固定SDK端上业务兼容性待全量实现后的集中构建确认。
+
+
+## 鸿蒙 H05–H10 Agent、内容与经营分析（2026-10-11）
+
+- [Flutter表单验证](https://docs.flutter.dev/cookbook/forms/validation)：参考Form/GlobalKey/TextFormField校验流程；复杂金额、日期、范围另在提交前按原后端schema校验。文档CC BY 4.0、代码示例BSD-3-Clause，界面与状态逻辑自主实现。
+- [Flutter PopScope](https://api.flutter.dev/flutter/widgets/PopScope-class.html)：参考系统返回结果与离开保护，配合底部入口/切店保护客服未保存正文和自报证据；使用固定Flutter3.27.5实际已有API，兼容性待集中构建/设备验证。
+- [Flutter ListView.builder](https://api.flutter.dev/flutter/widgets/ListView/ListView.builder.html)：借鉴有界列表展示原则；当前业务使用服务端50条分页，金额明细每页50、来源每页30并延迟展开，保留完整可访问依据。Flutter API文档对应BSD-3-Clause项目，不引入第三方实现。
+- 契约参考本仓库Agent/Listing/Support/Inventory/Analytics/Overview的Vue组件、TypeScript DTO和Pydantic schema，移动页调用原业务服务。Firecrawl实际调用返回Insufficient credits，因此通过内置浏览工具读取上述官方资料。以上资料用于设计/API参考，不作为运行验收。

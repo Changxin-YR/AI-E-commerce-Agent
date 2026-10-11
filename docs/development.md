@@ -1010,3 +1010,12 @@ Android 增加 debug 平台通道：Keystore AES-GCM 安全密文、隔离的非
 工作台添加身份、渠道、业务类型、分组及三种工作视图过滤，保留服务端游标和recent_runs；首页与待办分别使用稳定key。businessRoutes集中注册业务深链，目前导入、运营事项/检查、经营设置已接入，其他目标随对应模块实现继续注册。
 
 本次只做离线依赖解析与Dart格式化，全部业务功能实现后再集中构建/测试/模拟器联调。API22仍关闭；原业务数据库未执行迁移。完整状态与下一起点以 mobile/harmony-implementation-progress.md 为准。
+
+
+## 鸿蒙 H05–H10 业务源码（2026-10-11）
+
+Agent以服务端run version和单节点advance驱动，进入waiting_approval即停止推进；B1的analysis_todo与listing_draft各自展示完整证据并审批。模型目标与业务数据许可分别保存，表单或依据变化会失效。暂停/取消独立读取最新版本，控制epoch使旧执行循环失效；未知启动结果保留request_id供同次核对。有限次预授权绑定已审daily预览，消耗与撤回单独回读。
+
+Listing按product/source row/active baseline生成，编辑另存待审版本；批准前核对事实和完整前后文。客服保留人工接管语义，编辑版本使审阅失效；审阅全文与目标语言后才经delivery接口读取导出内容。原渠道人工操作为seller_reported证据，使用request_id和expected_version保存；来源清除后依照服务端输出擦除正文。
+
+库存依据快照时效与安全阈值。分析区分当前成本估算和订单行历史成本，Decimal字符串传输；历史成本写入携带来源修订和版本。跨店总览分币种汇总，每家店的来源读取显式携带shopId，保存摘要逐店校验expected_revisions。金额明细与来源分页展示。以上模块已注册真实路由；本轮仅格式化和差异检查，全业务静态/构建/API22验证仍待剩余模块完成后集中执行。

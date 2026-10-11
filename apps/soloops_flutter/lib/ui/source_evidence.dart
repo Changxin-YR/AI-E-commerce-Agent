@@ -4,9 +4,10 @@ import 'business_widgets.dart';
 import 'common.dart';
 
 class SourceEvidence extends StatefulWidget {
-  const SourceEvidence(this.app, this.source, {super.key});
+  const SourceEvidence(this.app, this.source, {super.key, this.shopId});
   final AppState app;
   final Json source;
+  final int? shopId;
   @override
   State<SourceEvidence> createState() => _SourceEvidenceState();
 }
@@ -14,21 +15,36 @@ class SourceEvidence extends StatefulWidget {
 class _SourceEvidenceState extends State<SourceEvidence> {
   Json? detail;
   String? error;
-  bool busy = false;
+  bool busy = false, expanded = false;
+  int epoch = 0;
+  @override
+  void didUpdateWidget(covariant SourceEvidence old) {
+    super.didUpdateWidget(old);
+    if (old.source['row_id'] != widget.source['row_id'] ||
+        old.shopId != widget.shopId) {
+      epoch++;
+      detail = null;
+      error = null;
+      busy = false;
+      if (expanded) load();
+    }
+  }
+
   Future<void> load() async {
     if (busy || detail != null) return;
+    final token = ++epoch;
     setState(() {
       busy = true;
       error = null;
     });
     try {
-      final value = object(await widget.app.api.get(widget.app
-          .shopPath('/analytics/sources/${widget.source['row_id']}')));
-      if (mounted) setState(() => detail = value);
+      final value = object(await widget.app.api.get(
+          '/shops/${widget.shopId ?? widget.app.shopId}/analytics/sources/${widget.source['row_id']}'));
+      if (mounted && token == epoch) setState(() => detail = value);
     } catch (e) {
-      if (mounted) setState(() => error = '$e');
+      if (mounted && token == epoch) setState(() => error = '$e');
     } finally {
-      if (mounted) setState(() => busy = false);
+      if (mounted && token == epoch) setState(() => busy = false);
     }
   }
 
@@ -41,7 +57,8 @@ class _SourceEvidenceState extends State<SourceEvidence> {
             '批次 #${widget.source['batch_id']} · ${widget.source['data_identity']}'),
         childrenPadding: const EdgeInsets.all(16),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
-        onExpansionChanged: (expanded) {
+        onExpansionChanged: (value) {
+          expanded = value;
           if (expanded) load();
         },
         children: [

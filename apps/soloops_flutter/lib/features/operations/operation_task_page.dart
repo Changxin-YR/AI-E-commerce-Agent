@@ -38,18 +38,6 @@ const taskActions = {
   'recheck': '按原事项复检'
 };
 
-String? awareDate(String value, String label, {bool required = false}) {
-  if (value.trim().isEmpty) {
-    if (required) throw FormatException('请填写$label。');
-    return null;
-  }
-  if (!RegExp(r'(Z|[+-]\d{2}:\d{2})$').hasMatch(value.trim()) ||
-      DateTime.tryParse(value.trim()) == null) {
-    throw FormatException('$label须包含时区偏移，例如 2026-10-11T09:00:00+08:00。');
-  }
-  return value.trim();
-}
-
 class OperationTaskPage extends StatefulWidget {
   const OperationTaskPage(this.app, this.id, {super.key});
   final AppState app;

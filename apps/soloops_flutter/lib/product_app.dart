@@ -3,6 +3,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/app_state.dart';
 import 'core/business_navigation.dart';
 import 'features/imports/imports_page.dart';
+import 'features/agent/agent_page.dart';
+import 'features/listings/listings_page.dart';
+import 'features/support/support_page.dart';
+import 'features/inventory/inventory_page.dart';
+import 'features/analytics/analytics_page.dart';
+import 'features/overview/overview_page.dart';
 import 'features/operations/operations_page.dart';
 import 'features/operations/operation_task_page.dart';
 import 'features/account_pages.dart';
@@ -21,6 +27,12 @@ class _ProductAppState extends State<ProductApp> {
   void initState() {
     super.initState();
     businessRoutes.addAll({
+      '/overview': (app, q) => OverviewPage(app, query: q),
+      '/inventory': (app, q) => InventoryPage(app, query: q),
+      '/analytics': (app, q) => AnalyticsPage(app, query: q),
+      '/agent': (app, q) => AgentPage(app, query: q),
+      '/listings': (app, q) => ListingsPage(app, query: q),
+      '/support': (app, q) => SupportPage(app, query: q),
       '/imports': (app, q) => ImportsPage(app,
           kind: q['kind'] ?? 'products',
           identity: q['identity'] ?? 'user_import',
@@ -106,18 +118,8 @@ class _BusinessShellState extends State<BusinessShell> {
     final pages = <Widget>[
       WorkbenchPage(app, key: const ValueKey('home')),
       WorkbenchPage(app, key: const ValueKey('tasks'), tasksOnly: true),
-      RecordListPage(app,
-          path: '/agent/runs',
-          title: 'AI 运营记录',
-          empty: '还没有运营任务。',
-          titleKeys: const ['reason'],
-          detailKeys: const ['created_at', 'status']),
-      RecordListPage(app,
-          path: '/support/messages',
-          title: '客服消息',
-          empty: '导入消息报表后，可在这里查看客户的问题。',
-          titleKeys: const ['body'],
-          detailKeys: const ['order_id', 'sent_at']),
+      AgentPage(app, embedded: true),
+      SupportPage(app, embedded: true),
       SettingsPage(app)
     ];
     return Scaffold(
@@ -141,7 +143,11 @@ class _BusinessShellState extends State<BusinessShell> {
             : pages[selected],
         bottomNavigationBar: NavigationBar(
             selectedIndex: selected,
-            onDestinationSelected: (index) => setState(() => selected = index),
+            onDestinationSelected: (index) async {
+              if (selected == index) return;
+              if (!await app.canNavigate() || !mounted) return;
+              setState(() => selected = index);
+            },
             destinations: const [
               NavigationDestination(
                   icon: Icon(Icons.home_outlined),

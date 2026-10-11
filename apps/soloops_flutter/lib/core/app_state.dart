@@ -24,6 +24,8 @@ class AppState extends ChangeNotifier {
   int? shopId;
   bool loading = true;
   String? notice;
+  Future<bool> Function()? beforeNavigation;
+  Future<bool> canNavigate() async => await beforeNavigation?.call() ?? true;
   Json? get shop => shops.where((s) => s['id'] == shopId).firstOrNull;
   String shopPath(String path) {
     if (shopId == null) throw const ApiFailure('请先创建或选择一家店铺。');
@@ -93,7 +95,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> selectShop(int id) async {
-    if (shopId == id) return;
+    if (shopId == id || !await canNavigate()) return;
     api.invalidate();
     shopId = id;
     notifyListeners();
@@ -101,6 +103,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> logout({bool all = false}) async {
+    if (!await canNavigate()) return;
     await api.post(all ? '/mobile/auth/logout-all' : '/mobile/auth/logout');
     await device.clearSession();
     api.invalidate();

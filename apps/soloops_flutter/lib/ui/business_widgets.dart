@@ -78,3 +78,15 @@ abstract class BusinessPageState<T extends StatefulWidget> extends State<T> {
 }
 
 List<Json> rows(dynamic value) => value is List ? objects(value) : [];
+
+String? awareDate(String value, String label, {bool required = false}) {
+  if (value.trim().isEmpty) {
+    if (required) throw FormatException('请填写$label。');
+    return null;
+  }
+  if (!RegExp(r'(Z|[+-]\d{2}:\d{2})$').hasMatch(value.trim()) ||
+      DateTime.tryParse(value.trim()) == null) {
+    throw FormatException('$label须包含时区偏移，例如 2026-10-11T09:00:00+08:00。');
+  }
+  return value.trim();
+}

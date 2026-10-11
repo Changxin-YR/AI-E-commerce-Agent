@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/app_state.dart';
+import '../core/business_navigation.dart';
 import '../ui/common.dart';
 
 class LoginPage extends StatefulWidget {
@@ -139,6 +140,22 @@ class _SettingsPageState extends State<SettingsPage> {
                 MaterialPageRoute(builder: (_) => ShopEditor(widget.app))),
             icon: const Icon(Icons.add),
             label: const Text('创建店铺')),
+        const SectionTitle('业务工具'),
+        for (final entry in const {
+          '/imports': '数据导入',
+          '/listings': 'Listing 文案',
+          '/agent': 'AI 运营',
+          '/support': '客服处理',
+          '/inventory': '库存快照',
+          '/analytics': '经营分析',
+          '/overview': '跨店经营总览'
+        }.entries)
+          ListTile(
+              title: Text(entry.value),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: widget.app.shopId == null
+                  ? null
+                  : () => openBusinessPath(context, widget.app, entry.key)),
         const SectionTitle('登录与设备'),
         ListTile(
             contentPadding: EdgeInsets.zero,
