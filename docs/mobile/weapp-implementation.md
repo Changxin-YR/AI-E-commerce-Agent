@@ -76,9 +76,16 @@ feature → 主要 api_ref（均带 `/api/shops/{shop_id}` 前缀，`r2.overview
 
 ## 仍待验证（不得写成通过）
 
-- **未做微信开发者工具运行时联调**：本机已装开发者工具（`D:/微信开发工具/微信web开发者工具/微信开发者工具.exe`，含 `cli.bat`），但本轮尚未完成"打开工程→编译→登录/列表/写操作真实链路"的运行时验证；上述结论仅来自 type-check、构建与产物结构校验。
-- 真机需在 MP 后台把服务域名加入合法域名；`http://127.0.0.1:18080` 仅供开发者工具使用（并需关闭域名校验）。
-- automator 通道在 M0 阶段即 60s 超时（exit 124），未复测。
+- **微信开发者工具运行时联调：本轮尝试但被本机环境阻塞，未取得运行时结果。**
+  - 工程确实能在工具里打开（窗口标题 `soloops_weapp - 微信开发者工具 Stable v2.01.2510290`），但模拟器稳定报 **"模拟器启动失败 / TypeError: Failed to fetch"**；同一错误也出现在 CLI 的 `preparing` 阶段（`cli open|auto` 均返回 `code 10 … Failed to fetch`）。
+  - 已在**完全重启 IDE（结束全部 wechatdevtools 进程后重开）**与 **`--no-proxy-server` 启动**两种情况下复现，均失败；DevTools 用户数据目录里**没有任何已缓存基础库**（搜不到 `WAService*.js`），`WeappLog` 为空且停留在 2026-08-24。
+  - 观察到一个强相关环境因素：本机启用了系统代理 **`127.0.0.1:7897`（`verge-mihomo` / Clash）**，经该代理访问 `https://servicewechat.com/` 会 **TLS 握手失败**（`schannel: failed to receive handshake`），而**直连同一地址正常返回 404**。`servicewechat.com` 正是开发者工具下载/校验基础库的域名，Chromium 内核会遵循系统代理。**但加 `--no-proxy-server` 启动后仍然失败，故不宣称这是唯一原因。**
+  - 建议的下一步（需用户决定，未擅自改动系统网络设置）：在 Clash 规则里把 `servicewechat.com` / `*.weixin.qq.com` 走 **DIRECT**，或临时关闭系统代理后再做联调；也可检查工具「设置 → 安全设置 → 服务端口」是否开启（CLI 与自动化都需要它）。
+  - **未取得**：登录、列表、写操作的真实链路结果；`miniprogram-automator`（本机 `.local/weapp-tools/node_modules/miniprogram-automator@0.12.1`）因自动化端口未开启而无法连接。
+  - 另注：重启前模拟器一度显示**旧 M0-B 外壳页**（"M0-B · 微信小程序模拟器验证"），而 `dist/app.json` 首页已是 `pages/home/index` —— 说明工具侧存在**陈旧编译缓存**，联调时需先手动「编译」。
+- 本轮已把 `TARO_APP_API_BASE` 指向 **`http://127.0.0.1:18081`** 重新构建（`apps/soloops_weapp` 默认 18080 在本机是其他项目的 nx-keycloak），并确认内联生效：`dist/common.js` 中 `TARO_APP_API_BASE` 为 `http://127.0.0.1:18081`，`DEFAULT_API_BASE` 仍为 `18080`（仅回落用）。该构建产物属本机验证，不影响已提交源码。
+- 真机需在 MP 后台把服务域名加入合法域名；`http://127.0.0.1:18081` 仅供开发者工具使用（并需关闭域名校验，`project.config.json` 的 `urlCheck` 为 `true`，**该文件受保护不得修改**）。
+- automator 通道在 M0 阶段即 60s 超时（exit 124），本轮仍未打通。
 
 ## 保护
 
