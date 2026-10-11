@@ -11,6 +11,10 @@
     {
       "name": "EntryAbility_label",
       "value": "soloops_flutter"
+    },
+    {
+      "name": "m0b_clipboard_reason",
+      "value": "读取本次诊断写入的合成文本，验证剪贴板兼容性"
     }
   ]
 }

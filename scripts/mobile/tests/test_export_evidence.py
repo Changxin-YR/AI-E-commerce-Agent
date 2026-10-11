@@ -17,7 +17,13 @@ class PortableCommandTests(unittest.TestCase):
         config = ROOT / "apps/soloops_flutter/.dart_tool/package_config.json"
         self.assertEqual(
             export.portable_command(
-                ["hvigorw.bat", "-p", f"PACKAGE_CONFIG={config}", "product=default", str(config)]
+                [
+                    "hvigorw.bat",
+                    "-p",
+                    f"PACKAGE_CONFIG={config}",
+                    "product=default",
+                    str(config),
+                ]
             ),
             [
                 "hvigorw.bat",
@@ -32,3 +38,9 @@ class PortableCommandTests(unittest.TestCase):
         external = ROOT.parent / "private-package-config.json"
         with self.assertRaises(ValueError):
             export.portable_command([f"PACKAGE_CONFIG={external}"])
+
+    def test_known_external_executables_have_portable_names(self):
+        for name in ["python", "adb", "hdc", "ruff", "node"]:
+            with self.subTest(name=name):
+                executable = ROOT.parent / (name + ".exe")
+                self.assertEqual(export.portable_command([str(executable)]), [name])

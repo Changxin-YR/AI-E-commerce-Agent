@@ -1,8 +1,8 @@
-name: Verify mobile M0-A
+name: Verify mobile engineering
 
 on:
   push:
-    branches: [feat/soloops-mobile-m0a, main]
+    branches: [feat/soloops-mobile-m0a, feat/soloops-mobile-m0b, main]
     paths: ['apps/**', 'contracts/**', 'scripts/mobile/**', 'scripts/validate_ui_contract.py', 'docs/mobile/**', 'backend/**', 'frontend/src/router/**', '.github/workflows/mobile-m0a.yml']
   pull_request:
     branches: [main]

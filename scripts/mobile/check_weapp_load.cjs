@@ -1,4 +1,4 @@
-// Checks only the M0-A startup page through WeChat's local automation SDK.
+// Checks the engineering startup page through WeChat's local automation SDK.
 const assert = require('node:assert/strict')
 const path = require('node:path')
 const root = path.resolve(__dirname, '../..')
@@ -20,7 +20,7 @@ async function main() {
   assert.equal(await title.text(), 'SoloOps')
   const description = await page.$('.description')
   assert.ok(description, 'Startup description must exist')
-  assert.match(await description.text(), /M0-A/)
+  assert.match(await description.text(), /M0-[AB]/)
   console.log(JSON.stringify({ status: 'PASS', route: page.path, title: 'SoloOps',
     scope: 'IDE startup page loaded; no business actions, account login or publication' }))
 }

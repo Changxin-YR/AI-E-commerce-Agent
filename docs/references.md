@@ -405,3 +405,10 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - 腾讯云 COS 小程序快速入门：https://cloud.tencent.com/document/product/436/31953 。读取官方域名白名单配置说明，仅用于 request / uploadFile 配置入口依据；具体微信主体、类目及完整 HTTPS 准入继续单独核对。
 
 - 微信服务类目后台入口：[腾讯云类目申请资质要求](https://cloud.tencent.com/document/product/1078/43316/) 明确“设置 > 基本设置 > 服务类目”。本次仅引用入口路径，个人主体由用户确认，SoloOps 的类目/发布适用性仍需账号后台核实。
+
+## M0-B 模拟器诊断（2026-10-11）
+
+- Flutter `HttpClient` / `SecurityContext` 与 `Clipboard` API：沿用锁定 Flutter OH 1.0.7；临时本地证书只注入 debug 测试包、只允许 loopback，不关闭 TLS 校验。BSD-3-Clause，应用内自编写诊断。
+- [Android emulator CLI](https://developer.android.com/studio/run/emulator-commandline)：复用现有 API34 AVD，以 read-only/no-snapshot 启动；ADB 定向安装、读取应用 PID 日志与系统返回、主题、旋转验证。工具未复制进仓库。
+- [OpenHarmony UiTest](https://github.com/openharmony/docs/blob/master/zh-cn/application-dev/application-test/uitest-guidelines.md)：HDC/UiTest 执行模拟器点击、系统按键、截图；完整事件另由应用进程 Hilog 校验。
+- [Huawei 权限声明](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/declare-permissions)：官方文档核实 module.json5 的 requestPermissions、reason 和 usedScene。固定 HAR 的 PlatformPlugin.getClipboardData 实际要求 READ_PASTEBOARD；应用添加前台诊断使用说明，由用户在系统弹窗决定授权。未修改 SDK/HAR。

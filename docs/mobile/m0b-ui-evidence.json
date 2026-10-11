@@ -1,0 +1,133 @@
+{
+  "schema_version": "1.0",
+  "phase": "M0-B",
+  "recorded_utc": "2026-10-11T06:22:41.394068+00:00",
+  "method": "Native Windows UI via @oai/sky; screenshots and accessibility observations. These are observed emulator results, not a miniprogram-automator test run.",
+  "tool": "WeChat DevTools 2.01.2510290 / WeChatLib 3.17.4",
+  "device": "DevTools iPhone 12/13 viewport preset; platform=devtools, window=390x753, safeArea top=47 bottom=810. This is not an iPhone device test.",
+  "checks": [
+    {
+      "id": "startup",
+      "status": "PASS",
+      "observation": "Full compile displayed SoloOps and M0-B; page lifecycle show.",
+      "evidence": [
+        "startup.png",
+        "startup.txt"
+      ]
+    },
+    {
+      "id": "navigation_and_return",
+      "status": "PASS",
+      "observation": "Startup button opened pages/diagnostics/index; return button restored pages/index/index.",
+      "evidence": [
+        "environment.png",
+        "returned.png"
+      ]
+    },
+    {
+      "id": "cache",
+      "status": "PASS",
+      "observation": "Synthetic value set/read/removed.",
+      "evidence": [
+        "diagnostics.png",
+        "diagnostics.txt"
+      ]
+    },
+    {
+      "id": "sandbox_file",
+      "status": "PASS",
+      "observation": "Synthetic UTF-8 file written/read/deleted.",
+      "evidence": [
+        "diagnostics.png",
+        "diagnostics.txt"
+      ]
+    },
+    {
+      "id": "clipboard",
+      "status": "PASS",
+      "observation": "Only the synthetic text written by the probe was read back.",
+      "evidence": [
+        "diagnostics.png",
+        "diagnostics.txt"
+      ]
+    },
+    {
+      "id": "background_resume",
+      "status": "PASS",
+      "observation": "Simulator top-right exit produced hide; scene 1001 restored show.",
+      "evidence": [
+        "background.png",
+        "background.txt",
+        "resumed.png",
+        "resumed.txt"
+      ]
+    },
+    {
+      "id": "console_errors",
+      "status": "PASS",
+      "observation": "Errors: 0 at final observation; warnings are recorded separately.",
+      "evidence": [
+        "resumed.txt"
+      ]
+    }
+  ],
+  "warnings": [
+    "Gray-release WeChatLib 3.17.4",
+    "SharedArrayBuffer deprecation",
+    "windowInfoChanged listener count warning after navigation",
+    "Worker reportRealtimeAction not supported"
+  ],
+  "automator": "BLOCKED: separate recorded command timed out with exit 124; native UI evidence does not claim automator success.",
+  "artifacts": [
+    {
+      "path": ".local/mobile-m0b/weapp-emulator/background.png",
+      "bytes": 114527,
+      "sha256": "dbbe4e8040e8f6b129c4983e90475368520efb5f922185d463c3054601d92f9b"
+    },
+    {
+      "path": ".local/mobile-m0b/weapp-emulator/background.txt",
+      "bytes": 223,
+      "sha256": "ee06050b5e95eea77f36a3179184a44cc54a85ee0a082ee0ba06476891da0946"
+    },
+    {
+      "path": ".local/mobile-m0b/weapp-emulator/diagnostics.png",
+      "bytes": 100521,
+      "sha256": "d50bb841cc932c1877b8a51b8159b052d154a773f967f17dcad6736ed90ee768"
+    },
+    {
+      "path": ".local/mobile-m0b/weapp-emulator/diagnostics.txt",
+      "bytes": 3659,
+      "sha256": "646474b894120e69677b0586de1f8948b4d9ec59c1bfba3cc43bca723de66435"
+    },
+    {
+      "path": ".local/mobile-m0b/weapp-emulator/environment.png",
+      "bytes": 102083,
+      "sha256": "d10456f1bd30cd41a3d7e2e89fefbdd95798e6a04892e47e26fba4d7c29360a8"
+    },
+    {
+      "path": ".local/mobile-m0b/weapp-emulator/resumed.png",
+      "bytes": 92876,
+      "sha256": "8f3ec384f2cf787c0f266f1b05faea1e8aead9bd36d5bf69bd3b62edbe4f94ee"
+    },
+    {
+      "path": ".local/mobile-m0b/weapp-emulator/resumed.txt",
+      "bytes": 632,
+      "sha256": "dc9439aaaaba0b3d669e6b906016fc865d306318f1c3979086560c609a923c6d"
+    },
+    {
+      "path": ".local/mobile-m0b/weapp-emulator/returned.png",
+      "bytes": 94292,
+      "sha256": "21ae5866e5242585adb87797eeb60c1d4309b50fa00474b5dce93959de83acc8"
+    },
+    {
+      "path": ".local/mobile-m0b/weapp-emulator/startup.png",
+      "bytes": 94558,
+      "sha256": "a853911a7bab4bd1c8e89adf0df6637f136333c846c571f7f94dea207fc2e004"
+    },
+    {
+      "path": ".local/mobile-m0b/weapp-emulator/startup.txt",
+      "bytes": 241,
+      "sha256": "47e0be079a550d5c91ffda9b1f8e31a4b22030e3a0a6584bff3d01acc5dcc6dc"
+    }
+  ]
+}

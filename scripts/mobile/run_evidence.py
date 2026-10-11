@@ -15,6 +15,7 @@ from pathlib import Path
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--name", required=True)
+    parser.add_argument("--phase", choices=["m0a", "m0b"], default="m0a")
     parser.add_argument("--cwd", type=Path, default=Path.cwd())
     parser.add_argument("--artifact", action="append", default=[])
     parser.add_argument("--timeout", type=float, help="Maximum seconds; timeout is exit 124")
@@ -26,7 +27,7 @@ def main() -> int:
     if args.timeout is not None and args.timeout <= 0:
         parser.error("timeout must be positive")
     root = Path(__file__).resolve().parents[2]
-    directory = root / ".local/mobile-m0a"
+    directory = root / f".local/mobile-{args.phase}"
     directory.mkdir(parents=True, exist_ok=True)
     started = datetime.now(UTC)
     stem = started.strftime("%Y%m%dT%H%M%SZ") + "-" + args.name

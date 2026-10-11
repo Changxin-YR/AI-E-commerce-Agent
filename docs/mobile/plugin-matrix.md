@@ -18,7 +18,7 @@ SDK24 最小工程未签名 HAP 编译 PASS；插件未集成，原有源码核�
 | 页面导航 | Flutter Navigator / MaterialPageRoute，固定 SDK | 同 Dart 页面源码 | 宿主机1项 widget test PASS；Android/OHOS 设备均 NOT_TESTED | 后续验证系统返回、手势、深链和记录恢复；当前只启动页→环境页→返回 |
 | 应用生命周期 | WidgetsBindingObserver，固定 SDK | 同 Dart 观察器 | 两端编译中的源代码已存在；事件运行均 NOT_TESTED | 前后台/重建/进程终止；不能用 resumed 自动重发副作用，必要时补 ArkTS 通道 |
 
-Android 最小壳编译 PASS；OHOS 壳编译 BLOCKED（SDK 26 / 现有 API 24 工具不匹配）。
+Android 最小壳编译 PASS；OHOS SDK24 未签名壳编译 PASS。
 以上插件的设备运行结果不能从壳编译推导。业务 E2E 为 NOT_TESTED。
 
 ## 固定来源与静态证据
@@ -32,3 +32,18 @@ Android 最小壳编译 PASS；OHOS 壳编译 BLOCKED（SDK 26 / 现有 API 24 �
 - S7：[CPF flutter packages](https://atomgit.com/CPF-Flutter/flutter_packages)，`br_shared_preferences-v2.3.2_ohos` 核对时 SHA `f924a51ea2da823204b73e06e938e0db98a3a5f6`。用 `git show HEAD:packages/shared_preferences/.../pubspec.yaml` 核对两包；上游 BSD-3-Clause，OH 子包还含 Apache-2.0 文件头，集成时保留对应声明。
 
 候选插件优先走适配插件。安全存储和文件 URI 是明确的 ArkTS 通道评估点；平台通道只承担系统能力，不复制 Dart 业务规则。本阶段未新增 Bearer、刷新 Token 或上传业务引擎。
+
+## M0-B 模拟器增量（2026-10-11）
+
+原矩阵保留 M0-A 检查范围；本轮端上增量以 [M0-B 报告](m0b-report.md)及证据为准。
+
+| 能力 | Android API34 | OHOS API22（SDK24 编译） | 范围 |
+|---|---|---|---|
+| HTTPS / 请求头 | PASS | PASS | 本地 TLS、未信任证书拒绝、端口拒绝与恢复、合成 Cookie/Bearer 头；不是生产认证 |
+| 文件读写 | PASS | PASS | 仅沙箱临时合成文本；文件选择、上传 NOT_TESTED |
+| 剪贴板 | PASS | PASS | OHOS 声明 READ_PASTEBOARD，用户授权后实测往返成功 |
+| 页面导航 / 系统返回 | PASS | PASS | 启动页与环境页 |
+| 生命周期 | PASS | PASS | 两端 Home→恢复；进程被杀后的业务恢复未实现 |
+| 安全存储 / 插件缓存 / 分享 | NOT_TESTED | NOT_TESTED | 未集成候选插件，不从核心 API 诊断推断 |
+
+微信 DevTools 3.17.4 的缓存、沙箱文件、剪贴板、导航及前后台切换实测 PASS；官方 automator 通道 BLOCKED，生产网络/业务接口 NOT_TESTED。原生 UI 证据见 [M0-B UI记录](m0b-ui-evidence.json)。

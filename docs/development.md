@@ -984,3 +984,9 @@ compile/target现为6.1.1(24)。Flutter OH 1.0.7与共享Dart保持锁定。新�
 ### M0-A · 三端构建与 IDE 收尾（2026-10-11）
 
 无空格物理仓库中重新构建 Android APK、SDK24 未签名 HAP、Taro 微信目标，均 PASS。Android Studio 选择 JVM17 后，将 Gradle 用户缓存配置为本任务独立目录，实际同步 BUILD SUCCESSFUL；微信完整 dist 后重新编译，启动页原生 UI 观察 PASS，automator 超时独立记 BLOCKED。Flutter OH 自动迁移的 buildinfo / framesconfig 归位 rawfile，内容不变；证据导出支持 Hvigor 参数内路径并补回归，15项工具/契约测试及静态校验 PASS。最新命令、哈希及 IDE 观察见 mobile/m0a-closeout-evidence.json、mobile/m0a-ide-evidence.json；整体仍因资质核对 BLOCKED，停止于 M0-A。
+
+## M0-B 模拟器诊断（2026-10-11）
+
+共享 Dart 增加系统主题、可滚动环境页和合成诊断。按 Android→OHOS→微信顺序完成最小壳验证：Android API34 16项、OHOS API22（SDK24/x64构建）10项记录 PASS；微信7项原生 UI 观察 PASS。OHOS 补齐剪贴板权限；用户授权后往返成功。OHOS 重启后的模块加载异常通过 Hvigor clean 与固定参数完整构建恢复。微信完整 dist 后重新编译，缓存/文件/剪贴板及导航、前后台切换通过；automator 超时单列 BLOCKED。2项 widget、analyze、静态契约21功能/149API、17项工具测试及 Python lint/format PASS。
+
+本地 TLS 夹具复用原匿名只读接口，禁止数据库和业务写入。依赖锁、原后端与 Web 业务代码无变化。真机、未集成插件、生产业务状态与资质仍按报告逐项列明；本轮在 M0-B 停止。命令、产物哈希、截图记录和准入边界见 [M0-B报告](mobile/m0b-report.md)。

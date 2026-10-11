@@ -32,6 +32,8 @@ def portable_command(command: list[str]) -> list[str]:
                     arg = "python"
                 elif name == "cli.bat":
                     arg = "WECHAT_DEVTOOLS_CLI"
+                elif name in {"adb.exe", "hdc.exe", "ruff.exe", "node.exe"}:
+                    arg = name[:-4]
                 else:
                     raise ValueError(f"unmapped external tool: {name}") from None
         result.append(prefix + arg.replace("\\", "/"))
@@ -40,6 +42,8 @@ def portable_command(command: list[str]) -> list[str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--phase", choices=["m0a", "m0b"], default="m0a")
+    parser.add_argument("--baseline-sha", default="0a49a37dcd7f1ccf0acc2c0a225bfdc8d8bee686")
     parser.add_argument("--record", action="append", required=True, help="NAME=STATUS")
     parser.add_argument("--output", type=Path, default=ROOT / "docs/mobile/m0a-evidence.json")
     args = parser.parse_args()
@@ -48,7 +52,7 @@ def main() -> None:
         name, status = item.rsplit("=", 1)
         if status not in STATUSES or not name.replace("-", "").isalnum():
             parser.error("invalid evidence name or status")
-        files = sorted((ROOT / ".local/mobile-m0a").glob(f"*-{name}.json"))
+        files = sorted((ROOT / f".local/mobile-{args.phase}").glob(f"*-{name}.json"))
         if not files:
             parser.error(f"missing executed record: {name}")
         record = json.loads(files[-1].read_text(encoding="utf8"))
@@ -69,10 +73,10 @@ def main() -> None:
         records.append(record)
     output = {
         "schema_version": "1.0",
-        "phase": "M0-A",
-        "baseline_sha": "0a49a37dcd7f1ccf0acc2c0a225bfdc8d8bee686",
-        "branch": "feat/soloops-mobile-m0a",
-        "raw_logs": "Local ignored .local/mobile-m0a; paths relative to repository root",
+        "phase": "M0-A" if args.phase == "m0a" else "M0-B",
+        "baseline_sha": args.baseline_sha,
+        "branch": f"feat/soloops-mobile-{args.phase}",
+        "raw_logs": f"Local ignored .local/mobile-{args.phase}; paths relative to repository root",
         "status_policy": "Explicit assessment; exit 0 alone does not prove successful operation",
         "records": records,
     }

@@ -1,16 +1,15 @@
 <template>
   <view class="startup">
     <text class="title">SoloOps</text>
-    <text class="description">M0-A · 微信小程序最小工程</text>
-    <button @tap="showDetails = !showDetails">{{ showDetails ? '收起' : '查看环境信息' }}</button>
-    <view v-if="showDetails" class="detail">
-      <text>Taro 4 · Vue 3 · TypeScript\n本页面用于微信目标编译验证。</text>
-    </view>
+    <text class="description">M0-B · 微信小程序模拟器验证</text>
+    <button @tap="Taro.navigateTo({ url: '/pages/diagnostics/index' })">查看环境信息</button>
+    <text class="detail">生命周期：{{ lifecycle }}</text>
   </view>
 </template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
-
-const showDetails = ref(false)
+import Taro, { useDidShow, useDidHide } from '@tarojs/taro'
+const lifecycle = ref('initial')
+useDidShow(() => { lifecycle.value = 'show'; console.info('SOLOOPS_M0B lifecycle show') })
+useDidHide(() => { lifecycle.value = 'hide'; console.info('SOLOOPS_M0B lifecycle hide') })
 </script>
