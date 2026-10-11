@@ -10,10 +10,11 @@
 - 另：中途移动会话过期一次（设备显示"登录已过期，请重新登录"），用合成账号 `harmony_r2` 重新登录后店铺 918 与首页计数恢复正常，不影响既有数据。
 - **H14 订单账单核对"有差异"路径与结论保存端上通过**：原障碍是 `user_import/generic` 作用域没有订单行。先导入 `orders-user-import-synthetic.csv` → 批次 **#1191**（`SYN-U1/U2/U3`，3 新增，销售合计 120.0000 USD、退款 5.0000）；**第一次用 synthetic 作用域已有的 `SYN-G1..G3` 编号被服务端按 `source_scope` 明确拒绝**（"同店铺已有相同订单号/行号，但渠道或数据身份不同"），该批次 #1190 已清除——这是设计上的跨来源保护，不是缺陷。再造 `statements-order-linked-synthetic.csv`（账单行带 `order_id`）导入为批次 **#1192**（`SYN-ST-002` sale 120.0000→`SYN-U1`、refund 8.0000→`SYN-U3`）。口径选「退款前折后商品款」并填依据后运行：**`SYN-U1 · 账单销售款` = 「金额差异 · 差异 80.0000 USD」**（订单可比金额 40.0000 = 2×20−0 vs 账单 120.0000），展开可见订单行与账单行双方；`SYN-U2/SYN-U3` 销售款因无同订单号账单保持"待核实·差异未知"，`SYN-U3·账单退款` 因行退款是累计值、缺逐笔编号/时间/构成按设计保持未知，无订单号的账单行显示 `missing_order_reference`。结论预览同样只接受"仍待核对"，保存为 `statement_reviews` **#188（kind=orders）v1 active**、来源 3 条。
 - 关键结论（H14）：**账单行必须带 `order_id` 才可能算出差额**——`order_comparison.py` 按 `(order_id, entry_type)` 分组，无订单号的账单行单独成组并直接判定 `missing_order_reference`。
+- **H15 结算回款撤销/清除端上通过**：导入新账单批次 #1192 后，原结算 49 自动转为 **`stale`**（设备列表显示"来源变化 · 待重核"），说明来源修订联动生效；「撤销记录」→ **#49 v3 已撤销**（`settlements.status=withdrawn`、`settlement_revisions` 追加 v3 withdraw）；「清除正文」→ **#49 v4 正文已清除**（`status=cleared`，v1 create / v3 withdraw / v4 clear 三条 `snapshot` 全部 NULL，设备正文与依据输入框清空、操作按钮消失）。
 - **测试工具修正（本轮）**：`scripts/mobile/ohos_ui.py` 的 `hide-ime` 原按布局树里是否出现输入法包名判断，实测常测不到——键盘开着时继续滑动，滑动落在键盘按键上，把 `、` 连续打进"修订依据"（服务端回读 `H19-本地修订验证、、、…`，已重新输入修正）。现改为读 `WindowManagerService` 窗口列表中 `softKeyboard` 的 ZOrd（-1 为收起），并在 `findtap` 每次滑动前先收起键盘。
 - 另核：设备端弹过一次系统剪贴板权限框（"允许"soloops_flutter"复制来自剪贴板的内容？"，理由文案来自 `ohos/entry/.../element/string.json`），会抢焦点并使 `uitest dumpLayout -b <bundle>` 返回空树；已选"始终允许"解除，后续输入不再中断。
 - 数据库回读注意：`docker exec … mysql` 默认字符集会把中文显示成 `?`，需加 `--default-character-set=utf8mb4`；已用 `HEX()` 证实库内是正确 UTF-8，不是写入损坏。
-- 下一步：H15 撤销/清除 → H16 停用/重置/恢复与 AI 授权 → H17 启停/撤销/立即运行/通知深链 → H09 分析、H10 总览、H18 历史回读/清除、H20 测试外发（仅替身）→ H21 边界；微信端 wave 3 页面已落地并通过 type-check/构建，待开发者工具联调。
+- 下一步：H16 停用/重置/恢复与 AI 授权 → H17 启停/撤销/立即运行/通知深链 → H09 分析、H10 总览、H18 历史回读/清除、H20 测试外发（仅替身）→ H21 边界；微信端 wave 3 页面已落地并通过 type-check/构建，待开发者工具联调。
 
 ## 2026-10-11 23:45 M0-C 新分支续接（优先于下文全部历史状态）
 

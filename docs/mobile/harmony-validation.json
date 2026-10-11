@@ -125,7 +125,10 @@
     "H14 order rows for the user_import scope: orders-user-import-synthetic.csv imported as batch 1191 (SYN-U1/U2/U3, 3 new, 120.0000 USD sale, 5.0000 refund); a first attempt with the synthetic-scope order ids was correctly rejected as source_scope conflict and that batch 1190 was cleared",
     "H14 order-linked statement: statements-order-linked-synthetic.csv imported as batch 1192 with order_id per line (SYN-ST-002 sale 120.0000 -> SYN-U1, refund 8.0000 -> SYN-U3)",
     "H14 differential path: with sale basis merchandise_after_discount and a stated basis note, SYN-U1 账单销售款 reports 金额差异 差异 80.0000 USD (order comparable amount 40.0000 = 2 x 20 - 0 versus statement 120.0000); SYN-U2/SYN-U3 sales and the SYN-U3 refund stay 待核实 unknown by design",
-    "H14 review save: statement_reviews 188 kind=orders v1 active with the pending conclusion and 3 sources"
+    "H14 review save: statement_reviews 188 kind=orders v1 active with the pending conclusion and 3 sources",
+    "H15 source-change linkage: after importing statement batch 1192, settlement 49 turned stale and the device list showed 来源变化 · 待重核",
+    "H15 withdraw: settlement 49 withdrawn at v3, settlement_revisions gained v3 withdraw",
+    "H15 clear: settlement 49 cleared at v4; the create, withdraw and clear revisions all have NULL snapshot and the device body/evidence inputs were emptied"
   ],
   "pending": "H12 fee mapping rule revoke/clear; H13 statement review conclusion preview/save/version/clear; H14 order reconciliation differential path (import order rows into the user_import scope first); H15 settlement revoke/clear; H16 disable/reset/restore and AI authorization management; H17 schedule enable/disable/revoke/run-now/notification deep link; H09 analytics, H10 overview, H18 product quality history/clear, H20 outbound stub-only, H21 lifecycle/layout boundaries",
   "session_2026_10_12": {
