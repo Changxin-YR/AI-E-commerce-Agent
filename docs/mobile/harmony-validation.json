@@ -108,7 +108,8 @@
     "Manual expense 1139 created in user_import/generic scope with evidence SYN-EXP-20261011-01, 2.3456 USD, 物流",
     "Statement review: totals fee 14.8456 / payout 100.0000 / refund 8.0000 / sale 120.0000 USD; evidence match SYN-EXP-20261011-01 consistent with difference 0.0000; unmatched SYN-FEE-001 stays unknown",
     "Settlement SYN-ST-001 with manual receipt BANK-SYN-001/PAY-SYN-001 100.0000 USD: per-receipt comparison consistent, difference 0.0000, saved with version history (settlements/receipts/revisions = 1 each)",
-    "Business rule revision saved: max_age_hours 24 -> 12 with confirmed scope, persisted as business_rule_revisions id 24 (action=save, min_quantity 1, max_margin 20.00, USD)"
+    "Business rule revision saved: max_age_hours 24 -> 12 with confirmed scope, persisted as business_rule_revisions id 24 (action=save, min_quantity 1, max_margin 20.00, USD)",
+    "Operation schedule saved: operation_schedules id 24 active v1 daily 09:00 Asia/Shanghai, next_run_at 2026-10-12 01:00 UTC (= 09:00 +08:00); bound to rule 24; scheduler service honestly reported as not enabled"
   ],
   "pending": "Remaining H13-H20 business journeys (fee mapping, statements, reconciliation, settlements, analytics, overview, rules, schedules, product quality/edits, outbound) and H21 lifecycle/layout/conflict/unknown-result scenarios",
   "product_facts_contract_tests": 1,
