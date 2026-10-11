@@ -12,7 +12,9 @@
 
 ## 验证记录
 
-原始业务提交 `f857d87`；用户已明确授权推送，安卓分支已上传。首轮 CI 38137158092：前端/180单元/资源同步通过，原生步骤因 runner 缺 sdkmanager 退出 127；改为固定 ubuntu-24.04 并核对预装 SDK 36，继续验证原生编译。设备联调待 A1。
+**A0 完成。** 准确提交 `84d86a7b213e6bf16d5bcc90aedbbd9a92360159` 的 [CI 38137311083](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38137311083) 全部成功：lint、180 项单元、类型检查、安卓资源构建/同步以及 Gradle `assembleDebug`。这证明原生编译通过；模拟器安装和业务联调待 A1。本次 CI 未保存可下载 APK artifact。
+
+首轮 CI 38137158092 的前端/单元/同步已通过，原生步骤因 runner 缺 sdkmanager 退出 127；固定 ubuntu-24.04 并检查预装 SDK 36 后修复。
 
 - `npm run build`：通过（类型检查与生产资源构建）。
 - `npx cap add android`：通过。

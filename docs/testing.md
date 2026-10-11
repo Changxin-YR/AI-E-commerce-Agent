@@ -582,3 +582,6 @@ C最终准确业务代码ed30b872e5a89be096e15c550cb46b9b7240ee44的CI3804231893
 最终本地完整浏览器`npm run test:e2e`为91 passed/6.4分钟/0重试，日志20261010-215325-npm-ff1418.log。与上述880后端、158单元和静态构建共同覆盖全部当前业务代码。独立进程回读四流程店1448/1450的38份API记录，B1店1472/1473、run712/713均7步并有分析/Listing两个真实内部结果；首页派生stale而数据库任务来源仍current。日志20261010-220026-python-83de41、20261010-220032-python-f024f5；完整编号和边界见[r2-fixes-final-report](r2-fixes-final-report.md)。
 
 最后业务SHA a84ffa3e88abc66ad45df3740591a206115ade15与GitHub run38057461269一致，completed/success；job114228754736实际880/158/91，Ruff258/mypy176及全部前端检查通过。无新迁移或依赖；本轮3313容器已停止、卷和证据保留。原专项当前head的67表校验及38份恢复快照只读复核相同，不冒充本轮重新恢复。四包及报告完成后停止开发。
+
+## Android A0（2026-10-11）
+本地 lint/build/types/Capacitor sync 通过；40 文件180单元通过（maxWorkers=4）。准确代码提交84d86a7b213e6bf16d5bcc90aedbbd9a92360159的CI38137311083成功，包含原生Gradle assembleDebug。设备安装/登录/文件字节等尚待A1/A3，详见android-a0-acceptance.md。
