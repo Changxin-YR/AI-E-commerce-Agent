@@ -1,8 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'runtime_probe.dart';
+import 'closure_probe.dart';
+import 'package:flutter/foundation.dart';
 
 void main() => runApp(const SoloOpsApp());
 
@@ -12,6 +15,9 @@ class SoloOpsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
         title: 'SoloOps · 工程验证',
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        supportedLocales: const [Locale('zh', 'CN'), Locale('en', 'US')],
+        locale: const Locale('zh', 'CN'),
         theme: ThemeData(
             colorScheme:
                 ColorScheme.fromSeed(seedColor: const Color(0xFF315C52)),
@@ -96,6 +102,11 @@ class _StartupPageState extends State<StartupPage> with WidgetsBindingObserver {
                         }
                       },
                 child: Text(running ? '验证中…' : '运行合成诊断')),
+            if (kDebugMode)
+              FilledButton(
+                  onPressed: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute(builder: (_) => const ClosurePage())),
+                  child: const Text('M0 技术验收')),
             const Text('仅写入合成剪贴板文本和临时文件；不登录账号。'),
             for (final item in results.entries)
               Text('${item.key}: ${item.value}'),

@@ -1,0 +1,2725 @@
+{
+  "schema_version": "1.0",
+  "phase": "M0-B",
+  "baseline_sha": "c4758a937e780b24c8920be01e53de13808b80db",
+  "branch": "feat/soloops-mobile-m0b",
+  "raw_logs": "Local ignored .local/mobile-m0b; paths relative to repository root",
+  "status_policy": "Explicit assessment; exit 0 alone does not prove successful operation",
+  "records": [
+    {
+      "name": "closure-android-build",
+      "started_utc": "2026-10-11T06:58:10.977809+00:00",
+      "finished_utc": "2026-10-11T06:58:24.567040+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "build",
+        "apk",
+        "--debug",
+        "--no-pub",
+        "--dart-define-from-file=../../.local/mobile-m0b/tls/dart-defines.json"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "timeout_seconds": null,
+      "timed_out": false,
+      "log": ".local/mobile-m0b/20261011T065810Z-closure-android-build.log",
+      "log_sha256": "b2d2466eafd4a18f2b31cb2737dd7766ecc13f66fc07d5d3723e60ac1349949d",
+      "artifacts": [
+        {
+          "path": "apps/soloops_flutter/build/app/outputs/flutter-apk/app-debug.apk",
+          "bytes": 101534556,
+          "sha256": "1483dba9d188cd512dd54ed1c866b2eac2c2367f7ef61013332434c1177c8b71"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "closure-android-install",
+      "started_utc": "2026-10-11T06:59:02.945613+00:00",
+      "finished_utc": "2026-10-11T06:59:05.773687+00:00",
+      "command": [
+        "adb",
+        "-s",
+        "emulator-5580",
+        "install",
+        "-r",
+        "apps/soloops_flutter/build/app/outputs/flutter-apk/app-debug.apk"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": null,
+      "timed_out": false,
+      "log": ".local/mobile-m0b/20261011T065902Z-closure-android-install.log",
+      "log_sha256": "c4aa470acafcf8576c15b0f0b5ae7e852d1ec5413372d0e6a9272e788e1306d3",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closure-analyze",
+      "started_utc": "2026-10-11T06:59:03.905067+00:00",
+      "finished_utc": "2026-10-11T06:59:14.525830+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "analyze",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "timeout_seconds": null,
+      "timed_out": false,
+      "log": ".local/mobile-m0b/20261011T065903Z-closure-analyze.log",
+      "log_sha256": "baf08aa8b3e9255556ea4e03ec19540610fce2972b5f9ff48b452a37e467808a",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closure-widget-tests",
+      "started_utc": "2026-10-11T06:59:14.823111+00:00",
+      "finished_utc": "2026-10-11T06:59:21.482739+00:00",
+      "command": [
+        ".local/toolchains/flutter-oh-api22/bin/flutter.bat",
+        "test",
+        "--no-pub"
+      ],
+      "cwd": "apps/soloops_flutter",
+      "exit_code": 0,
+      "timeout_seconds": null,
+      "timed_out": false,
+      "log": ".local/mobile-m0b/20261011T065914Z-closure-widget-tests.log",
+      "log_sha256": "d1136cdcc1ad9427d596b3574e3c434e652e7c5754771ae30e742b925ac567e8",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closure-tools-check",
+      "started_utc": "2026-10-11T07:07:24.704404+00:00",
+      "finished_utc": "2026-10-11T07:07:24.858468+00:00",
+      "command": [
+        "python",
+        "-m",
+        "ruff",
+        "check",
+        "--config",
+        "scripts/mobile/ruff.toml",
+        "scripts/mobile",
+        "scripts/validate_ui_contract.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": null,
+      "timed_out": false,
+      "log": ".local/mobile-m0b/20261011T070724Z-closure-tools-check.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closure-tools-format",
+      "started_utc": "2026-10-11T07:07:25.009646+00:00",
+      "finished_utc": "2026-10-11T07:07:25.152552+00:00",
+      "command": [
+        "python",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "--config",
+        "scripts/mobile/ruff.toml",
+        "scripts/mobile",
+        "scripts/validate_ui_contract.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": null,
+      "timed_out": false,
+      "log": ".local/mobile-m0b/20261011T070725Z-closure-tools-format.log",
+      "log_sha256": "04eb0d6e6734823dcd2b2b704729e976f683df7a8f334da7216520ef1cb319bf",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closure-tools-tests",
+      "started_utc": "2026-10-11T07:07:25.311680+00:00",
+      "finished_utc": "2026-10-11T07:07:33.138541+00:00",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mobile/tests",
+        "-v"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": null,
+      "timed_out": false,
+      "log": ".local/mobile-m0b/20261011T070725Z-closure-tools-tests.log",
+      "log_sha256": "2dcc0daff47d9e245504e8d70995e8e579fca6a4cc17b274825c74d8f450fda4",
+      "artifacts": [],
+      "status": "PASS"
+    },
+    {
+      "name": "closure-android-basic",
+      "started_utc": "2026-10-11T07:01:37.362303+00:00",
+      "finished_utc": "2026-10-11T07:02:20.838817+00:00",
+      "command": [
+        "python",
+        "scripts/mobile/check_android_emulator.py",
+        "--adb",
+        "adb",
+        "--serial",
+        "emulator-5580"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "timeout_seconds": 240.0,
+      "timed_out": false,
+      "log": ".local/mobile-m0b/20261011T070137Z-closure-android-basic.log",
+      "log_sha256": "9732cd4af3109785e8b47f56066de2f04bafb2187049b91022ecdf8afba64b6a",
+      "artifacts": [],
+      "status": "PASS"
+    }
+  ],
+  "platform": {
+    "os": "Android",
+    "device": {
+      "ro.build.version.sdk": "34",
+      "ro.build.version.release": "14",
+      "ro.product.model": "sdk_gphone64_x86_64",
+      "ro.product.cpu.abi": "x86_64",
+      "ro.kernel.qemu": "1"
+    },
+    "serial": "emulator-5580",
+    "scope": "emulator",
+    "hardware_security": "NOT_TESTED",
+    "key_info": {
+      "nonExportable": true,
+      "hardwareBacked": false,
+      "securityLevel": 0,
+      "backupExcluded": true
+    }
+  },
+  "runtime": [
+    {
+      "stage": "storage",
+      "status": "PASS",
+      "apk_sha256": "1483dba9d188cd512dd54ed1c866b2eac2c2367f7ef61013332434c1177c8b71",
+      "source": ".local/mobile-m0b/20261011T065906Z-closure-storage/results.json",
+      "cases": {
+        "secure_roundtrip_overwrite": "PASS",
+        "secureTamper": "PASS",
+        "secureDropKey": "PASS",
+        "cache_scopes_and_clear": "PASS",
+        "uri_permission_denied": "PASS",
+        "share_size_rejected": "PASS",
+        "localized_dates": "PASS",
+        "restart_read_clear": "PASS"
+      },
+      "commands": [
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "am",
+            "start",
+            "-S",
+            "-W",
+            "-n",
+            "dev.soloops.soloops_flutter/.MainActivity"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "540",
+            "1100"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "540",
+            "433"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=8704"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=8704"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "exec-out",
+            "screencap",
+            "-p"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "am",
+            "start",
+            "-S",
+            "-W",
+            "-n",
+            "dev.soloops.soloops_flutter/.MainActivity"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "540",
+            "1100"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "540",
+            "575"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=8840"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "exec-out",
+            "screencap",
+            "-p"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=8840"
+          ],
+          "exit_code": 0
+        }
+      ],
+      "evidence_files": [
+        {
+          "path": ".local/mobile-m0b/20261011T065906Z-closure-storage/app-logcat-8704.txt",
+          "bytes": 6701,
+          "sha256": "0d4456ca9700d43c68ad54d5c816312652c3d2eb359858312fc54ccdaa1adb55"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T065906Z-closure-storage/app-logcat-8840.txt",
+          "bytes": 5546,
+          "sha256": "c0ad4dec8705230fdb59c8f55217d61de27adcb45aab87479351a076a6714fac"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T065906Z-closure-storage/before-tap.xml",
+          "bytes": 10710,
+          "sha256": "467dfd6a17d4df046ac1068cf96cac10128647bda06763f1b898581271df73e4"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T065906Z-closure-storage/final.png",
+          "bytes": 173547,
+          "sha256": "b57eb2eb049d35f5da845b9ecf4f215763b80d4bf3f2e56ac45f9eea7542bad2"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T065906Z-closure-storage/final.xml",
+          "bytes": 11062,
+          "sha256": "0b6e8dd11b00fecad9dabf1b0285874308dcd5c2a3089cd1131bb5c1aab40184"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T065906Z-closure-storage/prepared.png",
+          "bytes": 243486,
+          "sha256": "e1ba17ce4c0ff8bd0e0e91011e5de54c1fdd72b3759d6a6879044be0ba452d29"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T065906Z-closure-storage/results.json",
+          "bytes": 7675,
+          "sha256": "e27725ae8725923c9d2e990455fac1883a926ab6e6860e9692445c2864089243"
+        }
+      ]
+    },
+    {
+      "stage": "pick-cancel",
+      "status": "PASS",
+      "apk_sha256": "1483dba9d188cd512dd54ed1c866b2eac2c2367f7ef61013332434c1177c8b71",
+      "source": ".local/mobile-m0b/20261011T070553Z-closure-pick-cancel/results.json",
+      "cases": {
+        "picker_cancelled": "PASS"
+      },
+      "commands": [
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "keyevent",
+            "4"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "exec-out",
+            "screencap",
+            "-p"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        }
+      ],
+      "evidence_files": [
+        {
+          "path": ".local/mobile-m0b/20261011T070553Z-closure-pick-cancel/app-logcat-10033.txt",
+          "bytes": 11478,
+          "sha256": "879e9f9962a50c9aa16e07e94149f7cadf2994e36ad486dcfae8b621c603984e"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070553Z-closure-pick-cancel/final.png",
+          "bytes": 320320,
+          "sha256": "6866670e701b83bf6c1ce132caa043f9820b3b63f5dd690d237aeea2694bf771"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070553Z-closure-pick-cancel/final.xml",
+          "bytes": 16340,
+          "sha256": "2608b1eb6c322f82603dbf139b98f343b5094892752bf868d49cf45eb985f5e1"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070553Z-closure-pick-cancel/results.json",
+          "bytes": 4631,
+          "sha256": "f37e501ee3429d0cd721a841ca9fdf1b2422200a2c5a99dba9757f04264584e6"
+        }
+      ]
+    },
+    {
+      "stage": "pick-large",
+      "status": "PASS",
+      "apk_sha256": "1483dba9d188cd512dd54ed1c866b2eac2c2367f7ef61013332434c1177c8b71",
+      "source": ".local/mobile-m0b/20261011T070604Z-closure-pick-large/results.json",
+      "cases": {
+        "picker_size_limit": "PASS"
+      },
+      "commands": [
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "833",
+            "1121"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "exec-out",
+            "screencap",
+            "-p"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        }
+      ],
+      "evidence_files": [
+        {
+          "path": ".local/mobile-m0b/20261011T070604Z-closure-pick-large/app-logcat-10033.txt",
+          "bytes": 12745,
+          "sha256": "066cd29be18aaf1aa2553b4895ba0481582a3331aca0fc3a582634b61ae44ce8"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070604Z-closure-pick-large/before-tap.xml",
+          "bytes": 50976,
+          "sha256": "fef10d180ea4c80f9755e1332f69efab911fb3302d9add757db71cb72f8ba7a8"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070604Z-closure-pick-large/final.png",
+          "bytes": 328620,
+          "sha256": "60a8cae271ec2921284366addefd8ff5ae37b8bdaa4428f40780efb401fa7846"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070604Z-closure-pick-large/final.xml",
+          "bytes": 16690,
+          "sha256": "b3f6c7b54bde4f94d1b804cd7b9e3fb33080c6c2676fccb26fbf7408fa20aaa3"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070604Z-closure-pick-large/results.json",
+          "bytes": 5197,
+          "sha256": "f7f47b24ad76975c293313c549cb01d6e000c287b3348dc2d56f309995ae412e"
+        }
+      ]
+    },
+    {
+      "stage": "pick-small",
+      "status": "PASS",
+      "apk_sha256": "1483dba9d188cd512dd54ed1c866b2eac2c2367f7ef61013332434c1177c8b71",
+      "source": ".local/mobile-m0b/20261011T070501Z-closure-pick-small/results.json",
+      "cases": {
+        "picker_selected": "PASS"
+      },
+      "commands": [
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "346",
+            "1121"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "exec-out",
+            "screencap",
+            "-p"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        }
+      ],
+      "evidence_files": [
+        {
+          "path": ".local/mobile-m0b/20261011T070501Z-closure-pick-small/app-logcat-10033.txt",
+          "bytes": 8203,
+          "sha256": "e593f42b186a678db17b91400026ddbf37a18ace2f2def7d0469f96fed5a31d3"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070501Z-closure-pick-small/before-tap.xml",
+          "bytes": 50976,
+          "sha256": "fef10d180ea4c80f9755e1332f69efab911fb3302d9add757db71cb72f8ba7a8"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070501Z-closure-pick-small/final.png",
+          "bytes": 188936,
+          "sha256": "1b31eee4923b7797924bd184f9c246cbf75a4197e180a76c4f2c0cd2ed401098"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070501Z-closure-pick-small/final.xml",
+          "bytes": 11751,
+          "sha256": "dc19e792c901b8d8f043cc79003e982f32d688c60a4470a7edd96c9a4b2db2c9"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070501Z-closure-pick-small/results.json",
+          "bytes": 3536,
+          "sha256": "7a23404d218f4bcc1dbb5d684deaedb2184b09b133e12d4953a83239e8da6e40"
+        }
+      ]
+    },
+    {
+      "stage": "transfer",
+      "status": "PASS",
+      "apk_sha256": "1483dba9d188cd512dd54ed1c866b2eac2c2367f7ef61013332434c1177c8b71",
+      "source": ".local/mobile-m0b/20261011T070507Z-closure-transfer/results.json",
+      "cases": {
+        "selected_upload": "PASS",
+        "upload_2mib_boundary": "PASS",
+        "upload_oversize_rejected": "PASS",
+        "upload_server_failure": "PASS",
+        "upload_cancelled": "PASS",
+        "download_download": "PASS",
+        "download_download-large": "PASS",
+        "download_fail": "PASS",
+        "download_download-slow": "PASS",
+        "response_timeout": "PASS",
+        "redirect_not_followed": "PASS",
+        "transfer_error_recovery": "PASS"
+      },
+      "commands": [
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "540",
+            "858"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "exec-out",
+            "screencap",
+            "-p"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        }
+      ],
+      "evidence_files": [
+        {
+          "path": ".local/mobile-m0b/20261011T070507Z-closure-transfer/app-logcat-10033.txt",
+          "bytes": 10235,
+          "sha256": "7b443b1767107bd589698fa95465181508964f3ec750ef6485e4cb1068354e48"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070507Z-closure-transfer/before-tap.xml",
+          "bytes": 11751,
+          "sha256": "dc19e792c901b8d8f043cc79003e982f32d688c60a4470a7edd96c9a4b2db2c9"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070507Z-closure-transfer/final.png",
+          "bytes": 311026,
+          "sha256": "70784d0dd862aee05c1dd89eb24b4d183d6ab4211b58b57dbfadbacd71c7caa9"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070507Z-closure-transfer/final.xml",
+          "bytes": 15990,
+          "sha256": "c9ecf10a1ca96e825de277b88dff98c822ceb82cbe99f508428088c2dec33aa3"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070507Z-closure-transfer/results.json",
+          "bytes": 7012,
+          "sha256": "85c6defa9ac75aa3b6d972e796adebdcd6c5231d56088c576d12a39adaebd30b"
+        }
+      ]
+    },
+    {
+      "stage": "share",
+      "status": "PASS",
+      "apk_sha256": "1483dba9d188cd512dd54ed1c866b2eac2c2367f7ef61013332434c1177c8b71",
+      "source": ".local/mobile-m0b/20261011T070353Z-closure-share/results.json",
+      "cases": {
+        "share_panel": "PASS",
+        "share_cleanup": "PASS"
+      },
+      "commands": [
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=9506"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "am",
+            "start",
+            "-S",
+            "-W",
+            "-n",
+            "dev.soloops.soloops_flutter/.MainActivity"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "540",
+            "1100"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "540",
+            "1000"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "exec-out",
+            "screencap",
+            "-p"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "keyevent",
+            "4"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "540",
+            "1142"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "exec-out",
+            "screencap",
+            "-p"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=10033"
+          ],
+          "exit_code": 0
+        }
+      ],
+      "evidence_files": [
+        {
+          "path": ".local/mobile-m0b/20261011T070353Z-closure-share/app-logcat-10033.txt",
+          "bytes": 6689,
+          "sha256": "e654fd98200a4af442e3c9bd157382d4e46bae35dc2b707c2da1b2233fa0627c"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070353Z-closure-share/app-logcat-9506.txt",
+          "bytes": 10093,
+          "sha256": "ce16b6e428b53e983d23c225ab367bcfb302d2fedae3012ac044bd1b87573bef"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070353Z-closure-share/before-tap.xml",
+          "bytes": 11055,
+          "sha256": "d3dd32c4f6e228eeb4cc0850ce3970fbee4eba5f56eaaaf304798ee90c9e68e0"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070353Z-closure-share/final.png",
+          "bytes": 180405,
+          "sha256": "5dad9ca36d4bddd27a1e4e91e144588ff37f52bdf7eccd3b43b8beac606db848"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070353Z-closure-share/final.xml",
+          "bytes": 11402,
+          "sha256": "ad158feb2ea13d3a2a2f3da93c868dd3277449c43c5b1640e42a2f07c8c616de"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070353Z-closure-share/results.json",
+          "bytes": 6164,
+          "sha256": "7d499c1999986daef72238545ff3448dc24a973ad6d40503a4b9fa8b588c12b4"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070353Z-closure-share/share-panel.png",
+          "bytes": 189474,
+          "sha256": "581fdc5ce9518c8f831354b727f84a249325f6a83c3edfc6bf9ecca5dbb85ade"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070353Z-closure-share/share-panel.xml",
+          "bytes": 15731,
+          "sha256": "fc8abb5f475f1e78ae4d9d36112a32eb77e2b8795b21373567fef28d9dcad242"
+        }
+      ]
+    },
+    {
+      "stage": "external",
+      "status": "PASS",
+      "apk_sha256": "1483dba9d188cd512dd54ed1c866b2eac2c2367f7ef61013332434c1177c8b71",
+      "source": ".local/mobile-m0b/20261011T070038Z-closure-external/results.json",
+      "cases": {
+        "external_browser": "PASS"
+      },
+      "commands": [
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "tap",
+            "540",
+            "1284"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=8840"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "exec-out",
+            "screencap",
+            "-p"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "input",
+            "keyevent",
+            "4"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "uiautomator",
+            "dump",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "cat",
+            "/sdcard/soloops-m0c.xml"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "exec-out",
+            "screencap",
+            "-p"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "shell",
+            "pidof",
+            "dev.soloops.soloops_flutter"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "adb",
+            "-s",
+            "emulator-5580",
+            "logcat",
+            "-d",
+            "-v",
+            "brief",
+            "--pid=8840"
+          ],
+          "exit_code": 0
+        }
+      ],
+      "evidence_files": [
+        {
+          "path": ".local/mobile-m0b/20261011T070038Z-closure-external/app-logcat-8840.txt",
+          "bytes": 10428,
+          "sha256": "efa198b7c06358a078e0453c1d1fe7292933e615e57d19a4cc18620135348791"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070038Z-closure-external/before-tap.xml",
+          "bytes": 15650,
+          "sha256": "c1a30553d038b2fe2592ba54147e87e6191f00a2a97c26cd2b178a3da14fcec0"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070038Z-closure-external/browser.png",
+          "bytes": 93951,
+          "sha256": "7d2cb435fa9a6aa340747bb371a46ddd6242c78ea87aca5a7177d0bae0630bb5"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070038Z-closure-external/browser.xml",
+          "bytes": 5934,
+          "sha256": "96d853b24257a56ce02837bfb840564375f2bf1a16170850da8a624ccdca2db2"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070038Z-closure-external/final.png",
+          "bytes": 312462,
+          "sha256": "c36d57e69679840edc37dc01a87f4e3a2199d58728c4a765d61511005660a4b2"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070038Z-closure-external/final.xml",
+          "bytes": 16000,
+          "sha256": "ffe25881db3256061677a516cfb4029c9995932c418d08cd5c29b23cddd8bd9e"
+        },
+        {
+          "path": ".local/mobile-m0b/20261011T070038Z-closure-external/results.json",
+          "bytes": 5389,
+          "sha256": "316852122d8f88c8370f5f3cbd5b48c74bbc6cf6ed9cd24de64f7405743df97d"
+        }
+      ]
+    }
+  ],
+  "basic_regression": {
+    "status": "PASS",
+    "source": ".local/mobile-m0b/20261011T070137Z-emulator-5580/results.json",
+    "cases": {
+      "cold_start": "PASS",
+      "runtime_probes": "PASS",
+      "sandbox_file": "PASS",
+      "clipboard": "PASS",
+      "https_health": "PASS",
+      "anonymous_rejected": "PASS",
+      "synthetic_headers": "PASS",
+      "untrusted_certificate_rejected": "PASS",
+      "connection_failure_and_recovery": "PASS",
+      "navigation": "PASS",
+      "system_back": "PASS",
+      "background_resume": "PASS",
+      "dark_theme": "PASS",
+      "landscape": "PASS",
+      "large_text": "PASS",
+      "no_runtime_exception": "PASS"
+    },
+    "commands": [
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "settings",
+          "get",
+          "system",
+          "accelerometer_rotation"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "settings",
+          "get",
+          "system",
+          "user_rotation"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "settings",
+          "get",
+          "system",
+          "font_scale"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "cmd",
+          "uimode",
+          "night"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "getprop",
+          "ro.build.version.sdk"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "getprop",
+          "ro.build.version.release"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "getprop",
+          "ro.product.model"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "getprop",
+          "ro.product.cpu.abi"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "getprop",
+          "ro.kernel.qemu"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "reverse",
+          "tcp:18443",
+          "tcp:18443"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "am",
+          "start",
+          "-S",
+          "-W",
+          "-n",
+          "dev.soloops.soloops_flutter/.MainActivity"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "pidof",
+          "dev.soloops.soloops_flutter"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "uiautomator",
+          "dump",
+          "/sdcard/soloops-m0b-layout.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "pull",
+          "/sdcard/soloops-m0b-layout.xml",
+          ".local/mobile-m0b/20261011T070137Z-emulator-5580/startup.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "exec-out",
+          "screencap",
+          "-p"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "uiautomator",
+          "dump",
+          "/sdcard/soloops-m0b-layout.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "pull",
+          "/sdcard/soloops-m0b-layout.xml",
+          ".local/mobile-m0b/20261011T070137Z-emulator-5580/before-tap.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "input",
+          "tap",
+          "540",
+          "974"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "logcat",
+          "-d",
+          "-v",
+          "brief",
+          "--pid=9506"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "exec-out",
+          "screencap",
+          "-p"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "uiautomator",
+          "dump",
+          "/sdcard/soloops-m0b-layout.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "pull",
+          "/sdcard/soloops-m0b-layout.xml",
+          ".local/mobile-m0b/20261011T070137Z-emulator-5580/before-tap.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "input",
+          "tap",
+          "540",
+          "816"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "uiautomator",
+          "dump",
+          "/sdcard/soloops-m0b-layout.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "pull",
+          "/sdcard/soloops-m0b-layout.xml",
+          ".local/mobile-m0b/20261011T070137Z-emulator-5580/environment.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "exec-out",
+          "screencap",
+          "-p"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "input",
+          "keyevent",
+          "4"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "uiautomator",
+          "dump",
+          "/sdcard/soloops-m0b-layout.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "pull",
+          "/sdcard/soloops-m0b-layout.xml",
+          ".local/mobile-m0b/20261011T070137Z-emulator-5580/returned.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "input",
+          "keyevent",
+          "3"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "am",
+          "start",
+          "-W",
+          "-n",
+          "dev.soloops.soloops_flutter/.MainActivity"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "logcat",
+          "-d",
+          "-v",
+          "brief",
+          "--pid=9506"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "cmd",
+          "uimode",
+          "night",
+          "yes"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "uiautomator",
+          "dump",
+          "/sdcard/soloops-m0b-layout.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "pull",
+          "/sdcard/soloops-m0b-layout.xml",
+          ".local/mobile-m0b/20261011T070137Z-emulator-5580/dark.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "exec-out",
+          "screencap",
+          "-p"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "settings",
+          "put",
+          "system",
+          "accelerometer_rotation",
+          "0"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "settings",
+          "put",
+          "system",
+          "user_rotation",
+          "1"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "uiautomator",
+          "dump",
+          "/sdcard/soloops-m0b-layout.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "pull",
+          "/sdcard/soloops-m0b-layout.xml",
+          ".local/mobile-m0b/20261011T070137Z-emulator-5580/before-tap.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "input",
+          "tap",
+          "1200",
+          "819"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "uiautomator",
+          "dump",
+          "/sdcard/soloops-m0b-layout.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "pull",
+          "/sdcard/soloops-m0b-layout.xml",
+          ".local/mobile-m0b/20261011T070137Z-emulator-5580/landscape.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "exec-out",
+          "screencap",
+          "-p"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "settings",
+          "put",
+          "system",
+          "font_scale",
+          "1.3"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "uiautomator",
+          "dump",
+          "/sdcard/soloops-m0b-layout.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "pull",
+          "/sdcard/soloops-m0b-layout.xml",
+          ".local/mobile-m0b/20261011T070137Z-emulator-5580/large-text.xml"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "exec-out",
+          "screencap",
+          "-p"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "logcat",
+          "-d",
+          "-v",
+          "brief",
+          "--pid=9506"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "settings",
+          "put",
+          "system",
+          "accelerometer_rotation",
+          "1"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "settings",
+          "put",
+          "system",
+          "user_rotation",
+          "0"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "settings",
+          "put",
+          "system",
+          "font_scale",
+          "1.0"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "adb",
+          "-s",
+          "emulator-5580",
+          "shell",
+          "cmd",
+          "uimode",
+          "night",
+          "no"
+        ],
+        "exit_code": 0
+      }
+    ],
+    "evidence_files": [
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/app-logcat.txt",
+        "sha256": "a1cd75e4eca955f77cb39b2348ebbd5f34398bfeaa4acf1098aae05abdb86f7f"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/before-tap.xml",
+        "sha256": "c9c85731b490d3d46675705bcee09de9de6ace4f5aab9d1c7c04142ad2be0b96"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/cold-start.txt",
+        "sha256": "7e313665f2d643e9036b4a01986e6dfa2d5b243e0992d7eb513af72c1576c057"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/dark.png",
+        "sha256": "bb872056ed04426f045fcc705ad0ca861e80f20a6326fa9ec2067357a814138c"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/dark.xml",
+        "sha256": "de5c9f76ab267dcf26fb52a51ce540f1566d5c0a81f52d6203f558f4a91a7612"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/diagnostics.png",
+        "sha256": "ef876611585f065af374e649a8d931b8e7a1042eebd4c83abd139707be0cb435"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/environment.png",
+        "sha256": "096afe03aa5df55f058d6a1f9ca3f17a464c3e9f032bd3eb5d6eac7e57bc90c7"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/environment.xml",
+        "sha256": "8cb2e251b73969d9463169ca122391f4ea505833acca84791d2513f6ffe30682"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/landscape.png",
+        "sha256": "ee456929cfb0591efde2142f6d5b5520bd73c81c957464f06044506b14ab73f3"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/landscape.xml",
+        "sha256": "b2eade3ac1fcc19ee700a11eb6165222aeab7001e051f27944143bf045c14b4e"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/large-text.png",
+        "sha256": "647ee77e08b398fa7d6e588961c2813f66e4d3f5be161937e285b1f65c71ea8b"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/large-text.xml",
+        "sha256": "542bec75a8edf7569885c4b5b8f8dc74d7690e25f48e6ea4a1a804605a8a5ab6"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/results.json",
+        "sha256": "5a17fc85e08aea890a2fc393f276fa0fc6ed4094e08717ccf7255f1c21fdd8a0"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/returned.xml",
+        "sha256": "f31f02c6d6c45ed939fb6a5aa670eff7880f586307476a0e8637db6788ea3cde"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/startup.png",
+        "sha256": "3ab216ea147c36c600c2a44965cb1dbba7a2bc9838f96475f04619607fa23348"
+      },
+      {
+        "path": ".local/mobile-m0b/20261011T070137Z-emulator-5580/startup.xml",
+        "sha256": "e22aad44338d3ed12564acb7d66772d68e76f9e7401c95eabea31801a82fc409"
+      }
+    ]
+  },
+  "limits": {
+    "physical_device": "NOT_TESTED",
+    "channel_delivery": "NOT_TESTED",
+    "browser_page_load": "NOT_TESTED",
+    "production_release": "BLOCKED",
+    "business_authentication": "NOT_TESTED",
+    "ohos_closure": "NOT_TESTED",
+    "weapp_closure": "NOT_TESTED"
+  }
+}

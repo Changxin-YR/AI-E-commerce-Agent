@@ -6,6 +6,7 @@ plugins {
 }
 
 android {
+    buildFeatures { buildConfig true }
     namespace = "dev.soloops.soloops_flutter"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
@@ -42,3 +43,6 @@ android {
 flutter {
     source = "../.."
 }
+
+// Explicitly pin the already cached provider used by the M0 synthetic share probe.
+dependencies { implementation "androidx.core:core:1.13.1" }

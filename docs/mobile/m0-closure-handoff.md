@@ -2,6 +2,20 @@
 
 更新日期：2026-10-11。实现基线：`fdb404a165861763d57afa18329a94c23bfaf2ff`，分支：`feat/soloops-mobile-m0b`。
 
+## 最新接续点：Android技术补齐已完成
+
+Android 26项新增断言与16项基础运行记录均PASS，完整事实见 `m0-android-closure.md` / `m0-android-closure-evidence.json`。代码在同一分支；最新提交SHA由接续启动指令给出。下一步从鸿蒙继续，再做微信；不要把本轮已通过Android重新从头实现。
+
+本轮新增 `lib/closure_probe.dart` / `synthetic_transfer.dart` 和 Android `soloops/m0` MethodChannel。鸿蒙须实现同名桥接或明确支持差异，继续共享Dart。诊断页所需方法：secureWrite/Read/Clear/Info/Tamper/DropKey、cacheWrite/Read/Clear、uriDenied、pick、share/shareClear、external。安全故障注入仅供debug POC；OHOS若选择Asset服务，应据平台语义调整检查，不可把preferences当安全存储。
+
+共享传输访问 `/_m0c/` 本机合成路由，已覆盖2MiB、取消/失败/恢复。File picker返回固定26字节合成文本 `SoloOps M0 synthetic file\n`，名为 `soloops-m0-small.txt`；超限文件 `soloops-m0-large.txt` 为2MiB+1。Dart picker当前断言Android content scheme；鸿蒙需按实际合法URI适配断言，保持文件名/MIME/字节验证。
+
+最新Android APK SHA256 `1483dba9d188cd512dd54ed1c866b2eac2c2367f7ef61013332434c1177c8b71`。Flutter analyze、2项widget、20项Python工具/契约、lint/format通过。基础回归已改成独立时间目录，避免覆盖旧证据。`check_android_closure.py`只接受当前动作的新日志事件；`export_android_closure.py`核对安装时间与APK哈希后输出脱敏清单。
+
+工作区改名后的Git报错来自旧沙盒路径，使用正常require_escalated即可；Git注册没有损坏，不要修复或另开checkout。Python路径为主仓库 `backend/.venv/Scripts/python.exe`，Flutter SDK为本worktree `.local/toolchains/flutter-oh-api22`，Gradle缓存 `.local/gradle`，JDK `C:/Program Files/Eclipse Adoptium/jdk-17.0.19.10-hotspot`，Android SDK `C:/Users/27363/Desktop/max/android-sdk`。
+
+GitHub `fetch_commit_workflow_runs`本次错误返回空数组；通过连接器 `github.fetch`读取 `https://api.github.com/repos/Changxin-YR/AI-E-commerce-Agent/actions/runs?head_sha=<完整SHA>` 可取得真实结果。起点c4758a9的run38118986499已success。使用structuredContent.content解析，只展示head_sha/status/conclusion/html_url，避免输出整个返回。
+
 ## 本轮授权与完成边界
 
 用户最新指令：继续补齐 M0 剩余技术缺口，按 Android → 鸿蒙 → 微信小程序逐端实现和验证；全部使用模拟器，小程序资质暂缓。需要手工处理系统权限或工具界面时再给出具体操作。完成后提交、推送、核对准确 SHA 的 CI 并汇报，停止于 M0，不进入 M1。
@@ -15,7 +29,9 @@
 3. 重新检查 Git 分支、HEAD、工作区、远端 CI、模拟器连接及已打开的 IDE。设备标识是上次观测，须重新发现。
 4. 当前分支位于主仓库的 `.local/worktrees/mobile-m0a`，复用已导入三个 IDE 的工作区。Codex 保存的项目目录仍可能是改名前路径；实际绝对路径由新对话启动指令提供，所有命令显式指定工作目录。
 
-## 已完成证据与实际边界
+## 前次交接基线与实际边界
+
+以下基础记录及账本保留前次交接范围；Android当前新增验收以顶部接续点与Android专项报告为准。
 
 - Android APK、OHOS HAP、Taro 微信目标构建均有真实成功日志。Android/OHOS 共享 `apps/soloops_flutter/lib/`；微信为 `apps/soloops_weapp/`。
 - Android API34 / Android14 x64 模拟器上 16 项 PASS；OHOS API22 x64 模拟器上 10 项 PASS（SDK24 编译）；微信开发者工具原生界面 7 项 PASS。
@@ -62,3 +78,5 @@
 保持原 R2 后端、Web 业务代码及正式数据；不新增认证系统、数据库迁移或正式五大业务页面，不调用付费 AI、发送真实邮件或操作真实电商平台。安全存储和文件能力只实现最小技术原型，Android/OHOS 继续共享 Dart 业务层。
 
 每端完成后更新逐项矩阵、可复现命令、真实日志和产物 SHA256。全部完成或存在无法消除的平台限制时，更新 M0 报告和契约证据，运行相称的定向检查，核对依赖/许可证/敏感信息与业务代码差异，只提交本轮文件，推送当前独立分支并等待准确提交的 CI。最终汇报三端状态、缺口处置、产物与日志、分支/SHA及下一阶段准入判断，停止于 M0。
+
+交接前已停止本轮HTTPS夹具并移除Android reverse18443。当前OHOS未建立新reverse。下轮需要重新启动夹具；证书仍在 `.local/mobile-m0b/tls`，切勿打印私钥或提交。Android模拟器合成Downloads文件保留便于复测。

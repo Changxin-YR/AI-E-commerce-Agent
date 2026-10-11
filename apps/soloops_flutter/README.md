@@ -1,6 +1,7 @@
 # SoloOps Flutter OH 最小工程
 
-Android 与 OHOS 共用 `lib/main.dart`，只显示启动页、环境信息、导航和生命周期事件。
+Android 与 OHOS 共用 `lib/` 的启动页、环境信息和debug合成技术验收页。
+Android平台桥接已完成模拟器验证，鸿蒙桥接接续状态见 `docs/mobile/m0-closure-handoff.md`。
 `test/widget_test.dart` 是宿主机启动壳测试。
 
 ## 锁定工具链

@@ -422,3 +422,10 @@ Vue Router的query更新与组件重建如何影响编辑？`AppShell`只让Agen
 M0-A API22版本约束示例：`apps/soloops_flutter/toolchain.lock.json`锁定维护者支持API22的版本与引擎SHA，`ohos/build-profile.json5`分别声明编译/目标/最低运行API。目标字段不能证明已安装对应SDK；真实Hvigor错误00303168为环境阻塞证据。微信检查脚本只读启动页，CLI返回0与页面加载成功单独判定。
 
 SDK24实际构建：`scripts/mobile/build_hap_windows.ps1`将构建输入复制到无空格物理目录、核对SDK提交和源码哈希。Flutter包装层的签名门禁与Hvigor编译分别取退出码；未签名HAP可证明编译但不能证明安装。`test_run_evidence.py`验证超时终止子进程，防止CLI进程挂起时留下写入动作。
+
+
+## M0 存储、URI 与传输证据
+
+安全存储的关键是密钥保护与失败策略。Android 桥接通过 Keystore 创建不可导出 AES-GCM 密钥，磁盘只留 IV 和认证密文；篡改和密钥缺失必须报错，清理后重新建立合成会话。模拟器报告 software securityLevel=0，不能据此证明真机 TEE。
+
+文件选择返回 content URI，必须走 ContentResolver；文件大小元数据只能作预检查，流读取仍按实际字节计数。上传和下载都有限额，下载先写 .part，验证完才重命名，取消与异常删除 .part。系统分享面板只证明系统接管，不证明目标渠道收到文件。进程终止前写入、PID 改变后读回并清除，提供持久化策略的实际证据。

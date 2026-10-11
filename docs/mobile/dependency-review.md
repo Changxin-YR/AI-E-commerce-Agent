@@ -49,3 +49,11 @@ API22复核：当前Flutter OH固定3.27.5-ohos-1.0.7，Dart版本和pubspec.loc
 SDK24复核：沿用已锁定Flutter OH 1.0.7与Dart依赖，新增本机无空格构建脚本。HAP包内编译SDK为6.1.1.125、target24；编译PASS但上游ArkTS仍有弃用/异常处理/NAPI告警。未签名包不构成安装或发布验收。证据工具超时回归PASS，未引入新的应用运行时依赖。
 
 本次收尾沿用上述依赖锁，未新增应用依赖；Android APK、SDK24 原目录未签名 HAP、微信目标重新编译 PASS。微信启动页的原生 UI 观察 PASS，automator 通道仍超时 BLOCKED，二者分别归档。证据导出工具增加 Hvigor 参数内绝对路径的规范化与拒绝外部私有路径的回归测试，合计15项工具/契约测试 PASS。
+
+
+## Android 技术补齐增量（2026-10-11）
+
+- 显式新增 androidx.core:core:1.13.1（此前已在 Flutter Android 缓存/依赖链）；本机 Maven POM 的许可证为 Apache-2.0。FileProvider 用于限定诊断子目录的只读共享。
+- flutter_localizations 跟随锁定 Flutter OH SDK；传递 intl 固定为0.19.0，已读取安装包 LICENSE（BSD-3-Clause）。完整声明另保留 apps/soloops_flutter/licenses/INTL-LICENSE，Flutter NOTICE 构建资产由工具链生成。
+- Keystore/SAF/SharedPreferences 平台 API 未增加第三方存储插件。自编原型通道仅在 debug 响应。
+- 微信依赖尚未在此 Android 顺序阶段变更；其审计状态沿用 FAIL，待微信专项调查。

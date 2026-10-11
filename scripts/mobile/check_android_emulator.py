@@ -7,6 +7,7 @@ import subprocess
 import time
 import xml.etree.ElementTree as ET
 from contextlib import suppress
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -20,7 +21,11 @@ def main():
     args = parser.parse_args()
     if not args.serial.startswith("emulator-"):
         parser.error("This runner only changes emulator display settings.")
-    output = ROOT / ".local/mobile-m0b" / args.serial
+    output = (
+        ROOT
+        / ".local/mobile-m0b"
+        / (datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + args.serial)
+    )
     output.mkdir(parents=True, exist_ok=True)
     commands = []
     results = {}

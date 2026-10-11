@@ -412,3 +412,12 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - [Android emulator CLI](https://developer.android.com/studio/run/emulator-commandline)：复用现有 API34 AVD，以 read-only/no-snapshot 启动；ADB 定向安装、读取应用 PID 日志与系统返回、主题、旋转验证。工具未复制进仓库。
 - [OpenHarmony UiTest](https://github.com/openharmony/docs/blob/master/zh-cn/application-dev/application-test/uitest-guidelines.md)：HDC/UiTest 执行模拟器点击、系统按键、截图；完整事件另由应用进程 Hilog 校验。
 - [Huawei 权限声明](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/declare-permissions)：官方文档核实 module.json5 的 requestPermissions、reason 和 usedScene。固定 HAR 的 PlatformPlugin.getClipboardData 实际要求 READ_PASTEBOARD；应用添加前台诊断使用说明，由用户在系统弹窗决定授权。未修改 SDK/HAR。
+
+
+## M0 Android 技术验收补齐（2026-10-11）
+
+- [Android Keystore](https://developer.android.com/privacy-and-security/keystore) 与 [KeyGenParameterSpec](https://developer.android.com/reference/android/security/keystore/KeyGenParameterSpec)：使用不可导出的 AES-256/GCM 密钥、随机 IV、固定诊断 AAD、原子密文文件；密文位于 noBackupFilesDir。API 来源 Apache-2.0 平台，文档 CC BY 4.0/代码示例 Apache-2.0；桥接自行编写，无复制完整实现。模拟器 KeyInfo 的硬件标志据实记录。
+- [Android Storage Access Framework](https://developer.android.com/training/data-storage/shared/documents-files) 和 [安全文件分享](https://developer.android.com/training/secure-file-sharing/share-file)：ACTION_OPEN_DOCUMENT、ContentResolver 的 64 KiB 分块读取、2 MiB 上限；FileProvider 只暴露诊断缓存子目录，临时只读授权并清理。显式锁定已缓存的 androidx.core:core:1.13.1（Apache-2.0）。
+- [Dart HttpClientRequest.abort](https://api.dart.dev/dart-io/HttpClientRequest/abort.html)：共享 Dart 承担 debug loopback 合成传输、取消、响应截止时间、拒绝重定向和流式有界下载；未引入业务上传服务。
+- [Flutter 国际化](https://docs.flutter.dev/ui/internationalization)：锁定 SDK 的 flutter_localizations + intl0.19.0（BSD-3-Clause），验证固定 UTC 跨日样例在 zh_CN/en_US 的日期显示。该样例不是全时区业务日期实现。
+- Firecrawl 状态已认证但额度 -318，本次转内置 web 查询官方文档；相关 API 以固定 SDK 的真实构建和模拟器执行为最终兼容依据。

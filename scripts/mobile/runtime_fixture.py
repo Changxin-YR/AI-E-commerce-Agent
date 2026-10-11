@@ -1,7 +1,9 @@
 """Loopback-only TLS fixture for synthetic emulator probes; never connects to MySQL."""
 
 import argparse
+import asyncio
 import base64
+import hashlib
 import ipaddress
 import json
 import sys
@@ -13,9 +15,10 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 
 def make_app():
-    from fastapi.responses import JSONResponse
+    from fastapi.responses import JSONResponse, Response, StreamingResponse
     from sqlalchemy import event
     from sqlalchemy.engine import Engine
+    from starlette.requests import ClientDisconnect
 
     from app.core.config import Settings
     from app.main import create_app
@@ -39,6 +42,45 @@ def make_app():
 
     @app.middleware("http")
     async def allowlist(request, call_next):
+        # Dedicated synthetic endpoints never dispatch to the business router.
+        if request.url.path.startswith("/_m0c/"):
+            if request.headers.get("x-m0-synthetic") != "true":
+                return JSONResponse({"detail": "synthetic marker required"}, status_code=403)
+            path = request.url.path
+            if path in {"/_m0c/upload", "/_m0c/upload-slow"} and request.method == "POST":
+                size = 0
+                digest = hashlib.sha256()
+                try:
+                    async for chunk in request.stream():
+                        size += len(chunk)
+                        if size > 2 * 1024 * 1024:
+                            return JSONResponse({"detail": "too large"}, status_code=413)
+                        digest.update(chunk)
+                        if path.endswith("-slow"):
+                            await asyncio.sleep(0.1)
+                except ClientDisconnect:
+                    return JSONResponse({"detail": "synthetic upload cancelled"}, status_code=499)
+                return JSONResponse({"size": size, "sha256": digest.hexdigest()})
+            if path == "/_m0c/fail" and request.method in {"GET", "POST"}:
+                return JSONResponse({"detail": "synthetic failure"}, status_code=503)
+            if request.method != "GET":
+                return JSONResponse({"detail": "fixture method blocked"}, status_code=403)
+            if path == "/_m0c/slow":
+                await asyncio.sleep(2)
+                return JSONResponse({"synthetic": True})
+            if path in {"/_m0c/download", "/_m0c/download-large", "/_m0c/download-slow"}:
+
+                async def chunks():
+                    count = 33 if path.endswith("-large") else 2
+                    for _ in range(count):
+                        if path.endswith("-slow"):
+                            await asyncio.sleep(0.4)
+                        yield b"M" * 65536
+
+                return StreamingResponse(chunks(), media_type="application/octet-stream")
+            if path == "/_m0c/redirect":
+                return Response(status_code=302, headers={"location": "https://example.invalid/"})
+            return JSONResponse({"detail": "fixture route blocked"}, status_code=403)
         if request.method != "GET":
             return JSONResponse({"detail": "fixture method blocked"}, status_code=403)
         if request.url.path == "/_m0b/echo":

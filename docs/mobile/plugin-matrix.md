@@ -47,3 +47,19 @@ Android 最小壳编译 PASS；OHOS SDK24 未签名壳编译 PASS。
 | 安全存储 / 插件缓存 / 分享 | NOT_TESTED | NOT_TESTED | 未集成候选插件，不从核心 API 诊断推断 |
 
 微信 DevTools 3.17.4 的缓存、沙箱文件、剪贴板、导航及前后台切换实测 PASS；官方 automator 通道 BLOCKED，生产网络/业务接口 NOT_TESTED。原生 UI 证据见 [M0-B UI记录](m0b-ui-evidence.json)。
+
+
+## Android 技术补齐（2026-10-11）
+
+当前事实以 [Android 技术验收](m0-android-closure.md) 和 m0-android-closure-evidence.json 为准。
+
+| 能力 | Android API34 实际实现与结果 | OHOS / 微信本轮状态 |
+|---|---|---|
+| 安全存储 | PASS：Keystore AES-256/GCM、不可导出密钥、密文排除备份、写读覆盖、篡改和丢失密钥拒绝、进程重启读回清理；硬件保护 NOT_TESTED | NOT_TESTED，待顺序实现 |
+| 非敏感缓存 | PASS：原生 SharedPreferences，合成 scope 隔离、重启和清理；不存凭据 | NOT_TESTED，微信此前基础 set/get/remove 保留 |
+| 系统文件选择 / URI | PASS：ACTION_OPEN_DOCUMENT + ContentResolver，文件名/MIME/内容哈希，取消、无授权 URI 拒绝、2 MiB+1 文件拒绝 | NOT_TESTED |
+| 合成传输 | PASS：共享 Dart 64 KiB 分块，选中文件上传、2 MiB 边界、取消/503/恢复、下载内容核对/超限与部分文件清理 | NOT_TESTED |
+| 网络边界 | PASS：响应超时、重定向拒绝；既有 HTTPS/匿名401/合成头/未信任证书/连接失败恢复回归另见证据 | NOT_TESTED（补充项） |
+| 分享 | PASS：FileProvider1.13.1 系统面板、取消和清理；渠道接收 NOT_TESTED | NOT_TESTED |
+| 外链 | PASS：ACTION_VIEW 交给 Chrome；Chrome 首次使用页后的网页加载 NOT_TESTED | NOT_TESTED |
+| 国际化日期 | PASS：flutter_localizations/intl0.19.0 固定 UTC 跨日样例，zh_CN/en_US 格式 | NOT_TESTED |

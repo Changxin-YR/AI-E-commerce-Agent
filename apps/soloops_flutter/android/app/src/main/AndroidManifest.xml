@@ -1,8 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:label="soloops_flutter"
+        android:allowBackup="false"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <provider android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.m0files"
+            android:exported="false" android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/m0_paths" />
+        </provider>
         <activity
             android:name=".MainActivity"
             android:exported="true"
