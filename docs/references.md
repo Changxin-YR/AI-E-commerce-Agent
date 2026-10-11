@@ -484,3 +484,8 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 
 - Taro Vue页面与组合式生命周期：https://docs.taro.zone/docs/vue-page 、https://docs.taro.zone/en/docs/composition-api 。借鉴：useLoad解析深链，useDidShow只回读，useUnload失效本页工作；沿用项目Taro4/Vue3原生组件。Taro MIT，本文仅参考API语义，未复制第三方页面代码。
 - firecrawl --status 已认证但账户请求 fetch failed，改用官方网页搜索核对上述文档。业务DTO与审批规则复用本仓库Agent/Authorizations服务与Web实现。
+
+## 微信W05参考（2026-10-11）
+
+- 官方 https://docs.taro.zone/docs/apis/files/FileSystemManager 、https://docs.taro.zone/docs/apis/share/shareFileMessage 、https://docs.taro.zone/en/docs/apis/device/clipboard/setClipboardData 。按API声明实现小程序剪贴板和UTF-8临时CSV分享，finally清理临时文件。Taro MIT；未复制第三方实现。firecrawl服务本轮不可连接，使用官方网页检索核对。
+- Listing来源/基线与审批语义依据本仓库ListingService/ListingReview；CSV内容直接使用delivery返回值，保留服务端防公式注入和来源字段。

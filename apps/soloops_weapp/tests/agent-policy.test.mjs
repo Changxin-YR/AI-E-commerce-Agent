@@ -82,6 +82,13 @@ test('B1 uses an exact seven-day UTC window without mutating form', () => {
     7 * 86400000,
   )
   assert.equal(form.scope.start_at, '2026-09-01T00:00:00+08:00')
+  assert.equal(
+    prepareAgentInput({
+      ...form,
+      scope: { ...form.scope, start_at: 'ignored' },
+    }).scope.start_at,
+    result.scope.start_at,
+  )
   assert.throws(
     () =>
       prepareAgentInput({

@@ -1045,3 +1045,7 @@ Listing按product/source row/active baseline生成，编辑另存待审版本；
 ## 微信W04：受控AI运营
 
 单节点请求携带审阅版本；审批不会自动跨过后续节点。B1从已完成verify步骤提取独立持久记录，第二审批拒绝不会覆盖第一结果。AgentResult分别GET回读真实业务记录。启动冻结输入和request_id用于同次恢复；确定性客户端错误可修正后重新提交，操作未知先读当前版本。AppliedRules读取当前版本和阈值，数据许可随着输入变化失效。24项客户端测试及类型通过；IDE与数据库联调待验。
+
+## 微信W05：Listing与人工交付
+
+Listing生成/编辑绑定source row与active baseline，决定携带审阅版本；GET回读后更新本地页面。事实确认在修改时失效；未保存文案保留到用户确认替换。ReviewedDelivery在每次复制/CSV分享前核验服务端当前版本，Vue同步watch及卸载epoch阻止上下文变化后的旧输出，临时分享文件finally清理。巡检页复用AppliedRules补齐当前规则版本及启用规则阈值。28项测试和类型通过，业务端到端待验。

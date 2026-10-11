@@ -21,6 +21,25 @@ import {
 import { openLink } from '../../services/navigation'
 import SourceList from '../../components/SourceList.vue'
 import TaskReview from '../../components/TaskReview.vue'
+import AppliedRules from '../../components/AppliedRules.vue'
+
+const rulesPending = ref(true),
+  activeRule = ref(false)
+function applyRules(rule: {
+  version: number
+  active: boolean
+  values: {
+    max_age_hours: number
+    min_quantity: number
+    max_margin_percent: string
+  }
+}) {
+  scope.rule_revision_id = rule.version
+  activeRule.value = rule.active
+  scope.max_age_hours = rule.values.max_age_hours
+  scope.min_quantity = rule.values.min_quantity
+  scope.max_margin_percent = rule.values.max_margin_percent
+}
 
 const scope = reactive<OperationScope>({
   cost_mode: 'current_estimate',
@@ -237,6 +256,7 @@ useDidShow(() => {
 })
 async function preview() {
   await perform(async () => {
+    if (rulesPending.value) throw new Error('请先读取当前经营规则。')
     if (request.value) throw new Error('请先回查上次运行结果。')
     context.value = await api.request<OperationContext>(
       `${base()}/preview`,
@@ -438,26 +458,36 @@ async function destination(path: string, query: Record<string, string>) {
         :disabled="busy || !!request"
         :maxlength="3"
       />
+      <AppliedRules
+        :scope="scope"
+        :disabled="busy || !!request"
+        @pending="rulesPending = $event"
+        @loaded="applyRules"
+      />
       <text class="label">最低数量</text
       ><input
         :value="scope.min_quantity"
         type="number"
-        :disabled="busy || !!request"
+        :disabled="busy || !!request || activeRule"
         @input="scope.min_quantity = inputNumber($event)"
       /><text class="label">毛利率上限 %</text
       ><input
         v-model="scope.max_margin_percent"
-        :disabled="busy || !!request"
+        :disabled="busy || !!request || activeRule"
       /><text class="label">来源最大时效（小时）</text
       ><input
         :value="scope.max_age_hours"
         type="number"
-        :disabled="busy || !!request"
+        :disabled="busy || !!request || activeRule"
         @input="scope.max_age_hours = inputNumber($event)"
       />
       <button :disabled="busy" @tap="filterHistory">
         按当前身份/渠道读取历史</button
-      ><button class="primary" :disabled="busy || !!request" @tap="preview">
+      ><button
+        class="primary"
+        :disabled="busy || !!request || rulesPending"
+        @tap="preview"
+      >
         预览巡检
       </button>
     </view>

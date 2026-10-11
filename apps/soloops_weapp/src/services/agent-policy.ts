@@ -62,7 +62,10 @@ export function reviewedRecords(
 export function prepareAgentInput(input: AgentInput): AgentInput {
   const value = JSON.parse(JSON.stringify(input)) as AgentInput
   const end = Date.parse(value.scope.end_at)
-  const start = Date.parse(value.scope.start_at)
+  const start =
+    value.template === 'margin_review'
+      ? end - 7 * 86400000
+      : Date.parse(value.scope.start_at)
   if (!Number.isFinite(end) || !Number.isFinite(start) || start >= end)
     throw new Error('请填写有效的起止时间（含时区）。')
   if (value.template === 'margin_review')
