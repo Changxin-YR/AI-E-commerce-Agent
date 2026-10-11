@@ -387,3 +387,9 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - Vue Router官方[导航](https://router.vuejs.org/guide/essentials/navigation.html)与Vue官方[nextTick](https://vuejs.org/api/general.html#nexttick)（MIT）：参考显式query/hash和异步数据渲染后的定位。建店后只传shop编号到既有导入页；设置页等待店铺渲染再定位。入口不恢复权限、不自动提交业务。
 - MDN [autocomplete](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/autocomplete)（文档CC BY-SA）：保留username/current-password，继续支持浏览器密码管理；登录帮助说明向管理员领取网址/账号及求助，不把安装或数据库操作放入卖家步骤。
 - Firecrawl已知fetch failed，使用官方web读取作为回退。文档仅供接口/设计参考，代码自行实现，无新依赖；管理员正式CLI及安全门禁沿用原实现。
+
+## Android A0（2026-10-11）
+- https://capacitorjs.com/docs/apis/http ：Capacitor MIT；采用内置 fetch 原生桥接，支持既有 JSON/File 请求，业务审批保留服务端校验。
+- https://capacitorjs.com/docs/apis/cookies ：Cookie 生命周期需要 Android 实测；前端不存储 bearer token。
+- https://capacitorjs.com/docs/getting-started/environment-setup ：使用 Android SDK 36，安装包模板要求 Java 21。
+- Firecrawl 本次因 api.firecrawl.dev DNS 失败，改用官方网页浏览核对。

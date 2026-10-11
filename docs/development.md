@@ -964,3 +964,6 @@ schedules/status保留worker_enabled并增加latest_timer，接口→SchedulesSe
 ## R2 修复包4：首次使用与管理员边界
 
 LoginView把账号获取与求助写成卖家可执行步骤；管理员CLI仍是创建/重置的正式入口。Dashboard按shop_count显示第一家店铺入口，profile_complete只表示档案状态；Settings等待nextTick后定位店铺区，每行使用RouterLink传shop到现有导入页，由服务端继续限定归属。档案可后补沿用ProfileService.create_shop原契约，没有增加授权旁路。first-use浏览器在正式CLI预建账号后全程操作页面，验证可选档案、店铺持久化、模板下载、实际导入和刷新来源回读。详见r2-fix-uat-01.md。
+
+## Android A0（2026-10-11）
+Vue + Capacitor 独立副本复用既有业务服务。原生 HTTPS origin 与本地 UI 分离，API 客户端保留原 CSRF/会话协议，CapacitorHttp 提供二进制 fetch 桥接；原生打包前校验地址。任务拆分、实际验证与接续入口见 android-plan.md、android-a0-acceptance.md、android-handoff.md。

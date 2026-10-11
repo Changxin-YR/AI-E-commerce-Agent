@@ -106,7 +106,7 @@ R2 A1-2补充（2026-10-10）：SO-001/008/027/041/052/055/057/067的现有导�
 | SO-067 | 审批、操作前预览与回退边界 | P0 | 对象/差异/依据/风险预览及权限化审批 | services/listings.py、operations.py、authorizations.py、outbound.py；OutboundMailReview.vue | test_authorizations.py、test_outbound.py；outbound.spec.ts | R1 审批/候选撤回及 R2 全文预览、修改失效、单次/预授权、提交门禁本地通过；邮件不可撤回，真实外发凭据与送达待验证，统一清单可定位原审批全文与指定 R1 授权；更多长期动作继续；新增商品修订逐项差异、整批审批、来源恢复阻断、拒绝/撤销及清除，经 test_product_edits.py 与桌面/手机验证 |
 | SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久执行、统一清单、恢复与未知结果 | services/agent.py、workbench.py、analytics.py、support.py、outbound.py；AgentRunReview.vue | test_support_model.py、test_analysis_model.py、test_listing_model.py、test_workbench.py；模型业务/外发 E2E | 十类统一记录与原入口、问数/Listing/客服的费用预留、未知不重发、在途取消清除及持久回读合成替身通过；客服政策到期和当前来源门禁通过；新增定时周期、未读通知、回滚恢复/故障暂停回读经 test_schedules.py 与 schedules.spec.ts 通过；真实邮件通道仍待授权；商品批量修订持久逐项失败、UUID 回读、历史成功与当前来源计数可核验 |
 | SO-069 | 授权的开发者 OpenAPI | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
-| SO-070 | 移动端轻量运营能力 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
+| SO-070 | 移动端轻量运营能力 | P2 | Vue + Capacitor 安卓工程与 API 接入基础；设备业务验收按安卓计划推进 | [安卓计划](android-plan.md) | [A0](android-a0-acceptance.md) | 开发中；原生设备尚未验收 |
 | SO-071 | 外部经营数据与提醒渠道 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-072 | 独立站买家智能导购扩展 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-073 | 独立站内容维护与基础建站辅助 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |

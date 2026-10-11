@@ -1,0 +1,44 @@
+name: Verify Android foundation
+
+on:
+  push:
+    branches: ['android/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9
+        with:
+          version: '0.12.18'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Prepare Python CSV contract oracle
+        working-directory: backend
+        run: uv sync --frozen --python 3.11
+      - name: Validate frontend and native asset sync
+        working-directory: frontend
+        env:
+          # Reserved .invalid host; this job verifies packaging, not service connectivity.
+          VITE_SOLOOPS_API_ORIGIN: https://android-ci.invalid
+        run: |
+          npm ci
+          npm run lint
+          npm run test:unit -- --maxWorkers=4
+          npm run android:sync
+      - name: Compile Android debug application
+        working-directory: frontend/android
+        run: |
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+          bash gradlew assembleDebug --no-daemon

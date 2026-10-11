@@ -6,7 +6,7 @@ import vitest from '@vitest/eslint-plugin'
 import skipFormatting from 'eslint-config-prettier/flat'
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'coverage/**', 'playwright-report/**', 'test-results/**'] },
+  { ignores: ['dist/**', 'android/**', 'coverage/**', 'playwright-report/**', 'test-results/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...vue.configs['flat/essential'],
