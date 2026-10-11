@@ -1,38 +1,24 @@
-# Android 换账号接续入口
+# Android 开发接续入口
 
 更新时间：2026-10-11，Asia/Shanghai。GitHub 仓库 `Changxin-YR/AI-E-commerce-Agent`，分支 `android/capacitor-m0`。
 本地独立目录：`C:/Users/27363/Desktop/AI E-commerce Agent/soloops-android`。只写本副本；同级 UI、微信、鸿蒙由其他聊天维护。
 
-## 当前进度
+## 当前进度与下一步
 
-- A0、A1 已完成。A1准确代码 `d6c54bed66081dcee7a9b6c10549087e2a4d94b7` 的 CI 38139535722 全成功。
-- A2 已实现安卓收拢导航、返回键、安全区域、键盘/旋转适配、前后台会话回读、断网提示/恢复，以及经营资料和新增店铺离页保护。客服草稿和执行中任务沿用原保护，并补到退出入口。
-- A2第一版 APK 在 API34 上通过28组设备检查，包括19个页面入口、无横向溢出、返回键保护、键盘、旋转、后台恢复、真实断网和显式重试。
-- 后续增加导航条吸顶、保存中离页阻断、会话回读与退出并发保护。42文件191项单元已通过；最后补充的并发用例及最终提交CI以 `android-a2-acceptance.md` 为准。
-- **A2 尚需用最终提交重新编译安装并重跑两个设备脚本，再记录最终APK校验值。** 第一版设备证据不能替代最后补丁的验收。用户要求现在先推送进度，供切换账号恢复。
+- A0/A1已完成；A2最终应用补丁已验收：lint、type-check、42文件192单元、原生构建、7组认证与29组壳设备检查全部通过。
+- 应用代码 `b70e783285a0242f2dafb0f8d714b8fce48bdcde` 的 CI 38141560687 已在GitHub页面核对 Success。
+- 本轮修正旧WebView安全区域测试误报，原生顶部128/底部63像素已避让系统栏，CSS为0是预期；应用代码未改。修正模拟器启动使用原有SDK镜像的说明。
+- 最终APK SHA256 `D9DDA3EFFD591CBB8425FC41D09C4AF057ACAE41329588B94CBE1EF03F145A66`；详细证据见android-a2-acceptance.md。
+- 首个动作：确认本轮接续提交的准确SHA CI结果，然后进入A3：原生文件选择、真实字节上传、CSV分片及来源回读、今日运营/经营问数两条MVP安卓闭环。A4 Listing/客服/审批恢复；A5其他模块及设备适配；A6安装升级与交付。74 SO、32验收和47长期模块范围保持。
+- A3应复用现有Vue/后端业务和frontend/e2e流程，补已安装APK的设备证据；页面可达不等于业务完成。新增店铺的离页确认/保存解除在A3补验，客服/任务业务保护在A4补验。
+- 当前仅专属API34模拟器；真机与其他尺寸归A5，正式签名/服务地址归A6。
 
-## 新账号首先执行
+## 本轮执行注意
 
-1. 切到安卓分支，先读 `AGENTS.md`、本文、`docs/android-plan.md`、`docs/android-a2-acceptance.md`、`docs/android-local-testing.md`。
-2. 核对工作区与远端 SHA；检查对应提交的 Android foundation CI。先完成下面命令与设备验收，再将 A2 标为完成。
-3. A2完成后进入A3：原生文件选择/字节上传/分片与导入来源回读、今日运营和经营问数两条MVP；A4为Listing/客服/审批。74 SO、32原验收、四MVP及47长期模块继续按原需求/矩阵区分，不把页面可达计为业务完成。
-
-```powershell
-. ./scripts/android-env.ps1
-Push-Location frontend
-npm run lint
-npm run type-check
-npm run test:unit -- --maxWorkers=2
-npm run android:sync:local
-Pop-Location
-.local/android/tools/gradle-8.14.3/bin/gradle.bat -p frontend/android assembleDebug
-adb -s emulator-5580 install -r frontend/android/app/build/outputs/apk/debug/app-debug.apk
-node frontend/scripts/check-android-device.mjs
-node frontend/scripts/check-android-shell.mjs
-```
-
-每步确认成功再继续。`check-android-device.mjs` 会清空专属模拟器内本应用数据；shell脚本暂时关闭网络、旋转和显示键盘，finally恢复设置；仅对 `SoloOps_A1/emulator-5580` 执行。
-Windows沙箱曾令 Vite worker realpath 报EPERM；使用正常本机执行权限。单元默认并行在本机耗尽内存，`--maxWorkers=2` 已通过。不要将这些环境限制误判成业务失败。
+- Windows沙箱导致Vitest临时文件rename EPERM，正常本机权限重跑192项通过。必须加载scripts/android-env.ps1后构建，否则缺少VITE_SOLOOPS_API_ORIGIN。
+- 模拟器启动另将ANDROID_HOME和ANDROID_SDK_ROOT指向原有AppData/Local/Android/Sdk，构建则重新加载android-env.ps1使用副本SDK。
+- gh未在PATH，GitHub匿名REST受到限流；内置浏览器成功读取CI页面。git fetch正常权限成功，远端接续起点9646123与本地一致。
+- 单元maxWorkers=2。模拟器设备脚本依次执行，避免共享ADB9223端口冲突。检查命令各自退出码，PowerShell最后的Get-FileHash会掩盖前面失败。
 
 ## 可复用本机环境
 
@@ -41,8 +27,8 @@ Windows沙箱曾令 Vite worker realpath 报EPERM；使用正常本机执行权�
 - 独立 Docker project `soloops-android-a1`，MySQL8.4，端口3311，schema `soloops_android_test`，专属卷。配置 `.local/android/mysql.env`、`.local/android/backend.env`。
 - FastAPI后台监听 `127.0.0.1:8011`，启动入口 `scripts/start_android_backend.py`，模型/邮件/调度明确关闭。停止前按端口和父进程命令行核对归属，勿使用旧PID。
 - 合成账号 `android_seller` / `Android-Synthetic-2026!`。最后设备测试已退出登录。
-- 证据 `.local/android/evidence/device-shell.json`（28组）与 `a2-*.png`，单元 `.local/android/unit-a2.log`，构建 `.local/android/build-a2.log`。这些本机文件被Git忽略；可用已提交脚本复现。
-- 第一版 APK 已安装；构建输出后来又生成过版本，最终提交仍须重建安装。不要把当前输出/旧设备证据混记为同一二进制验收。
+- 证据 `.local/android/evidence/device-shell.json`（29组）与 `a2-*.png`，单元 `.local/android/unit-a2.log`，构建 `.local/android/build-a2.log`。这些本机文件被Git忽略；可用已提交脚本复现。
+- 最终APK已安装并通过认证/壳验证，设备最后退出登录。数据库与8011后端已恢复运行。
 
 ## 授权和协作约定
 
@@ -51,5 +37,4 @@ Windows沙箱曾令 Vite worker realpath 报EPERM；使用正常本机执行权�
 
 ## 本次GitHub检查点
 
-准确代码提交：`b70e783285a0242f2dafb0f8d714b8fce48bdcde`。
-[Android CI 38141560687](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38141560687) 已触发，换账号检查点记录时为运行中。新账号先打开此链接确认最终结果；本地最后两文件6项单元与lint通过，最新type-check遇本机内存不足中断。此后的文档提交仅保存准确SHA和CI入口。
+本轮接续提交由 `git log -1` 确定；推送后核对该SHA的 Android foundation CI。应用代码b70e783的CI已确认成功。本轮只修改测试及文档。

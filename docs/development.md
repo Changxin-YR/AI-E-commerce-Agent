@@ -974,6 +974,8 @@ Vue + Capacitor 独立副本复用既有业务服务。原生 HTTPS origin 与�
 
 ## Android A2 检查点
 
+2026-10-11接续：192单元、类型检查、原生构建和7组认证设备检查通过。旧WebView由SystemBars在原生窗口层处理安全区域，设备断言改为检查原生边界与CSS留白之和；UIAutomator实测顶部128/底部63像素。最终壳回归与APK校验值见android-a2-acceptance.md。
+
 useAndroidShell将原生事件映射到Vue路由和会话回读。useLeaveProtection以组件生命周期注册脏状态/保存中阻断；会话epoch防止退出后迟到回包恢复状态。网络恢复只提示显式重试，不自动重放写操作。安卓CSS按native-android作用域加载。设备脚本真实操作专属AVD，第一版28组通过，最终补丁设备回归见android-a2-acceptance.md待办。
 
 本机Vitest默认并发曾耗尽内存，限定maxWorkers=2后42文件191项通过；最后新增并发用例单独校验。Vite worker的EPERM以正常本机权限运行解决。

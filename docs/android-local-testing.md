@@ -35,6 +35,8 @@ backend/.venv/Scripts/python.exe scripts/start_android_backend.py
 
 ```powershell
 . ./scripts/android-env.ps1
+$env:ANDROID_SDK_ROOT = 'C:/Users/27363/AppData/Local/Android/Sdk'
+$env:ANDROID_HOME = $env:ANDROID_SDK_ROOT
 & 'C:/Users/27363/AppData/Local/Android/Sdk/emulator/emulator.exe' -avd SoloOps_A1 -port 5580 -no-window -no-audio -no-snapshot -gpu swiftshader_indirect
 ```
 

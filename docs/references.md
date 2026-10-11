@@ -403,6 +403,7 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - Android 文档 CC BY 4.0、示例 Apache 2.0；参考配置语义，自行实现。Firecrawl 额度不足，改用网页工具读取官方资料。
 
 ## Android A2（2026-10-11）
+- [Capacitor 8.5.3 SystemBars 源码](https://github.com/ionic-team/capacitor/blob/8.5.3/android/capacitor/src/main/java/com/getcapacitor/plugin/SystemBars.java)（MIT）：本轮读取锁定依赖中的同版源码，确认旧 WebView 采用原生窗口 padding 并注入零 CSS inset；设备断言合并原生边界与 CSS 留白，不要求两层重复留白。
 - [Capacitor App](https://capacitorjs.com/docs/apis/app)：参考backButton/appStateChange/minimizeApp；返回经过Vue Router守卫，根页最小化保留进程状态。
 - [Network](https://capacitorjs.com/docs/apis/network)：网络连接状态与API服务可用性分别检查，恢复只回读session。
 - [Keyboard](https://capacitorjs.com/docs/apis/keyboard)：监听didShow/didHide并滚动当前输入，配合Android adjustResize。

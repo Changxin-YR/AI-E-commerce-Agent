@@ -66,11 +66,26 @@ try {
   await expect(page.locator('.sidebar')).toBeHidden()
   const insets = await page.evaluate(() => {
     const style = getComputedStyle(document.body)
-    return { top: parseFloat(style.paddingTop), bottom: parseFloat(style.paddingBottom) }
+    return {
+      top: parseFloat(style.paddingTop),
+      bottom: parseFloat(style.paddingBottom),
+      pixelRatio: window.devicePixelRatio,
+    }
   })
-  expect(insets.top).toBeGreaterThan(0)
-  expect(insets.bottom).toBeGreaterThan(0)
-  record('system-bar-safe-area-padding', insets)
+  // Older WebViews receive native window padding and intentionally zero CSS insets.
+  run('shell', 'uiautomator', 'dump', '/sdcard/soloops-a2-window.xml')
+  const hierarchy = run('shell', 'cat', '/sdcard/soloops-a2-window.xml')
+  const bounds = /class="android.webkit.WebView"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/.exec(hierarchy)
+  const screen = /Physical size: (\d+)x(\d+)/.exec(run('shell', 'wm', 'size'))
+  expect(bounds, 'Native WebView bounds must be available').not.toBeNull()
+  expect(screen, 'Physical display size must be available').not.toBeNull()
+  const nativeTop = Number(bounds[2])
+  const nativeBottom = Number(screen[2]) - Number(bounds[4])
+  expect(insets.top).toBeGreaterThanOrEqual(0)
+  expect(insets.bottom).toBeGreaterThanOrEqual(0)
+  expect(nativeTop + insets.top * insets.pixelRatio).toBeGreaterThan(0)
+  expect(nativeBottom + insets.bottom * insets.pixelRatio).toBeGreaterThan(0)
+  record('system-bar-safe-area-padding', { ...insets, nativeTop, nativeBottom })
   await shot('home')
   await page.getByRole('button', { name: '全部功能', exact: true }).click()
   run('shell', 'input', 'keyevent', '4')
