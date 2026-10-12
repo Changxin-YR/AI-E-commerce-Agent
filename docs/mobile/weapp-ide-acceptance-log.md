@@ -1,6 +1,31 @@
 # 微信 IDE 验收记录（2026-10-12）
 
-本文件记录微信开发者工具（IDE）验收的**实际执行环境与结论**，用于区分「离线验证通过」与「IDE 验收通过」。截至本文件更新时间，H01–H20 仍**没有** IDE 验收结论。
+本文件记录微信开发者工具（IDE）验收的**实际执行环境与结论**，用于区分「离线验证通过」与「IDE 验收通过」。当前结论：**启动页已在真实 AppID 下通过 IDE 断言**；H01–H20 的业务页面交互仍需登录后端后逐页验收。
+
+## 结论（2026-10-12 21:00，最新）
+
+用真实小程序 AppID（写入本机不入库的 `apps/soloops_weapp/project.private.config.json`）后：
+
+- 模拟器成功启动，基础库 `3.17.3`（日志 `simulator launch success ... v=3.17.3`）。
+- `node scripts/mobile/check_weapp_load.cjs` → **PASS**：
+
+```json
+{
+  "status": "PASS",
+  "route": "pages/index/index",
+  "screenshot": { "width": 585, "height": 1130, "bytes": 83762 },
+  "scope": "IDE startup page loaded and rendered; no business actions, account login or publication"
+}
+```
+
+- 启动页视觉确认（截图人眼复核）：`SOLOOPS · 卖家工作台`、标题「经营有据，行动有序。」、副标题「把店铺日常，交给清晰的运营流程。」、登录表单（服务地址/用户名/密码）与提示文案。
+- 未执行登录、上传、预览或发布；AppID 只在本机私有配置中使用，`.gitignore` 已忽略该文件。
+
+### 断言为什么改成 evaluate + 截图
+
+该 Taro 4 + Vue 3 构建下，SDK 的 `page.$()`、`page.$$()`、`page.data()` 全部挂起（超时 8 秒无响应），因为它们等待页面数据通道的消息，而 Taro 页面不发送该消息；`page.waitFor()` 正常返回。app 级桥接是健康的：`miniProgram.evaluate(fn)`、`miniProgram.callWxMethod('getSystemInfoSync')`、`miniProgram.screenshot()` 全部可用，`currentPage()`/`pageStack()` 也能返回路由。因此 `check_weapp_load.cjs` 改为：路由断言（`currentPage` + 运行时 `getCurrentPages()`）+ 截图 PNG 有效性与尺寸断言，可选 `SOLOOPS_WEAPP_SHOT` 落盘截图作为证据。
+
+## 历史：改用真实 AppID 前的两次失败（环境阻断）
 
 ## 环境
 
@@ -75,4 +100,13 @@ docker run -d --name soloops-wechat-r2-<date> -e MYSQL_DATABASE=soloops_wechat_r
 python -m pytest -x -q
 ```
 
-结论边界：这证明**服务端接口 + 真实 MySQL 持久化**在微信页面所依赖的读/写/回读语义下全部通过；它**不能**替代微信 IDE 内的页面交互与渲染验收，后者仍卡在基础库下载。
+结论边界：这证明**服务端接口 + 真实 MySQL 持久化**在微信页面所依赖的读/写/回读语义下全部通过。
+
+## 后续待办（业务页面交互验收）
+
+启动页断言已经通过，剩下的是一次完整业务旅程，需要本机后端与登录账号：
+
+1. 起后端与 MySQL（可用上面的容器命令），把服务地址配成小程序合法域名；本机调试可在私有配置里关闭域名校验。
+2. 在模拟器里登录并建店/选店，然后用 `miniProgram.callWxMethod('reLaunch', { url: '/pages/xxx/index' })` 逐页导航；每页截图 + 记录错误文案。
+3. 逐页执行读、写、回读与返回：导入、待办、Agent/B1、Listing、客服、库存、分析、总览、利润、费用、账单、订单核对、结算、规则、定时、质量、修订、外发。
+4. 记录字号/长列表表现；真实付费模型、邮件与平台写入继续只用隔离替身；Docker 容器用完即删。
