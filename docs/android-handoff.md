@@ -72,4 +72,13 @@
 
 ## 本次GitHub检查点
 
-A3 收尾提交 `eaed69ce3a517b3a8702bbd236e611597d69d809`（含此前本地未推送的 `cbba852`）已推送，[CI 38191429012](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38191429012) 全部成功（3m3s：lint、194 单元、类型检查、资源同步、Gradle `assembleDebug`、release 资源门禁）。A2 期已核对：应用代码 `b70e783` 的 CI 38141560687 Success、测试提交 `6ecbd86` 的 CI [38143266315](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38143266315) Success（2m56s）。下一聊天先 `git fetch` 核对该尖端未变（或取更新 SHA）再进入 A4。
+A0–A6 的每包提交都已推送并核对准确的 `Verify Android foundation` 结果，全部 **success**：
+
+| 包 | 提交 | CI |
+|---|---|---|
+| A3 | `eaed69ce3a517b3a8702bbd236e611597d69d809`（含此前未推送的 `cbba852`） | [38191429012](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38191429012)（3m3s） |
+| A4 | `3bc5ecd0e0fc544cacec7bf11423cd6649b1061a` | [38198085279](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38198085279) |
+| A5 | `e5c7483799cc3868548ee1e5cb1c8ea26ea55a0b` | [38202740977](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38202740977) |
+| A6 | `c7c31854ad171e0e2eb23f5069f3010356b38f84` | [38204202976](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38204202976) |
+
+A2 期已核对：应用代码 `b70e783` 的 CI 38141560687 Success、测试提交 `6ecbd86` 的 CI [38143266315](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38143266315) Success（2m56s）。后续如继续开发，先 `git fetch` 核对尖端（或取更新 SHA）再动手。
