@@ -983,3 +983,7 @@ useAndroidShell将原生事件映射到Vue路由和会话回读。useLeaveProtec
 ## Android A3（2026-10-12）
 
 导入链路的设备验收暴露了一个平台映射缺陷：`BrowserImportSource`的`accept=".csv"`被WebView映射为宿主意图`typ=text/csv`，而Android MediaProvider把`.csv`记为`text/comma-separated-values`，DocumentsUI因此把文件节点标记为不可选（`enabled="false"`）。多扩展名入口因回落为`typ=*/*`恰好掩盖了问题。修复保留扩展名并显式补充两个CSV MIME拼写，两个单元断言锁住属性；设备复验显示意图变为`typ=*/*`+`EXTRA_MIME_TYPES`且文件可选。业务MVP复用既有服务端规则：今日运营走本地规则产生候选并批准为本地待办，经营问数走确定性替身（`model_status=test_double`），预算、许可、审批与来源版本仍由服务端校验。详见android-a3-acceptance.md。
+
+## Android A4（2026-10-12）
+
+设备脚本抽出了会话内API调用、CSV种子与建店三个共享函数，避免各包复制粘贴；Listing与客服MVP都从业务页入口链接进入任务台，任务台的记录恢复会按店铺回放上次模式，脚本因此在选店铺/身份之后再设执行流程。任务生命周期在设备上暴露两处边界：页面「启动并运行」会一路推进到审批或结束，`paused`只能在服务端留出`ready`状态后再由UI暂停；恢复入口即`AgentRunReview`的恢复预算表单，恢复后继续按节点推进。过期以客服政策`availability=expired`（服务端按有效期计算）验收，执行记录本身没有过期状态。保护分两层：客服页用自身`beforeRouteLeave`守卫阻止站内导航并保留输入（文案提示，不弹壳层确认框），运营事项用`dirty`状态禁用运行并在批准时把备注写入任务；请求在途的任务页阻断由单元测试覆盖。详见android-a4-acceptance.md。

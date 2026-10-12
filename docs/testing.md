@@ -595,3 +595,13 @@ C最终准确业务代码ed30b872e5a89be096e15c550cb46b9b7240ee44的CI3804231893
 - 测试脚本只操作专属合成 AVD 与合成库；`pytest backend/tests` 未对任何保留验收库运行。浏览器模型 E2E 本轮未启动（终端未加载 `_test` 库环境）。
 
 本轮修复：单个 `.csv` 扩展名导致原生选择器置灰 CSV 文件（`text/csv` 与 MediaProvider `text/comma-separated-values` 不匹配），两个入口改为显式多 MIME 拼写；设备复验显示意图变为 `typ=*/*` 且文件可选。详见 android-a3-acceptance.md。
+
+## Android A4（2026-10-12）
+本地：`eslint` exit 0；42 文件 **194 项单元**通过（`--maxWorkers=2`）；本轮未改应用代码与依赖，故未重跑资源同步与 Gradle 构建（APK 与 A3 相同，SHA256 `A1931F93…E91D`）。
+
+设备（专属 API 34 AVD `emulator-5580` + 合成 MySQL 3311 + 后端 8011，全部合成/替身）：
+- `node frontend/scripts/check-android-listing-support.mjs`：4 项通过（AI Listing 候选→节点批准→本地生效 #7；第二份候选拒绝 #8；政策 #3 当前有效 / #4 已过期；AI 客服候选→草稿 #2 保存修改/存档 + 未保存正文阻止导航）。证据 `.local/android/evidence/device-a4-listing-support.json`。
+- `node frontend/scripts/check-android-agent-lifecycle.mjs`：5 项通过（执行 #12 拒绝、#13 取消保留 3 步、#14 `ready→paused→waiting_approval`、强停重启后恢复并批准为 `succeeded`、运营事项未保存备注保护）。证据 `.local/android/evidence/device-a4-agent-lifecycle.json`。
+- 回归：共享 `android-device.mjs` 新增 `call`/`seedImport`/`createShop`/`open` 后重跑 `check-android-mvps.mjs` 三项通过（店铺 #19、run #5、执行 #15）。
+- 设备脚本依次执行（共用 ADB 9223 端口）；只操作专属合成 AVD 与合成库。
+- 未覆盖：执行记录无“过期”状态（`valid_until` 仅来源有效期提示）；任务侧“请求处理中禁止离页”为单元覆盖（本地替身毫秒级完成）。详见 android-a4-acceptance.md。

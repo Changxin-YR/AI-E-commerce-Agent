@@ -1,5 +1,9 @@
 # P0 验收矩阵
 
+## Android A4（2026-10-12）
+
+Listing 与客服两条 MVP 及任务生命周期设备验收 9 项通过：AI Listing 候选 → 节点批准 → 版本 #7 本地生效、版本 #8 拒绝；AI 客服候选 → 草稿 #2 保存修改并存档；政策 #3 当前有效 / #4 已过期；执行 #12 拒绝、#13 取消（保留 3 步）、#14 暂停后恢复、强停重启后批准为 `succeeded`；运营事项未保存备注阻止运行并随批准落库。共享设备脚本重构后 A3 三项回归通过。见 [A4 验收](android-a4-acceptance.md)。
+
 ## Android A3（2026-10-12）
 
 导入链路与两条业务 MVP 在 API 34 设备闭环：原生选择器真实字节上传（中文引号/逗号/换行）、2001 行两片拆分、强停恢复、指纹拒绝、跨片去重与销售额回读 4000.0000；今日运营检查 #3 产生 2 个候选并批准为事项 #5（`open`），经营问数执行 #1（`model_status=test_double`、`spent_usd=0.002000`）经批准闭环。本轮同时修复 `accept=".csv"` 导致原生选择器置灰 CSV 的缺陷（`text/csv` 与 MediaProvider `text/comma-separated-values` 不匹配）。见 [A3 验收](android-a3-acceptance.md)。原32项与其余业务 MVP 的设备结果继续在 A4/A5 补充。

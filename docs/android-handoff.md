@@ -5,11 +5,20 @@
 
 ## 当前进度与下一步
 
-- A0/A1/A2/A3 已完成。A3 设备验收 7 项通过：导入链路 4 项（真实字节上传、2001 行两片拆分、强停恢复、指纹拒绝/跨片去重/销售额 4000.0000）与今日运营、经营问数两条 MVP；详细证据见 [A3 验收](android-a3-acceptance.md)。
+- A0/A1/A2/A3/A4 已完成。A3 设备验收 7 项通过：导入链路 4 项（真实字节上传、2001 行两片拆分、强停恢复、指纹拒绝/跨片去重/销售额 4000.0000）与今日运营、经营问数两条 MVP；详细证据见 [A3 验收](android-a3-acceptance.md)。
+- A4 设备验收 9 项通过：Listing MVP（候选 → 节点批准 → 本地生效版本 #7；另一版本 #8 拒绝）与客服 MVP（AI 候选 → 草稿 → 保存修改 → 存档 #2）、政策过期（#3 当前有效 / #4 已过期）、执行 #12 拒绝、#13 取消（保留 3 步）、#14 暂停→恢复→强停重启后批准为 `succeeded`、运营事项未保存备注保护；见 [A4 验收](android-a4-acceptance.md)。
 - A3 同时修复一个真实缺陷：`accept=".csv"` 使原生选择器把 CSV 文件置灰（`typ=text/csv` 与 MediaProvider `text/comma-separated-values` 不匹配）。两个 CSV 入口改为显式多 MIME 拼写，单元 192 → 194，设备复验通过。
-- 本轮 debug APK SHA256 `A1931F93F817DE710CC6CD51925741D4C340D72B3F65B9E58BADAB45B813E91D`；A2 最终 APK（`D9DDA3EF…`）已被本轮重建取代。
-- **首个动作**：先 `git fetch` 核对本轮提交与准确 SHA 的 `Verify Android foundation` CI 成功，再进入 **A4**：Listing、客服、审批与任务恢复两条 MVP 设备闭环，含拒绝/过期/取消/恢复；A4 还需补客服与任务的业务保护（新增店铺保护已在 A3 补验）。A5 其余业务模块与真机/尺寸适配；A6 安装升级、签名与发行交付。74 SO、32 验收与 47 长期模块范围保持。
+- 本轮 debug APK SHA256 `A1931F93F817DE710CC6CD51925741D4C340D72B3F65B9E58BADAB45B813E91D`（A4 未改应用代码，APK 不变）。
+- **首个动作**：先 `git fetch` 核对本轮提交与准确 SHA 的 `Verify Android foundation` CI 成功，再进入 **A5**：其余 19 个业务入口逐项设备结果 + 多尺寸/方向/字号适配回归（真机限制如实记录）；随后 **A6** 安装升级、签名发行与交付。74 SO、32 验收与 47 长期模块范围保持。
 - 当前仅专属 API 34 模拟器；真机与其他尺寸归 A5，正式签名/服务地址归 A6。
+
+## A4 收尾记录（2026-10-12）
+
+- 设备脚本：`check-android-listing-support.mjs`（Listing/客服 MVP + 政策过期 4 项）、`check-android-agent-lifecycle.mjs`（拒绝/取消/暂停恢复/重启恢复/未保存保护 5 项）；共享 `android-device.mjs` 本轮新增 `call`/`seedImport`/`createShop`/`open` 并回归 A3 脚本（3 项通过，店铺 #19）。
+- 关键回读：`listings/versions` #7 `approved` / #8 `rejected`；政策 #3 当前有效、#4 已过期；客服草稿 #2 `archived`；`agent_executions` #12 `rejected`、#13 `cancelled`（3 步保留）、#14 `ready → paused → waiting_approval → succeeded`；`operation_tasks` 备注保存成功。
+- 设备操作要点：应用会按店铺恢复上次的表单模式（记录恢复），因此设备脚本必须在选完店铺/身份后再设执行流程；Listing 与客服都从业务页的入口链接进入任务台；客服页未保存正文由页面自身守卫生效（文案「正文或人工记录尚未保存…」），不弹壳层确认框。
+- 真实模型、邮件与平台写入保持 0；模型仅 `listing-model-e2e-*`、`support-model-e2e-*`、`question-e2e-*` 等前缀店铺使用本地确定性替身。
+- 未覆盖：执行记录没有“过期”状态（`valid_until` 只是来源有效期提示），过期以客服政策有效期验收；任务侧“请求处理中禁止离页”由单元测试覆盖（本地替身毫秒级完成，设备无法稳定复现）。
 
 ## A3 收尾记录（2026-10-12）
 

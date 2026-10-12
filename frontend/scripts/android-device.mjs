@@ -1,4 +1,4 @@
-/* global setTimeout, fetch */
+/* global setTimeout, fetch, URLSearchParams, window */
 import { chromium, expect } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
 import { mkdir, writeFile } from 'node:fs/promises'
@@ -90,4 +90,84 @@ export async function chooseFile(page, label, filename) {
   }
   await shot('a3-native-picker')
   tapNode(xml, filename.replace(/\.csv$/, '').slice(0, 16))
+}
+// Session-bound API call from inside the installed WebView: real cookies and CSRF.
+export async function call(page, route, init) {
+  return page.evaluate(
+    async ({ route, init }) => {
+      const base = 'http://10.0.2.2:8011/api'
+      const session = await (await fetch(`${base}/auth/session`)).json()
+      const response = await fetch(base + route, {
+        method: init?.method ?? 'GET',
+        headers: {
+          'X-SoloOps-Client': 'web',
+          'X-CSRF-Token': session.csrf_token,
+          ...(init?.headers ?? {}),
+        },
+        body: init?.body,
+      })
+      const text = await response.text()
+      let body
+      try {
+        body = JSON.parse(text)
+      } catch {
+        body = text
+      }
+      return { status: response.status, body }
+    },
+    { route, init },
+  )
+}
+export async function seedImport(page, shop, filename, kind, text, allowUpdates = false) {
+  const query = new URLSearchParams({
+    filename,
+    kind,
+    data_identity: 'synthetic',
+    source_channel: 'generic',
+    timezone: 'UTC',
+  }).toString()
+  const uploaded = await call(page, `/shops/${shop}/imports?${query}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/csv' },
+    body: text,
+  })
+  expect(uploaded.status, JSON.stringify(uploaded.body)).toBeLessThan(300)
+  const preview = await call(page, `/imports/${uploaded.body.id}/preview`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ version: uploaded.body.version, mapping: uploaded.body.mapping }),
+  })
+  expect(preview.status, JSON.stringify(preview.body)).toBeLessThan(300)
+  const committed = await call(page, `/imports/${uploaded.body.id}/commit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ version: preview.body.version, allow_updates: allowUpdates }),
+  })
+  expect(committed.status, JSON.stringify(committed.body)).toBeLessThan(300)
+  return uploaded.body.id
+}
+export async function createShop(page, code, name) {
+  const created = await call(page, '/shops', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      code,
+      name,
+      platform: 'other',
+      market: 'US',
+      currency: 'USD',
+      timezone: 'Asia/Shanghai',
+    }),
+  })
+  expect(created.status, JSON.stringify(created.body)).toBe(201)
+  return created.body.id
+}
+// Deep link through the app's own history so the SPA router resolves it.
+export async function open(page, hashPath) {
+  await page.evaluate(async (hashPath) => {
+    const { origin } = window.location
+    window.location.href = `${origin}${hashPath}`
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  }, hashPath)
+  await page.waitForLoadState('load')
 }

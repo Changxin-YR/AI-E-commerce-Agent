@@ -1,8 +1,18 @@
-/* global console, fetch, URLSearchParams, process */
+/* global console, process */
 import { expect } from '@playwright/test'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { output, serial, restart, login, navigate, shot } from './android-device.mjs'
+import {
+  output,
+  serial,
+  restart,
+  login,
+  navigate,
+  shot,
+  call,
+  seedImport,
+  createShop,
+} from './android-device.mjs'
 
 // A3 business closures on the installed APK: today's operations (local rules) and
 // business question answering (deterministic in-process stand-in model).
@@ -13,63 +23,6 @@ const record = (check, evidence = {}) => {
 }
 let active
 await mkdir(output, { recursive: true })
-
-async function call(page, route, init) {
-  const result = await page.evaluate(
-    async ({ route, init }) => {
-      const base = 'http://10.0.2.2:8011/api'
-      const session = await (await fetch(`${base}/auth/session`)).json()
-      const response = await fetch(base + route, {
-        method: init?.method ?? 'GET',
-        headers: {
-          'X-SoloOps-Client': 'web',
-          'X-CSRF-Token': session.csrf_token,
-          ...(init?.headers ?? {}),
-        },
-        body: init?.body,
-      })
-      const text = await response.text()
-      let body
-      try {
-        body = JSON.parse(text)
-      } catch {
-        body = text
-      }
-      return { status: response.status, body }
-    },
-    { route, init },
-  )
-  return result
-}
-
-async function seed(page, shop, filename, kind, text, allowUpdates = false) {
-  const query = new URLSearchParams({
-    filename,
-    kind,
-    data_identity: 'synthetic',
-    source_channel: 'generic',
-    timezone: 'UTC',
-  }).toString()
-  const uploaded = await call(page, `/shops/${shop}/imports?${query}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/csv' },
-    body: text,
-  })
-  expect(uploaded.status, JSON.stringify(uploaded.body)).toBeLessThan(300)
-  const preview = await call(page, `/imports/${uploaded.body.id}/preview`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ version: uploaded.body.version, mapping: uploaded.body.mapping }),
-  })
-  expect(preview.status, JSON.stringify(preview.body)).toBeLessThan(300)
-  const committed = await call(page, `/imports/${uploaded.body.id}/commit`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ version: preview.body.version, allow_updates: allowUpdates }),
-  })
-  expect(committed.status, JSON.stringify(committed.body)).toBeLessThan(300)
-  return uploaded.body.id
-}
 
 async function exactTime(input, value) {
   const details = input.locator('..')
@@ -84,28 +37,15 @@ try {
   await login(page)
 
   const stamp = Date.now()
-  const created = await call(page, '/shops', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      code: `question-e2e-android-${stamp}`,
-      name: `安卓合成 MVP ${stamp}`,
-      platform: 'other',
-      market: 'US',
-      currency: 'USD',
-      timezone: 'Asia/Shanghai',
-    }),
-  })
-  expect(created.status, JSON.stringify(created.body)).toBe(201)
-  const shop = created.body.id
-  const products = await seed(
+  const shop = await createShop(page, `question-e2e-android-${stamp}`, `安卓合成 MVP ${stamp}`)
+  const products = await seedImport(
     page,
     shop,
     'mvp-products.csv',
     'products',
     'sku,name,unit_cost,cost_currency,facts\nMVP-001,安卓合成商品,18,USD,合成规格\n',
   )
-  const orders = await seed(
+  const orders = await seedImport(
     page,
     shop,
     'mvp-orders.csv',
@@ -113,7 +53,7 @@ try {
     'order_id,line_id,sku,quantity,unit_price,currency,ordered_at,status,discount,refund\n' +
       'O-MVP,1,MVP-001,3,20,USD,2026-10-07 12:00:00,paid,0,0\n',
   )
-  const inventory = await seed(
+  const inventory = await seedImport(
     page,
     shop,
     'mvp-stock.csv',

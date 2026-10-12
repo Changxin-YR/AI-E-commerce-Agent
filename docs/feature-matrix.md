@@ -1,5 +1,9 @@
 # 功能实现矩阵
 
+## Android A4（2026-10-12）
+
+Listing 与客服两条 MVP 在 API 34 设备闭环（均为本地确定性替身）：AI Listing 候选 → 节点批准 → 版本本地生效，另一版本被拒绝；AI 客服候选 → 草稿保存修改并存档。任务生命周期：执行拒绝、取消（保留步骤历史）、暂停后恢复、强停重启后从执行记录恢复并批准为成功；过期以客服政策有效期（当前有效 / 已过期）验收。保护：客服未保存正文阻止离站内导航并保留输入，运营事项未保存备注禁用运行并在批准时落库。共享设备辅助函数重构后 A3 三项回归通过。见 [A4 设备证据](android-a4-acceptance.md)。74 SO/32原验收/四条MVP保持；A5 的其余模块与多尺寸适配、A6 发行交付继续。
+
 ## Android A3（2026-10-12）
 
 数据导入链路已在 API 34 设备验收：系统选择器真实字节上传、2001 行两片拆分与覆盖读回、强停恢复、原文件指纹拒绝、跨片去重（去重后 2000 / 重叠 1）与经营分析销售额 4000.0000；今日运营（本地规则）与经营问数（本地确定性替身）两条 MVP 走完候选/解释 → 审批 → 待办/复查。缺陷修复：单个 `.csv` 扩展名会让原生选择器置灰 CSV 文件，两个 CSV 入口改为 `.csv,text/csv,text/comma-separated-values`。见 [A3 设备证据](android-a3-acceptance.md)。74 SO/32原验收/四条MVP保持；A4 的 Listing/客服/审批恢复与 A5 的其余模块继续补充。
@@ -114,7 +118,7 @@ R2 A1-2补充（2026-10-10）：SO-001/008/027/041/052/055/057/067的现有导�
 | SO-067 | 审批、操作前预览与回退边界 | P0 | 对象/差异/依据/风险预览及权限化审批 | services/listings.py、operations.py、authorizations.py、outbound.py；OutboundMailReview.vue | test_authorizations.py、test_outbound.py；outbound.spec.ts | R1 审批/候选撤回及 R2 全文预览、修改失效、单次/预授权、提交门禁本地通过；邮件不可撤回，真实外发凭据与送达待验证，统一清单可定位原审批全文与指定 R1 授权；更多长期动作继续；新增商品修订逐项差异、整批审批、来源恢复阻断、拒绝/撤销及清除，经 test_product_edits.py 与桌面/手机验证 |
 | SO-068 | 任务状态、执行记录和异常恢复 | P0 | 持久执行、统一清单、恢复与未知结果 | services/agent.py、workbench.py、analytics.py、support.py、outbound.py；AgentRunReview.vue | test_support_model.py、test_analysis_model.py、test_listing_model.py、test_workbench.py；模型业务/外发 E2E | 十类统一记录与原入口、问数/Listing/客服的费用预留、未知不重发、在途取消清除及持久回读合成替身通过；客服政策到期和当前来源门禁通过；新增定时周期、未读通知、回滚恢复/故障暂停回读经 test_schedules.py 与 schedules.spec.ts 通过；真实邮件通道仍待授权；商品批量修订持久逐项失败、UUID 回读、历史成功与当前来源计数可核验 |
 | SO-069 | 授权的开发者 OpenAPI | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
-| SO-070 | 移动端轻量运营能力 | P2 | Vue + Capacitor 安卓工程；API34 设备已验收导入链路与今日运营/经营问数两条 MVP | [安卓计划](android-plan.md) | [A3](android-a3-acceptance.md) | 开发中；其余业务模块与真机适配按 A4/A5 |
+| SO-070 | 移动端轻量运营能力 | P2 | Vue + Capacitor 安卓工程；API34 设备已验收导入链路、今日运营/经营问数、Listing/客服与任务生命周期 | [安卓计划](android-plan.md) | [A4](android-a4-acceptance.md) | 开发中；其余业务模块与真机适配按 A5，签名发行按 A6 |
 | SO-071 | 外部经营数据与提醒渠道 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-072 | 独立站买家智能导购扩展 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
 | SO-073 | 独立站内容维护与基础建站辅助 | P2 | 保留冻结稿完整需求，P0 稳定后按优先级实现 | — | — | 未实现 |
@@ -145,3 +149,5 @@ SO-001/006/067/068/074的既有能力通过G-04独立空库首次安装和真实
 2026-10-11 Android A2：192单元、7组认证、29组最终壳设备检查通过，覆盖19业务入口、导航与恢复；业务MVP设备验收仍归A3/A4，详见android-a2-acceptance.md。
 
 2026-10-12 Android A3：导入链路4项（真实字节上传、2001行两片拆分、强停恢复、指纹拒绝与跨片去重/销售额4000.0000）与今日运营、经营问数两条MVP设备通过；修复单个`.csv`扩展名导致原生选择器置灰CSV的缺陷（两个入口改为`.csv,text/csv,text/comma-separated-values`，单元192→194）。模型仅用本地`test_double`替身，真实模型/邮件/平台写入保持0。详见[android-a3-acceptance.md](android-a3-acceptance.md)；A4 Listing/客服/审批恢复与A5其余模块继续按74SO/32原验收/四MVP范围管理。
+
+2026-10-12 Android A4：Listing与客服两条MVP（AI候选→节点批准→本地生效/存档）、政策过期（当前有效/已过期）、执行拒绝、取消保留步骤、暂停后恢复、强停重启后恢复并批准、客服未保存正文阻止导航、运营事项未保存备注保护共9项设备通过；共享设备辅助函数重构后A3三项回归通过。仍为本地替身，真实模型/邮件/平台写入0。详见[android-a4-acceptance.md](android-a4-acceptance.md)；A5其余模块与多尺寸适配、A6签名发行继续。
