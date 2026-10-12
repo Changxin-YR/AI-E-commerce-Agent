@@ -74,6 +74,11 @@ feature → 主要 api_ref（均带 `/api/shops/{shop_id}` 前缀，`r2.overview
 
 **与 Flutter 端的有意差异（如实记录，不得写成"已对齐"）**：`contracts/ui-contract.json` 的 `r2.order_reconciliation` 只声明 `statements/orders/reconcile` 一个动作，因此小程序订单核对页**只读、不提供"保存审阅"**；Flutter 端另有 `ReviewPanel(orders: true)` 走 `/order-statement-reviews`（后端存在该路由，但不在契约动作内）。同理 `fee-rules/{id}/{action}` 服务端只接受 `withdraw`/`clear`，小程序按此实现，未臆造 `save`/`revoke` 路径。
 
+## 交付边界（2026-10-12 由用户确认收尾）
+
+- **已完成**：微信端 wave 3 代码（`r2.order_reconciliation` 独立页与「我的」入口、`/fee-rules` 独立页、tabBar 图标、「来源证据展开」组件）通过 `vue-tsc` 与 `taro build`；**微信开发者工具模拟器可正常渲染该小程序**（登录页显示服务地址 `http://127.0.0.1:18081`），并定位到可复现的启动失败修复（见下）。
+- **已知限制（收尾，不再反复重试）**：**登录/列表/写操作的"真实链路驱动"未取得结果**。原因已穷尽：`miniprogram-automator@0.12.1` 是 npm 最新版且与本机 IDE `v2.01.2510290` 不兼容；`SendKeys`/剪贴板注入不到小程序输入框；盲点坐标打不开调试器控制台。**补齐方式**：请人工在开发者工具里登录一次（账号 `harmony_r2` / 密码 `Synthetic-R2-2026!`）并回传截图；或改走真机调试（需在 MP 后台把服务域名加入合法域名）。运行时脚本已备 `scripts/mobile/check_weapp_runtime.cjs`。
+
 ## 微信开发者工具运行时联调（进展、可复现修复与仍阻塞的部分）
 
 **已确认：构建产物能在微信开发者工具里正常加载与渲染。**

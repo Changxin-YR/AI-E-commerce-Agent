@@ -1,5 +1,23 @@
 # 鸿蒙 API22 R2 · 账号切换接续入口
 
+## ⛳ 交付边界与已知限制（2026-10-12 由用户确认收尾 · 本节优先于下文全部历史状态）
+
+**已完成（设备端操作 + 数据库回读，逐项已核 CI）：**
+
+- 鸿蒙端 R2 功能项**全部端测通过**：H19 商品本地修订、H12 费用映射规则、H13 账单审阅、H14 订单账单核对、H15 结算回款、H16 经营规则与 **AI 授权管理（创建/消耗/撤销）**、H17 定时运营与通知深链、H09 经营分析（含 ask）、H10 跨店总览（含历史回读与**清除摘要正文**）、H18 质量报告历史与清除、H20 测试外发（全程替身，**真实邮件调用 0**）。
+- H21 边界**通过 6 项**：离开/恢复、断线错误文案、未知结果与同次请求恢复（恰好一次）、**409 版本冲突**、深浅色主题、错误文案可读。
+- 微信端 wave 3 代码完成并提交（`r2.order_reconciliation` 独立页与「我的」入口、`/fee-rules` 独立页、tabBar 图标、「来源证据展开」组件），`vue-tsc` 与 `taro build` 通过；**微信开发者工具模拟器可正常渲染该小程序**（登录页显示服务地址 `http://127.0.0.1:18081`）。
+
+**已知限制（3 项，均已穷尽可脚本化手段，需人工 GUI 操作；不再作为待办反复重试）：**
+
+1. **H21 横屏未验证。** 只能由 **DevEco Studio 的 Device Manager** 手动转屏。已排除的路径：`Emulator.exe --help` 无旋转项；`hidumper -s DisplayManagerService` 显示旋转**由传感器驱动**（"Dms subscribed to sensor successfully"）且该服务**不提供设置朝向的 shell 接口**；`SensorService` 仅支持 `-h/-l/-c/-o` 只读查询；枚举 Emulator 进程**全部窗口**只有一个可见窗口（Qt5 `Qt51517QWindowIcon`，394×710 手机画面，**无工具栏/旋转按钮**）；Settings 内**没有**旋转开关。
+2. **H21 大字体未验证。** 需**人工**在「设置 → 字体大小和界面缩放」拖动滑块。已排除的路径：`uitest uiInput` 的 `click`（点轨道）/`swipe`/`drag`（均从滑块左端起手）、聚焦后**方向键 keyEvent**、以及**在模拟器窗口上发送真实鼠标事件**（含逐帧移动的按下-拖动-抬起）**全部无响应**；并已用可逆的"返回"箭头校准点击确认**该模拟器窗口对合成鼠标事件整体无响应**（两种缩放映射都试过）；`param set persist.global.fontScale` 被拒（errNum 106/1002）。
+3. **微信端登录/列表/写操作真实链路未取得结果。** 模拟器能渲染应用，但**无法自动化驱动**：`miniprogram-automator@0.12.1` **已是 npm 最新版**且与本机 IDE `Stable v2.01.2510290` **不兼容**（`EMFILE … core.wxvpkg` → `The "fd" argument must be of type number. Received undefined`，错误来自 IDE 侧）；`SendKeys` 与剪贴板**都注入不到小程序渲染出的输入框**；盲点坐标也无法稳定打开调试器控制台。运行时脚本已备：`scripts/mobile/check_weapp_runtime.cjs`（登录→待办列表→商品质量检查保存），自动化通道一旦可用即可直接跑；本机只读探针已确认 `client_type=weapp` 登录可用、`GET /api/shops` 返回 `918 HarmonyR2Main`。
+
+**若要补齐这 3 项**：人工完成转屏 / 调大字号 / 在开发者工具里登录一次（账号 `harmony_r2`、密码 `Synthetic-R2-2026!`，服务地址已是 `http://127.0.0.1:18081`）后告知，即可立即验证并回读入库。
+
+**微信开发者工具可复现修复**：模拟器报 **"模拟器启动失败 / TypeError: Cannot read property 'subPackages' of undefined"**（或更早的 `Failed to fetch`）时，**删除 `apps/soloops_weapp/.swc/`（`.gitignore` 内的工具编译缓存）后重启 IDE** 即恢复正常渲染。此前把它归因于系统代理是**错的**，无需改动系统网络设置。
+
 ## 2026-10-12 早晨 M0-C 第三轮（优先于下文全部状态）
 
 - 环境**核对后直接复用，未重建**：hdc `127.0.0.1:5555` 在线；`hdc rport tcp:18080 tcp:18081` 在位；合成 API 监听 **18081**（`SoloOps API`，132 路径）；保留库 `soloops-harmony-r2-mysql` 67 表 / head `b42e83f516c0` / 批次 **1181–1188**；固定 HAP `.local/mobile-business/accepted-scope-fix.hap` 哈希 `3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e`（103,689,862 B）未变，设备上应用进程存活。
