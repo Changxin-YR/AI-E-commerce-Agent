@@ -32,7 +32,8 @@
   | `5126fbb` | 微信端：模拟器已能渲染应用 + 更正代理结论 | success (run 38188367463) |
   | `506dc54` | H10「清除摘要正文」 | success (run 38188982809) |
   | `c6c16e2` | H16 AI 授权管理：创建/消耗/撤销 | success（contract + weapp 均通过） |
-  | `8234635` | 微信端：模拟器编译缓存修复 + 自动化仍阻塞 | **提交时待复核** |
+  | `8234635` | 微信端：模拟器编译缓存修复 + 自动化仍阻塞 | success（contract + weapp 均通过） |
+  | `a04c5a4` | H21 横屏/大字体：穷尽脚本化手段并记录 | **提交时待复核** |
 
 - 上轮"未核对"的 4 个 SHA 已闭环：`029b53b`、`e67bf35`、`e385cb3`、`e1917f1` 的 CI 均为 **success**。
 - **CI 读取方式**：匿名 REST 从 shell 直接调会被限流 403；用抓取工具读
@@ -69,7 +70,8 @@
 
 ## 仍待端测 / 未完成
 
-- **H21 横屏**（`hidumper -s DisplayManagerService` 无旋转指令、无脚本化旋转入口，`Emulator.exe --help` 亦无旋转项——需 DevEco 模拟器工具栏手动转屏）与 **H21 大字体**（Settings 字体大小滑块对 `uitest click/swipe/drag` 均无响应）。
+- **H21 横屏：已穷尽，只能人工**（`Emulator.exe --help` 无旋转项；DMS 日志"**Dms subscribed to sensor successfully**"→旋转由**传感器**驱动且无设置朝向的 shell 接口；`SensorService` 只读；枚举 Emulator 进程**唯一可见窗口**是 Qt5 `Qt51517QWindowIcon`（394×710 手机画面，**无工具栏**）；Settings 无旋转开关）→ 需 **DevEco Studio 的 Device Manager** 手动转屏。
+- **H21 大字体：已穷尽，只能人工**（Settings 字体大小滑块对 5 种手段全无响应：`uitest` 的 `click`/`swipe`/`drag`、聚焦后**方向键**、**模拟器窗口上的真实鼠标事件**；且该窗口**对合成鼠标事件整体无响应**——用"返回"箭头做可逆校准点击、两种缩放映射都试过；`param set persist.global.fontScale` 被拒 errNum 106/1002）。
 - **微信端登录/列表/写操作真实链路**：模拟器已能稳定渲染小程序（登录页显示服务地址 18081，删 `.swc` 可修复启动失败），但**驱动不通**——`miniprogram-automator@0.12.1` **已是 npm 最新版**且与本机 IDE `v2.01.2510290` 不兼容，`SendKeys`/剪贴板也注入不到小程序渲染出的输入框。**建议请用户在开发者工具里手工登录一次**（账号 `harmony_r2` / 密码 `Synthetic-R2-2026!`，服务地址已构建为 `http://127.0.0.1:18081`）并把截图交回；或改走真机调试（需配合法域名）。运行时脚本已备：`scripts/mobile/check_weapp_runtime.cjs`。详见 `docs/mobile/weapp-implementation.md`。
 
 ## 微信端 wave 3（`c63e11b`）
