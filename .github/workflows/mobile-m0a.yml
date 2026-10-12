@@ -22,6 +22,9 @@ jobs:
           version: '0.12.18'
       - run: uv sync --frozen --python 3.11
         working-directory: backend
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.16.0'
       - name: Lint and validate static contract without database
         working-directory: backend
         run: |
@@ -29,6 +32,12 @@ jobs:
           uv run ruff format --check --config ../scripts/mobile/ruff.toml ../scripts/mobile ../scripts/validate_ui_contract.py
           uv run python ../scripts/validate_ui_contract.py
           uv run python -m unittest discover -s ../scripts/mobile/tests -v
+      - name: Compare service response fields with the client DTOs
+        working-directory: backend
+        run: |
+          mkdir -p ../.local
+          PYTHONPATH=. uv run python ../scripts/mobile/dump_schema_fields.py ../.local/schema-fields.json
+          node ../scripts/mobile/check_schema_fields.mjs ../.local/schema-fields.json
   weapp:
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -95,6 +95,7 @@
 - 过程中修正：包B 三个页面缺少 `<script setup lang="ts">` 导致 SFC 边界丢失，`vue-tsc` 静默跳过整段类型检查且 Taro 报 `Element is missing end tag`；补齐后暴露并修复 3 处真实类型错误（`StatementPage` 未导出、`checkedOrderScopeSafe` 未定义），说明“类型检查通过”在缺失 SFC 边界时不可信。
 - H21 深链矩阵门禁：新增 `scripts/check-deep-links.mjs`，按后端 `workbench.py`（LINKS + R0/R1/R2 默认键）与 `operations.py`（`_destinations`）的实际参数逐页核对 18 条路由、65 个键，并校验卖家首页五组入口、operations/workbench 按 `path`/`query` 转发；`return_task` 不列为页面键，因为 destinations 用 `navigateTo` 打开、返回栈本身即回到原待办。
 - IDE 验收已实际尝试并记录：[IDE 验收记录](weapp-ide-acceptance-log.md)。开发者工具 `cli auto` 启动成功（自动化端口 9420、IDE 服务 21740 均监听，automator 连接约 8ms），但 `currentPage()` 在持续“实时编译”状态下不返回，`check_weapp_load.cjs` 55 秒超时退出 1；需要在工具界面完成一次编译后再断言，未通过前不记为 IDE 验收。
+- 响应字段门禁：新增 `scripts/mobile/dump_schema_fields.py` 与 `scripts/mobile/check_schema_fields.mjs`（连同 `apps/soloops_weapp/tests/schema-fields.test.mjs`），把服务端 33 个输出模型的 236 个字段与客户端 DTO 逐字段比对；服务端有而客户端未声明即失败（页面会静默丢字段），客户端多出字段只提示。据此补齐两个真实缺口：`OverviewResult.engine`、`AuthorizationGrant.risk`/`skill`。CI 的 contract job 已加入该步骤，离线验证更新为 126/126 客户端测试。
 - 未执行微信 IDE 交互、数据库持久旅程与真实外部调用；集中验收待下阶段。
 ## 环境与接续
 

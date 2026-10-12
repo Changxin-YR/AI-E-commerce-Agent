@@ -274,6 +274,8 @@ export interface AuthorizationGrant {
   version: number
   origin_execution_id: number
   scope: GrantScope
+  risk: string
+  skill: string
   source_revision: number
   candidate_count: number
   max_uses: number

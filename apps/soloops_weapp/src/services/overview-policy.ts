@@ -15,6 +15,7 @@ export interface OverviewScope {
 }
 export interface OverviewResult {
   scope: OverviewScope
+  engine: string
   calculated_at: string
   valid_until: string | null
   shops: {
