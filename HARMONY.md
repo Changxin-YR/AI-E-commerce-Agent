@@ -19,7 +19,8 @@
   | `4192691` | 微信端运行时联调尝试及其受阻证据 | success |
   | `0040b04` | H09 ask 与 H10 历史回读 | success |
   | `c217109` | H21 版本冲突（409） | success |
-  | `56e525f` | H21 深浅色 + 模拟器崩溃事故记录 | **提交时待复核** |
+  | `56e525f` | H21 深浅色 + 模拟器崩溃事故记录 | success |
+  | `5126fbb` | 微信端：模拟器已能渲染应用 + 更正代理结论 | **提交时待复核** |
 
 - 上轮"未核对"的 4 个 SHA 已闭环：`029b53b`、`e67bf35`、`e385cb3`、`e1917f1` 的 CI 均为 **success**。
 - **CI 读取方式**：匿名 REST 从 shell 直接调会被限流 403；用抓取工具读
@@ -60,7 +61,7 @@
 - **H10「清除摘要正文」**：该按钮仅在记录被当作"已保存摘要"加载时才渲染，点历史条目只显示快照、未出现按钮。
 - H16 创建**内部有限次预授权**未单独做（H20 做的是外发「限一次预授权」，不是 R1 面板）。
 - H17 "到点自动运行"无法端测（调度服务未启用，属部署事实）。
-- **微信端运行时联调被本机环境阻塞**：开发者工具模拟器稳定报 `TypeError: Failed to fetch`（CLI `preparing` 同错 code 10）；完全重启 IDE 与 `--no-proxy-server` 均失败；无缓存基础库、`WeappLog` 为空。强相关因素是系统代理 `127.0.0.1:7897`（verge-mihomo）下 `servicewechat.com` TLS 失败而直连正常——**需用户决定**是否在 Clash 里把 `servicewechat.com`/`*.weixin.qq.com` 走 DIRECT 或临时关代理。详见 `docs/mobile/weapp-implementation.md`。
+- **微信端运行时联调：模拟器已能渲染应用，但自动化驱动仍不通**。彻底结束全部 `wechatdevtools` 进程后全新启动 IDE，之前稳定复现的 **"模拟器启动失败 / TypeError: Failed to fetch" 消失**，模拟器稳定渲染出业务登录页（含**服务地址 `http://127.0.0.1:18081`**，即本轮 `TARO_APP_API_BASE` 构建结果）。**更正上轮结论**：把成因归结为"系统代理下 servicewechat.com TLS 失败"是**错的**——代理仍开启时重启 IDE 即可正常渲染，真实原因是 IDE 进程状态损坏/多实例；代理观察本身属实但已不作为结论，**无需改动系统网络设置**。仍阻塞：`cli auto` 本次成功（9420 监听、AppID 解析成功），但 **`miniprogram-automator@0.12.1` 与 IDE `v2.01.2510290` 不兼容**（`EMFILE core.wxvpkg` → `fd undefined`），且 **SendKeys 注入不到小程序渲染出的输入框**，因此**登录/列表/写操作真实链路仍未取得结果**（不得写成已验证）。后续可选：换匹配版本的 automator、请用户手工登录一次并交回截图、或走真机调试（需配合法域名）。
 
 ## 微信端 wave 3（`c63e11b`）
 
@@ -72,6 +73,7 @@
 ## 端上操作要点（本轮新增，务必遵守）
 
 - **恢复设备链路只能用 `hdc rport tcp:18080 tcp:18081`（Reverse），绝不能用 `fport`**：用错方向时应用完全连不上 API（页面显示"暂时无法连接服务，请刷新重试。"），`fport ls` 里正确条目带 `[Reverse]`。
+- **微信开发者工具排障要点**：①模拟器报 **"模拟器启动失败 / TypeError: Failed to fetch"** 时，**先彻底结束全部 `wechatdevtools` 进程再全新启动 IDE**（多实例/损坏状态是主因，与系统代理无关）；②IDE 窗口标题**不会**出现在 `Get-Process ... MainWindowTitle`，要用 `EnumWindows` 按标题子串查找（如 `soloops_weapp - 微信开发者工具`）；③`cli auto --auto-port 9420` 可成功开启自动化端口，但在该项目里用 **`node scripts/mobile/check_weapp_runtime.cjs`** 连接时 `miniprogram-automator@0.12.1` 会失败（`EMFILE core.wxvpkg` / `fd undefined`）；④**SendKeys 能到达 DevTools 外壳（如 Ctrl+B 触发编译）但注入不到小程序渲染出的输入框**。
 - **模拟器与微信开发者工具不要同时长跑**：本轮两者并行时主机空闲内存降到约 2.4 GB，**模拟器于 08:07:40 崩溃并生成 minidump**；崩溃前画面先变黑，**一度疑似应用渲染缺陷，实为模拟器故障**（当时应用的无障碍树仍完整，重启后渲染正常）。恢复步骤：结束 `wechatdevtools` 全部进程 → **前台直接运行 `Emulator.exe -start 22`（`Start-Process` 起不来，且首次冷启动约 20 秒后才出现在 `hdc list targets`）** → 重新 `hdc rport` → 应用会话与库均正常。
 - **模拟器黑屏 ≠ 应用缺陷**：先用 `hidumper -s WindowManagerService -a '-a'` 看应用窗口是否仍在前台且 `uitest dumpLayout` 能否取到完整树；若树完整而画面全黑，优先怀疑模拟器显示/合成器异常。
 - **截图判活**：`snapshot_display -f /data/local/tmp/x.jpeg` 两次哈希完全相同通常意味着画面冻结（模拟器异常），不是真的没变化。
@@ -91,11 +93,11 @@
 
 ## 新对话可直接复制的接续提示
 
-"请继续 `Changxin-YR/AI-E-commerce-Agent` 的 `feat/soloops-mobile-m0c` 分支（worktree `.local/worktrees/mobile-m0a`，最新已推送 `56e525f`；先 `git fetch` 核对，若 HARMONY.md 提交在其后则以该 SHA 为准）。先读 `context-memory` 分支的 `HARMONY.md`、`docs/mobile/harmony-handoff.md` 顶部、`docs/mobile/weapp-implementation.md`。
+"请继续 `Changxin-YR/AI-E-commerce-Agent` 的 `feat/soloops-mobile-m0c` 分支（worktree `.local/worktrees/mobile-m0a`，最新已推送 `5126fbb`；先 `git fetch` 核对，若 HARMONY.md 提交在其后则以该 SHA 为准）。先读 `context-memory` 分支的 `HARMONY.md`、`docs/mobile/harmony-handoff.md` 顶部、`docs/mobile/weapp-implementation.md`。
 
-环境**核对后直接复用，不要盲目重建**：`hdc list targets` 应为 `127.0.0.1:5555`（本轮它崩溃过一次，已重启恢复；**不要与前台的微信开发者工具同时长跑**）；`127.0.0.1:18081` 有合成 API（`.local/mobile-business/resume_api_18081.py`，`build_app` 直连，不跑 `prepare_samples`）；**`hdc rport tcp:18080 tcp:18081`（Reverse，不是 fport）** 应在位；Docker 容器 `soloops-harmony-r2-mysql`（3315，tmpfs）**不要停**；固定 HAP 哈希须为 `3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e`（103,689,862 B）。数据库回读加 `--default-character-set=utf8mb4`。
+环境**核对后直接复用，不要盲目重建**：`hdc list targets` 应为 `127.0.0.1:5555`（本轮崩溃过一次，已重启恢复；**不要与前台的微信开发者工具同时长跑**）；`127.0.0.1:18081` 有合成 API（`.local/mobile-business/resume_api_18081.py`，`build_app` 直连，不跑 `prepare_samples`）；**`hdc rport tcp:18080 tcp:18081`（Reverse，不是 fport）** 应在位；Docker 容器 `soloops-harmony-r2-mysql`（3315，tmpfs）**不要停**；固定 HAP 哈希须为 `3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e`（103,689,862 B）。数据库回读加 `--default-character-set=utf8mb4`。
 
-H19/H12/H13/H14/H15/H16/H17/H09/H10/H18/H20 已端测通过；H21 已通过六项（离开恢复、断线错误、未知结果与同次请求恢复、409 版本冲突、深浅色、错误文案）。剩余顺序：**补 H21 横屏（需 DevEco 模拟器工具栏手动转屏）与 H10「清除摘要正文」→ 微信开发者工具运行时联调**（工具在 `D:/微信开发工具/微信web开发者工具/微信开发者工具.exe`，工程 `apps/soloops_weapp`；**当前被系统代理挡住**：`127.0.0.1:7897` 下 `servicewechat.com` TLS 失败而直连正常，请先请用户决定是否在 Clash 里走 DIRECT 或临时关代理；构建需 `TARO_APP_API_BASE=http://127.0.0.1:18081`，本机 18080 属其他项目）。
+H19/H12/H13/H14/H15/H16/H17/H09/H10/H18/H20 已端测通过；H21 已通过六项（离开恢复、断线错误、未知结果与同次请求恢复、409 版本冲突、深浅色、错误文案）。剩余顺序：**补 H21 横屏（需 DevEco 模拟器工具栏手动转屏）、H10「清除摘要正文」、H16 内部有限次预授权创建；微信端运行时联调**——模拟器现已能正常渲染小程序（登录页显示服务地址 18081），只需解决"驱动"问题：换用与该 IDE 版本匹配的 `miniprogram-automator`，或请用户手工登录一次交回结果；工程 `apps/soloops_weapp`，构建需 `TARO_APP_API_BASE=http://127.0.0.1:18081`（本机 18080 属其他项目 nx-keycloak）。
 
 每完成一项：设备端操作 + 数据库回读 → 更新 `docs/mobile/harmony-r2-coverage.md`、`harmony-validation.json`、`harmony-implementation-progress.md`、`harmony-handoff.md` → 提交推送 → 用抓取工具核对**该 SHA** 的 `Verify mobile engineering` 为 success 再继续。只使用合成数据与本地替身，真实模型/邮件/平台写入保持 0；`pytest backend/tests` 不得对保留验收库运行；`apps/soloops_weapp/project.config.json` 与 `apps/soloops_flutter/ohos/build-profile.json5` 是本机配置，不提交不覆盖。"
 
