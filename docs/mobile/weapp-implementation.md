@@ -74,22 +74,21 @@ feature → 主要 api_ref（均带 `/api/shops/{shop_id}` 前缀，`r2.overview
 
 **与 Flutter 端的有意差异（如实记录，不得写成"已对齐"）**：`contracts/ui-contract.json` 的 `r2.order_reconciliation` 只声明 `statements/orders/reconcile` 一个动作，因此小程序订单核对页**只读、不提供"保存审阅"**；Flutter 端另有 `ReviewPanel(orders: true)` 走 `/order-statement-reviews`（后端存在该路由，但不在契约动作内）。同理 `fee-rules/{id}/{action}` 服务端只接受 `withdraw`/`clear`，小程序按此实现，未臆造 `save`/`revoke` 路径。
 
-## 微信开发者工具运行时联调（本轮进展与仍然阻塞的部分）
+## 微信开发者工具运行时联调（进展、可复现修复与仍阻塞的部分）
 
 **已确认：构建产物能在微信开发者工具里正常加载与渲染。**
 
-- 之前稳定复现的 **"模拟器启动失败 / TypeError: Failed to fetch"**（CLI `preparing` 同错，code 10）**已不再出现**。做法是**彻底结束全部 `wechatdevtools` 进程后全新启动 IDE**（此前有 12 个残留进程，IDE 处于损坏/多实例状态）。
-- 现模拟器稳定渲染出**业务登录页**：标题"登录"、`SoloOps`、副标题"把每天的经营事务，整理成下一步行动。"、**服务地址 `http://127.0.0.1:18081`**（即本轮 `TARO_APP_API_BASE` 构建的结果）、账号/密码输入框与"登录"主按钮。证据截图：`.local/mobile-business/device/weapp-login-filled.png`、`weapp-login-typed.png`。
-- **更正上一轮的判断**：当时把成因归结为"系统代理 `127.0.0.1:7897` 下 `servicewechat.com` TLS 失败"，这一条**不是**模拟器启动失败的原因——**在系统代理仍开启的情况下，重启 IDE 后模拟器即可正常渲染**。真实原因是 IDE 进程状态损坏/多实例。此前记录的代理观察（代理下 TLS 失败、直连 404）本身仍属实，但**不再作为本问题的结论**，也不需要为此改动系统网络设置。
+- 模拟器稳定渲染出**业务登录页**：标题"登录"、`SoloOps`、副标题"把每天的经营事务，整理成下一步行动。"、**服务地址 `http://127.0.0.1:18081`**（本轮 `TARO_APP_API_BASE` 构建的结果）、账号/密码输入框与"登录"主按钮。截图：`.local/mobile-business/device/weapp-after-swc.png`。
+- **可复现修复（重要）**：模拟器报 **"模拟器启动失败 / TypeError: Cannot read property 'subPackages' of undefined"**（更早还出现过 `TypeError: Failed to fetch`）时，**删除 `apps/soloops_weapp/.swc/`（该目录在 `apps/soloops_weapp/.gitignore` 中，属工具编译缓存，删了不影响仓库）后重启 IDE 即恢复正常渲染**。此前把成因归到系统代理是错的——代理仍开启时同样能渲染。
+- **更正上一轮判断**：之前"系统代理 `127.0.0.1:7897` 下 `servicewechat.com` TLS 失败导致模拟器起不来"的结论**不成立**；真实原因是 IDE 的编译缓存/进程状态损坏。代理现象本身属实，但不需要为此改动系统网络设置。
 
 **仍然阻塞：无法自动化驱动登录/列表/写操作。**
 
-- `cli auto --project … --auto-port 9420` **本次已成功**（端口 9420 监听、解析出 AppID `wx7f42829bf7c13898`），说明 IDE 侧自动化通道可用。
-- 但 `miniprogram-automator@0.12.1`（本机 `.local/weapp-tools/node_modules/`）**与该 IDE 版本 `Stable v2.01.2510290` 不兼容**：先后报
-  `EMFILE: too many open files, open '…\code\package.nw\core.wxvpkg'` 与
-  `The "fd" argument must be of type number. Received undefined`（其 SDK 解包逻辑失败）。这与 M0 阶段"automator 通道 60s 超时（exit 124）"的记录一致，属工具版本问题。
-- 退路"用窗口点击 + `SendKeys` 直接操作模拟器"也不行：点击能命中模拟器区域、按键也能到达 DevTools 外壳（早前 `Ctrl+B` 成功触发过编译），**但按键注入不到小程序渲染出的输入框**，账号/密码始终为空。
-- 因此 **登录、列表、写操作的真实链路本轮仍未取得结果**，不得写成已验证。下一步可选：(a) 换用与该 IDE 版本匹配的 `miniprogram-automator`；(b) 在开发者工具里手工完成一次登录并把结果/截图交回；(c) 使用真机调试（需在 MP 后台把服务域名加入合法域名）。
+- `cli auto --project … --auto-port 9420` **可以成功**（端口监听、解析出 AppID `wx7f42829bf7c13898`），但 `miniprogram-automator@0.12.1` **已是 npm 上的最新版本**，与本机 IDE `Stable v2.01.2510290` **不兼容**：报 `EMFILE: too many open files … core.wxvpkg` → `The "fd" argument must be of type number. Received undefined`（错误来自 IDE 侧，依赖里并无 `wxvpkg` 字样）。
+- 退路"窗口点击 + `SendKeys`/剪贴板"也不行：点击能命中模拟器、按键能到 DevTools 外壳（`Ctrl+B` 可触发编译），但**注入不到小程序渲染出的输入框**——多次尝试账号框始终为空。
+- 连"打开调试器控制台"这一步也无法用盲点坐标稳定命中（菜单栏点击无响应）。
+- 因此 **登录、列表、写操作的真实链路仍未取得结果**，不得写成已验证。**下一步建议**：(a) 请用户在该开发者工具里手工登录一次（账号 `harmony_r2` / 密码 `Synthetic-R2-2026!`，服务地址已构建为 `http://127.0.0.1:18081`）并把结果截图交回；(b) 或改走真机调试（需在 MP 后台把服务域名加入合法域名）。
+- 已备好运行时脚本 `scripts/mobile/check_weapp_runtime.cjs`（登录→待办列表→商品质量检查保存），一旦自动化通道可用即可直接跑；本机已用只读 API 探针确认 `client_type=weapp` 登录可用且 `GET /api/shops` 返回 `918 HarmonyR2Main`。
 
 ## 其他仍待验证
 
