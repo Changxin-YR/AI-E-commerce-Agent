@@ -503,3 +503,8 @@ Taro4.3.0（MIT）已安装types/api/ui/interaction.d.ts的enableAlertBeforeUnlo
 ## 微信W08参考（2026-10-11）
 
 字段与流程对照仓库frontend/src/types/analytics.ts、AnalyticsView.vue、OrderCostEditor.vue，以及backend/app/schemas/analytics.py、order_costs.py和AnalyticsService。复用现有DTO，无新增依赖。官方Taro原生input/picker和返回提醒沿用现有版本；在线Firecrawl额度不足，本轮未额外获取官方网页。
+
+
+## 微信W09参考（2026-10-12）
+
+总览字段与动作对照仓库frontend/src/views/OverviewView.vue、frontend/src/api（overview调用）、backend/app/api/routes/overview.py、schemas/overview.py、services/overview.py与services/overview_calculation.py，以及contracts/ui-contract.json的r2.overview五个动作（calculate/reports POST/reports GET/report GET/clear）。清除的confirm语义、状态与文案取自Web实现，未新增依赖或外部代码。在线检索本轮未使用；本机Node24.16.0的Intl.DateTimeFormat对无效时区的拒绝行为已实测确认（Mars/Base、空串、UTC+8均抛错，UTC合法）。
