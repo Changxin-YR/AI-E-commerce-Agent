@@ -56,4 +56,11 @@ describe('browser source worker lifecycle', () => {
     expect(worker.terminate).toHaveBeenCalledOnce()
     expect(prepared.mock.calls).toEqual([[null]])
   })
+  it('offers the CSV MIME aliases Android providers report', () => {
+    const wrapper = mount(BrowserImportSource, { props: { disabled: false, onPrepared: vi.fn() } })
+    const accept = wrapper.get('input').attributes('accept') ?? ''
+    // Android indexes .csv files as text/comma-separated-values; a single-extension
+    // accept makes the native picker disable them.
+    expect(accept.split(',')).toEqual(['.csv', 'text/csv', 'text/comma-separated-values'])
+  })
 })

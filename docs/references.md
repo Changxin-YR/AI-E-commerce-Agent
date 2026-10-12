@@ -409,3 +409,8 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - [Keyboard](https://capacitorjs.com/docs/apis/keyboard)：监听didShow/didHide并滚动当前输入，配合Android adjustResize。
 - [SystemBars](https://capacitorjs.com/docs/apis/system-bars)：参考旧WebView的注入CSS变量作为env安全区域回退。
 - Capacitor及官方插件MIT；参考公开接口，自行实现Vue壳与测试。Firecrawl状态查询fetch failed，已回退官方网页工具。
+
+## Android A3（2026-10-12）
+- [Capacitor Network](https://capacitorjs.com/docs/apis/network)（MIT，v8 文档）：`ConnectionStatus.connected` 语义只说明“存在活动连接”；锁定依赖中的 Android 实现 `frontend/node_modules/@capacitor/network/android/src/main/java/com/capacitorjs/plugins/network/Network.java` 要求 `NET_CAPABILITY_VALIDATED && NET_CAPABILITY_INTERNET`，因此无法通过平台校验的网络（本机模拟器初始为 `PARTIAL_CONNECTIVITY`）会被报成未连接。按平台语义保留应用提示，不改为仅凭业务接口判定离线；相关观察记入 A3 验收的“环境观察”。
+- Android 文件选择与 MIME：本包未引入第三方代码，问题与修复均以设备实测为准——`accept=".csv"` 在 WebView 中映射为宿主意图 `typ=text/csv`，而 Android MediaProvider 为 `.csv` 记录 `text/comma-separated-values`，DocumentsUI 据此把文件标记为不可选（`enabled="false"`）。核对手法：`adb shell dumpsys activity activities`、`adb shell content query --uri content://media/external/file --projection _display_name,mime_type`、`adb shell uiautomator dump`。修复保持扩展名并显式补充两个 MIME 拼写，使 WebView 以多类型（`typ=*/*` + `EXTRA_MIME_TYPES`）请求选择器。
+- 官方 Android 开发者文档在本机网络下 `web fetch failed`，Firecrawl 亦不可用；以上结论来自本机设备与锁定依赖源码，未引用未经核对的链接。

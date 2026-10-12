@@ -76,4 +76,14 @@ describe('import groups', () => {
     expect(api.revokeGroup).toHaveBeenCalledExactlyOnceWith(1, 2)
     expect(wrapper.emitted('changed')).toHaveLength(1)
   })
+  it('offers the CSV MIME aliases on the part picker', async () => {
+    api.groups.mockResolvedValue([fixture(1, 1)])
+    const wrapper = mount(ImportGroups, { props })
+    await flushPromises()
+    await wrapper.get('select').setValue('1')
+    const accept = wrapper.get('#group-part').attributes('accept') ?? ''
+    // Android indexes .csv files as text/comma-separated-values; a single-extension
+    // accept makes the native picker disable them.
+    expect(accept.split(',')).toEqual(['.csv', 'text/csv', 'text/comma-separated-values'])
+  })
 })

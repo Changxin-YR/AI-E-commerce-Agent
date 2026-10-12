@@ -51,9 +51,15 @@ Pop-Location
 adb -s emulator-5580 install -r frontend/android/app/build/outputs/apk/debug/app-debug.apk
 backend/.venv/Scripts/python.exe scripts/check_android_service.py
 node frontend/scripts/check-android-device.mjs
+node frontend/scripts/check-android-imports.mjs
+node frontend/scripts/check-android-mvps.mjs
 ```
 
-设备脚本会清除 **本 AVD 中 `com.soloops.android` 的应用数据**，通过 WebView 调试连接操作已安装 APK，写 `.local/android/evidence`。仅用于专属合成 AVD。HTTP/MySQL 契约脚本与真实设备脚本分别记录；不得用前者替代后者。
+设备脚本通过 WebView 调试连接操作已安装 APK，写 `.local/android/evidence`。`check-android-device.mjs` 会清除 **本 AVD 中 `com.soloops.android` 的应用数据**；导入与 MVP 脚本只强制停止并重启应用，沿用现有会话。仅用于专属合成 AVD。HTTP/MySQL 契约脚本与真实设备脚本分别记录；不得用前者替代后者。三个设备脚本依次执行，共用 ADB 9223 端口，不可并发。
+
+模拟器网络校验：Android 在本机模拟器上把 Wi-Fi/移动网络标为 `PARTIAL_CONNECTIVITY`（门户校验不可达）时，`@capacitor/network` 要求 `NET_CAPABILITY_VALIDATED`，壳层会显示「网络已断开」而 API 实际可用。需要干净提示时先执行 `adb -s emulator-5580 shell settings put global captive_portal_mode 0` 与 `captive_portal_detection_enabled 0`，再重启 Wi-Fi（`svc wifi disable/enable`）等待网络变为 `VALIDATED`。这是模拟器环境设置，不改变应用语义。
+
+原生文件选择器的 CSV 可用性：`accept` 只写单个 `.csv` 时，WebView 以 `typ=text/csv` 请求选择器，而 MediaProvider 把 `.csv` 记为 `text/comma-separated-values`，文件会被置灰；入口应使用 `.csv,text/csv,text/comma-separated-values`。排查手法见 `docs/android-a3-acceptance.md`。
 
 正式资源使用 HTTPS origin 和 `npm run android:sync`。`preReleaseBuild` 要求构建元数据 mode 为 `android`；本机模式打 release 会失败。debug Network Security Config 只为 `10.0.2.2` 开放明文，前端进一步限定端口 8011。
 

@@ -585,3 +585,13 @@ C最终准确业务代码ed30b872e5a89be096e15c550cb46b9b7240ee44的CI3804231893
 
 ## Android A0（2026-10-11）
 本地 lint/build/types/Capacitor sync 通过；40 文件180单元通过（maxWorkers=4）。准确代码提交84d86a7b213e6bf16d5bcc90aedbbd9a92360159的CI38137311083成功，包含原生Gradle assembleDebug。设备安装/登录/文件字节等尚待A1/A3，详见android-a0-acceptance.md。
+
+## Android A3（2026-10-12）
+本地：`eslint` exit 0；42 文件 **194 项单元**通过（`--maxWorkers=2`，含新增 2 项 CSV accept 断言）；`npm run android:sync:local`（vue-tsc + android 模式构建 + cap sync）exit 0；Gradle `assembleDebug` BUILD SUCCESSFUL；安装新 debug APK（SHA256 `A1931F93F817DE710CC6CD51925741D4C340D72B3F65B9E58BADAB45B813E91D`）。
+
+设备（专属 API 34 AVD `emulator-5580` + 合成 MySQL 3311 + 后端 8011，全部合成/替身）：
+- `node frontend/scripts/check-android-imports.mjs`：4 项通过（新增店铺未保存保护与保存后导航；系统选择器中文 CSV 真实字节上传 + 库内 `raw` 回读；2001 行两片拆分与建组；强停恢复、指纹不符拒绝、跨片去重 2000/重叠 1、重复上传不重复、销售额 4000.0000）。证据 `.local/android/evidence/device-imports.json`。
+- `node frontend/scripts/check-android-mvps.mjs`：3 项通过（来源种子批次 17/18/19；今日运营检查 #3 → 2 个候选 → 事项 #5 `open`/`pending_review` 且低毛利候选未被误改；经营问数执行 #1 `succeeded`、`model_status=test_double`、`spent_usd=0.002000`，解释含 60.0000/54.0000/6.0000 USD 与费用缺口说明）。证据 `.local/android/evidence/device-mvps.json`。
+- 测试脚本只操作专属合成 AVD 与合成库；`pytest backend/tests` 未对任何保留验收库运行。浏览器模型 E2E 本轮未启动（终端未加载 `_test` 库环境）。
+
+本轮修复：单个 `.csv` 扩展名导致原生选择器置灰 CSV 文件（`text/csv` 与 MediaProvider `text/comma-separated-values` 不匹配），两个入口改为显式多 MIME 拼写；设备复验显示意图变为 `typ=*/*` 且文件可选。详见 android-a3-acceptance.md。

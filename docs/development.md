@@ -979,3 +979,7 @@ Vue + Capacitor 独立副本复用既有业务服务。原生 HTTPS origin 与�
 useAndroidShell将原生事件映射到Vue路由和会话回读。useLeaveProtection以组件生命周期注册脏状态/保存中阻断；会话epoch防止退出后迟到回包恢复状态。网络恢复只提示显式重试，不自动重放写操作。安卓CSS按native-android作用域加载。设备脚本真实操作专属AVD，第一版28组通过，最终补丁设备回归见android-a2-acceptance.md待办。
 
 本机Vitest默认并发曾耗尽内存，限定maxWorkers=2后42文件191项通过；最后新增并发用例单独校验。Vite worker的EPERM以正常本机权限运行解决。
+
+## Android A3（2026-10-12）
+
+导入链路的设备验收暴露了一个平台映射缺陷：`BrowserImportSource`的`accept=".csv"`被WebView映射为宿主意图`typ=text/csv`，而Android MediaProvider把`.csv`记为`text/comma-separated-values`，DocumentsUI因此把文件节点标记为不可选（`enabled="false"`）。多扩展名入口因回落为`typ=*/*`恰好掩盖了问题。修复保留扩展名并显式补充两个CSV MIME拼写，两个单元断言锁住属性；设备复验显示意图变为`typ=*/*`+`EXTRA_MIME_TYPES`且文件可选。业务MVP复用既有服务端规则：今日运营走本地规则产生候选并批准为本地待办，经营问数走确定性替身（`model_status=test_double`），预算、许可、审批与来源版本仍由服务端校验。详见android-a3-acceptance.md。

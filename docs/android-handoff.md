@@ -1,32 +1,32 @@
 # Android 开发接续入口
 
-更新时间：2026-10-11，Asia/Shanghai。GitHub 仓库 `Changxin-YR/AI-E-commerce-Agent`，分支 `android/capacitor-m0`。
+更新时间：2026-10-12，Asia/Shanghai。GitHub 仓库 `Changxin-YR/AI-E-commerce-Agent`，分支 `android/capacitor-m0`。
 本地独立目录：`C:/Users/27363/Desktop/AI E-commerce Agent/soloops-android`。只写本副本；同级 UI、微信、鸿蒙由其他聊天维护。
 
 ## 当前进度与下一步
 
-- A0/A1已完成；A2最终应用补丁已验收：lint、type-check、42文件192单元、原生构建、7组认证与29组壳设备检查全部通过。
-- 应用代码 `b70e783285a0242f2dafb0f8d714b8fce48bdcde` 的 CI 38141560687 已在GitHub页面核对 Success。
-- 本轮修正旧WebView安全区域测试误报，原生顶部128/底部63像素已避让系统栏，CSS为0是预期；应用代码未改。修正模拟器启动使用原有SDK镜像的说明。
-- 最终APK SHA256 `D9DDA3EFFD591CBB8425FC41D09C4AF057ACAE41329588B94CBE1EF03F145A66`；详细证据见android-a2-acceptance.md。
-- 首个动作：确认本轮接续提交的准确SHA CI结果，然后进入A3：原生文件选择、真实字节上传、CSV分片及来源回读、今日运营/经营问数两条MVP安卓闭环。A4 Listing/客服/审批恢复；A5其他模块及设备适配；A6安装升级与交付。74 SO、32验收和47长期模块范围保持。
-- A3应复用现有Vue/后端业务和frontend/e2e流程，补已安装APK的设备证据；页面可达不等于业务完成。新增店铺的离页确认/保存解除在A3补验，客服/任务业务保护在A4补验。
-- 当前仅专属API34模拟器；真机与其他尺寸归A5，正式签名/服务地址归A6。
+- A0/A1/A2/A3 已完成。A3 设备验收 7 项通过：导入链路 4 项（真实字节上传、2001 行两片拆分、强停恢复、指纹拒绝/跨片去重/销售额 4000.0000）与今日运营、经营问数两条 MVP；详细证据见 [A3 验收](android-a3-acceptance.md)。
+- A3 同时修复一个真实缺陷：`accept=".csv"` 使原生选择器把 CSV 文件置灰（`typ=text/csv` 与 MediaProvider `text/comma-separated-values` 不匹配）。两个 CSV 入口改为显式多 MIME 拼写，单元 192 → 194，设备复验通过。
+- 本轮 debug APK SHA256 `A1931F93F817DE710CC6CD51925741D4C340D72B3F65B9E58BADAB45B813E91D`；A2 最终 APK（`D9DDA3EF…`）已被本轮重建取代。
+- **首个动作**：先 `git fetch` 核对本轮提交与准确 SHA 的 `Verify Android foundation` CI 成功，再进入 **A4**：Listing、客服、审批与任务恢复两条 MVP 设备闭环，含拒绝/过期/取消/恢复；A4 还需补客服与任务的业务保护（新增店铺保护已在 A3 补验）。A5 其余业务模块与真机/尺寸适配；A6 安装升级、签名与发行交付。74 SO、32 验收与 47 长期模块范围保持。
+- 当前仅专属 API 34 模拟器；真机与其他尺寸归 A5，正式签名/服务地址归 A6。
 
-## A3 接续记录（2026-10-11）
+## A3 收尾记录（2026-10-12）
 
-- 已确认测试提交 `6ecbd860c3d779657ddefbaa55d0b5b62994deda` 的 CI 38143266315 为 Success（2m56s）。
-- 新增 `frontend/scripts/android-device.mjs` 与 `frontend/scripts/check-android-imports.mjs`：覆盖新增店铺未保存保护/保存后导航、Android 系统文件选择器、UTF-8 中文 CSV（引号/逗号/换行）真实字节上传、数据库原始字段回读；首个产品文件证据通过，SHA256 `bbad5bfac0ea476a38e87ea8315bf004a95c1f6c95c3e03e619c7da30f6fee2d`。
-- 大报表续传脚本已写入并完成系统选择器根因定位：模拟器 DocumentsUI 对 `adb push` 的未知 MIME 文件显示为不可选，脚本已按文件名片段匹配；重启专属 AVD 后需继续验证 2001 行两片、强停恢复、指纹拒绝、去重和销售回读。
-- `scripts/start_android_backend.py` 为合成店铺前缀接入既有确定性模型替身，真实模型、邮件和平台写入仍关闭。
-- 本地 lint、type-check、2 个导入单元文件 5 项、生产构建通过；浏览器模型 E2E因当前终端未加载 `_test` 数据库环境而未启动。`npx eslint`受本机 npm cache EPERM阻断，项目脚本 lint 已通过。
+- 设备脚本：`frontend/scripts/android-device.mjs`（共用连接/登录/导航/API/截图）、`check-android-imports.mjs`（导入链路 4 项）、`check-android-mvps.mjs`（今日运营与经营问数 3 项）。证据 `.local/android/evidence/device-imports.json`、`device-mvps.json`，截图 `a3-*.png`、`mvp-*.png`，日志 `a3-imports-run2.log`、`a3-mvps-run4.log`。
+- 关键回读：导入组 #1（`active`/`complete=1`）两片 2000+1 行、去重后 2000/跨片重叠 1；今日运营 `operation_runs` #3（`current`，`source_revision` 3）产生 2 个候选，批准后 `operation_tasks` #5 `low_inventory` `open` v2（备注已存），`low_margin` #6 仍 `pending_approval`；经营问数 `agent_executions` #1 `question` `succeeded`、`model_status=test_double`、`spent_usd=0.002000`、`reserved_usd=0`。
+- 真实模型、邮件与平台写入保持 0；模型仅 `question-e2e-*` 前缀店铺使用 `backend/scripts/e2e_analysis.py` 的本地确定性替身。
+- 未覆盖：`ImportGroups` 的「选择原分片 CSV」仅单元验证属性；浏览器模型 E2E 本轮未启动（终端未加载 `_test` 库环境）。
 
 ## 本轮执行注意
 
 - Windows沙箱导致Vitest临时文件rename EPERM，正常本机权限重跑192项通过。必须加载scripts/android-env.ps1后构建，否则缺少VITE_SOLOOPS_API_ORIGIN。
 - 模拟器启动另将ANDROID_HOME和ANDROID_SDK_ROOT指向原有AppData/Local/Android/Sdk，构建则重新加载android-env.ps1使用副本SDK。
-- gh未在PATH，GitHub匿名REST受到限流；内置浏览器成功读取CI页面。git fetch正常权限成功，远端接续起点9646123与本地一致。
-- 单元maxWorkers=2。模拟器设备脚本依次执行，避免共享ADB9223端口冲突。检查命令各自退出码，PowerShell最后的Get-FileHash会掩盖前面失败。
+- gh未在PATH，GitHub匿名REST受到限流；内置网页工具可读 `https://api.github.com/repos/Changxin-YR/AI-E-commerce-Agent/actions/runs?head_sha=<完整SHA>&per_page=1`。
+- 单元maxWorkers=2。设备脚本依次执行，共用 ADB 9223 端口，避免冲突。检查命令各自退出码：PowerShell 把 adb push 的 stderr 当错误记录，`node … | Tee-Object` 之后 pwsh 可能返回 1，须以脚本自身输出的 results 与退出码为准。
+- 大报表入口曾被原生选择器置灰：根因是 `accept=".csv"` 与 MediaProvider 的 `text/comma-separated-values` 不匹配；排查用 `dumpsys activity activities`、`content query --uri content://media/external/file`、`uiautomator dump`。
+- 模拟器网络若为 `PARTIAL_CONNECTIVITY`，壳层会显示「网络已断开」而 API 可用；干净提示需 `settings put global captive_portal_mode 0` 与 `captive_portal_detection_enabled 0` 后重开 Wi-Fi。
+- 页面商店列表在应用内新建店铺后不会自动刷新；脚本先 `page.reload()` 再选择新店铺。
 
 ## 可复用本机环境
 
@@ -34,9 +34,9 @@
 - AVD `.local/android/avd/SoloOps_A1.avd`，API34 / Pixel6 / x86_64 / WHPX；模拟器和镜像复用原SDK。当前后台运行，ADB5037需正常本机访问权限。
 - 独立 Docker project `soloops-android-a1`，MySQL8.4，端口3311，schema `soloops_android_test`，专属卷。配置 `.local/android/mysql.env`、`.local/android/backend.env`。
 - FastAPI后台监听 `127.0.0.1:8011`，启动入口 `scripts/start_android_backend.py`，模型/邮件/调度明确关闭。停止前按端口和父进程命令行核对归属，勿使用旧PID。
-- 合成账号 `android_seller` / `Android-Synthetic-2026!`。最后设备测试已退出登录。
-- 证据 `.local/android/evidence/device-shell.json`（29组）与 `a2-*.png`，单元 `.local/android/unit-a2.log`，构建 `.local/android/build-a2.log`。这些本机文件被Git忽略；可用已提交脚本复现。
-- 最终APK已安装并通过认证/壳验证，设备最后退出登录。数据库与8011后端已恢复运行。
+- 合成账号 `android_seller` / `Android-Synthetic-2026!`。本轮结束时设备处于已登录的工作台/导入页，未主动退出登录。
+- 证据 `.local/android/evidence/`：`device-shell.json`（A2 壳 29 组）、`device-auth.json`（A1 认证 7 组）、`device-imports.json`（A3 导入 4 项）、`device-mvps.json`（A3 MVP 3 项），以及 `a2-*`/`a3-*`/`mvp-*` 截图与 `a3-imports-run2.log`、`a3-mvps-run4.log`；单元/构建日志 `unit-a2.log`、`sync-a3.log`、`build-a3.log`。本机文件被 Git 忽略，可用已提交脚本复现。
+- 本轮安装的 APK SHA256 `A1931F93F817DE710CC6CD51925741D4C340D72B3F65B9E58BADAB45B813E91D`（`frontend/android/app/build/outputs/apk/debug/app-debug.apk`）。本轮结束时 MySQL 容器、8011 后端与专属 AVD 均在运行；如已停机，按 `docs/android-local-testing.md` 启停，停止前先核对端口与进程归属。
 
 ## 授权和协作约定
 
@@ -45,4 +45,4 @@
 
 ## 本次GitHub检查点
 
-本轮测试代码提交 `6ecbd860c3d779657ddefbaa55d0b5b62994deda` 已推送；CI https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38143266315 已确认触发，交接时运行中。下一聊天先确认该准确SHA的CI成功再进入A3。应用代码b70e783的CI已确认成功。本轮只修改测试及文档；随后的skip-ci提交只记录交接。
+A3 提交推送后核对准确的 `Verify Android foundation` 运行结果；A2 期已核对：应用代码 `b70e783` 的 CI 38141560687 Success、测试提交 `6ecbd86` 的 CI [38143266315](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38143266315) Success（2m56s）。本地未推送提交 `cbba852`（A3 测试脚本起点）随本轮 A3 收尾一起推送，其 CI 与 A3 收尾提交同次触发。本轮 SHA 与 CI 结果见本仓库最新提交记录与 android-a3-acceptance.md 顶部补记。

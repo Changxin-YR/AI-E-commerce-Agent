@@ -370,7 +370,7 @@ watch(selectedId, () => {
           :key="selectedId"
           id="group-part"
           type="file"
-          accept=".csv"
+          accept=".csv,text/csv,text/comma-separated-values"
           :disabled="disabled || working"
           @change="file = ($event.target as HTMLInputElement).files?.[0] ?? null"
         />

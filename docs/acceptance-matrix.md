@@ -1,5 +1,9 @@
 # P0 验收矩阵
 
+## Android A3（2026-10-12）
+
+导入链路与两条业务 MVP 在 API 34 设备闭环：原生选择器真实字节上传（中文引号/逗号/换行）、2001 行两片拆分、强停恢复、指纹拒绝、跨片去重与销售额回读 4000.0000；今日运营检查 #3 产生 2 个候选并批准为事项 #5（`open`），经营问数执行 #1（`model_status=test_double`、`spent_usd=0.002000`）经批准闭环。本轮同时修复 `accept=".csv"` 导致原生选择器置灰 CSV 的缺陷（`text/csv` 与 MediaProvider `text/comma-separated-values` 不匹配）。见 [A3 验收](android-a3-acceptance.md)。原32项与其余业务 MVP 的设备结果继续在 A4/A5 补充。
+
 ## Android A1（2026-10-11）
 
 新增 API 34 设备认证基线：真实 APK 登录/会话恢复/退出/错误反馈，以及原生 fetch 的 CSRF 拒绝通过；186前端单元和本机 debug 构建通过。见 [A1 验收](android-a1-acceptance.md)。原32项与业务MVP的设备验收仍按 Android A2–A6 推进。
@@ -81,3 +85,5 @@ SO-055 结算周期与人工到账补充（2026-10-09）：`test_settlements.py`
 2026-10-10 A-13最终验收：QQ生产SMTP发送验证码和经营摘要各1封，用户独立批准、实际收件确认、单次审批消耗与重启回读通过，A-13/B-07及B-08邮件段通过。未知/拒绝/跨收件人等故障分支继续由既有协议测试覆盖；真实经营样本和平台接口另行验收。详见foundation-mail-evidence.md。
 
 2026-10-11 Android A2为设备壳检查点：28组初版设备检查通过；最终补丁重建/认证/安全区域补充检查待完成。详见android-a2-acceptance.md。原A-01—A-32结果保持，完整安卓业务证据继续A3/A4。
+
+2026-10-12 Android A3：设备验收7项通过（导入链路4项 + 今日运营/经营问数两条MVP），今日运营检查#3→2个候选→事项#5(`open`)，经营问数执行#1(`test_double`/0.002000 USD)经批准闭环；同时修复原生选择器置灰CSV的缺陷。详见android-a3-acceptance.md。原A-01—A-32与74 SO范围保持，A4/A5继续。

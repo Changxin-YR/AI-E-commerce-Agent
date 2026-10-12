@@ -66,7 +66,7 @@ onBeforeUnmount(stop)
       :key="inputKey"
       id="browser-csv"
       type="file"
-      accept=".csv"
+      accept=".csv,text/csv,text/comma-separated-values"
       :disabled="disabled || working"
       @change="choose"
     />
