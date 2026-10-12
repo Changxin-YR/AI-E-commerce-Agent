@@ -6,7 +6,7 @@
 - **接续记忆**：本文件（`context-memory` 分支）；入口文档 `docs/mobile/harmony-handoff.md` 顶部、`docs/mobile/weapp-implementation.md`。
 - **本机环境**：**已核对并复用，无需重建**。设备 `127.0.0.1:5555` 在线；`hdc rport tcp:18080 tcp:18081` 在位（`[Reverse]`）；合成 API `127.0.0.1:18081` 返回 200；Docker `soloops-harmony-r2-mysql`（3315）67 表 / head `b42e83f516c0`；固定 HAP 哈希 `31487267…ec0e` 未变。
 - **进度**：鸿蒙端 H19/H12/H13/H14/H15/H16/H17/H09/H10/H18/H20 **全部通过**；**H21 通过六项**（离开恢复、断线错误、未知结果与同次请求恢复、409 版本冲突、深浅色、错误文案）。微信端 wave 3 代码已提交并通过 type-check/构建；**微信开发者工具已能渲染小程序（登录页显示服务地址 18081），但"驱动"仍不通**。
-- **剩余**：① H21 横屏（需 DevEco 模拟器工具栏手动转屏）；② H10「清除摘要正文」；③ H16 内部有限次预授权创建；④ 微信端登录/列表/写操作真实链路（换匹配版本的 `miniprogram-automator`，或请用户手工登录一次交回结果）。
+- **剩余**：① H21 横屏（需 DevEco 模拟器工具栏手动转屏）；② H21 大字体（Settings 字号滑块对 uitest 无响应）；③ 微信端登录/列表/写操作真实链路（automator 0.12.1 已是 npm 最新且与本机 IDE 不兼容，**建议请用户手工登录一次交回截图**）。
 - **硬约束**：只用合成数据与本地替身，真实模型/邮件/平台写入保持 0；`pytest backend/tests` **不得**对保留验收库运行；`apps/soloops_weapp/project.config.json` 与 `apps/soloops_flutter/ohos/build-profile.json5` 不提交不覆盖。
 
 ## 最新接续检查点（2026-10-12，M0-C 第五轮）
@@ -30,6 +30,8 @@
   | `c217109` | H21 版本冲突（409） | success |
   | `56e525f` | H21 深浅色 + 模拟器崩溃事故记录 | success |
   | `5126fbb` | 微信端：模拟器已能渲染应用 + 更正代理结论 | success (run 38188367463) |
+  | `506dc54` | H10「清除摘要正文」 | success (run 38188982809) |
+  | `c6c16e2` | H16 AI 授权管理：创建/消耗/撤销 | **提交时 in_progress（纯文档，同类均 success）** |
 
 - 上轮"未核对"的 4 个 SHA 已闭环：`029b53b`、`e67bf35`、`e385cb3`、`e1917f1` 的 CI 均为 **success**。
 - **CI 读取方式**：匿名 REST 从 shell 直接调会被限流 403；用抓取工具读
@@ -53,11 +55,11 @@
 | H13 账单审阅结论 | **通过**。选"金额差异已说明·待跟进"预览时**服务端按待核事项拒绝**，只接受"仍待核对"；保存 `statement_reviews` **#187 v1 active** → 改说明二次保存 **v2** → 历史点 v1 可回读 → 清除 **v3 cleared**（三版 `snapshot` 全 NULL、来源 0） |
 | H14 订单账单核对 | **通过**。先在 user_import 导入订单（批次 **#1191** `SYN-U1/U2/U3`；**沿用 synthetic 作用域的 `SYN-G1..G3` 会被 `source_scope` 拒绝**，该批次 #1190 已清除），再导入带 `order_id` 的账单（批次 **#1192** `SYN-ST-002` sale 120.0000→`SYN-U1`、refund 8.0000→`SYN-U3`）。口径选"退款前折后商品款"+填依据后 **`SYN-U1 · 账单销售款` = 金额差异 80.0000 USD**（订单可比 40.0000 vs 账单 120.0000）；其余按设计保持"待核实·差异未知"；保存 `statement_reviews` **#188（kind=orders）** |
 | H15 结算回款撤销/清除 | **通过**。导入新账单后原结算 49 自动转 **`stale`**（设备"来源变化 · 待重核"）→ 撤销 **v3 `withdrawn`** → 清除 **v4 `cleared`**（v1 create/v3 withdraw/v4 clear 三条 `snapshot` 全 NULL） |
-| H16 规则停用/重置/恢复 | **通过**。`business_rule_revisions` **#25 revoke**（阈值回默认 24h）→ **#26 reset** → 从版本历史恢复 #24 得 **#27 restore（`restored_from_id=24`、12h）**。**AI 授权面板**可进入、空态如实（"暂无授权，可在今日运营流程的待审批候选下创建"）、刷新可用，与 `internal_authorizations`=0 一致；**创建有限次授权未做**（需先跑今日运营产生待审批候选） |
+| H16 规则停用/重置/恢复 + AI 授权管理 | **通过（授权全生命周期已验）**。`business_rule_revisions` **#25 revoke**（阈值回默认 24h）→ **#26 reset** → 从版本历史恢复 #24 得 **#27 restore（`restored_from_id=24`、12h）**。**AI 运营授权管理（创建/消耗/撤销）**：今日运营得 **执行 #260**（5 候选、等待审批）→「R1 内部有限次预授权」面板显示"当前依据：执行 #260 · 版本 2"+授权范围，填 **3 次 / 24 小时** 并勾选核对后「保存预授权」→ 设备 **"有限范围授权已保存。"**、**授权 #19 · active · 已用 0 / 3 次**，`internal_authorizations` **#19**（`propose_tasks`/execution 260/source_revision 13/candidate_count 5/max_uses 3/v1）；展开卡片可见身份·渠道·币种、时间窗、规则与来源版本 `0 / 13`、阈值、绑定候选 5、授权与来源到期；「为当前候选使用授权」→ 执行 #260 转**已完成**、授权 **已用 1 / 3**（v2）、`authorization_uses` **#6**（execution 260 / operation_run_id **186**）；「撤销授权」→ 卡片 **#19 · revoked**、`revoked_at` 落库（v3），消耗记录保留 |
 | H17 定时运营 | **通过**。暂停 → `paused` v2（`next_run_at` NULL）→ **恢复被规则版本门禁挡住**（"经营规则版本已变化，请刷新规则并重新检查"）→ 修改计划重绑规则 **#27** 存为 v3 → 恢复 **active v4**（`next_run_at`=2026-10-12 01:00 UTC=09:00+08:00）→ 立即执行一次 → `schedule_occurrences` **#27**（execution_id **258**、succeeded、`no_findings`）→ 通知"查看运行进度与审批"**深链直达执行 #258** → 标记已读写入 `read_at` → 撤销 **revoked v5**。**自动调度服务本身未启用，"到点自动运行"仍无法端测** |
 | H18 质量报告 | **通过**。报告 #31 因 H19 改商品转 **`stale`**；回读检查时间/规则版本/来源修订 8/检查 4·受影响 2/缺失 2·待审 0 与逐商品结果；清除后 `product_quality_reports.status=cleared`、`product_quality_sources` **0** |
 | H09 经营分析 | **通过（含 ask）**。默认口径：3 个已支付订单行/6 件、净销售额 **115.0000**（=120.0000−退款5.0000），成本/毛利/毛利率**"未知"**、完整排行 false。切「订单行历史成本依据」并为 `SYN-U1/1` 登记 **8.1234 USD**（凭据 `SYN-COST-001`）→ `order_cost_revisions` **#3 upsert/active**；重算得**已知成本小计 16.2468（2×8.1234）、毛利已知行数 1**，合计仍"未知"；保存 `saved_analyses` **#24 current**，旧 #23 转 `stale`。**ask 已验**：受控问题改为"低毛利商品有哪些"后点「用本地规则回答」，结果块时间戳 07:58:39→**07:59:21**（确实发起新请求、复用同一证据视图、不调外部模型） |
-| H10 跨店总览 | **通过（清除未验）**。日摘要（2026-10-11→10-12、USD）→ 1 家店铺、**"可核对净销售额 未知/不完整；已知子集 0；已观察订单 0"**（空窗口不当零销售）+ 覆盖说明/口径与未获取项 + 逐店依据 `HarmonyR2Main · manual · US`；保存 `overview_reports` **#39 current**。**历史回读已验**：列表显示 #39 current 且点开可原样回读保存时快照；另把窗口改 2026-10-05→10-12 重算得 **115.0000 / 已知子集 115.0000 / 已观察订单 3**（与空窗口对照）。**「清除摘要正文」未验**（该按钮仅在记录被当作"已保存摘要"加载时才渲染） |
+| H10 跨店总览 | **通过（含清除）**。日摘要（2026-10-11→10-12、USD）→ 1 家店铺、**"可核对净销售额 未知/不完整；已知子集 0；已观察订单 0"**（空窗口不当零销售）+ 覆盖说明/口径与未获取项 + 逐店依据 `HarmonyR2Main · manual · US`；保存 `overview_reports` **#39 current**。**历史回读已验**：点 #39 会把它载入"已保存摘要"（出现"摘要 #39 · current + 保存时间"与「按原范围重算 / 清除摘要正文」），可原样回读保存时快照；另把窗口改 2026-10-05→10-12 重算得 **115.0000 / 已知子集 115.0000 / 已观察订单 3**（与空窗口对照）。**「清除摘要正文」已验**：确认后设备 **"摘要正文已清除。"**、标题转 **#39 · cleared**、清除按钮消失，库内 `snapshot` NULL、`overview_sources` **0**、`overview_shops` 保留 1 条（与确认文案"保留范围、状态和审计记录"一致） |
 | H20 测试外发 | **通过（全程替身，真实邮件 0）**。连通道 → 替身 `SyntheticMail` 把验证信写入 `.local/mobile-business/fixture-events.jsonl`（`mail_captured`），取 8 位码回填 → **已验证/有效**。**关键前置**：页面只接受 `source_status=current` 的运营检查，旧运行 184 因来源修订变化已 `stale` 被过滤；先跑「今日运营」得 **执行 #259**（5 候选，批准节点完成）→ **检查 #185** → 创建 **外发摘要 #25**（等待审批、内容版本 1、全文含 checked/partial/not_checked 与关联候选 #195–#199）→「保存单次批准」得**限 1 次**审批 →「按有效授权提交一次」→ `accepted`、**回执 `7f1da7a8…`**、授权**已消耗 1/1** →「只读回查」得 **通道报告送达**（`mail_reconciled`）→ 人工收件证据 `SYN-RECEIPT-001-合成收件声明` 落库 →「撤销通道」得**已撤销**（`revoked_at`）。日志 `mail_captured`×2 / `mail_reconciled`×1 / `real_mail_calls: 0` |
 | H21 边界 | **六项通过**。①**离开恢复**：HOME 退桌面后 `aa start` 重入 → 回到原页面且会话与页面状态保持；②**断线错误**：撤掉 rport 后读接口显示 **"暂时无法连接服务，请刷新重试。"**；③**未知结果与同次请求恢复**：先加载费用 #1139 再断链点「撤销费用」，应用**不静默重试**而是进入待确认态、按钮变 **"核对同次写入"** 且撤销/清除置灰，库内仍 `active` v1（**无半写**）；恢复链路后补交同一次请求 → **#1139 withdrawn v2**（恰好一次）；④**版本冲突**：加载"审阅 #188"（v2）后把库内该行 `version` 改为 99 再点「撤销审阅」→ 服务端拒绝、界面显示 **"核对存档版本已变化，请刷新。"**、库内不变（revision 仍 1 条），测后已还原 `version=2`；⑤**深浅色**：Settings「显示和亮度 → 深色」开启后应用首页**完整以深色主题渲染**（深色底/浅色字/浅绿主按钮），随后已把模拟器**恢复为浅色**；⑥**错误文案**与长文本换行均可读。**未做**：横屏（DMS 无旋转指令）、大字体（Settings 字体大小滑块对 `uitest click/swipe/drag` 均无响应） |
 
@@ -66,11 +68,8 @@
 
 ## 仍待端测 / 未完成
 
-- **H21 横屏**（`hidumper -s DisplayManagerService` 无旋转指令、无脚本化旋转入口，需 DevEco 模拟器工具栏手动转）与**大字体**（Settings 字体大小滑块对 `uitest click/swipe/drag` 均无响应）。
-- **H10「清除摘要正文」**：该按钮仅在记录被当作"已保存摘要"加载时才渲染，点历史条目只显示快照、未出现按钮。
-- H16 创建**内部有限次预授权**未单独做（H20 做的是外发「限一次预授权」，不是 R1 面板）。
-- H17 "到点自动运行"无法端测（调度服务未启用，属部署事实）。
-- **微信端运行时联调：模拟器已能渲染应用，但自动化驱动仍不通**。彻底结束全部 `wechatdevtools` 进程后全新启动 IDE，之前稳定复现的 **"模拟器启动失败 / TypeError: Failed to fetch" 消失**，模拟器稳定渲染出业务登录页（含**服务地址 `http://127.0.0.1:18081`**，即本轮 `TARO_APP_API_BASE` 构建结果）。**更正上轮结论**：把成因归结为"系统代理下 servicewechat.com TLS 失败"是**错的**——代理仍开启时重启 IDE 即可正常渲染，真实原因是 IDE 进程状态损坏/多实例；代理观察本身属实但已不作为结论，**无需改动系统网络设置**。仍阻塞：`cli auto` 本次成功（9420 监听、AppID 解析成功），但 **`miniprogram-automator@0.12.1` 与 IDE `v2.01.2510290` 不兼容**（`EMFILE core.wxvpkg` → `fd undefined`），且 **SendKeys 注入不到小程序渲染出的输入框**，因此**登录/列表/写操作真实链路仍未取得结果**（不得写成已验证）。后续可选：换匹配版本的 automator、请用户手工登录一次并交回截图、或走真机调试（需配合法域名）。
+- **H21 横屏**（`hidumper -s DisplayManagerService` 无旋转指令、无脚本化旋转入口，`Emulator.exe --help` 亦无旋转项——需 DevEco 模拟器工具栏手动转屏）与 **H21 大字体**（Settings 字体大小滑块对 `uitest click/swipe/drag` 均无响应）。
+- **微信端登录/列表/写操作真实链路**：模拟器已能渲染小程序（登录页显示服务地址 18081），但驱动不通——`miniprogram-automator@0.12.1` **已是 npm 最新版**且与本机 IDE `v2.01.2510290` 不兼容（`EMFILE core.wxvpkg` → `fd undefined`），`SendKeys` 也注入不到小程序渲染出的输入框。**建议请用户手工在开发者工具里登录一次并交回截图**；或换用与新 IDE 匹配的自动化方案。详见 `docs/mobile/weapp-implementation.md`。
 
 ## 微信端 wave 3（`c63e11b`）
 
@@ -106,7 +105,7 @@
 
 环境**核对后直接复用，不要盲目重建**：`hdc list targets` 应为 `127.0.0.1:5555`（本轮崩溃过一次，已重启恢复；**不要与前台的微信开发者工具同时长跑**）；`127.0.0.1:18081` 有合成 API（`.local/mobile-business/resume_api_18081.py`，`build_app` 直连，不跑 `prepare_samples`）；**`hdc rport tcp:18080 tcp:18081`（Reverse，不是 fport）** 应在位；Docker 容器 `soloops-harmony-r2-mysql`（3315，tmpfs）**不要停**；固定 HAP 哈希须为 `3148726747764db13eb18de7e71885b69253f3b59274998fe4367bb0ab85ec0e`（103,689,862 B）。数据库回读加 `--default-character-set=utf8mb4`。
 
-H19/H12/H13/H14/H15/H16/H17/H09/H10/H18/H20 已端测通过；H21 已通过六项（离开恢复、断线错误、未知结果与同次请求恢复、409 版本冲突、深浅色、错误文案）。剩余顺序：**补 H21 横屏（需 DevEco 模拟器工具栏手动转屏）、H10「清除摘要正文」、H16 内部有限次预授权创建；微信端运行时联调**——模拟器现已能正常渲染小程序（登录页显示服务地址 18081），只需解决"驱动"问题：换用与该 IDE 版本匹配的 `miniprogram-automator`，或请用户手工登录一次交回结果；工程 `apps/soloops_weapp`，构建需 `TARO_APP_API_BASE=http://127.0.0.1:18081`（本机 18080 属其他项目 nx-keycloak）。
+H19/H12/H13/H14/H15/H16/H17/H09/H10/H18/H20 已端测通过（**H16 含 AI 授权创建/消耗/撤销，H10 含清除摘要正文**）；H21 已通过六项（离开恢复、断线错误、未知结果与同次请求恢复、409 版本冲突、深浅色、错误文案）。**剩余只有**：H21 横屏（需 DevEco 模拟器工具栏手动转屏）、H21 大字体（Settings 字号滑块对 uitest 无响应）、微信端登录/列表/写操作真实链路（模拟器已能渲染小程序；automator 0.12.1 已是 npm 最新且与本机 IDE v2.01.2510290 不兼容，**建议请用户手工登录一次交回截图**）。工程 `apps/soloops_weapp`，构建需 `TARO_APP_API_BASE=http://127.0.0.1:18081`（本机 18080 属其他项目 nx-keycloak）。
 
 每完成一项：设备端操作 + 数据库回读 → 更新 `docs/mobile/harmony-r2-coverage.md`、`harmony-validation.json`、`harmony-implementation-progress.md`、`harmony-handoff.md` → 提交推送 → 用抓取工具核对**该 SHA** 的 `Verify mobile engineering` 为 success 再继续。只使用合成数据与本地替身，真实模型/邮件/平台写入保持 0；`pytest backend/tests` 不得对保留验收库运行；`apps/soloops_weapp/project.config.json` 与 `apps/soloops_flutter/ohos/build-profile.json5` 是本机配置，不提交不覆盖。"
 
