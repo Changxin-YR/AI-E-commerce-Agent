@@ -6,7 +6,7 @@
 - **接续记忆**：本文件（`context-memory` 分支）；入口文档 `docs/mobile/harmony-handoff.md` 顶部、`docs/mobile/weapp-implementation.md`。
 - **本机环境**：**已核对并复用，无需重建**。设备 `127.0.0.1:5555` 在线；`hdc rport tcp:18080 tcp:18081` 在位（`[Reverse]`）；合成 API `127.0.0.1:18081` 返回 200；Docker `soloops-harmony-r2-mysql`（3315）67 表 / head `b42e83f516c0`；固定 HAP 哈希 `31487267…ec0e` 未变。
 - **进度**：鸿蒙端 H19/H12/H13/H14/H15/H16/H17/H09/H10/H18/H20 **全部通过**；**H21 通过六项**（离开恢复、断线错误、未知结果与同次请求恢复、409 版本冲突、深浅色、错误文案）。微信端 wave 3 代码已提交并通过 type-check/构建；**微信开发者工具已能渲染小程序（登录页显示服务地址 18081），但"驱动"仍不通**。
-- **剩余**：① H21 横屏（需 DevEco 模拟器工具栏手动转屏）；② H21 大字体（Settings 字号滑块对 uitest 无响应）；③ 微信端登录/列表/写操作真实链路（automator 0.12.1 已是 npm 最新且与本机 IDE 不兼容，**建议请用户手工登录一次交回截图**）。
+- **交付边界（用户已确认收尾）**：鸿蒙 R2 功能项与 H21 六项**全部验证完毕**；**三项已知限制**（H21 横屏、H21 大字体、微信端真实链路驱动）见下文「已知限制」节，均需人工 GUI 操作，**不再作为待办反复重试**。
 - **硬约束**：只用合成数据与本地替身，真实模型/邮件/平台写入保持 0；`pytest backend/tests` **不得**对保留验收库运行；`apps/soloops_weapp/project.config.json` 与 `apps/soloops_flutter/ohos/build-profile.json5` 不提交不覆盖。
 
 ## 最新接续检查点（2026-10-12，M0-C 第五轮）
@@ -33,7 +33,8 @@
   | `506dc54` | H10「清除摘要正文」 | success (run 38188982809) |
   | `c6c16e2` | H16 AI 授权管理：创建/消耗/撤销 | success（contract + weapp 均通过） |
   | `8234635` | 微信端：模拟器编译缓存修复 + 自动化仍阻塞 | success（contract + weapp 均通过） |
-  | `a04c5a4` | H21 横屏/大字体：穷尽脚本化手段并记录 | **提交时待复核** |
+  | `a04c5a4` | H21 横屏/大字体：穷尽脚本化手段并记录 | success |
+  | `eef730f` | 冻结交付边界 + 三项已知限制 | success（contract + weapp 均通过） |
 
 - 上轮"未核对"的 4 个 SHA 已闭环：`029b53b`、`e67bf35`、`e385cb3`、`e1917f1` 的 CI 均为 **success**。
 - **CI 读取方式**：匿名 REST 从 shell 直接调会被限流 403；用抓取工具读
@@ -68,11 +69,15 @@
 证据目录 `.local/mobile-business/device/`（本轮新增 `h19-*`、`h12-*`、`h13-*`、`h14-*`、`h15-*`、`h16-*`、`h17-*`、`h18-*`、`h09-*`、`h10-*` 的布局快照与 `*.jpeg` 截图）。
 本机新增合成样本：`.local/mobile-business/samples/orders-user-import-synthetic.csv`（`SYN-U1/U2/U3`）、`statements-order-linked-synthetic.csv`（带 `order_id` 的账单）。
 
-## 仍待端测 / 未完成
+## 已知限制（用户于 2026-10-12 确认按此收尾 · 不再作为待办反复重试）
 
-- **H21 横屏：已穷尽，只能人工**（`Emulator.exe --help` 无旋转项；DMS 日志"**Dms subscribed to sensor successfully**"→旋转由**传感器**驱动且无设置朝向的 shell 接口；`SensorService` 只读；枚举 Emulator 进程**唯一可见窗口**是 Qt5 `Qt51517QWindowIcon`（394×710 手机画面，**无工具栏**）；Settings 无旋转开关）→ 需 **DevEco Studio 的 Device Manager** 手动转屏。
-- **H21 大字体：已穷尽，只能人工**（Settings 字体大小滑块对 5 种手段全无响应：`uitest` 的 `click`/`swipe`/`drag`、聚焦后**方向键**、**模拟器窗口上的真实鼠标事件**；且该窗口**对合成鼠标事件整体无响应**——用"返回"箭头做可逆校准点击、两种缩放映射都试过；`param set persist.global.fontScale` 被拒 errNum 106/1002）。
-- **微信端登录/列表/写操作真实链路**：模拟器已能稳定渲染小程序（登录页显示服务地址 18081，删 `.swc` 可修复启动失败），但**驱动不通**——`miniprogram-automator@0.12.1` **已是 npm 最新版**且与本机 IDE `v2.01.2510290` 不兼容，`SendKeys`/剪贴板也注入不到小程序渲染出的输入框。**建议请用户在开发者工具里手工登录一次**（账号 `harmony_r2` / 密码 `Synthetic-R2-2026!`，服务地址已构建为 `http://127.0.0.1:18081`）并把截图交回；或改走真机调试（需配合法域名）。运行时脚本已备：`scripts/mobile/check_weapp_runtime.cjs`。详见 `docs/mobile/weapp-implementation.md`。
+以下三项**已穷尽可脚本化手段**，均需**人工 GUI 操作**才能补齐；详见 `docs/mobile/harmony-handoff.md` 顶部的「交付边界与已知限制」节：
+
+1. **H21 横屏未验证** —— 只能由 **DevEco Studio 的 Device Manager** 手动转屏。已排除：`Emulator.exe --help` 无旋转项；DMS 由**传感器**驱动旋转（"Dms subscribed to sensor successfully"）且无设置朝向的 shell 接口；`SensorService` 只读；Emulator 进程**唯一可见窗口**是 Qt5 手机画面（无工具栏）；Settings 无旋转开关。
+2. **H21 大字体未验证** —— 需**人工**拖动「设置 → 字体大小和界面缩放」滑块。已排除：`uitest` 的 `click`/`swipe`/`drag`、聚焦后**方向键**、**模拟器窗口上的真实鼠标事件**（该窗口对合成鼠标事件整体无响应，已用"返回"箭头可逆校准验证）；`param set persist.global.fontScale` 被拒（errNum 106/1002）。
+3. **微信端登录/列表/写操作真实链路未取得结果** —— 模拟器可渲染应用，但无可用驱动：`miniprogram-automator@0.12.1` 已是 npm 最新版且与本机 IDE `v2.01.2510290` 不兼容（`EMFILE core.wxvpkg` → `fd undefined`）；`SendKeys`/剪贴板注入不到小程序输入框；调试器控制台无法用盲点坐标打开。运行时脚本已备 `scripts/mobile/check_weapp_runtime.cjs`。
+
+**补齐方式**：人工转屏 / 调大字号 / 在开发者工具里登录一次（`harmony_r2` / `Synthetic-R2-2026!`，服务地址已构建为 `http://127.0.0.1:18081`）后告知，即可立即验证并回读入库。
 
 ## 微信端 wave 3（`c63e11b`）
 
