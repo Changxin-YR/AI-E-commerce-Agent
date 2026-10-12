@@ -128,6 +128,8 @@ watch(
   { flush: 'sync' },
 )
 useLoad((value) => {
+  // The operations destination adds shop/identity/channel context; support
+  // messages are scoped by shop only, so the context keys are not filters here.
   params.value = value as Record<string, string>
 })
 watch(

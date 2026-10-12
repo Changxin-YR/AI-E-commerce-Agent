@@ -68,6 +68,8 @@ watch(
   },
 )
 useLoad((value) => {
+  // The operations destination adds shop/identity/channel context; this page
+  // scopes products by shop, so only the shop and the linked product are read.
   params.value = value as Record<string, string>
 })
 useUnload(() => {

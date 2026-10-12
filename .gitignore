@@ -19,3 +19,5 @@ test-results/
 *.log
 .eslintcache
 .DS_Store
+# WeChat devtools keeps local account and window state here.
+apps/soloops_weapp/project.private.config.json

@@ -11,11 +11,12 @@ npm ci
 npm run type-check
 npm test
 node scripts/check-registration.mjs
+node scripts/check-deep-links.mjs
 npm run build:weapp
 npm audit --json
 ```
 
-`scripts/check-registration.mjs` 双向比对页面目录与 `src/app.config.ts`、`src/services/navigation.ts`：未注册的页面不会被 Taro 编译、不会出现在 `dist/`，配置指向不存在的页面会直接失败；同时逐页校验 `<script setup lang="ts">` 与 `<template>` 结构，因为缺少 script 块时 `vue-tsc` 会静默跳过整段类型检查。
+`scripts/check-registration.mjs` 双向比对页面目录与 `src/app.config.ts`、`src/services/navigation.ts`：未注册的页面不会被 Taro 编译、不会出现在 `dist/`，配置指向不存在的页面会直接失败；同时逐页校验 `<script setup lang="ts">` 与 `<template>` 结构，因为缺少 script 块时 `vue-tsc` 会静默跳过整段类型检查。`scripts/check-deep-links.mjs` 按后端 destinations 与工作项 link 的实际查询键，逐页核对深链参数与卖家首页五组入口。
 
 编译目录为 `dist/`。微信开发者工具导入本目录（`project.config.json` 指向 `dist/`）。
 `touristappid` 仅为本地工程占位，真实 AppID 和私有工具配置由开发者本机提供。

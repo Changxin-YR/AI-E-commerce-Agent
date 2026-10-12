@@ -56,7 +56,7 @@
 | H18 商品质量 | 已实现并离线验证；预览、报告保存/分页/详情/清除与来源依据；IDE/数据库待验 |
 | H19 本地修订 | 已实现并离线验证；批量修订创建、分页/详情、审批与撤销/拒绝/清除、失败明细；IDE/数据库待验 |
 | H20 外发管理 | 已实现并离线验证；通道连接/验证/撤销、摘要创建/编辑、单次与预授权审批、提交、只读回查与人工收件证据；使用隔离替身 |
-| H21 公共能力 | 会话/店铺上下文、文件导入分享、来源/待办/运行深链、19 条业务路由与卖家首页入口已完成；其余目标深链与集中 IDE/数据库验收待补 |
+| H21 公共能力 | 会话/店铺上下文、文件导入分享、来源/待办/运行深链、19 条业务路由与卖家首页五组入口、深链矩阵门禁已完成；集中 IDE/数据库验收与记录见[IDE 验收记录](weapp-ide-acceptance-log.md) |
 
 ## W02：文件导入（2026-10-11）
 
@@ -76,7 +76,7 @@
 - 验证：20/20客户端测试（含5项任务状态门禁/UUID/查询编码），类型检查通过；生产构建165模块通过。未执行IDE、数据库或真实后端端到端旅程。
 ## 下一步精确起点
 
-1. H10–H20 业务页面已全部实现并通过离线验证（W09–W11）；下一步按 [页面实现约定](weapp-page-conventions.md) 做集中验收：微信开发者工具真实交互、后端数据库持久旅程、深链与返回、字号/长列表，并补 H21 其余跨模块目标深链。
+1. H10–H20 业务页面已全部实现并通过离线验证（W09–W11）；H21 深链矩阵已门禁化。下一步按 [页面实现约定](weapp-page-conventions.md) 与 [IDE 验收记录](weapp-ide-acceptance-log.md) 做集中验收：先在开发者工具完成一次 GUI 编译，再跑启动页断言与逐页读写回读，最后补数据库持久旅程与字号/长列表检查。
 2. `scripts/mobile/check_weapp_load.cjs` 已更新为实际卖家启动页断言；集中IDE验证时运行，保留本机AppID与配置不提交。
 3. 每小任务更新账本并保存；上下文接近满才交接，传递精确SHA，当前聊天停止写入。
 
@@ -93,7 +93,9 @@
 - 已核实提交 `a2b82074c116e7c8839e0bfcc1b678cac5541a4a`（H11–H20 业务页面）的 [CI38226721278](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38226721278) success：contract 与 weapp 两个 job 均通过，含 `uv sync`、静态契约与移动单测、`npm ci`、`type-check`、`npm test`、`build:weapp` 与产物断言、artifact 上传。
 - 验证：`vue-tsc` 退出 0，124/124 客户端测试，生产构建退出 0（22 个页面 bundle），静态契约 PASS 与契约单测 24 项 OK，`git diff --check` 无输出。
 - 过程中修正：包B 三个页面缺少 `<script setup lang="ts">` 导致 SFC 边界丢失，`vue-tsc` 静默跳过整段类型检查且 Taro 报 `Element is missing end tag`；补齐后暴露并修复 3 处真实类型错误（`StatementPage` 未导出、`checkedOrderScopeSafe` 未定义），说明“类型检查通过”在缺失 SFC 边界时不可信。
-- 未执行微信 IDE 交互、数据库持久旅程与真实外部调用；H21 其余目标深链与集中验收待下阶段。
+- H21 深链矩阵门禁：新增 `scripts/check-deep-links.mjs`，按后端 `workbench.py`（LINKS + R0/R1/R2 默认键）与 `operations.py`（`_destinations`）的实际参数逐页核对 18 条路由、65 个键，并校验卖家首页五组入口、operations/workbench 按 `path`/`query` 转发；`return_task` 不列为页面键，因为 destinations 用 `navigateTo` 打开、返回栈本身即回到原待办。
+- IDE 验收已实际尝试并记录：[IDE 验收记录](weapp-ide-acceptance-log.md)。开发者工具 `cli auto` 启动成功（自动化端口 9420、IDE 服务 21740 均监听，automator 连接约 8ms），但 `currentPage()` 在持续“实时编译”状态下不返回，`check_weapp_load.cjs` 55 秒超时退出 1；需要在工具界面完成一次编译后再断言，未通过前不记为 IDE 验收。
+- 未执行微信 IDE 交互、数据库持久旅程与真实外部调用；集中验收待下阶段。
 ## 环境与接续
 
 - Node：`C:/Users/27363/Desktop/AIEcommerceAgent/.local/runtimes/node-v24.16.0-win-x64/node.exe`。默认系统Node是24.15.0，检查时显式在PATH前置24.16.0目录。
