@@ -1068,3 +1068,10 @@ Listing生成/编辑绑定source row与active baseline，决定携带审阅版�
 ## 微信W09：跨店总览的范围、回读与清除
 
 总览复用既有overview业务接口：范围先经checkedOverviewScope校验（1–20家不重复店铺、1–366天窗口且结束日不含、显式IANA时区、数据身份与库存时效边界），服务端对同一payload再次校验，客户端不承担币种代码合法性。保存沿用request_id+expected_revisions，写入后按报告ID独立GET回读快照与状态，历史游标分页与单报告回读共用同一DTO。清除走契约的confirm门禁：确认弹窗后再核验对象未变化才提交，清除完成后重新GET回读并刷新历史，已清除报告不再提供清除动作。本轮同时修正了币种去重表达式在重复项下永不报错的问题，改为显式重复检测，明确区分“客户端拒绝重复输入”和“服务端拒绝未知币种”两层职责。
+
+
+## 微信W10–W11：H11–H20 的业务页面与注册一致性
+
+十个页面按同一骨架实现：范围输入→服务端校验→预览或计算→确认门禁→写入→按编号独立GET回读→列表刷新；状态机与来源有效性由服务端裁决，客户端用policy模块镜像同一门禁，避免出现服务端必然拒绝的按钮。费用规则先preview再write并复用同一`preview_hash`与`request_id`，修订批量复用预览哈希，结算与账单在`current`读取时明确标注“尚未重新确认”，因为同一响应不等于重新核对。周期记录没有GET-by-id，已读动作以POST响应加列表刷新为回读依据；`POST /business-rules` 无`request_id`，网络未知时改为重新读取当前版本后再操作，不假装可以安全重试。
+
+页面目录与`app.config.ts`、`navigation.ts`的登记关系单独作为门禁：新增`scripts/check-registration.mjs`双向比对，未注册页面不会被Taro编译、不会出现在`dist`，而配置指向不存在的页面会直接构建失败。本轮同时暴露一个更隐蔽的问题：三个页面缺少`<script setup lang="ts">`开头的SFC边界，`vue-tsc`会静默跳过整段script检查、构建却报`Element is missing end tag`；补齐标签后立刻出现3处真实类型错误（`StatementPage`未导出、`checkedOrderScopeSafe`未定义）。结论：类型检查绿灯只在SFC结构完整时才可信，构建与产物清单必须同时核对。

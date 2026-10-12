@@ -52,10 +52,13 @@ const rowPage = ref(0),
   olderCursor = ref<number>()
 const prepared = shallowRef<PreparedImport>(),
   progress = ref('')
-const linkedBatch = ref(0)
+const linkedBatch = ref(0),
+  linkedKind = ref(-1)
 useLoad((params) => {
   if (/^[1-9]\d*$/.test(params.batch || ''))
     linkedBatch.value = Number(params.batch)
+  // Reports deep-link with the matching import kind so the right template loads first.
+  linkedKind.value = kinds.indexOf(String(params.kind || '') as ImportKind)
 })
 const fields = computed(
   () => catalog.value?.[batch.value?.kind || kinds[kindIndex.value]!] || [],
@@ -203,10 +206,17 @@ async function initialize() {
 }
 useDidShow(() => {
   void initialize().then(() => {
-    if (linkedBatch.value && !error.value) {
+    if (error.value) return
+    if (linkedBatch.value) {
       const id = linkedBatch.value
       linkedBatch.value = 0
+      linkedKind.value = -1
       void openBatch(id)
+    } else if (linkedKind.value >= 0) {
+      // The picker and the selected batch are mutually exclusive views.
+      batch.value = undefined
+      kindIndex.value = linkedKind.value
+      linkedKind.value = -1
     }
   })
 })
@@ -507,12 +517,7 @@ function download(path: string, name: string) {
         >当前组 #{{ selectedGroup.id }} · {{ selectedGroup.status }} ·
         {{ selectedGroup.options.data_identity }}</text
       >
-      <button
-        :disabled="busy"
-        @tap="newGroup"
-      >
-        开始新的导入组
-      </button>
+      <button :disabled="busy" @tap="newGroup">开始新的导入组</button>
       <button :disabled="busy" @tap="prepare">选择原始 CSV 并校验分片</button>
       <text v-if="prepared" class="hint"
         >{{ prepared.manifest.source_filename }} ·
@@ -690,10 +695,7 @@ function download(path: string, name: string) {
       </button>
       <view class="row"
         ><text>只看错误行</text
-        ><switch
-          :checked="errorsOnly"
-          :disabled="busy"
-          @change="filterErrors"
+        ><switch :checked="errorsOnly" :disabled="busy" @change="filterErrors"
       /></view>
       <view v-for="row in visibleRows" :key="row.row_number" class="record">
         <text class="label">源行 {{ row.row_number }} · {{ row.action }}</text

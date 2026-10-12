@@ -112,7 +112,59 @@
           :disabled="!account.shopId"
           @tap="Taro.navigateTo({ url: '/pages/overview/index' })"
         >
-          跨店总览
+          跨店总览</button
+        ><button
+          :disabled="!account.shopId"
+          @tap="Taro.navigateTo({ url: '/pages/outbound/index' })"
+        >
+          受控测试外发</button
+        ><text class="section-title">财务与对账</text
+        ><button
+          :disabled="!account.shopId"
+          @tap="Taro.navigateTo({ url: '/pages/profit/index' })"
+        >
+          新品利润测算</button
+        ><button
+          :disabled="!account.shopId"
+          @tap="Taro.navigateTo({ url: '/pages/expenses/index' })"
+        >
+          费用与映射</button
+        ><button
+          :disabled="!account.shopId"
+          @tap="Taro.navigateTo({ url: '/pages/statements/index' })"
+        >
+          渠道账单</button
+        ><button
+          :disabled="!account.shopId"
+          @tap="Taro.navigateTo({ url: '/pages/order-reconciliation/index' })"
+        >
+          订单账单核对</button
+        ><button
+          :disabled="!account.shopId"
+          @tap="Taro.navigateTo({ url: '/pages/settlements/index' })"
+        >
+          结算与回款</button
+        ><text class="section-title">规则与商品运营</text
+        ><button
+          :disabled="!account.shopId"
+          @tap="Taro.navigateTo({ url: '/pages/rules/index' })"
+        >
+          经营规则与授权</button
+        ><button
+          :disabled="!account.shopId"
+          @tap="Taro.navigateTo({ url: '/pages/schedules/index' })"
+        >
+          定时运营</button
+        ><button
+          :disabled="!account.shopId"
+          @tap="Taro.navigateTo({ url: '/pages/product-quality/index' })"
+        >
+          商品质量检查</button
+        ><button
+          :disabled="!account.shopId"
+          @tap="Taro.navigateTo({ url: '/pages/product-edits/index' })"
+        >
+          商品本地修订
         </button>
       </view>
       <view class="card"

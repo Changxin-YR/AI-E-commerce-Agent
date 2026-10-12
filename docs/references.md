@@ -508,3 +508,8 @@ Taro4.3.0（MIT）已安装types/api/ui/interaction.d.ts的enableAlertBeforeUnlo
 ## 微信W09参考（2026-10-12）
 
 总览字段与动作对照仓库frontend/src/views/OverviewView.vue、frontend/src/api（overview调用）、backend/app/api/routes/overview.py、schemas/overview.py、services/overview.py与services/overview_calculation.py，以及contracts/ui-contract.json的r2.overview五个动作（calculate/reports POST/reports GET/report GET/clear）。清除的confirm语义、状态与文案取自Web实现，未新增依赖或外部代码。在线检索本轮未使用；本机Node24.16.0的Intl.DateTimeFormat对无效时区的拒绝行为已实测确认（Mars/Base、空串、UTC+8均抛错，UTC合法）。
+
+
+## 微信W10–W11参考（2026-10-12）
+
+H11–H20 页面逐字段对照仓库既有实现与后端契约，未引入新依赖或外部代码：profit（frontend/src/views/ProfitView.vue、backend routes/schemas/services/profit.py）、expenses 与 fee_rules（ExpensesView.vue、expenses.py、fee_rules.py）、statements 与 statement_reviews、order_statement_reviews（StatementsView.vue 及对应后端模块）、settlements（SettlementsView.vue、settlements.py）、business_rules 与 authorizations（RulesView.vue、business_rules.py、authorizations.py）、schedules（SchedulesView.vue、schedules.py）、product_quality（ProductQualityView.vue、product_quality.py）、product_edits（ProductEditsView.vue、product_edits.py）、outbound（OutboundView.vue、components/OutboundMailReview.vue、features/../api/outbound.ts、backend outbound.py、outbound_channels.py）。动作清单以 contracts/ui-contract.json 为索引，字段与状态机以对应 schema/service 为准。本机新增门禁脚本 `apps/soloops_weapp/scripts/check-registration.mjs` 为原创实现，无外部代码。

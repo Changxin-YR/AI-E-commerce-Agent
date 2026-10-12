@@ -1,6 +1,6 @@
 export interface RequestOptions {
   url: string
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   header: Record<string, string>
   data?: unknown
   timeout: number

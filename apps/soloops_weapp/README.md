@@ -9,13 +9,17 @@ Taro 4.3.0、Vue 3.5.43、TypeScript 5.9.3，Node 24.16.0 / npm 11.13.0。
 cd apps/soloops_weapp
 npm ci
 npm run type-check
+npm test
+node scripts/check-registration.mjs
 npm run build:weapp
 npm audit --json
 ```
 
+`scripts/check-registration.mjs` 双向比对页面目录与 `src/app.config.ts`、`src/services/navigation.ts`：未注册的页面不会被 Taro 编译、不会出现在 `dist/`，配置指向不存在的页面会直接失败。
+
 编译目录为 `dist/`。微信开发者工具导入本目录（`project.config.json` 指向 `dist/`）。
 `touristappid` 仅为本地工程占位，真实 AppID 和私有工具配置由开发者本机提供。
-合法域名校验保持启用。当前业务覆盖登录、经营资料、文件导入、巡检待办、AI运营、Listing、客服、库存和经营分析；完整范围与待验项见 [微信进度账本](../../docs/mobile/wechat-implementation-progress.md)。
+合法域名校验保持启用。当前业务覆盖登录、经营资料、文件导入、巡检待办、AI运营、Listing、客服、库存、经营分析、跨店总览、新品利润测算、费用与映射、渠道账单、订单账单核对、结算与回款、经营规则与授权、定时运营、商品质量检查、商品本地修订和受控测试外发（H01–H20，19 条业务路由）；完整范围与待验项见 [微信进度账本](../../docs/mobile/wechat-implementation-progress.md)。
 开发工具加载和模拟器运行必须单独验收，编译成功不代表已在工具内运行。
 
 当前 npm 审计仍失败，详见 [`依赖审查`](../../docs/mobile/dependency-review.md)。
