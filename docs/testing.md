@@ -613,3 +613,13 @@ C最终准确业务代码ed30b872e5a89be096e15c550cb46b9b7240ee44的CI3804231893
 - `node frontend/scripts/check-android-modules.mjs`：**20/20 通过**。店铺 #30（批次 72/73/74/75）下逐项记录 19 个业务入口结果：数据导入批次文件名、任务执行台、Listing 商品 `A5-SKU` 与本地模板生成版本（`listings/versions` 0→1）、库存快照命中、利润试算结果区（售价 20/采购 18/合成依据）、商品质量检查结果区、订单金额待核清单、经营分析净销售额 `60.0000`、经营总览净销售额、费用/修订/账单/结算/规则/外发/定时各入口与空状态；每项断言无横向溢出。证据 `.local/android/evidence/device-a5-modules.json`。
 - `node frontend/scripts/check-android-adaptation.mjs`：**41/41 通过**。默认 412×842、小屏 360×582、平板 1067×1556、横屏 866×364、系统字号 1.3（标题 23px→29.9px）各跑 8 个代表入口，均无横向溢出；`adapt:font-scale-effect` 证明 WebView 跟随系统字号。证据 `.local/android/evidence/device-a5-adaptation.json`；测试后 `wm size`/`wm density`/`font_scale`/`user_rotation` 已恢复。
 - 未覆盖：本机无 Android 真机，厂商 ROM、刘海/手势与真实网络未测；账单/结算/费用/修订在合成店铺下无来源数据，只记录入口与空状态。详见 android-a5-acceptance.md。
+
+## Android A6（2026-10-12）
+本地：`eslint` exit 0；42 文件 **194 项单元**通过；`android:sync:local` + `assembleDebug`（`versionCode 2` / `1.0.1`）与 `VITE_SOLOOPS_API_ORIGIN=https://android-release.invalid` + `android:sync` + `assembleRelease` 均成功；`apksigner verify --print-certs` 通过（证书 SHA-256 `91E6DD8C…1D52`）。
+
+设备（专属 API 34 AVD，脚本 `frontend/scripts/check-android-package.mjs`）：
+- `baseline`：卸载后安装 v1（`04788A64…`，`versionCode 1`/`1.0`）→ 登录页 → 合成账号登录成功。证据 `.local/android/evidence/device-a6-baseline.json`。
+- `upgrade`：`install -r` 安装 v2（`328445B8…`，`versionCode 2`/`1.0.1`）→ **会话保留**（工具栏直接可见）、路由 `/`。证据 `device-a6-upgrade.json`。
+- `release`：卸载调试包后安装发行包（`E91B03E2…`，3,426,977 B）→ 落在登录页、无会话。证据 `device-a6-release.json`。
+- 安装后恢复本机调试资源（`android:sync:local` + `assembleDebug` + 重新安装）。
+- 未覆盖：发行包对真实 HTTPS 服务的端到端登录（本地合成后端是明文 HTTP，不把测试 CA 打进正式包）；未上架、未做商店材料与内容分级。详见 android-a6-acceptance.md。

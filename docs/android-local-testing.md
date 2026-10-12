@@ -55,9 +55,13 @@ node frontend/scripts/check-android-imports.mjs
 node frontend/scripts/check-android-mvps.mjs
 node frontend/scripts/check-android-listing-support.mjs
 node frontend/scripts/check-android-agent-lifecycle.mjs
+node frontend/scripts/check-android-modules.mjs
+node frontend/scripts/check-android-adaptation.mjs
 ```
 
-设备脚本通过 WebView 调试连接操作已安装 APK，写 `.local/android/evidence`。`check-android-device.mjs` 会清除 **本 AVD 中 `com.soloops.android` 的应用数据**；其余脚本只强制停止并重启应用，沿用现有会话。仅用于专属合成 AVD。HTTP/MySQL 契约脚本与真实设备脚本分别记录；不得用前者替代后者。五个设备脚本依次执行，共用 ADB 9223 端口，不可并发。
+设备脚本通过 WebView 调试连接操作已安装 APK，写 `.local/android/evidence`。`check-android-device.mjs` 会清除 **本 AVD 中 `com.soloops.android` 的应用数据**；其余脚本只强制停止并重启应用，沿用现有会话。仅用于专属合成 AVD。HTTP/MySQL 契约脚本与真实设备脚本分别记录；不得用前者替代后者。七个设备脚本依次执行，共用 ADB 9223 端口，不可并发。`check-android-adaptation.mjs` 会临时修改 `wm size`/`wm density`/`font_scale`/`user_rotation`，结束时恢复。
+
+打包与升级验证：`node frontend/scripts/check-android-package.mjs`（`SOLOOPS_PACKAGE_PHASE=upgrade` 验证同签名升级保留会话；`=release` 会先卸载再安装签名发行包并断言落在登录页）。签名材料由 `scripts/make-release-key.ps1` 生成到忽略目录 `.local/android/keystore/`，并在 `frontend/android/keystore.properties`（已忽略）写入 Gradle 配置。
 
 模拟器网络校验：Android 在本机模拟器上把 Wi-Fi/移动网络标为 `PARTIAL_CONNECTIVITY`（门户校验不可达）时，`@capacitor/network` 要求 `NET_CAPABILITY_VALIDATED`，壳层会显示「网络已断开」而 API 实际可用。需要干净提示时先执行 `adb -s emulator-5580 shell settings put global captive_portal_mode 0` 与 `captive_portal_detection_enabled 0`，再重启 Wi-Fi（`svc wifi disable/enable`）等待网络变为 `VALIDATED`。这是模拟器环境设置，不改变应用语义。
 

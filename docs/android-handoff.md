@@ -5,14 +5,13 @@
 
 ## 当前进度与下一步
 
-- A0/A1/A2/A3/A4/A5 已完成。A3 设备验收 7 项通过：导入链路 4 项（真实字节上传、2001 行两片拆分、强停恢复、指纹拒绝/跨片去重/销售额 4000.0000）与今日运营、经营问数两条 MVP；详细证据见 [A3 验收](android-a3-acceptance.md)。
+- **A0–A6 全部完成**。A3 设备验收 7 项通过：导入链路 4 项（真实字节上传、2001 行两片拆分、强停恢复、指纹拒绝/跨片去重/销售额 4000.0000）与今日运营、经营问数两条 MVP；详细证据见 [A3 验收](android-a3-acceptance.md)。
 - A4 设备验收 9 项通过：Listing MVP（候选 → 节点批准 → 本地生效版本 #7；另一版本 #8 拒绝）与客服 MVP（AI 候选 → 草稿 → 保存修改 → 存档 #2）、政策过期（#3 当前有效 / #4 已过期）、执行 #12 拒绝、#13 取消（保留 3 步）、#14 暂停→恢复→强停重启后批准为 `succeeded`、运营事项未保存备注保护；见 [A4 验收](android-a4-acceptance.md)。
 - A5 设备验收完成：**19 个业务入口逐项真实结果（20 项模块检查）**与 **5 种显示/字号配置 41 项适配检查**全部通过（小屏 360×582、平板 1067×1556、横屏 866×364、系统字号 1.3 下标题 23→29.9px，均无横向溢出）；本机无真机，真机适配未覆盖；见 [A5 验收](android-a5-acceptance.md)。
+- A6 设备验收 3 项通过：干净安装 v1（`04788A64…`，`versionCode 1`）并登录 → `install -r` 升级到 v2（`328445B8…`，`versionCode 2` / `1.0.1`）**会话保留、路由 `/`** → 签名发行包（`E91B03E2…`，3,426,977 B，证书 SHA-256 `91E6DD8C…1D52`）干净安装落在登录页；用户指南见 [android-user-guide.md](android-user-guide.md)，详见 [A6 验收](android-a6-acceptance.md)。
 - A3 同时修复一个真实缺陷：`accept=".csv"` 使原生选择器把 CSV 文件置灰（`typ=text/csv` 与 MediaProvider `text/comma-separated-values` 不匹配）。两个 CSV 入口改为显式多 MIME 拼写，单元 192 → 194，设备复验通过。
-- 本轮 debug APK SHA256 `A1931F93F817DE710CC6CD51925741D4C340D72B3F65B9E58BADAB45B813E91D`（A4/A5 未改应用代码，APK 不变；A6 将更新 versionCode/versionName 并重建）。
-- **首个动作**：先 `git fetch` 核对本轮提交与准确 SHA 的 `Verify Android foundation` CI 成功，再进入 **A6**：安装升级（同签名 `install -r` 保留会话）、签名发行构建与设备验证、APK 校验值、用户指南与部署状态。74 SO、32 验收与 47 长期模块范围保持。
-- 正式签名与生产服务地址尚未确定：本机签名材料放在忽略目录 `.local/android/keystore/`，`scripts/make-release-key.ps1` 可重新生成；上架账号与正式域名仍需用户决定。
-- 当前仅专属 API 34 模拟器；真机与其他尺寸归 A5，正式签名/服务地址归 A6。
+- **下一步只剩用户决定项**：① 正式域名与 HTTPS 证书（决定后用 `VITE_SOLOOPS_API_ORIGIN=https://<域名>` 重新 `android:sync` + `assembleRelease`）；② 正式密钥归属与备份（现用 `.local/android/keystore/` 本机密钥，仅本地预演；上架建议 Play App Signing 或由用户保管密钥）；③ 是否上架及商店材料（未提交、未做分级与隐私表单）；④ 真机适配需用户提供设备。日常测试环境启停见 android-local-testing.md。
+- 当前设备已恢复本机调试包（`versionCode 2` / `1.0.1`，指向 `http://10.0.2.2:8011`）；发行包指向 HTTPS 占位域名 `android-release.invalid`，不是生产地址。
 
 ## A4 收尾记录（2026-10-12）
 
@@ -29,6 +28,15 @@
 - 关键结果：Listing 本地模板在设备上生成版本（0→1）；库存快照命中 `A5-SKU`；利润试算结果区（售价 20 / 采购 18 / 合成依据）；商品质量检查结果区；订单金额待核清单；经营分析净销售额 `60.0000`；经营总览净销售额；费用/修订/账单/结算/规则/外发/定时入口与空状态。
 - 适配：默认 412×842、小屏 360×582、平板 1067×1556、横屏 866×364、系统字号 1.3（标题 23px→29.9px）全部无横向溢出；脚本 finally 恢复 `wm size`/`wm density`/`font_scale`/`user_rotation`。
 - 未覆盖：本机没有 Android 真机（厂商 ROM、刘海、手势导航、真实网络未测）；账单/结算/费用/修订在合成店铺下无来源数据，只记录入口与空状态。
+
+## A6 收尾记录（2026-10-12）
+
+- 版本元数据：`frontend/android/app/build.gradle` 提到 `versionCode 2` / `versionName "1.0.1"`；新增可选签名配置（读取被忽略的 `frontend/android/keystore.properties`），`.gitignore` 增加该文件名。
+- 签名：`scripts/make-release-key.ps1` 生成 PKCS12（RSA 4096，别名 `soloops-release`，3650 天）到 `.local/android/keystore/`，并写出供 Gradle 读取的属性文件。**属性文件必须无 BOM**，否则 Java `Properties` 会把 BOM 并入首个键名，Gradle 报 `Cannot convert 'null' to File`（已修）。
+- 设备脚本：`check-android-package.mjs` 分 `baseline` / `upgrade` / `release` 三阶段，分别验证「干净安装 v1 并登录」「`install -r` 升级到 v2 保留会话与路由」「发行包干净安装落登录页」。证据 `.local/android/evidence/device-a6-baseline.json`、`device-a6-upgrade.json`、`device-a6-release.json`。
+- APK：调试 4,412,283 B / `328445B8DCD9EB1EB06B39604ACEB472300BA81E777C8ED170627AC11A6D613D`；发行 3,426,977 B / `E91B03E23AC55A6B3562E3411FFF4E0C54959E596F15106973165239676873E9`；升级基线 v1 4,412,287 B / `04788A64C5082980B7818B1BE8F43F4B4767ADC7DC214FA6A2036DAB30A1A328`（本机 `.local/android/apk/`）。
+- 发行包只做打包与安装验证：服务地址为 HTTPS 占位域名 `android-release.invalid`，打包资源 `soloops-build.json` 为 `mode=android`；**未对真实 HTTPS 服务做端到端登录**（本地后端是明文 HTTP，且不把测试 CA 打进正式包）。
+- 未做：上架提交、商店材料/分级/隐私表单、正式密钥托管、真机安装。
 
 ## A3 收尾记录（2026-10-12）
 
