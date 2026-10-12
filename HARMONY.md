@@ -31,7 +31,8 @@
   | `56e525f` | H21 深浅色 + 模拟器崩溃事故记录 | success |
   | `5126fbb` | 微信端：模拟器已能渲染应用 + 更正代理结论 | success (run 38188367463) |
   | `506dc54` | H10「清除摘要正文」 | success (run 38188982809) |
-  | `c6c16e2` | H16 AI 授权管理：创建/消耗/撤销 | **提交时 in_progress（纯文档，同类均 success）** |
+  | `c6c16e2` | H16 AI 授权管理：创建/消耗/撤销 | success（contract + weapp 均通过） |
+  | `8234635` | 微信端：模拟器编译缓存修复 + 自动化仍阻塞 | **提交时待复核** |
 
 - 上轮"未核对"的 4 个 SHA 已闭环：`029b53b`、`e67bf35`、`e385cb3`、`e1917f1` 的 CI 均为 **success**。
 - **CI 读取方式**：匿名 REST 从 shell 直接调会被限流 403；用抓取工具读
@@ -69,7 +70,7 @@
 ## 仍待端测 / 未完成
 
 - **H21 横屏**（`hidumper -s DisplayManagerService` 无旋转指令、无脚本化旋转入口，`Emulator.exe --help` 亦无旋转项——需 DevEco 模拟器工具栏手动转屏）与 **H21 大字体**（Settings 字体大小滑块对 `uitest click/swipe/drag` 均无响应）。
-- **微信端登录/列表/写操作真实链路**：模拟器已能渲染小程序（登录页显示服务地址 18081），但驱动不通——`miniprogram-automator@0.12.1` **已是 npm 最新版**且与本机 IDE `v2.01.2510290` 不兼容（`EMFILE core.wxvpkg` → `fd undefined`），`SendKeys` 也注入不到小程序渲染出的输入框。**建议请用户手工在开发者工具里登录一次并交回截图**；或换用与新 IDE 匹配的自动化方案。详见 `docs/mobile/weapp-implementation.md`。
+- **微信端登录/列表/写操作真实链路**：模拟器已能稳定渲染小程序（登录页显示服务地址 18081，删 `.swc` 可修复启动失败），但**驱动不通**——`miniprogram-automator@0.12.1` **已是 npm 最新版**且与本机 IDE `v2.01.2510290` 不兼容，`SendKeys`/剪贴板也注入不到小程序渲染出的输入框。**建议请用户在开发者工具里手工登录一次**（账号 `harmony_r2` / 密码 `Synthetic-R2-2026!`，服务地址已构建为 `http://127.0.0.1:18081`）并把截图交回；或改走真机调试（需配合法域名）。运行时脚本已备：`scripts/mobile/check_weapp_runtime.cjs`。详见 `docs/mobile/weapp-implementation.md`。
 
 ## 微信端 wave 3（`c63e11b`）
 
@@ -81,7 +82,7 @@
 ## 端上操作要点（本轮新增，务必遵守）
 
 - **恢复设备链路只能用 `hdc rport tcp:18080 tcp:18081`（Reverse），绝不能用 `fport`**：用错方向时应用完全连不上 API（页面显示"暂时无法连接服务，请刷新重试。"），`fport ls` 里正确条目带 `[Reverse]`。
-- **微信开发者工具排障要点**：①模拟器报 **"模拟器启动失败 / TypeError: Failed to fetch"** 时，**先彻底结束全部 `wechatdevtools` 进程再全新启动 IDE**（多实例/损坏状态是主因，与系统代理无关）；②IDE 窗口标题**不会**出现在 `Get-Process ... MainWindowTitle`，要用 `EnumWindows` 按标题子串查找（如 `soloops_weapp - 微信开发者工具`）；③`cli auto --auto-port 9420` 可成功开启自动化端口，但在该项目里用 **`node scripts/mobile/check_weapp_runtime.cjs`** 连接时 `miniprogram-automator@0.12.1` 会失败（`EMFILE core.wxvpkg` / `fd undefined`）；④**SendKeys 能到达 DevTools 外壳（如 Ctrl+B 触发编译）但注入不到小程序渲染出的输入框**。
+- **微信开发者工具排障要点**：①模拟器报 **"模拟器启动失败 / TypeError: Cannot read property 'subPackages' of undefined"**（更早还出现过 `TypeError: Failed to fetch`）时，**删除 `apps/soloops_weapp/.swc/`（`.gitignore` 内的工具编译缓存）后重启 IDE 即可恢复正常渲染**——已复现；此前归因于系统代理是**错的**，真实原因是 IDE 编译缓存/进程状态损坏；②IDE 窗口标题**不会**出现在 `Get-Process ... MainWindowTitle`，要用 `EnumWindows` 按标题子串查找（如 `soloops_weapp - 微信开发者工具`）；③`cli auto --auto-port 9420` 可成功开启自动化端口，但 **`miniprogram-automator@0.12.1` 已是 npm 最新版**且与本机 IDE `v2.01.2510290` **不兼容**（`EMFILE core.wxvpkg` → `fd undefined`，错误来自 IDE 侧）；④**`SendKeys`/剪贴板都注入不到小程序渲染出的输入框**，盲点坐标也打不开调试器控制台。
 - **模拟器与微信开发者工具不要同时长跑**：本轮两者并行时主机空闲内存降到约 2.4 GB，**模拟器于 08:07:40 崩溃并生成 minidump**；崩溃前画面先变黑，**一度疑似应用渲染缺陷，实为模拟器故障**（当时应用的无障碍树仍完整，重启后渲染正常）。恢复步骤：结束 `wechatdevtools` 全部进程 → **前台直接运行 `Emulator.exe -start 22`（`Start-Process` 起不来，且首次冷启动约 20 秒后才出现在 `hdc list targets`）** → 重新 `hdc rport` → 应用会话与库均正常。
 - **模拟器黑屏 ≠ 应用缺陷**：先用 `hidumper -s WindowManagerService -a '-a'` 看应用窗口是否仍在前台且 `uitest dumpLayout` 能否取到完整树；若树完整而画面全黑，优先怀疑模拟器显示/合成器异常。
 - **截图判活**：`snapshot_display -f /data/local/tmp/x.jpeg` 两次哈希完全相同通常意味着画面冻结（模拟器异常），不是真的没变化。
