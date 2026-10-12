@@ -88,7 +88,9 @@
 - 包B（H13 账单、H14 订单账单核对、H15 结算回款）：14/14 动作；`withdraw`/`clear` 状态门禁、`current` 同事务回读标注“尚未重新确认”、区间外回款行与 `outside_cycle_ids` 保留。
 - 包C（H16 规则授权、H17 定时、H18 质量、H19 修订）：26/26 动作；授权创建先核对来源有效的待审批方案、规则变更四变体带 `expected_version`、通知仅未读且到期可点、修订批量 1–50 项并复用预览哈希。
 - 主协调者（H20 外发）：14/14 动作；通道连接/验证/撤销、摘要编辑、单次批准与预授权、提交、只读回查、人工收件证据；客户端状态门禁镜像服务端，真实通道仅用隔离替身。
-- 集成：新增 `scripts/check-registration.mjs` 校验页面目录与 `app.config.ts`/`navigation.ts` 一致（22 页面 / 22 注册 / 19 业务路由）；`client.ts` 方法联合补齐 `PATCH`（外发正文编辑契约要求）；卖家首页新增财务对账与规则商品两组入口。
+- 集成：新增 `scripts/check-registration.mjs` 校验页面目录与 `app.config.ts`/`navigation.ts` 一致，并逐页检查 `<script setup lang="ts">`/`<template>` 结构（缺失会让 `vue-tsc` 静默跳过整段检查）；`client.ts` 方法联合补齐 `PATCH`（外发正文编辑契约要求）；卖家首页新增财务对账与规则商品两组入口；`pages/imports` 支持 `kind` 深链（渠道账单页据此直达对应报表类型）。
+- 已核实提交 `8ec8d05c37855be2debe23a9874bd365e4db74dd`（W09 跨店总览）的 [CI38221295707](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38221295707) success。
+- 已核实提交 `a2b82074c116e7c8839e0bfcc1b678cac5541a4a`（H11–H20 业务页面）的 [CI38226721278](https://github.com/Changxin-YR/AI-E-commerce-Agent/actions/runs/38226721278) success：contract 与 weapp 两个 job 均通过，含 `uv sync`、静态契约与移动单测、`npm ci`、`type-check`、`npm test`、`build:weapp` 与产物断言、artifact 上传。
 - 验证：`vue-tsc` 退出 0，124/124 客户端测试，生产构建退出 0（22 个页面 bundle），静态契约 PASS 与契约单测 24 项 OK，`git diff --check` 无输出。
 - 过程中修正：包B 三个页面缺少 `<script setup lang="ts">` 导致 SFC 边界丢失，`vue-tsc` 静默跳过整段类型检查且 Taro 报 `Element is missing end tag`；补齐后暴露并修复 3 处真实类型错误（`StatementPage` 未导出、`checkedOrderScopeSafe` 未定义），说明“类型检查通过”在缺失 SFC 边界时不可信。
 - 未执行微信 IDE 交互、数据库持久旅程与真实外部调用；H21 其余目标深链与集中验收待下阶段。
