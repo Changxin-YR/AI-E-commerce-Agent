@@ -605,3 +605,11 @@ C最终准确业务代码ed30b872e5a89be096e15c550cb46b9b7240ee44的CI3804231893
 - 回归：共享 `android-device.mjs` 新增 `call`/`seedImport`/`createShop`/`open` 后重跑 `check-android-mvps.mjs` 三项通过（店铺 #19、run #5、执行 #15）。
 - 设备脚本依次执行（共用 ADB 9223 端口）；只操作专属合成 AVD 与合成库。
 - 未覆盖：执行记录无“过期”状态（`valid_until` 仅来源有效期提示）；任务侧“请求处理中禁止离页”为单元覆盖（本地替身毫秒级完成）。详见 android-a4-acceptance.md。
+
+## Android A5（2026-10-12）
+本地：`eslint` exit 0；42 文件 **194 项单元**通过（`--maxWorkers=2`）；本轮未改应用代码与依赖，未重跑资源同步与 Gradle 构建。
+
+设备（专属 API 34 AVD `emulator-5580` + 合成 MySQL 3311 + 后端 8011，全部合成/替身）：
+- `node frontend/scripts/check-android-modules.mjs`：**20/20 通过**。店铺 #30（批次 72/73/74/75）下逐项记录 19 个业务入口结果：数据导入批次文件名、任务执行台、Listing 商品 `A5-SKU` 与本地模板生成版本（`listings/versions` 0→1）、库存快照命中、利润试算结果区（售价 20/采购 18/合成依据）、商品质量检查结果区、订单金额待核清单、经营分析净销售额 `60.0000`、经营总览净销售额、费用/修订/账单/结算/规则/外发/定时各入口与空状态；每项断言无横向溢出。证据 `.local/android/evidence/device-a5-modules.json`。
+- `node frontend/scripts/check-android-adaptation.mjs`：**41/41 通过**。默认 412×842、小屏 360×582、平板 1067×1556、横屏 866×364、系统字号 1.3（标题 23px→29.9px）各跑 8 个代表入口，均无横向溢出；`adapt:font-scale-effect` 证明 WebView 跟随系统字号。证据 `.local/android/evidence/device-a5-adaptation.json`；测试后 `wm size`/`wm density`/`font_scale`/`user_rotation` 已恢复。
+- 未覆盖：本机无 Android 真机，厂商 ROM、刘海/手势与真实网络未测；账单/结算/费用/修订在合成店铺下无来源数据，只记录入口与空状态。详见 android-a5-acceptance.md。
