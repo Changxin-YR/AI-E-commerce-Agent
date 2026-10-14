@@ -29,7 +29,7 @@ async function submit(): Promise<void> {
 }
 </script>
 <template>
-  <main class="login-layout">
+  <main class="login-layout page-login">
     <section class="login-story">
       <div class="wordmark">
         <span class="brand-mark" aria-hidden="true"></span>SoloOps<span class="brand-dot">.</span>

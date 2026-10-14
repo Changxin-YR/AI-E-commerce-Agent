@@ -1,0 +1,1819 @@
+[
+  {
+    "id": 1,
+    "name": "登录",
+    "route": "/login",
+    "source_view": "LoginView.vue",
+    "sections": [
+      "回到你的工作台",
+      "首次使用或忘记密码？"
+    ],
+    "visible_visual_actions": [
+      "进入工作台"
+    ],
+    "design_html": "html_pages/01.html",
+    "preserved": "登录表单、帮助说明；无额外登录入口",
+    "visual": "双栏登录卡片、抽象背景，小屏纵向排列",
+    "controlIndex": {
+      "route": "/login",
+      "view": "src/views/LoginView.vue",
+      "sourceDeclarations": 5,
+      "componentOccurrences": 4,
+      "controlOccurrences": 5
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 01 /login at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 1115
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 01 /login at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 970
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 01 /login at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 981
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "workspace"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "01-1440-full.png",
+        "screen": "01-1440-screen.png"
+      },
+      "420": {
+        "full": "01-420-full.png",
+        "screen": "01-420-screen.png"
+      },
+      "390": {
+        "full": "01-390-full.png",
+        "screen": "01-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 2,
+    "name": "工作台",
+    "route": "/",
+    "source_view": "DashboardView.vue",
+    "sections": [
+      "下一步，从最重要的事开始",
+      "查看经营事项",
+      "运营事项",
+      "实际运行",
+      "需审批业务事项",
+      "待处理事项",
+      "首次使用引导"
+    ],
+    "visible_visual_actions": [
+      "刷新收件箱",
+      "刷新记录",
+      "加载更早记录",
+      "实际运行",
+      "导入文件",
+      "待处理事项",
+      "查看经营分析",
+      "管理经营资料",
+      "继续审批",
+      "运行今日检查",
+      "运行今日运营",
+      "需审批业务事项"
+    ],
+    "design_html": "html_pages/02.html",
+    "preserved": "事项筛选、三种视图、运营检查、审批、历史、首次使用、返回深链",
+    "visual": "真实工作计数卡片、事项与审批区分层",
+    "controlIndex": {
+      "route": "/",
+      "view": "src/views/DashboardView.vue",
+      "sourceDeclarations": 120,
+      "componentOccurrences": 30,
+      "controlOccurrences": 142
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 02 / at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3548
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 02 / at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3684
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 02 / at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3809
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "workbench",
+      "operations",
+      "operations-model",
+      "continuity"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "02-1440-full.png",
+        "screen": "02-1440-screen.png"
+      },
+      "420": {
+        "full": "02-420-full.png",
+        "screen": "02-420-screen.png"
+      },
+      "390": {
+        "full": "02-390-full.png",
+        "screen": "02-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 3,
+    "name": "经营资料",
+    "route": "/settings",
+    "source_view": "SettingsView.vue",
+    "sections": [
+      "经营档案与店铺记录",
+      "01 / 经营档案",
+      "02 / 我的店铺",
+      "添加店铺 · 展开状态"
+    ],
+    "visible_visual_actions": [
+      "保存经营资料",
+      "取消",
+      "导入文件",
+      "添加店铺",
+      "确认添加"
+    ],
+    "design_html": "html_pages/03.html",
+    "preserved": "档案七字段、店铺六字段、编辑/取消/确认添加、导入入口",
+    "visual": "经营档案与店铺双列；小屏依次排列",
+    "controlIndex": {
+      "route": "/settings",
+      "view": "src/views/SettingsView.vue",
+      "sourceDeclarations": 45,
+      "componentOccurrences": 25,
+      "controlOccurrences": 45
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 03 /settings at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3367
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 03 /settings at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2796
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 03 /settings at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2731
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "workspace"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "03-1440-full.png",
+        "screen": "03-1440-screen.png"
+      },
+      "420": {
+        "full": "03-420-full.png",
+        "screen": "03-420-screen.png"
+      },
+      "390": {
+        "full": "03-390-full.png",
+        "screen": "03-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 4,
+    "name": "数据导入",
+    "route": "/imports",
+    "source_view": "ImportsView.vue",
+    "sections": [
+      "导入流程",
+      "当前为文件分析模式",
+      "下载文件模板",
+      "01 / 选择文件",
+      "02 / 核对字段映射",
+      "03 / 导入预览",
+      "大报表分批导入",
+      "历史批次与处理"
+    ],
+    "visible_visual_actions": [
+      "上一页",
+      "上传并查看映射",
+      "上传此分片并核对",
+      "上传／恢复第 1 片",
+      "下一页",
+      "保存映射",
+      "准备新的导入组",
+      "加载更早的导入组",
+      "商品模板",
+      "客服消息模板",
+      "库存快照模板",
+      "应用此候选映射",
+      "打开第 1 片",
+      "按当前来源建立导入组",
+      "撤销整组",
+      "撤销此批次",
+      "查看批次 #125",
+      "校验并预览",
+      "清除源数据",
+      "渠道账单模板",
+      "确认导入",
+      "确认撤销整组",
+      "结束本次本机处理",
+      "继续保留",
+      "订单模板"
+    ],
+    "design_html": "html_pages/04.html",
+    "preserved": "文件/模板/字段语义/错误/预览/分片/批次撤销清除/状态动作",
+    "visual": "上传与映射分区、模板按钮换行、原始行表格容器滚动",
+    "controlIndex": {
+      "route": "/imports",
+      "view": "src/views/ImportsView.vue",
+      "sourceDeclarations": 94,
+      "componentOccurrences": 17,
+      "controlOccurrences": 94
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 04 /imports at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3715
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 04 /imports at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3321
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 04 /imports at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3467
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "imports",
+      "foundation"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "04-1440-full.png",
+        "screen": "04-1440-screen.png"
+      },
+      "420": {
+        "full": "04-420-full.png",
+        "screen": "04-420-screen.png"
+      },
+      "390": {
+        "full": "04-390-full.png",
+        "screen": "04-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 5,
+    "name": "经营分析",
+    "route": "/analytics",
+    "source_view": "AnalyticsView.vue",
+    "sections": [
+      "01 / 确认统计范围",
+      "日期快捷范围与三个受控问题",
+      "02 / 销售与已知商品毛利",
+      "SKU 汇总 · 按当前受控问题排序",
+      "明细与来源证据",
+      "保存记录与核对待办"
+    ],
+    "visible_visual_actions": [
+      "上一页",
+      "下一页",
+      "保存分析",
+      "刷新保存记录",
+      "哪些商品销量高但已知毛利低",
+      "打开 AI 经营问数，确认范围与模型预算",
+      "按此范围重算",
+      "最近 30 天",
+      "最近 7 天",
+      "查看销售与已知毛利",
+      "标记核对完成",
+      "核对人工费用",
+      "核对渠道账单",
+      "计算并查看证据",
+      "重新打开核对待办",
+      "销量前五的 SKU"
+    ],
+    "design_html": "html_pages/05.html",
+    "preserved": "7/30 天、三种问题、成本、时区/ISO、SKU/来源/历史/待办",
+    "visual": "统计范围表单、指标卡与证据表；保留全部原统计内容",
+    "controlIndex": {
+      "route": "/analytics",
+      "view": "src/views/AnalyticsView.vue",
+      "sourceDeclarations": 70,
+      "componentOccurrences": 16,
+      "controlOccurrences": 78
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 05 /analytics at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2860
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 05 /analytics at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2700
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 05 /analytics at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2744
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "analytics",
+      "analysis-model",
+      "continuity",
+      "margin-review"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "05-1440-full.png",
+        "screen": "05-1440-screen.png"
+      },
+      "420": {
+        "full": "05-420-full.png",
+        "screen": "05-420-screen.png"
+      },
+      "390": {
+        "full": "05-390-full.png",
+        "screen": "05-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 6,
+    "name": "Listing 审批",
+    "route": "/listings",
+    "source_view": "ListingsView.vue",
+    "sections": [
+      "选择商品",
+      "匹配商品",
+      "商品事实 · 当前来源",
+      "版本差异 · Listing 草稿",
+      "版本与审批记录"
+    ],
+    "visible_visual_actions": [
+      "上一页",
+      "下一页",
+      "从商品事实生成草稿",
+      "保存为新待审版本",
+      "刷新版本记录",
+      "批准并在本地生效",
+      "拒绝此版本",
+      "查找商品",
+      "查看来源原始行"
+    ],
+    "design_html": "html_pages/06.html",
+    "preserved": "商品/事实/草稿/差异/本地批准拒绝/历史/失效",
+    "visual": "商品选择与当前事实双栏、版本差异对照",
+    "controlIndex": {
+      "route": "/listings",
+      "view": "src/views/ListingsView.vue",
+      "sourceDeclarations": 34,
+      "componentOccurrences": 15,
+      "controlOccurrences": 34
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 06 /listings at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2378
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 06 /listings at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2207
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 06 /listings at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2192
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "listings",
+      "listing-model",
+      "foundation"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "06-1440-full.png",
+        "screen": "06-1440-screen.png"
+      },
+      "420": {
+        "full": "06-420-full.png",
+        "screen": "06-420-screen.png"
+      },
+      "390": {
+        "full": "06-390-full.png",
+        "screen": "06-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 7,
+    "name": "客服工作台",
+    "route": "/support",
+    "source_view": "SupportView.vue",
+    "sections": [
+      "对外回复不会自动发送",
+      "消息范围",
+      "消息收件箱",
+      "核验消息与订单关联",
+      "人工回复草稿",
+      "适用政策候选",
+      "消息补录与状态核对",
+      "客服处理历史"
+    ],
+    "visible_visual_actions": [
+      "上一页消息",
+      "下一页消息",
+      "保存修改",
+      "保存政策版本",
+      "刷新客服数据",
+      "取消清除",
+      "取消编辑",
+      "存档处理记录",
+      "录入政策",
+      "搜索消息",
+      "放弃未保存修改",
+      "查看来源原始行",
+      "查看草稿 #18",
+      "标记需要人工",
+      "检索政策",
+      "清除此版本",
+      "生成本地回复草稿",
+      "确认保存消息",
+      "确认清除政策及关联草稿",
+      "编辑并另存新版本",
+      "重新打开并转人工",
+      "预览消息"
+    ],
+    "design_html": "html_pages/07.html",
+    "preserved": "消息搜索分页、关联核验、政策版本、回复草稿、人工接管、补录",
+    "visual": "消息与证据双栏、回复审阅和政策卡片，小屏单栏",
+    "controlIndex": {
+      "route": "/support",
+      "view": "src/views/SupportView.vue",
+      "sourceDeclarations": 126,
+      "componentOccurrences": 31,
+      "controlOccurrences": 147
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 07 /support at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3115
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 07 /support at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2775
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 07 /support at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2893
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "support",
+      "support-model",
+      "foundation",
+      "continuity"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "07-1440-full.png",
+        "screen": "07-1440-screen.png"
+      },
+      "420": {
+        "full": "07-420-full.png",
+        "screen": "07-420-screen.png"
+      },
+      "390": {
+        "full": "07-390-full.png",
+        "screen": "07-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 8,
+    "name": "库存快照",
+    "route": "/inventory",
+    "source_view": "InventoryView.vue",
+    "sections": [
+      "库存来源与时效",
+      "库存查询范围",
+      "当前快照概览",
+      "库存核对结果",
+      "来源核对"
+    ],
+    "visible_visual_actions": [
+      "上一页",
+      "下一页",
+      "刷新库存",
+      "导入库存快照",
+      "查看来源原始行"
+    ],
+    "design_html": "html_pages/08.html",
+    "preserved": "来源时效、SKU/渠道/身份、未知/过期、原始来源、分页、导入",
+    "visual": "查询卡片、库存状态与来源证据层级",
+    "controlIndex": {
+      "route": "/inventory",
+      "view": "src/views/InventoryView.vue",
+      "sourceDeclarations": 28,
+      "componentOccurrences": 8,
+      "controlOccurrences": 28
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 08 /inventory at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2902
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 08 /inventory at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2668
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 08 /inventory at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2890
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "inventory",
+      "operations",
+      "foundation"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "08-1440-full.png",
+        "screen": "08-1440-screen.png"
+      },
+      "420": {
+        "full": "08-420-full.png",
+        "screen": "08-420-screen.png"
+      },
+      "390": {
+        "full": "08-390-full.png",
+        "screen": "08-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 9,
+    "name": "任务执行台",
+    "route": "/agent",
+    "source_view": "AgentView.vue",
+    "sections": [
+      "受控操作，不直接修改真实平台",
+      "启动任务",
+      "当前执行节点",
+      "执行记录 · #118",
+      "流程控制",
+      "R1 内部预授权",
+      "历史执行记录"
+    ],
+    "visible_visual_actions": [
+      "为当前候选使用此授权",
+      "保存预授权",
+      "刷新任务",
+      "刷新授权",
+      "加载更早授权",
+      "取消任务",
+      "启动并运行",
+      "批准当前节点",
+      "拒绝当前节点",
+      "按授权范围运行",
+      "撤回新增候选",
+      "撤销授权",
+      "暂停任务",
+      "查看原预览",
+      "确认预算并恢复",
+      "继续执行"
+    ],
+    "design_html": "html_pages/09.html",
+    "preserved": "全部十种流程、模型预算与同意、节点/恢复/暂停取消、内部预授权、日志",
+    "visual": "任务范围、节点审批、预授权与日志分层",
+    "controlIndex": {
+      "route": "/agent",
+      "view": "src/views/AgentView.vue",
+      "sourceDeclarations": 131,
+      "componentOccurrences": 38,
+      "controlOccurrences": 152
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 09 /agent at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3571
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 09 /agent at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3709
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 09 /agent at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 3681
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "agent",
+      "analysis-model",
+      "listing-model",
+      "support-model",
+      "operations-model",
+      "margin-review"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "09-1440-full.png",
+        "screen": "09-1440-screen.png"
+      },
+      "420": {
+        "full": "09-420-full.png",
+        "screen": "09-420-screen.png"
+      },
+      "390": {
+        "full": "09-390-full.png",
+        "screen": "09-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 10,
+    "name": "新品利润",
+    "route": "/profit",
+    "source_view": "ProfitView.vue",
+    "sections": [
+      "每个数字，都有前提",
+      "新品利润假设",
+      "方案 A · 标准定价",
+      "九类单件费用假设 · 按源代码逐项填写",
+      "方案结果 · 估算",
+      "利润敏感性 · 来源于原计算结果",
+      "方案比较",
+      "已保存的试算"
+    ],
+    "visible_visual_actions": [
+      "保存本次方案",
+      "刷新记录",
+      "复制末个方案",
+      "新增空白方案",
+      "清除所选方案",
+      "移除此方案",
+      "计算并比较"
+    ],
+    "design_html": "html_pages/10.html",
+    "preserved": "九种费用的金额/方式/依据、多方案、清除、敏感性、历史",
+    "visual": "方案编辑与九类费用分区，保留原重复字段结构",
+    "controlIndex": {
+      "route": "/profit",
+      "view": "src/views/ProfitView.vue",
+      "sourceDeclarations": 42,
+      "componentOccurrences": 8,
+      "controlOccurrences": 42
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 10 /profit at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2616
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 10 /profit at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2361
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 10 /profit at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2363
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "profit"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "10-1440-full.png",
+        "screen": "10-1440-screen.png"
+      },
+      "420": {
+        "full": "10-420-full.png",
+        "screen": "10-420-screen.png"
+      },
+      "390": {
+        "full": "10-390-full.png",
+        "screen": "10-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 11,
+    "name": "实际费用",
+    "route": "/expenses",
+    "source_view": "ExpensesView.vue",
+    "sections": [
+      "费用范围",
+      "实际费用概览",
+      "录入实际费用 · 展开状态",
+      "费用记录列表",
+      "费用核对与版本"
+    ],
+    "visible_visual_actions": [
+      "修订费用",
+      "刷新并重新核对",
+      "刷新费用",
+      "加载更早费用",
+      "取消编辑",
+      "回查原保存请求",
+      "回查原处理请求",
+      "执行费用处理",
+      "新增实际费用",
+      "查找当前订单行",
+      "查看费用 #18",
+      "核对费用合计",
+      "确认保存费用"
+    ],
+    "design_html": "html_pages/11.html",
+    "preserved": "凭据号、时间/时区、归属、精确订单行、保存确认、修订/处理/回查",
+    "visual": "费用范围、录入、依据、历史卡片；处理按钮醒目",
+    "controlIndex": {
+      "route": "/expenses",
+      "view": "src/views/ExpensesView.vue",
+      "sourceDeclarations": 70,
+      "componentOccurrences": 20,
+      "controlOccurrences": 84
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 11 /expenses at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2702
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 11 /expenses at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2540
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 11 /expenses at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2707
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "expenses",
+      "continuity"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "11-1440-full.png",
+        "screen": "11-1440-screen.png"
+      },
+      "420": {
+        "full": "11-420-full.png",
+        "screen": "11-420-screen.png"
+      },
+      "390": {
+        "full": "11-390-full.png",
+        "screen": "11-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 12,
+    "name": "账单核对",
+    "route": "/statements",
+    "source_view": "StatementsView.vue",
+    "sections": [
+      "文件账单 · 回款到账待核",
+      "核对范围",
+      "账单金额概览",
+      "原始账单与费用",
+      "收费类别映射规则",
+      "人工核对结论",
+      "规则与结论历史"
+    ],
+    "visible_visual_actions": [
+      "保存核对结论",
+      "保存规则并回读",
+      "修订此规则",
+      "回查原结论保存请求",
+      "回查原结论处理请求",
+      "回查原规则保存请求",
+      "回查原规则处理请求",
+      "回读当前来源、费用与规则",
+      "导入或查看账单批次",
+      "新建映射规则",
+      "新建核对结论",
+      "显示更多核对条目",
+      "显示更多账单行",
+      "更多收费分类",
+      "核对订单销售与退款",
+      "登记结算周期与人工回款",
+      "确认处理结论",
+      "确认处理规则",
+      "读取 v2 依据",
+      "读取并核对",
+      "读取核对存档",
+      "读取规则列表",
+      "预览分类变化",
+      "预览结论与依据"
+    ],
+    "design_html": "html_pages/12.html",
+    "preserved": "账单金额分类、FeeRules/StatementReviews、历史、二次确认",
+    "visual": "核对范围、收费规则和结论分层；宽表局部滚动",
+    "controlIndex": {
+      "route": "/statements",
+      "view": "src/views/StatementsView.vue",
+      "sourceDeclarations": 97,
+      "componentOccurrences": 55,
+      "controlOccurrences": 190
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 12 /statements at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2776
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 12 /statements at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2623
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 12 /statements at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2606
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "statements",
+      "fee-rules",
+      "statement-reviews"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "12-1440-full.png",
+        "screen": "12-1440-screen.png"
+      },
+      "420": {
+        "full": "12-420-full.png",
+        "screen": "12-420-screen.png"
+      },
+      "390": {
+        "full": "12-390-full.png",
+        "screen": "12-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 13,
+    "name": "订单销售与退款核对",
+    "route": "/order-reconciliation",
+    "source_view": "OrderReconciliationView.vue",
+    "sections": [
+      "金额组成尚未确认时，不做确定性匹配",
+      "核对订单销售与退款",
+      "待核摘要",
+      "订单销售待核清单",
+      "双方原始行和关联来源"
+    ],
+    "visible_visual_actions": [
+      "导入或查看账单批次",
+      "显示更多核对条目",
+      "读取销售与退款待核清单"
+    ],
+    "design_html": "html_pages/13.html",
+    "preserved": "同日同币种一对一条件/差额、缺失/跨期/退款待核",
+    "visual": "核对表单与来源差异卡片，沿用原待核状态",
+    "controlIndex": {
+      "route": "/order-reconciliation",
+      "view": "src/views/OrderReconciliationView.vue",
+      "sourceDeclarations": 45,
+      "componentOccurrences": 15,
+      "controlOccurrences": 52
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 13 /order-reconciliation at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2876
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 13 /order-reconciliation at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2612
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 13 /order-reconciliation at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2593
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "order-reconciliation"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "13-1440-full.png",
+        "screen": "13-1440-screen.png"
+      },
+      "420": {
+        "full": "13-420-full.png",
+        "screen": "13-420-screen.png"
+      },
+      "390": {
+        "full": "13-390-full.png",
+        "screen": "13-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 14,
+    "name": "结算与回款",
+    "route": "/settlements",
+    "source_view": "SettlementsView.vue",
+    "sections": [
+      "选择结算范围",
+      "结算登记摘要",
+      "人工结算登记 · 展开状态",
+      "逐笔差额预览",
+      "结算记录与版本历史"
+    ],
+    "visible_visual_actions": [
+      "保存结算登记",
+      "修订并重新核对",
+      "回查原登记保存请求",
+      "回查原登记处理请求",
+      "回读当前账单与凭据",
+      "新建结算登记",
+      "添加人工到账凭据",
+      "确认处理登记",
+      "移除人工凭据",
+      "读取 v2 依据",
+      "读取结算登记",
+      "重新加载店铺",
+      "预览周期与回款"
+    ],
+    "design_html": "html_pages/14.html",
+    "preserved": "原账单周期、50 笔凭据上限、逐笔差额、预览/保存/版本/处理",
+    "visual": "周期范围、人工凭据、预览与登记历史分区",
+    "controlIndex": {
+      "route": "/settlements",
+      "view": "src/views/SettlementsView.vue",
+      "sourceDeclarations": 72,
+      "componentOccurrences": 36,
+      "controlOccurrences": 121
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 14 /settlements at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2847
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 14 /settlements at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2579
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 14 /settlements at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2496
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "settlements"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "14-1440-full.png",
+        "screen": "14-1440-screen.png"
+      },
+      "420": {
+        "full": "14-420-full.png",
+        "screen": "14-420-screen.png"
+      },
+      "390": {
+        "full": "14-390-full.png",
+        "screen": "14-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 15,
+    "name": "经营规则",
+    "route": "/rules",
+    "source_view": "RulesView.vue",
+    "sections": [
+      "规则影响今日运营与 Agent",
+      "当前规则范围",
+      "当前启用阈值",
+      "适用范围与限制",
+      "规则历史",
+      "经营偏好与预算记录 · 展开状态",
+      "记录的其他人工依据"
+    ],
+    "visible_visual_actions": [
+      "保存并启用规则",
+      "将此版本恢复为新规则",
+      "撤销当前规则",
+      "更早 50 条",
+      "重新读取规则",
+      "重置到初始口径"
+    ],
+    "design_html": "html_pages/15.html",
+    "preserved": "阈值、版本、偏好/预算、恢复/撤销/重置、原读取动作",
+    "visual": "范围与阈值表单、说明和版本历史分层",
+    "controlIndex": {
+      "route": "/rules",
+      "view": "src/views/RulesView.vue",
+      "sourceDeclarations": 35,
+      "componentOccurrences": 6,
+      "controlOccurrences": 35
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 15 /rules at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2745
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 15 /rules at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2512
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 15 /rules at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2526
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "business-rules"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "15-1440-full.png",
+        "screen": "15-1440-screen.png"
+      },
+      "420": {
+        "full": "15-420-full.png",
+        "screen": "15-420-screen.png"
+      },
+      "390": {
+        "full": "15-390-full.png",
+        "screen": "15-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 16,
+    "name": "测试外发",
+    "route": "/outbound",
+    "source_view": "OutboundView.vue",
+    "sections": [
+      "单次批准，不自动重发",
+      "本人测试邮箱连接",
+      "准备经营摘要",
+      "待发全文核对",
+      "审批发送 · 展开状态",
+      "外发历史及回执"
+    ],
+    "visible_visual_actions": [
+      "保存正文",
+      "修改待发正文",
+      "创建限一次预授权",
+      "刷新通道与记录",
+      "单次批准并提交",
+      "只读回查通道",
+      "拒绝此发送",
+      "按有效授权提交一次",
+      "撤销此授权",
+      "撤销此通道连接",
+      "生成外发预览",
+      "记录实际收件证据",
+      "连接并发送验证邮件",
+      "验证本人测试邮箱"
+    ],
+    "design_html": "html_pages/16.html",
+    "preserved": "QQ 验证、地址全文、单次批准/预授权、只读回查、收件证据、未知不重发",
+    "visual": "连接状态、摘要准备、审批/证据卡片；危险操作标红",
+    "controlIndex": {
+      "route": "/outbound",
+      "view": "src/views/OutboundView.vue",
+      "sourceDeclarations": 54,
+      "componentOccurrences": 8,
+      "controlOccurrences": 54
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 16 /outbound at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2263
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 16 /outbound at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2229
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 16 /outbound at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2282
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "outbound",
+      "foundation"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "16-1440-full.png",
+        "screen": "16-1440-screen.png"
+      },
+      "420": {
+        "full": "16-420-full.png",
+        "screen": "16-420-screen.png"
+      },
+      "390": {
+        "full": "16-390-full.png",
+        "screen": "16-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 17,
+    "name": "经营总览",
+    "route": "/overview",
+    "source_view": "OverviewView.vue",
+    "sections": [
+      "经营总览筛选",
+      "跨店经营摘要",
+      "按币种汇总 · 来源覆盖说明",
+      "当次经营摘要",
+      "店铺来源状态",
+      "逐店经营详情",
+      "历史摘要与来源状态"
+    ],
+    "visible_visual_actions": [
+      "保存本地摘要",
+      "再显示 20 条快照",
+      "刷新摘要与来源状态",
+      "加载更早摘要",
+      "查看对比期订单依据",
+      "查看摘要 #21",
+      "查看本期订单依据",
+      "清除所选摘要正文",
+      "生成经营总览"
+    ],
+    "design_html": "html_pages/17.html",
+    "preserved": "平台/市场独立筛选、20 店上限、快捷/自选对比、分币种与来源",
+    "visual": "筛选卡片、实际汇总和来源区域统一主题",
+    "controlIndex": {
+      "route": "/overview",
+      "view": "src/views/OverviewView.vue",
+      "sourceDeclarations": 87,
+      "componentOccurrences": 15,
+      "controlOccurrences": 87
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 17 /overview at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2741
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 17 /overview at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2425
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 17 /overview at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2596
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "overview"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "17-1440-full.png",
+        "screen": "17-1440-screen.png"
+      },
+      "420": {
+        "full": "17-420-full.png",
+        "screen": "17-420-screen.png"
+      },
+      "390": {
+        "full": "17-390-full.png",
+        "screen": "17-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 18,
+    "name": "定时与通知",
+    "route": "/schedules",
+    "source_view": "SchedulesView.vue",
+    "sections": [
+      "计划不绕过人工审批",
+      "已保存计划",
+      "站内通知与运行历史",
+      "新建定时计划 · 展开状态"
+    ],
+    "visible_visual_actions": [
+      "保存计划",
+      "修改",
+      "刷新经营规则",
+      "刷新计划与通知",
+      "恢复",
+      "撤销",
+      "收起配置",
+      "新建计划",
+      "暂停",
+      "更早的记录",
+      "标为已读",
+      "立即检查一次",
+      "立即生成报表"
+    ],
+    "design_html": "html_pages/18.html",
+    "preserved": "日周月差异输入、星期/月日期、规则/时区/免打扰、控制与运行记录",
+    "visual": "计划表单、通知与运行记录卡片",
+    "controlIndex": {
+      "route": "/schedules",
+      "view": "src/views/SchedulesView.vue",
+      "sourceDeclarations": 62,
+      "componentOccurrences": 9,
+      "controlOccurrences": 62
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 18 /schedules at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2409
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 18 /schedules at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2244
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 18 /schedules at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2206
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "schedules"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "18-1440-full.png",
+        "screen": "18-1440-screen.png"
+      },
+      "420": {
+        "full": "18-420-full.png",
+        "screen": "18-420-screen.png"
+      },
+      "390": {
+        "full": "18-390-full.png",
+        "screen": "18-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 19,
+    "name": "商品质量",
+    "route": "/product-quality",
+    "source_view": "ProductQualityView.vue",
+    "sections": [
+      "本地商品检查",
+      "商品检查范围",
+      "质量检查结果",
+      "商品检查明细",
+      "保存本地质量报告",
+      "本店历史报告"
+    ],
+    "visible_visual_actions": [
+      "上一页商品",
+      "下一页商品",
+      "保存检查报告",
+      "刷新报告与来源",
+      "加载更早报告",
+      "批量修订商品",
+      "查看报告 #18",
+      "检查商品信息",
+      "清除报告正文"
+    ],
+    "design_html": "html_pages/19.html",
+    "preserved": "口径、SKU 前缀、线索/来源、保存确认、历史/清除",
+    "visual": "检查范围、结果、证据和历史层次",
+    "controlIndex": {
+      "route": "/product-quality",
+      "view": "src/views/ProductQualityView.vue",
+      "sourceDeclarations": 41,
+      "componentOccurrences": 10,
+      "controlOccurrences": 41
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 19 /product-quality at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2260
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 19 /product-quality at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2179
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 19 /product-quality at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2313
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "product-quality"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "19-1440-full.png",
+        "screen": "19-1440-screen.png"
+      },
+      "420": {
+        "full": "19-420-full.png",
+        "screen": "19-420-screen.png"
+      },
+      "390": {
+        "full": "19-390-full.png",
+        "screen": "19-390-screen.png"
+      }
+    }
+  },
+  {
+    "id": 20,
+    "name": "商品修订",
+    "route": "/product-edits",
+    "source_view": "ProductEditsView.vue",
+    "sections": [
+      "修订仅影响本地商品资料",
+      "选择修订范围",
+      "为选中商品填写相同改动",
+      "选择与编辑",
+      "选中商品的单独编辑状态",
+      "修订依据",
+      "审批差异 · 修订 #18",
+      "修订历史"
+    ],
+    "visible_visual_actions": [
+      "上一页",
+      "下一页",
+      "保存修订草稿",
+      "刷新修订与来源",
+      "加载当前商品",
+      "加载更早修订",
+      "商品质量检查",
+      "回查上次保存请求",
+      "填入选中商品",
+      "执行所选处理",
+      "批准本地生效",
+      "查看修订 #18"
+    ],
+    "design_html": "html_pages/20.html",
+    "preserved": "每批50件、选择/逐件字段、理由、差异、审批、撤销清除、历史",
+    "visual": "选择编辑与新旧差异区域统一，移动端表格独立滚动",
+    "controlIndex": {
+      "route": "/product-edits",
+      "view": "src/views/ProductEditsView.vue",
+      "sourceDeclarations": 49,
+      "componentOccurrences": 9,
+      "controlOccurrences": 49
+    },
+    "tests": [
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 20 /product-edits at 1440",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2311
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 20 /product-edits at 420",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2341
+          }
+        ]
+      },
+      {
+        "file": "soloops-responsive.spec.ts",
+        "title": "SoloOps 20 /product-edits at 390",
+        "ok": true,
+        "results": [
+          {
+            "status": "passed",
+            "duration": 2190
+          }
+        ]
+      }
+    ],
+    "existingSpecs": [
+      "product-edits"
+    ],
+    "screenshots": {
+      "1440": {
+        "full": "20-1440-full.png",
+        "screen": "20-1440-screen.png"
+      },
+      "420": {
+        "full": "20-420-full.png",
+        "screen": "20-420-screen.png"
+      },
+      "390": {
+        "full": "20-390-full.png",
+        "screen": "20-390-screen.png"
+      }
+    }
+  }
+]

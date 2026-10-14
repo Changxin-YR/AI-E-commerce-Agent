@@ -400,7 +400,7 @@ onUnmounted(() => {
               type="checkbox"
             />我确认处理此版本结论及上述影响</label
           >
-          <button class="button secondary" :disabled="!controlConfirmed" @click="control()">
+          <button class="button secondary danger" :disabled="!controlConfirmed" @click="control()">
             确认处理结论
           </button>
         </div>

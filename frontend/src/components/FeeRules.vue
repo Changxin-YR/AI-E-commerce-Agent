@@ -275,7 +275,7 @@ onUnmounted(() => {
               type="checkbox"
             />我确认处理此版本规则及上述影响</label
           >
-          <button class="button secondary" :disabled="!controlConfirmed" @click="control()">
+          <button class="button secondary danger" :disabled="!controlConfirmed" @click="control()">
             确认处理规则
           </button>
         </div>

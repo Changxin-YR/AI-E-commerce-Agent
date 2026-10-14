@@ -165,7 +165,7 @@ async function save(action: 'upsert' | 'revoke'): Promise<void> {
             <button
               v-if="page.history.length && page.history[0]?.status !== 'revoked'"
               type="button"
-              class="button secondary small"
+              class="button secondary small danger"
               :disabled="!confirmed"
               @click="save('revoke')"
             >

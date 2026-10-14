@@ -134,7 +134,7 @@ function attest(): void {
         <button v-if="editable" class="button secondary small" @click="toggleEdit">
           修改待发正文
         </button>
-        <button v-if="editable" class="button secondary small" @click="reject">拒绝此发送</button>
+        <button v-if="editable" class="button secondary small danger" @click="reject">拒绝此发送</button>
       </div>
       <form v-if="editing" class="mail-editor" @submit.prevent="save">
         <label>邮件主题<input v-model="subject" required maxlength="200" /></label>
@@ -173,7 +173,7 @@ function attest(): void {
         </p>
         <div class="button-row">
           <button class="button primary" @click="send">按有效授权提交一次</button
-          ><button class="button secondary" @click="revoke">撤销此授权</button>
+          ><button class="button secondary danger" @click="revoke">撤销此授权</button>
         </div>
       </div>
       <div v-if="mail.dispatch_at" class="source-detail">

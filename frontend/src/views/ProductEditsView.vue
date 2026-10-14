@@ -261,213 +261,215 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>商品修订，核对后生效。</h1>
-      <p>选择商品、编写名称与参数，保存差异草稿后逐项审批。</p>
+  <div class="solo-page page-product-edits">
+    <div class="page-heading">
+      <div>
+        <h1>商品修订，核对后生效。</h1>
+        <p>选择商品、编写名称与参数，保存差异草稿后逐项审批。</p>
+      </div>
+      <RouterLink class="button secondary" :to="`/product-quality?shop=${shopId}`"
+        >商品质量检查</RouterLink
+      >
     </div>
-    <RouterLink class="button secondary" :to="`/product-quality?shop=${shopId}`"
-      >商品质量检查</RouterLink
-    >
-  </div>
-  <FeedbackBanner :message="error" />
-  <section class="data-note">
-    <span class="note-symbol" aria-hidden="true">i</span>
-    <div>
-      <h3>本地商品资料</h3>
-      <p>
-        每批最多 50
-        个商品；人工修订保留原始导入与事实依据。金额、库存、素材和外部平台保持各自原有状态。
-      </p>
-    </div>
-  </section>
-  <section v-if="shops.length" class="form-panel section-block">
-    <form @submit.prevent="load">
-      <fieldset :disabled="busy">
-        <legend>选择修订范围</legend>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="edit-shop">所属店铺</label
-            ><select id="edit-shop" v-model="shopId" @change="refresh">
-              <option v-for="shop in shops" :key="shop.id" :value="shop.id">
-                {{ shop.name }} · {{ shop.code }}
-              </option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="edit-identity">数据身份</label
-            ><select id="edit-identity" v-model="scope.data_identity">
-              <option value="user_import">用户导入文件</option>
-              <option value="synthetic">合成测试数据</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="edit-channel">来源渠道</label
-            ><select id="edit-channel" v-model="scope.channel">
-              <option v-for="(label, value) in qualityChannels" :key="value" :value="value">
-                {{ label }}
-              </option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="edit-prefix">SKU 前缀（可选）</label
-            ><input id="edit-prefix" v-model="scope.sku_prefix" maxlength="120" /><small
-              >区分大小写，每次最多加载 1000 个商品。</small
-            >
-          </div>
-        </div>
-        <div class="form-actions">
-          <span>加载将重置未保存编辑。</span><button class="button primary">加载当前商品</button>
-        </div>
-      </fieldset>
-    </form>
-  </section>
-  <p v-if="busy" role="status">正在核对商品与修订…</p>
-  <section v-if="!shops.length && !busy" class="form-panel section-block">
-    <h2>先添加店铺记录</h2>
-    <RouterLink to="/settings">经营资料</RouterLink>
-  </section>
-  <section v-if="catalog" class="form-panel section-block" aria-label="编写商品修订">
-    <h2>选择与编辑</h2>
-    <p>
-      已加载 {{ catalog.product_count }} 个商品 · 已选 {{ selected }} 个 · 有改动
-      {{ changes.length }} 个。仅保存有改动的选中商品。
-    </p>
-    <p v-if="!catalog.products.length">此范围暂无商品，请导入资料或调整范围。</p>
-    <form v-else @submit.prevent="create()">
-      <fieldset :disabled="busy">
-        <details>
-          <summary>为选中商品填写相同改动</summary>
+    <FeedbackBanner :message="error" />
+    <section class="data-note">
+      <span class="note-symbol" aria-hidden="true">i</span>
+      <div>
+        <h3>本地商品资料</h3>
+        <p>
+          每批最多 50
+          个商品；人工修订保留原始导入与事实依据。金额、库存、素材和外部平台保持各自原有状态。
+        </p>
+      </div>
+    </section>
+    <section v-if="shops.length" class="form-panel section-block">
+      <form @submit.prevent="load">
+        <fieldset :disabled="busy">
+          <legend>选择修订范围</legend>
           <div class="form-grid">
             <div class="form-field">
-              <label for="edit-name-prefix">名称前缀</label
-              ><input id="edit-name-prefix" v-model="prefix" maxlength="240" />
+              <label for="edit-shop">所属店铺</label
+              ><select id="edit-shop" v-model="shopId" @change="refresh">
+                <option v-for="shop in shops" :key="shop.id" :value="shop.id">
+                  {{ shop.name }} · {{ shop.code }}
+                </option>
+              </select>
             </div>
             <div class="form-field">
-              <label for="edit-append">追加参数（每行一项）</label
-              ><textarea
-                id="edit-append"
-                v-model="appendFacts"
-                maxlength="2000"
-                rows="3"
-              ></textarea>
+              <label for="edit-identity">数据身份</label
+              ><select id="edit-identity" v-model="scope.data_identity">
+                <option value="user_import">用户导入文件</option>
+                <option value="synthetic">合成测试数据</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="edit-channel">来源渠道</label
+              ><select id="edit-channel" v-model="scope.channel">
+                <option v-for="(label, value) in qualityChannels" :key="value" :value="value">
+                  {{ label }}
+                </option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="edit-prefix">SKU 前缀（可选）</label
+              ><input id="edit-prefix" v-model="scope.sku_prefix" maxlength="120" /><small
+                >区分大小写，每次最多加载 1000 个商品。</small
+              >
             </div>
           </div>
-          <button
-            type="button"
-            class="button secondary"
-            :disabled="!selected || (!prefix && !appendFacts)"
-            @click="applyToSelected"
+          <div class="form-actions">
+            <span>加载将重置未保存编辑。</span><button class="button primary">加载当前商品</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+    <p v-if="busy" role="status">正在核对商品与修订…</p>
+    <section v-if="!shops.length && !busy" class="form-panel section-block">
+      <h2>先添加店铺记录</h2>
+      <RouterLink to="/settings">经营资料</RouterLink>
+    </section>
+    <section v-if="catalog" class="form-panel section-block" aria-label="编写商品修订">
+      <h2>选择与编辑</h2>
+      <p>
+        已加载 {{ catalog.product_count }} 个商品 · 已选 {{ selected }} 个 · 有改动
+        {{ changes.length }} 个。仅保存有改动的选中商品。
+      </p>
+      <p v-if="!catalog.products.length">此范围暂无商品，请导入资料或调整范围。</p>
+      <form v-else @submit.prevent="create()">
+        <fieldset :disabled="busy">
+          <details>
+            <summary>为选中商品填写相同改动</summary>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="edit-name-prefix">名称前缀</label
+                ><input id="edit-name-prefix" v-model="prefix" maxlength="240" />
+              </div>
+              <div class="form-field">
+                <label for="edit-append">追加参数（每行一项）</label
+                ><textarea
+                  id="edit-append"
+                  v-model="appendFacts"
+                  maxlength="2000"
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="button secondary"
+              :disabled="!selected || (!prefix && !appendFacts)"
+              @click="applyToSelected"
+            >
+              填入选中商品
+            </button>
+            <p>填入后请逐项核对；名称最多 240 字符，参数最多 2000 字符。</p>
+          </details>
+          <article
+            v-for="product in visible"
+            :key="product.product_id"
+            class="editor-item"
+            :aria-label="`编辑 ${product.sku}`"
           >
-            填入选中商品
-          </button>
-          <p>填入后请逐项核对；名称最多 240 字符，参数最多 2000 字符。</p>
-        </details>
-        <article
-          v-for="product in visible"
-          :key="product.product_id"
-          class="editor-item"
-          :aria-label="`编辑 ${product.sku}`"
-        >
-          <label class="check-label"
-            ><input
-              v-model="fields[product.product_id]!.selected"
-              type="checkbox"
-              :disabled="!fields[product.product_id]!.selected && selected >= 50"
-            />选择 {{ product.sku }} · {{ product.name }}</label
-          >
-          <div v-if="fields[product.product_id]!.selected" class="form-grid">
-            <div class="form-field">
-              <label :for="`edit-name-${product.product_id}`">商品 {{ product.sku }} 名称</label
+            <label class="check-label"
               ><input
-                :id="`edit-name-${product.product_id}`"
-                v-model="fields[product.product_id]!.name"
-                maxlength="240"
-                required
-              />
+                v-model="fields[product.product_id]!.selected"
+                type="checkbox"
+                :disabled="!fields[product.product_id]!.selected && selected >= 50"
+              />选择 {{ product.sku }} · {{ product.name }}</label
+            >
+            <div v-if="fields[product.product_id]!.selected" class="form-grid">
+              <div class="form-field">
+                <label :for="`edit-name-${product.product_id}`">商品 {{ product.sku }} 名称</label
+                ><input
+                  :id="`edit-name-${product.product_id}`"
+                  v-model="fields[product.product_id]!.name"
+                  maxlength="240"
+                  required
+                />
+              </div>
+              <div class="form-field">
+                <label :for="`edit-facts-${product.product_id}`">商品 {{ product.sku }} 参数</label
+                ><textarea
+                  :id="`edit-facts-${product.product_id}`"
+                  v-model="fields[product.product_id]!.facts"
+                  maxlength="2000"
+                  rows="4"
+                ></textarea>
+              </div>
             </div>
-            <div class="form-field">
-              <label :for="`edit-facts-${product.product_id}`">商品 {{ product.sku }} 参数</label
-              ><textarea
-                :id="`edit-facts-${product.product_id}`"
-                v-model="fields[product.product_id]!.facts"
-                maxlength="2000"
-                rows="4"
-              ></textarea>
-            </div>
+          </article>
+          <div class="form-actions">
+            <button type="button" class="button secondary" :disabled="page === 0" @click="page--">
+              上一页</button
+            ><span>第 {{ page + 1 }} 页，共 {{ Math.ceil(catalog.product_count / 20) }} 页</span
+            ><button
+              type="button"
+              class="button secondary"
+              :disabled="(page + 1) * 20 >= catalog.product_count"
+              @click="page++"
+            >
+              下一页
+            </button>
           </div>
-        </article>
-        <div class="form-actions">
-          <button type="button" class="button secondary" :disabled="page === 0" @click="page--">
-            上一页</button
-          ><span>第 {{ page + 1 }} 页，共 {{ Math.ceil(catalog.product_count / 20) }} 页</span
-          ><button
-            type="button"
-            class="button secondary"
-            :disabled="(page + 1) * 20 >= catalog.product_count"
-            @click="page++"
-          >
-            下一页
-          </button>
-        </div>
-        <div class="form-field">
-          <label for="edit-reason">修订依据</label
-          ><textarea
-            id="edit-reason"
-            v-model="reason"
-            maxlength="500"
-            required
-            rows="3"
-            placeholder="填写核对过的规格、资料出处或纠错原因"
-          ></textarea>
-        </div>
-        <div class="form-actions">
-          <span>保存后展示完整新旧差异，审批前主档不变。</span
-          ><button
-            class="button primary"
-            :disabled="!changes.length || changes.length > 50 || !reason.trim()"
-          >
-            保存修订草稿
-          </button>
-        </div>
-      </fieldset>
-    </form>
-  </section>
-  <section v-if="pending && !busy" class="form-panel section-block">
-    <p>上次保存结果尚未确认，可用同一请求标识回查。</p>
-    <button class="button secondary" @click="create(true)">回查上次保存请求</button>
-  </section>
-  <ProductEditReview
-    v-if="saved"
-    :key="`${saved.id}-${saved.version}`"
-    :edit="saved"
-    :busy="busy"
-    @decide="decide"
-  />
-  <section v-if="shopId" class="form-panel section-block" aria-label="修订历史">
-    <div class="section-title">
-      <h2>本店修订记录</h2>
-      <button class="button secondary" :disabled="busy" @click="refresh">刷新修订与来源</button>
-    </div>
-    <p v-if="!history.length">此店暂无修订记录。</p>
-    <article v-for="edit in history" :key="edit.id" class="history-row">
-      <div>
-        <strong>#{{ edit.id }} · {{ editStatuses[edit.status] }}</strong>
-        <p>{{ supportTime(edit.created_at, timezone) }}</p>
+          <div class="form-field">
+            <label for="edit-reason">修订依据</label
+            ><textarea
+              id="edit-reason"
+              v-model="reason"
+              maxlength="500"
+              required
+              rows="3"
+              placeholder="填写核对过的规格、资料出处或纠错原因"
+            ></textarea>
+          </div>
+          <div class="form-actions">
+            <span>保存后展示完整新旧差异，审批前主档不变。</span
+            ><button
+              class="button primary"
+              :disabled="!changes.length || changes.length > 50 || !reason.trim()"
+            >
+              保存修订草稿
+            </button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+    <section v-if="pending && !busy" class="form-panel section-block">
+      <p>上次保存结果尚未确认，可用同一请求标识回查。</p>
+      <button class="button secondary" @click="create(true)">回查上次保存请求</button>
+    </section>
+    <ProductEditReview
+      v-if="saved"
+      :key="`${saved.id}-${saved.version}`"
+      :edit="saved"
+      :busy="busy"
+      @decide="decide"
+    />
+    <section v-if="shopId" class="form-panel section-block" aria-label="修订历史">
+      <div class="section-title">
+        <h2>本店修订记录</h2>
+        <button class="button secondary" :disabled="busy" @click="refresh">刷新修订与来源</button>
       </div>
-      <button class="button secondary" :disabled="busy" @click="show(edit.id)">
-        查看修订 #{{ edit.id }}
+      <p v-if="!history.length">此店暂无修订记录。</p>
+      <article v-for="edit in history" :key="edit.id" class="history-row">
+        <div>
+          <strong>#{{ edit.id }} · {{ editStatuses[edit.status] }}</strong>
+          <p>{{ supportTime(edit.created_at, timezone) }}</p>
+        </div>
+        <button class="button secondary" :disabled="busy" @click="show(edit.id)">
+          查看修订 #{{ edit.id }}
+        </button>
+      </article>
+      <button
+        v-if="cursor"
+        class="button secondary"
+        :disabled="busy"
+        @click="action((valid) => loadHistory(valid, true))"
+      >
+        加载更早修订
       </button>
-    </article>
-    <button
-      v-if="cursor"
-      class="button secondary"
-      :disabled="busy"
-      @click="action((valid) => loadHistory(valid, true))"
-    >
-      加载更早修订
-    </button>
-  </section>
+    </section>
+  </div>
 </template>
 <style scoped>
 fieldset {

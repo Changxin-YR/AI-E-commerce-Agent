@@ -1,0 +1,2044 @@
+{
+  "status": "PASS",
+  "comparedScenarios": 96,
+  "totalBeforeButtons": 608,
+  "totalAfterButtons": 608,
+  "note": "20 base pages + 12 expanded pages at three widths. Counts are per scenario, not distinct business functions. Closed details descendants excluded. Dynamic IDs/times/data text are not compared here; expressions and binding semantics are covered by AST equivalence.",
+  "rows": [
+    {
+      "scenario": "01-1440-expanded",
+      "beforeCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "afterCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "01-1440",
+      "beforeCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "afterCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "01-390-expanded",
+      "beforeCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "afterCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "01-390",
+      "beforeCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "afterCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "01-420-expanded",
+      "beforeCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "afterCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "01-420",
+      "beforeCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "afterCounts": {
+        "INPUT": 2,
+        "BUTTON": 1,
+        "SUMMARY": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "02-1440-expanded",
+      "beforeCounts": {
+        "A": 15,
+        "BUTTON": 21,
+        "SELECT": 7,
+        "SUMMARY": 11,
+        "TEXTAREA": 2,
+        "INPUT": 4
+      },
+      "afterCounts": {
+        "A": 15,
+        "BUTTON": 21,
+        "SELECT": 7,
+        "SUMMARY": 11,
+        "TEXTAREA": 2,
+        "INPUT": 4
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "02-1440",
+      "beforeCounts": {
+        "A": 13,
+        "BUTTON": 9,
+        "SELECT": 7,
+        "SUMMARY": 5
+      },
+      "afterCounts": {
+        "A": 13,
+        "BUTTON": 9,
+        "SELECT": 7,
+        "SUMMARY": 5
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "02-390-expanded",
+      "beforeCounts": {
+        "A": 25,
+        "BUTTON": 21,
+        "SELECT": 7,
+        "SUMMARY": 12,
+        "TEXTAREA": 2,
+        "INPUT": 4
+      },
+      "afterCounts": {
+        "A": 25,
+        "BUTTON": 21,
+        "SELECT": 7,
+        "SUMMARY": 12,
+        "TEXTAREA": 2,
+        "INPUT": 4
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "02-390",
+      "beforeCounts": {
+        "A": 22,
+        "BUTTON": 14,
+        "SELECT": 7,
+        "SUMMARY": 8
+      },
+      "afterCounts": {
+        "A": 22,
+        "BUTTON": 14,
+        "SELECT": 7,
+        "SUMMARY": 8
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "02-420-expanded",
+      "beforeCounts": {
+        "A": 23,
+        "BUTTON": 21,
+        "SELECT": 7,
+        "SUMMARY": 12,
+        "TEXTAREA": 2,
+        "INPUT": 4
+      },
+      "afterCounts": {
+        "A": 23,
+        "BUTTON": 21,
+        "SELECT": 7,
+        "SUMMARY": 12,
+        "TEXTAREA": 2,
+        "INPUT": 4
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "02-420",
+      "beforeCounts": {
+        "A": 20,
+        "BUTTON": 14,
+        "SELECT": 7,
+        "SUMMARY": 8
+      },
+      "afterCounts": {
+        "A": 20,
+        "BUTTON": 14,
+        "SELECT": 7,
+        "SUMMARY": 8
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "03-1440",
+      "beforeCounts": {
+        "INPUT": 4,
+        "SELECT": 3,
+        "BUTTON": 2,
+        "A": 2
+      },
+      "afterCounts": {
+        "INPUT": 4,
+        "SELECT": 3,
+        "BUTTON": 2,
+        "A": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "03-390",
+      "beforeCounts": {
+        "INPUT": 4,
+        "SELECT": 3,
+        "BUTTON": 2,
+        "A": 2
+      },
+      "afterCounts": {
+        "INPUT": 4,
+        "SELECT": 3,
+        "BUTTON": 2,
+        "A": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "03-420",
+      "beforeCounts": {
+        "INPUT": 4,
+        "SELECT": 3,
+        "BUTTON": 2,
+        "A": 2
+      },
+      "afterCounts": {
+        "INPUT": 4,
+        "SELECT": 3,
+        "BUTTON": 2,
+        "A": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "04-1440-expanded",
+      "beforeCounts": {
+        "SELECT": 13,
+        "A": 5,
+        "INPUT": 6,
+        "SUMMARY": 2,
+        "BUTTON": 13
+      },
+      "afterCounts": {
+        "SELECT": 13,
+        "A": 5,
+        "INPUT": 6,
+        "SUMMARY": 2,
+        "BUTTON": 13
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "04-1440",
+      "beforeCounts": {
+        "SELECT": 5,
+        "A": 5,
+        "INPUT": 5,
+        "SUMMARY": 2,
+        "BUTTON": 7
+      },
+      "afterCounts": {
+        "SELECT": 5,
+        "A": 5,
+        "INPUT": 5,
+        "SUMMARY": 2,
+        "BUTTON": 7
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "04-390-expanded",
+      "beforeCounts": {
+        "SELECT": 13,
+        "A": 5,
+        "INPUT": 6,
+        "SUMMARY": 2,
+        "BUTTON": 15
+      },
+      "afterCounts": {
+        "SELECT": 13,
+        "A": 5,
+        "INPUT": 6,
+        "SUMMARY": 2,
+        "BUTTON": 15
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "04-390",
+      "beforeCounts": {
+        "SELECT": 5,
+        "A": 5,
+        "INPUT": 5,
+        "SUMMARY": 2,
+        "BUTTON": 9
+      },
+      "afterCounts": {
+        "SELECT": 5,
+        "A": 5,
+        "INPUT": 5,
+        "SUMMARY": 2,
+        "BUTTON": 9
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "04-420-expanded",
+      "beforeCounts": {
+        "SELECT": 13,
+        "A": 5,
+        "INPUT": 6,
+        "SUMMARY": 2,
+        "BUTTON": 14
+      },
+      "afterCounts": {
+        "SELECT": 13,
+        "A": 5,
+        "INPUT": 6,
+        "SUMMARY": 2,
+        "BUTTON": 14
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "04-420",
+      "beforeCounts": {
+        "SELECT": 5,
+        "A": 5,
+        "INPUT": 5,
+        "SUMMARY": 2,
+        "BUTTON": 8
+      },
+      "afterCounts": {
+        "SELECT": 5,
+        "A": 5,
+        "INPUT": 5,
+        "SUMMARY": 2,
+        "BUTTON": 8
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "05-1440-expanded",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 8,
+        "SUMMARY": 5
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 8,
+        "SUMMARY": 5
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "05-1440",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 7,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 7,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "05-390-expanded",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 8,
+        "SUMMARY": 5
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 8,
+        "SUMMARY": 5
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "05-390",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 7,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 7,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "05-420-expanded",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 8,
+        "SUMMARY": 5
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 8,
+        "SUMMARY": 5
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "05-420",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 7,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 5,
+        "INPUT": 6,
+        "BUTTON": 7,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "06-1440",
+      "beforeCounts": {
+        "SELECT": 1,
+        "INPUT": 1,
+        "BUTTON": 5
+      },
+      "afterCounts": {
+        "SELECT": 1,
+        "INPUT": 1,
+        "BUTTON": 5
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "06-390",
+      "beforeCounts": {
+        "SELECT": 1,
+        "INPUT": 1,
+        "BUTTON": 5
+      },
+      "afterCounts": {
+        "SELECT": 1,
+        "INPUT": 1,
+        "BUTTON": 5
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "06-420",
+      "beforeCounts": {
+        "SELECT": 1,
+        "INPUT": 1,
+        "BUTTON": 5
+      },
+      "afterCounts": {
+        "SELECT": 1,
+        "INPUT": 1,
+        "BUTTON": 5
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "07-1440-expanded",
+      "beforeCounts": {
+        "SELECT": 2,
+        "BUTTON": 20,
+        "SUMMARY": 8,
+        "A": 2,
+        "INPUT": 10,
+        "TEXTAREA": 2
+      },
+      "afterCounts": {
+        "SELECT": 2,
+        "BUTTON": 20,
+        "SUMMARY": 8,
+        "A": 2,
+        "INPUT": 10,
+        "TEXTAREA": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "07-1440",
+      "beforeCounts": {
+        "SELECT": 1,
+        "BUTTON": 10,
+        "SUMMARY": 4,
+        "A": 1,
+        "INPUT": 2
+      },
+      "afterCounts": {
+        "SELECT": 1,
+        "BUTTON": 10,
+        "SUMMARY": 4,
+        "A": 1,
+        "INPUT": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "07-390-expanded",
+      "beforeCounts": {
+        "SELECT": 2,
+        "BUTTON": 20,
+        "SUMMARY": 8,
+        "A": 2,
+        "INPUT": 10,
+        "TEXTAREA": 2
+      },
+      "afterCounts": {
+        "SELECT": 2,
+        "BUTTON": 20,
+        "SUMMARY": 8,
+        "A": 2,
+        "INPUT": 10,
+        "TEXTAREA": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "07-390",
+      "beforeCounts": {
+        "SELECT": 1,
+        "BUTTON": 11,
+        "SUMMARY": 4,
+        "A": 1,
+        "INPUT": 2
+      },
+      "afterCounts": {
+        "SELECT": 1,
+        "BUTTON": 11,
+        "SUMMARY": 4,
+        "A": 1,
+        "INPUT": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "07-420-expanded",
+      "beforeCounts": {
+        "SELECT": 2,
+        "BUTTON": 20,
+        "SUMMARY": 8,
+        "A": 2,
+        "INPUT": 10,
+        "TEXTAREA": 2
+      },
+      "afterCounts": {
+        "SELECT": 2,
+        "BUTTON": 20,
+        "SUMMARY": 8,
+        "A": 2,
+        "INPUT": 10,
+        "TEXTAREA": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "07-420",
+      "beforeCounts": {
+        "SELECT": 1,
+        "BUTTON": 11,
+        "SUMMARY": 4,
+        "A": 1,
+        "INPUT": 2
+      },
+      "afterCounts": {
+        "SELECT": 1,
+        "BUTTON": 11,
+        "SUMMARY": 4,
+        "A": 1,
+        "INPUT": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "08-1440-expanded",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 4,
+        "SUMMARY": 4
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 4,
+        "SUMMARY": 4
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "08-1440",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 3,
+        "SUMMARY": 3
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 3,
+        "SUMMARY": 3
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "08-390-expanded",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 4,
+        "SUMMARY": 4
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 4,
+        "SUMMARY": 4
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "08-390",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 3,
+        "SUMMARY": 3
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 3,
+        "SUMMARY": 3
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "08-420-expanded",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 4,
+        "SUMMARY": 4
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 4,
+        "SUMMARY": 4
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "08-420",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 3,
+        "SUMMARY": 3
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 2,
+        "BUTTON": 3,
+        "SUMMARY": 3
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "09-1440-expanded",
+      "beforeCounts": {
+        "SELECT": 4,
+        "SUMMARY": 10,
+        "INPUT": 4,
+        "BUTTON": 8
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "SUMMARY": 10,
+        "INPUT": 4,
+        "BUTTON": 8
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "09-1440",
+      "beforeCounts": {
+        "SELECT": 4,
+        "SUMMARY": 3,
+        "INPUT": 1,
+        "BUTTON": 3
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "SUMMARY": 3,
+        "INPUT": 1,
+        "BUTTON": 3
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "09-390-expanded",
+      "beforeCounts": {
+        "SELECT": 4,
+        "SUMMARY": 10,
+        "INPUT": 4,
+        "BUTTON": 10
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "SUMMARY": 10,
+        "INPUT": 4,
+        "BUTTON": 10
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "09-390",
+      "beforeCounts": {
+        "SELECT": 4,
+        "SUMMARY": 10,
+        "INPUT": 4,
+        "BUTTON": 9
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "SUMMARY": 10,
+        "INPUT": 4,
+        "BUTTON": 9
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "09-420-expanded",
+      "beforeCounts": {
+        "SELECT": 4,
+        "SUMMARY": 10,
+        "INPUT": 4,
+        "BUTTON": 9
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "SUMMARY": 10,
+        "INPUT": 4,
+        "BUTTON": 9
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "09-420",
+      "beforeCounts": {
+        "SELECT": 4,
+        "SUMMARY": 10,
+        "INPUT": 4,
+        "BUTTON": 8
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "SUMMARY": 10,
+        "INPUT": 4,
+        "BUTTON": 8
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "10-1440",
+      "beforeCounts": {
+        "SELECT": 12,
+        "SUMMARY": 1,
+        "INPUT": 23,
+        "BUTTON": 6
+      },
+      "afterCounts": {
+        "SELECT": 12,
+        "SUMMARY": 1,
+        "INPUT": 23,
+        "BUTTON": 6
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "10-390",
+      "beforeCounts": {
+        "SELECT": 12,
+        "SUMMARY": 1,
+        "INPUT": 23,
+        "BUTTON": 6
+      },
+      "afterCounts": {
+        "SELECT": 12,
+        "SUMMARY": 1,
+        "INPUT": 23,
+        "BUTTON": 6
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "10-420",
+      "beforeCounts": {
+        "SELECT": 12,
+        "SUMMARY": 1,
+        "INPUT": 23,
+        "BUTTON": 6
+      },
+      "afterCounts": {
+        "SELECT": 12,
+        "SUMMARY": 1,
+        "INPUT": 23,
+        "BUTTON": 6
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "11-1440-expanded",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 6,
+        "BUTTON": 7,
+        "INPUT": 9,
+        "SUMMARY": 3,
+        "TEXTAREA": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 6,
+        "BUTTON": 7,
+        "INPUT": 9,
+        "SUMMARY": 3,
+        "TEXTAREA": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "11-1440",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "BUTTON": 5,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "BUTTON": 5,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "11-390-expanded",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 6,
+        "BUTTON": 7,
+        "INPUT": 9,
+        "SUMMARY": 3,
+        "TEXTAREA": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 6,
+        "BUTTON": 7,
+        "INPUT": 9,
+        "SUMMARY": 3,
+        "TEXTAREA": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "11-390",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "BUTTON": 5,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "BUTTON": 5,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "11-420-expanded",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 6,
+        "BUTTON": 7,
+        "INPUT": 9,
+        "SUMMARY": 3,
+        "TEXTAREA": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 6,
+        "BUTTON": 7,
+        "INPUT": 9,
+        "SUMMARY": 3,
+        "TEXTAREA": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "11-420",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "BUTTON": 5,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "BUTTON": 5,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "12-1440-expanded",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 8,
+        "INPUT": 4,
+        "SUMMARY": 2,
+        "TEXTAREA": 1
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 8,
+        "INPUT": 4,
+        "SUMMARY": 2,
+        "TEXTAREA": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "12-1440",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 3,
+        "BUTTON": 7,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 3,
+        "BUTTON": 7,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "12-390-expanded",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 8,
+        "INPUT": 4,
+        "SUMMARY": 2,
+        "TEXTAREA": 1
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 8,
+        "INPUT": 4,
+        "SUMMARY": 2,
+        "TEXTAREA": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "12-390",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 3,
+        "BUTTON": 7,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 3,
+        "BUTTON": 7,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "12-420-expanded",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 8,
+        "INPUT": 4,
+        "SUMMARY": 2,
+        "TEXTAREA": 1
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 8,
+        "INPUT": 4,
+        "SUMMARY": 2,
+        "TEXTAREA": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "12-420",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 3,
+        "BUTTON": 7,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 3,
+        "BUTTON": 7,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "13-1440-expanded",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 7
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 7
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "13-1440",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "13-390-expanded",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 7
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 7
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "13-390",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "13-420-expanded",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 7
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 5,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 7
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "13-420",
+      "beforeCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "afterCounts": {
+        "A": 3,
+        "SELECT": 4,
+        "BUTTON": 3,
+        "INPUT": 3,
+        "SUMMARY": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "14-1440-expanded",
+      "beforeCounts": {
+        "SELECT": 4,
+        "BUTTON": 9,
+        "INPUT": 12,
+        "SUMMARY": 5,
+        "A": 2,
+        "TEXTAREA": 2
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "BUTTON": 9,
+        "INPUT": 12,
+        "SUMMARY": 5,
+        "A": 2,
+        "TEXTAREA": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "14-1440",
+      "beforeCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 3,
+        "SUMMARY": 2,
+        "A": 2
+      },
+      "afterCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 3,
+        "SUMMARY": 2,
+        "A": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "14-390-expanded",
+      "beforeCounts": {
+        "SELECT": 4,
+        "BUTTON": 9,
+        "INPUT": 12,
+        "SUMMARY": 5,
+        "A": 2,
+        "TEXTAREA": 2
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "BUTTON": 9,
+        "INPUT": 12,
+        "SUMMARY": 5,
+        "A": 2,
+        "TEXTAREA": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "14-390",
+      "beforeCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 3,
+        "SUMMARY": 2,
+        "A": 2
+      },
+      "afterCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 3,
+        "SUMMARY": 2,
+        "A": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "14-420-expanded",
+      "beforeCounts": {
+        "SELECT": 4,
+        "BUTTON": 9,
+        "INPUT": 12,
+        "SUMMARY": 5,
+        "A": 2,
+        "TEXTAREA": 2
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "BUTTON": 9,
+        "INPUT": 12,
+        "SUMMARY": 5,
+        "A": 2,
+        "TEXTAREA": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "14-420",
+      "beforeCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 3,
+        "SUMMARY": 2,
+        "A": 2
+      },
+      "afterCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 3,
+        "SUMMARY": 2,
+        "A": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "15-1440-expanded",
+      "beforeCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "afterCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "15-1440",
+      "beforeCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "afterCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "15-390-expanded",
+      "beforeCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "afterCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "15-390",
+      "beforeCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "afterCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "15-420-expanded",
+      "beforeCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "afterCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "15-420",
+      "beforeCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "afterCounts": {
+        "SELECT": 3,
+        "BUTTON": 4,
+        "INPUT": 4,
+        "SUMMARY": 1,
+        "TEXTAREA": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "16-1440",
+      "beforeCounts": {
+        "SELECT": 4,
+        "BUTTON": 2,
+        "A": 1
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "BUTTON": 2,
+        "A": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "16-390",
+      "beforeCounts": {
+        "SELECT": 4,
+        "BUTTON": 2,
+        "A": 1
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "BUTTON": 2,
+        "A": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "16-420",
+      "beforeCounts": {
+        "SELECT": 4,
+        "BUTTON": 2,
+        "A": 1
+      },
+      "afterCounts": {
+        "SELECT": 4,
+        "BUTTON": 2,
+        "A": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "17-1440",
+      "beforeCounts": {
+        "SUMMARY": 1,
+        "SELECT": 5,
+        "INPUT": 9,
+        "BUTTON": 2
+      },
+      "afterCounts": {
+        "SUMMARY": 1,
+        "SELECT": 5,
+        "INPUT": 9,
+        "BUTTON": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "17-390",
+      "beforeCounts": {
+        "SUMMARY": 1,
+        "SELECT": 5,
+        "INPUT": 9,
+        "BUTTON": 2
+      },
+      "afterCounts": {
+        "SUMMARY": 1,
+        "SELECT": 5,
+        "INPUT": 9,
+        "BUTTON": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "17-420",
+      "beforeCounts": {
+        "SUMMARY": 1,
+        "SELECT": 5,
+        "INPUT": 9,
+        "BUTTON": 2
+      },
+      "afterCounts": {
+        "SUMMARY": 1,
+        "SELECT": 5,
+        "INPUT": 9,
+        "BUTTON": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "18-1440",
+      "beforeCounts": {
+        "SELECT": 1,
+        "BUTTON": 2,
+        "INPUT": 1
+      },
+      "afterCounts": {
+        "SELECT": 1,
+        "BUTTON": 2,
+        "INPUT": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "18-390",
+      "beforeCounts": {
+        "SELECT": 1,
+        "BUTTON": 2,
+        "INPUT": 1
+      },
+      "afterCounts": {
+        "SELECT": 1,
+        "BUTTON": 2,
+        "INPUT": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "18-420",
+      "beforeCounts": {
+        "SELECT": 1,
+        "BUTTON": 2,
+        "INPUT": 1
+      },
+      "afterCounts": {
+        "SELECT": 1,
+        "BUTTON": 2,
+        "INPUT": 1
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "19-1440",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "19-390",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "19-420",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "20-1440",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "20-390",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    },
+    {
+      "scenario": "20-420",
+      "beforeCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "afterCounts": {
+        "A": 1,
+        "SELECT": 3,
+        "INPUT": 1,
+        "BUTTON": 2
+      },
+      "sameOrderedTagsAndDisabled": true,
+      "beforeOverflow": 0,
+      "afterOverflow": 0,
+      "beforeOccluded": [],
+      "afterOccluded": []
+    }
+  ],
+  "failures": []
+}

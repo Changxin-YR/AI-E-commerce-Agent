@@ -146,7 +146,7 @@ function followUpWorking(value: boolean): void {
         <div class="task-actions">
           <template v-if="task.status === 'pending_approval'"
             ><button class="button primary" @click="act('approve')">批准并创建待办</button
-            ><button class="button secondary" @click="act('reject')">拒绝候选</button></template
+            ><button class="button secondary danger" @click="act('reject')">拒绝候选</button></template
           >
           <template v-if="['open', 'deferred'].includes(task.status)"
             ><button class="button primary" @click="act('complete')">标记完成</button

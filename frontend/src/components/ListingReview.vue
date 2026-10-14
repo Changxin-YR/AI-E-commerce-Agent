@@ -211,7 +211,7 @@ async function inspect(): Promise<void> {
             批准并在本地生效
           </button>
           <button
-            class="button secondary"
+            class="button secondary danger"
             :disabled="busy || dirty"
             @click="emit('decide', 'reject', false)"
           >

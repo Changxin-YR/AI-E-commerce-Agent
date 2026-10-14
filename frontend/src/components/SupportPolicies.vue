@@ -236,7 +236,7 @@ onMounted(() => load())
           >
             编辑并另存新版本</button
           ><button
-            class="button secondary"
+            class="button secondary danger"
             :disabled="busy || disabled"
             @click="clearing = policy.id"
           >
@@ -245,7 +245,7 @@ onMounted(() => load())
         </div>
         <div v-if="clearing === policy.id" role="alert">
           <p>将擦除此版本原文，以及所有引用它的草稿正文与证据快照。此操作不能恢复。</p>
-          <button class="button secondary" :disabled="busy || disabled" @click="clear(policy.id)">
+          <button class="button secondary danger" :disabled="busy || disabled" @click="clear(policy.id)">
             确认清除政策及关联草稿</button
           ><button class="button secondary" :disabled="busy" @click="clearing = null">
             取消清除

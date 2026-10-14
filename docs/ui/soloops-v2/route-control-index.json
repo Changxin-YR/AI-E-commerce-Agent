@@ -1,0 +1,142 @@
+[
+  {
+    "route": "/login",
+    "view": "src/views/LoginView.vue",
+    "sourceDeclarations": 5,
+    "componentOccurrences": 4,
+    "controlOccurrences": 5
+  },
+  {
+    "route": "/",
+    "view": "src/views/DashboardView.vue",
+    "sourceDeclarations": 120,
+    "componentOccurrences": 30,
+    "controlOccurrences": 142
+  },
+  {
+    "route": "/settings",
+    "view": "src/views/SettingsView.vue",
+    "sourceDeclarations": 45,
+    "componentOccurrences": 25,
+    "controlOccurrences": 45
+  },
+  {
+    "route": "/imports",
+    "view": "src/views/ImportsView.vue",
+    "sourceDeclarations": 94,
+    "componentOccurrences": 17,
+    "controlOccurrences": 94
+  },
+  {
+    "route": "/analytics",
+    "view": "src/views/AnalyticsView.vue",
+    "sourceDeclarations": 70,
+    "componentOccurrences": 16,
+    "controlOccurrences": 78
+  },
+  {
+    "route": "/listings",
+    "view": "src/views/ListingsView.vue",
+    "sourceDeclarations": 34,
+    "componentOccurrences": 15,
+    "controlOccurrences": 34
+  },
+  {
+    "route": "/support",
+    "view": "src/views/SupportView.vue",
+    "sourceDeclarations": 126,
+    "componentOccurrences": 31,
+    "controlOccurrences": 147
+  },
+  {
+    "route": "/inventory",
+    "view": "src/views/InventoryView.vue",
+    "sourceDeclarations": 28,
+    "componentOccurrences": 8,
+    "controlOccurrences": 28
+  },
+  {
+    "route": "/agent",
+    "view": "src/views/AgentView.vue",
+    "sourceDeclarations": 131,
+    "componentOccurrences": 38,
+    "controlOccurrences": 152
+  },
+  {
+    "route": "/profit",
+    "view": "src/views/ProfitView.vue",
+    "sourceDeclarations": 42,
+    "componentOccurrences": 8,
+    "controlOccurrences": 42
+  },
+  {
+    "route": "/expenses",
+    "view": "src/views/ExpensesView.vue",
+    "sourceDeclarations": 70,
+    "componentOccurrences": 20,
+    "controlOccurrences": 84
+  },
+  {
+    "route": "/statements",
+    "view": "src/views/StatementsView.vue",
+    "sourceDeclarations": 97,
+    "componentOccurrences": 55,
+    "controlOccurrences": 190
+  },
+  {
+    "route": "/order-reconciliation",
+    "view": "src/views/OrderReconciliationView.vue",
+    "sourceDeclarations": 45,
+    "componentOccurrences": 15,
+    "controlOccurrences": 52
+  },
+  {
+    "route": "/settlements",
+    "view": "src/views/SettlementsView.vue",
+    "sourceDeclarations": 72,
+    "componentOccurrences": 36,
+    "controlOccurrences": 121
+  },
+  {
+    "route": "/rules",
+    "view": "src/views/RulesView.vue",
+    "sourceDeclarations": 35,
+    "componentOccurrences": 6,
+    "controlOccurrences": 35
+  },
+  {
+    "route": "/outbound",
+    "view": "src/views/OutboundView.vue",
+    "sourceDeclarations": 54,
+    "componentOccurrences": 8,
+    "controlOccurrences": 54
+  },
+  {
+    "route": "/overview",
+    "view": "src/views/OverviewView.vue",
+    "sourceDeclarations": 87,
+    "componentOccurrences": 15,
+    "controlOccurrences": 87
+  },
+  {
+    "route": "/schedules",
+    "view": "src/views/SchedulesView.vue",
+    "sourceDeclarations": 62,
+    "componentOccurrences": 9,
+    "controlOccurrences": 62
+  },
+  {
+    "route": "/product-quality",
+    "view": "src/views/ProductQualityView.vue",
+    "sourceDeclarations": 41,
+    "componentOccurrences": 10,
+    "controlOccurrences": 41
+  },
+  {
+    "route": "/product-edits",
+    "view": "src/views/ProductEditsView.vue",
+    "sourceDeclarations": 49,
+    "componentOccurrences": 9,
+    "controlOccurrences": 49
+  }
+]

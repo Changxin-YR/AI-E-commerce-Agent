@@ -1,0 +1,1663 @@
+[
+  {
+    "file": "agent.spec.ts",
+    "title": "agent evidence approval budget resume verification replay and erasure",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3218
+      }
+    ]
+  },
+  {
+    "file": "agent.spec.ts",
+    "title": "mobile empty checks and unconfigured model show real states",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1737
+      }
+    ]
+  },
+  {
+    "file": "agent.spec.ts",
+    "title": "bounded authorization saves, reuses, withdraws and revokes desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 4487
+      }
+    ]
+  },
+  {
+    "file": "agent.spec.ts",
+    "title": "bounded authorization saves, reuses, withdraws and revokes mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3690
+      }
+    ]
+  },
+  {
+    "file": "analysis-model.spec.ts",
+    "title": "model question evidence approval reload todo and clear desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3672
+      }
+    ]
+  },
+  {
+    "file": "analysis-model.spec.ts",
+    "title": "model question evidence approval reload todo and clear mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3376
+      }
+    ]
+  },
+  {
+    "file": "analytics.spec.ts",
+    "title": "profit calculation, sources, saved todo, invalidation and purge",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2224
+      }
+    ]
+  },
+  {
+    "file": "analytics.spec.ts",
+    "title": "mobile scope, unknown question and empty-data guidance",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1407
+      }
+    ]
+  },
+  {
+    "file": "analytics.spec.ts",
+    "title": "seller historical cost evidence, versions and recalculation at 1440px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3887
+      }
+    ]
+  },
+  {
+    "file": "analytics.spec.ts",
+    "title": "seller historical cost evidence, versions and recalculation at 390px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3757
+      }
+    ]
+  },
+  {
+    "file": "business-rules.spec.ts",
+    "title": "rules persist, apply to operations and Agent, restore history, reset and isolate scope",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3039
+      }
+    ]
+  },
+  {
+    "file": "business-rules.spec.ts",
+    "title": "mobile rules save, revoke and history evidence without overflow",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1325
+      }
+    ]
+  },
+  {
+    "file": "continuity.spec.ts",
+    "title": "read-only loading allows leaving without a late redirect 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1312
+      }
+    ]
+  },
+  {
+    "file": "continuity.spec.ts",
+    "title": "business native dates and explicit DST choice 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 988
+      }
+    ]
+  },
+  {
+    "file": "continuity.spec.ts",
+    "title": "agent and support saved deep links, history and unsaved edits 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 5706
+      }
+    ]
+  },
+  {
+    "file": "continuity.spec.ts",
+    "title": "read-only loading allows leaving without a late redirect 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1070
+      }
+    ]
+  },
+  {
+    "file": "continuity.spec.ts",
+    "title": "business native dates and explicit DST choice 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 982
+      }
+    ]
+  },
+  {
+    "file": "continuity.spec.ts",
+    "title": "agent and support saved deep links, history and unsaved edits 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 5661
+      }
+    ]
+  },
+  {
+    "file": "expenses.spec.ts",
+    "title": "actual expenses evidence, revisions, summary and erase desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 4051
+      }
+    ]
+  },
+  {
+    "file": "expenses.spec.ts",
+    "title": "actual expenses evidence, revisions, summary and erase mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3717
+      }
+    ]
+  },
+  {
+    "file": "fee-rules.spec.ts",
+    "title": "fee rules preview revision history and lifecycle desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3543
+      }
+    ]
+  },
+  {
+    "file": "fee-rules.spec.ts",
+    "title": "fee rules preview revision history and lifecycle mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3141
+      }
+    ]
+  },
+  {
+    "file": "first-use.spec.ts",
+    "title": "preprovisioned seller creates a shop and imports entirely through UI at 1440px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3696
+      }
+    ]
+  },
+  {
+    "file": "first-use.spec.ts",
+    "title": "preprovisioned seller creates a shop and imports entirely through UI at 390px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3144
+      }
+    ]
+  },
+  {
+    "file": "foundation.spec.ts",
+    "title": "foundation shared data four workflows source revision and persistence desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 19950
+      }
+    ]
+  },
+  {
+    "file": "foundation.spec.ts",
+    "title": "foundation shared data four workflows source revision and persistence mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 18668
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "browser CSV source imports 2001 records and resumes at 1440px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 9829
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "browser CSV source imports 10001 records and resumes at 1440px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 44537
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "browser CSV source imports 2001 records and resumes at 390px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 10356
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "browser CSV source imports 10001 records and resumes at 390px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 43274
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "browser source preserves refunds and currencies while requiring unsafe cell and date corrections",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1502
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "Shopify candidate requires evidence corrections and persists at 1440px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1933
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "Shopify candidate requires evidence corrections and persists at 390px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1899
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "seller maps unknown columns, corrects a row, imports, reloads, revokes and clears",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2295
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "mobile order preview exposes duplicate rows and fits the viewport",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1289
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "seller reviews amount meaning and reconciles saved multi-SKU orders at 1440px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1920
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "seller reviews amount meaning and reconciles saved multi-SKU orders at 390px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1742
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "large import group resumes and reconciles 2002 source records at 1440px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 9708
+      }
+    ]
+  },
+  {
+    "file": "imports.spec.ts",
+    "title": "large import group resumes and reconciles 2002 source records at 390px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 9557
+      }
+    ]
+  },
+  {
+    "file": "inventory.spec.ts",
+    "title": "inventory import, source, refresh, revoke and missing data",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2452
+      }
+    ]
+  },
+  {
+    "file": "inventory.spec.ts",
+    "title": "mobile inventory expiration and user chosen freshness window",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1203
+      }
+    ]
+  },
+  {
+    "file": "listing-model.spec.ts",
+    "title": "model listing consent candidate approval and erase desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3474
+      }
+    ]
+  },
+  {
+    "file": "listing-model.spec.ts",
+    "title": "model listing consent candidate approval and erase mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3529
+      }
+    ]
+  },
+  {
+    "file": "listings.spec.ts",
+    "title": "product-only draft, edit, approve, restore, reject and source cleanup",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3008
+      }
+    ]
+  },
+  {
+    "file": "listings.spec.ts",
+    "title": "mobile untrusted text, uncovered claims and approval gate",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1568
+      }
+    ]
+  },
+  {
+    "file": "listings.spec.ts",
+    "title": "reviewed listing manual delivery 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2091
+      }
+    ]
+  },
+  {
+    "file": "listings.spec.ts",
+    "title": "reviewed listing manual delivery 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1959
+      }
+    ]
+  },
+  {
+    "file": "margin-review.spec.ts",
+    "title": "bounded margin review has separate approvals and two persisted artifacts at 1440px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 4940
+      }
+    ]
+  },
+  {
+    "file": "margin-review.spec.ts",
+    "title": "bounded margin review has separate approvals and two persisted artifacts at 390px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 4219
+      }
+    ]
+  },
+  {
+    "file": "operations-model.spec.ts",
+    "title": "operations model overview approval task reload and clear desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 4007
+      }
+    ]
+  },
+  {
+    "file": "operations-model.spec.ts",
+    "title": "operations model overview approval task reload and clear mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3739
+      }
+    ]
+  },
+  {
+    "file": "operations.spec.ts",
+    "title": "operations source, approval, defer, completion, replay and source clearing",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3012
+      }
+    ]
+  },
+  {
+    "file": "operations.spec.ts",
+    "title": "mobile empty operations, ignored finding and preserved history",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1501
+      }
+    ]
+  },
+  {
+    "file": "operations.spec.ts",
+    "title": "evidence-based original task recheck at 1440px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 4234
+      }
+    ]
+  },
+  {
+    "file": "operations.spec.ts",
+    "title": "evidence-based original task recheck at 390px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3657
+      }
+    ]
+  },
+  {
+    "file": "order-reconciliation.spec.ts",
+    "title": "order sales and refund evidence desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3317
+      }
+    ]
+  },
+  {
+    "file": "order-reconciliation.spec.ts",
+    "title": "order sales and refund evidence mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3304
+      }
+    ]
+  },
+  {
+    "file": "outbound.spec.ts",
+    "title": "R2 verified test mailbox preview authorization unknown lookup receipt and replay",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3438
+      }
+    ]
+  },
+  {
+    "file": "outbound.spec.ts",
+    "title": "QQ mail previews a chosen recipient and preserves unknown submission after receipt evidence",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1769
+      }
+    ]
+  },
+  {
+    "file": "overview.spec.ts",
+    "title": "cross shop overview, source review, saved refresh and dependent purge",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3701
+      }
+    ]
+  },
+  {
+    "file": "overview.spec.ts",
+    "title": "mobile empty coverage, date presets, market filter and clear",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1074
+      }
+    ]
+  },
+  {
+    "file": "product-edits.spec.ts",
+    "title": "local product edits approval, conflict, revoke and clear desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 4105
+      }
+    ]
+  },
+  {
+    "file": "product-edits.spec.ts",
+    "title": "local product edits approval, conflict, revoke and clear mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3827
+      }
+    ]
+  },
+  {
+    "file": "product-quality.spec.ts",
+    "title": "product quality preview, evidence, save, stale and purge desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2286
+      }
+    ]
+  },
+  {
+    "file": "product-quality.spec.ts",
+    "title": "product quality preview, evidence, save, stale and purge mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2121
+      }
+    ]
+  },
+  {
+    "file": "profit.spec.ts",
+    "title": "profit no-order scenarios, evidence, sensitivity, persisted history and erasure",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2170
+      }
+    ]
+  },
+  {
+    "file": "profit.spec.ts",
+    "title": "profit mobile unknown fees and zero selling price stay explicit",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 899
+      }
+    ]
+  },
+  {
+    "file": "schedules.spec.ts",
+    "title": "scheduled calendar reports persist and erase desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2447
+      }
+    ]
+  },
+  {
+    "file": "schedules.spec.ts",
+    "title": "scheduled calendar reports persist and erase mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2495
+      }
+    ]
+  },
+  {
+    "file": "schedules.spec.ts",
+    "title": "schedule edit pause resume check approval notification readback and revoke",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3330
+      }
+    ]
+  },
+  {
+    "file": "schedules.spec.ts",
+    "title": "mobile quiet hours history and source erasure",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2348
+      }
+    ]
+  },
+  {
+    "file": "seller-navigation.spec.ts",
+    "title": "seller can reach all 19 grouped routes with keyboard at 1440px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2439
+      }
+    ]
+  },
+  {
+    "file": "seller-navigation.spec.ts",
+    "title": "seller can reach all 19 grouped routes with keyboard at 390px",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2160
+      }
+    ]
+  },
+  {
+    "file": "settlements.spec.ts",
+    "title": "settlement cycle manual receipts lifecycle desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3950
+      }
+    ]
+  },
+  {
+    "file": "settlements.spec.ts",
+    "title": "settlement cycle manual receipts lifecycle mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3772
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 01 /login at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1115
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 02 / at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3548
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 03 /settings at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3367
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 04 /imports at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3715
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 05 /analytics at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2860
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 06 /listings at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2378
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 07 /support at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3115
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 08 /inventory at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2902
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 09 /agent at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3571
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 10 /profit at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2616
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 11 /expenses at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2702
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 12 /statements at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2776
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 13 /order-reconciliation at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2876
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 14 /settlements at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2847
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 15 /rules at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2745
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 16 /outbound at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2263
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 17 /overview at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2741
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 18 /schedules at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2409
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 19 /product-quality at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2260
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 20 /product-edits at 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2311
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 01 /login at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 970
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 02 / at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3684
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 03 /settings at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2796
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 04 /imports at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3321
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 05 /analytics at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2700
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 06 /listings at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2207
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 07 /support at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2775
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 08 /inventory at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2668
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 09 /agent at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3709
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 10 /profit at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2361
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 11 /expenses at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2540
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 12 /statements at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2623
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 13 /order-reconciliation at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2612
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 14 /settlements at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2579
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 15 /rules at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2512
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 16 /outbound at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2229
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 17 /overview at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2425
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 18 /schedules at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2244
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 19 /product-quality at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2179
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 20 /product-edits at 420",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2341
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 01 /login at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 981
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 02 / at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3809
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 03 /settings at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2731
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 04 /imports at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3467
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 05 /analytics at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2744
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 06 /listings at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2192
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 07 /support at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2893
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 08 /inventory at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2890
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 09 /agent at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3681
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 10 /profit at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2363
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 11 /expenses at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2707
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 12 /statements at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2606
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 13 /order-reconciliation at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2593
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 14 /settlements at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2496
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 15 /rules at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2526
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 16 /outbound at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2282
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 17 /overview at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2596
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 18 /schedules at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2206
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 19 /product-quality at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2313
+      }
+    ]
+  },
+  {
+    "file": "soloops-responsive.spec.ts",
+    "title": "SoloOps 20 /product-edits at 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2190
+      }
+    ]
+  },
+  {
+    "file": "statement-reviews.spec.ts",
+    "title": "statement review archive lifecycle desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 4530
+      }
+    ]
+  },
+  {
+    "file": "statement-reviews.spec.ts",
+    "title": "statement review archive lifecycle mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 4246
+      }
+    ]
+  },
+  {
+    "file": "statements.spec.ts",
+    "title": "statement import, comparison evidence and lifecycle desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3014
+      }
+    ]
+  },
+  {
+    "file": "statements.spec.ts",
+    "title": "statement import, comparison evidence and lifecycle mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2887
+      }
+    ]
+  },
+  {
+    "file": "support-model.spec.ts",
+    "title": "support model consent handoff approval edit archive and erase desktop",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 4123
+      }
+    ]
+  },
+  {
+    "file": "support-model.spec.ts",
+    "title": "support model consent handoff approval edit archive and erase mobile",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3958
+      }
+    ]
+  },
+  {
+    "file": "support.spec.ts",
+    "title": "support policy, evidence, editable draft, archive and source cleanup",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 3338
+      }
+    ]
+  },
+  {
+    "file": "support.spec.ts",
+    "title": "mobile message escaping and unverified language handoff",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1574
+      }
+    ]
+  },
+  {
+    "file": "support.spec.ts",
+    "title": "reviewed support manual delivery and evidence 1440",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2746
+      }
+    ]
+  },
+  {
+    "file": "support.spec.ts",
+    "title": "reviewed support manual delivery and evidence 390",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2667
+      }
+    ]
+  },
+  {
+    "file": "workbench.spec.ts",
+    "title": "unified workbench opens exact cross-module records and original approvals",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 7322
+      }
+    ]
+  },
+  {
+    "file": "workbench.spec.ts",
+    "title": "mobile inbox scope, direct link reload and inaccessible shop handling",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2683
+      }
+    ]
+  },
+  {
+    "file": "workbench.spec.ts",
+    "title": "seller views separate controlled success, approvals and waiting for fresh sources",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 2233
+      }
+    ]
+  },
+  {
+    "file": "workspace.spec.ts",
+    "title": "anonymous users must log in and invalid credentials remain on the login page",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 291
+      }
+    ]
+  },
+  {
+    "file": "workspace.spec.ts",
+    "title": "seller can save a profile, add a store, reload and revoke the session",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 1523
+      }
+    ]
+  },
+  {
+    "file": "workspace.spec.ts",
+    "title": "mobile seller settings fit the viewport and preserve accessible inputs",
+    "ok": true,
+    "results": [
+      {
+        "status": "passed",
+        "duration": 941
+      }
+    ]
+  }
+]

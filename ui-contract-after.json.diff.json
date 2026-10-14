@@ -1,0 +1,86 @@
+{
+  "removed_or_changed": [
+    [
+      "src\\views\\AnalyticsView.vue",
+      "routerlink",
+      "打开 AI 经营问数，确认范围与模型预算",
+      "",
+      "{\n        path: '/agent',\n        query: {\n          shop: shopId,\n          mode: 'question',\n          ...scopeQuery(scope),\n          ...returnTaskQuery(route.query, shopId),\n        },\n      }",
+      ""
+    ],
+    [
+      "src\\views\\ImportsView.vue",
+      "routerlink",
+      "前往账单费用核对",
+      "",
+      "{\n          path: '/statements',\n          query: {\n            shop: shopId,\n            identity: batch?.data_identity ?? identity,\n            channel: batch?.source_channel ?? channel,\n          },\n        }",
+      ""
+    ],
+    [
+      "src\\views\\InventoryView.vue",
+      "routerlink",
+      "导入库存快照",
+      "",
+      "{\n        path: '/imports',\n        query: {\n          shop: shopId,\n          kind: 'inventory',\n          ...scopeQuery(scope),\n          ...returnTaskQuery(route.query),\n        },\n      }",
+      ""
+    ],
+    [
+      "src\\views\\ListingsView.vue",
+      "routerlink",
+      "生成 AI Listing 候选",
+      "",
+      "{\n        path: '/agent',\n        query: {\n          shop: shopId,\n          mode: 'listing_model',\n          product: workspace.product.product_id,\n          identity: workspace.product.source.data_identity,\n          channel: route.query.channel,\n          ...returnTaskQuery(route.query, shopId),\n        },\n      }",
+      ""
+    ],
+    [
+      "src\\views\\SupportView.vue",
+      "routerlink",
+      "生成 AI 客服候选",
+      "",
+      "{\n            path: '/agent',\n            query: {\n              shop: shopId,\n              mode: 'support_model',\n              message: workspace.message.id,\n              identity: workspace.message.source.data_identity,\n              channel: workspace.message.channel,\n              ...returnTaskQuery(route.query, shopId),\n            },\n          }",
+      ""
+    ]
+  ],
+  "added_or_changed": [
+    [
+      "src\\views\\AnalyticsView.vue",
+      "routerlink",
+      "打开 AI 经营问数，确认范围与模型预算",
+      "",
+      "{\n          path: '/agent',\n          query: {\n            shop: shopId,\n            mode: 'question',\n            ...scopeQuery(scope),\n            ...returnTaskQuery(route.query, shopId),\n          },\n        }",
+      ""
+    ],
+    [
+      "src\\views\\ImportsView.vue",
+      "routerlink",
+      "前往账单费用核对",
+      "",
+      "{\n            path: '/statements',\n            query: {\n              shop: shopId,\n              identity: batch?.data_identity ?? identity,\n              channel: batch?.source_channel ?? channel,\n            },\n          }",
+      ""
+    ],
+    [
+      "src\\views\\InventoryView.vue",
+      "routerlink",
+      "导入库存快照",
+      "",
+      "{\n          path: '/imports',\n          query: {\n            shop: shopId,\n            kind: 'inventory',\n            ...scopeQuery(scope),\n            ...returnTaskQuery(route.query),\n          },\n        }",
+      ""
+    ],
+    [
+      "src\\views\\ListingsView.vue",
+      "routerlink",
+      "生成 AI Listing 候选",
+      "",
+      "{\n          path: '/agent',\n          query: {\n            shop: shopId,\n            mode: 'listing_model',\n            product: workspace.product.product_id,\n            identity: workspace.product.source.data_identity,\n            channel: route.query.channel,\n            ...returnTaskQuery(route.query, shopId),\n          },\n        }",
+      ""
+    ],
+    [
+      "src\\views\\SupportView.vue",
+      "routerlink",
+      "生成 AI 客服候选",
+      "",
+      "{\n              path: '/agent',\n              query: {\n                shop: shopId,\n                mode: 'support_model',\n                message: workspace.message.id,\n                identity: workspace.message.source.data_identity,\n                channel: workspace.message.channel,\n                ...returnTaskQuery(route.query, shopId),\n              },\n            }",
+      ""
+    ]
+  ]
+}
