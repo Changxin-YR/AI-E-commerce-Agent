@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSession } from '@/composables/useSession'
 import { errorMessage } from '@/api/client'
+import { authApi, type DemoLogin } from '@/api/auth'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import FormField from '@/components/FormField.vue'
 import AppIcon from '@/components/AppIcon.vue'
@@ -14,6 +15,20 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 const busy = ref(false)
+const demo = ref<DemoLogin | null>(null)
+onMounted(async () => {
+  try {
+    const value = await authApi.demo()
+    if (value.enabled && value.username && value.password) demo.value = value
+  } catch {
+    // Demo metadata is optional; regular sign-in remains available.
+  }
+})
+function fillDemo(): void {
+  if (!demo.value) return
+  username.value = demo.value.username ?? ''
+  password.value = demo.value.password ?? ''
+}
 async function submit(): Promise<void> {
   if (busy.value) return
   busy.value = true
@@ -90,6 +105,16 @@ async function submit(): Promise<void> {
         ><button class="button primary login-submit" :disabled="busy">
           {{ busy ? '正在登录…' : '进入工作台' }}
         </button>
+        <div v-if="demo" class="login-demo" aria-label="演示账号">
+          <p>
+            演示账号：<strong>{{ demo.username }}</strong> · 密码：<strong>{{
+              demo.password
+            }}</strong>
+          </p>
+          <button type="button" class="button secondary small" :disabled="busy" @click="fillDemo">
+            填入演示账号
+          </button>
+        </div>
         <details class="login-help">
           <summary>首次使用或忘记密码？</summary>
           <p>
@@ -103,3 +128,18 @@ async function submit(): Promise<void> {
     </section>
   </main>
 </template>
+
+<style scoped>
+.login-demo {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--canvas);
+  overflow-wrap: anywhere;
+}
+.login-demo p {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+</style>

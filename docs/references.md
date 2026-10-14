@@ -411,3 +411,7 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - Vue 官方 [Watchers](https://vuejs.org/guide/essentials/watchers.html)（MIT）：店铺变化时读取实际模型状态，使用清理回调丢弃旧请求结果。
 - MDN [Grid 自动布局](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout/Auto-placement)（文档 CC BY-SA）：未选择对象时列表占完整内容宽度，选中后才分栏；使用自适应卡片和有界列表。实现自行编写，不新增依赖。
 - Firecrawl 已确认额度不足，本轮使用官方网页读取作为回退。
+# 2026-10-14：DeepSeek 流式协议
+
+- [DeepSeek Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion/)：按官方 `stream`、`stream_options.include_usage`、`delta.content` 与 `[DONE]` 协议接收真实增量。只适配公开协议，不复制供应商实现；完整响应继续进入既有事实校验和费用结算。
+- [Starlette StreamingResponse](https://www.starlette.io/responses/#streamingresponse)：采用流式响应传输事件；业务 Session 在执行线程内独立创建与关闭，避免请求结束时提前释放会话。

@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="SOLOOPS_", env_file=".env", extra="ignore")
 
     database_url: SecretStr
+    demo_enabled: bool = False
     scheduler_enabled: bool = True
     outbound_enabled: bool = False
     outbound_provider: Literal["resend", "qq_smtp"] = "resend"

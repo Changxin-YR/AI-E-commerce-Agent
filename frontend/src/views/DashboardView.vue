@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useSession } from '@/composables/useSession'
+import { loadDemoScope } from '@/composables/demoScope'
+import { workspaceQuery } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
 import { errorMessage } from '@/api/client'
 import type { Onboarding } from '@/types/identity'
@@ -14,12 +17,19 @@ const status = ref<Onboarding | null>(null)
 const error = ref('')
 const loading = ref(true)
 const route = useRoute()
+const router = useRouter()
+const { session } = useSession()
 const workScope = ref<Record<string, string>>({})
 async function load(): Promise<void> {
   loading.value = true
   error.value = ''
   try {
-    status.value = await identityApi.onboarding()
+    const [onboarding, shops] = await Promise.all([identityApi.onboarding(), identityApi.shops()])
+    const demoScope = await loadDemoScope(shops, session.value?.username, route.query)
+    if (Object.keys(demoScope).length)
+      await router.replace({ query: { ...route.query, ...demoScope }, hash: route.hash })
+    workScope.value = workspaceQuery(route.query)
+    status.value = onboarding
   } catch (cause) {
     error.value = errorMessage(cause)
   } finally {

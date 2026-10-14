@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from app.core.config import Settings
 from app.core.errors import BusinessError
 from app.schemas.agent import ModelDecision, ModelStatus
+from app.services.model_stream import bounded_lines, delta_sink
 
 
 @dataclass(frozen=True)
@@ -340,6 +341,93 @@ class DeepSeekChatModel(ChatCompletionsModel):
 
     provider = "deepseek_chat"
     endpoint = "https://api.deepseek.com/chat/completions"
+
+    def _request(self, body: dict[str, Any], timeout: float) -> dict[str, Any]:
+        sink = delta_sink()
+        if sink is None:
+            return super()._request(body, timeout)
+        if self.settings.model_api_key is None:
+            raise BusinessError("not_configured", "模型未配置", 422)
+        body = {**body, "stream": True, "stream_options": {"include_usage": True}}
+        deadline = monotonic() + min(timeout, 30)
+        text: list[str] = []
+        usage: dict[str, Any] | None = None
+        finish: str | None = None
+        done = False
+        with (
+            httpx.Client(
+                timeout=min(timeout, 30), follow_redirects=False, trust_env=False
+            ) as client,
+            client.stream(
+                "POST",
+                self.endpoint,
+                headers={
+                    "Authorization": "Bearer " + self.settings.model_api_key.get_secret_value()
+                },
+                json=body,
+            ) as response,
+        ):
+            if response.status_code != 200:
+                raise ValueError("unconfirmed provider response")
+            for line in bounded_lines(response, deadline):
+                if not line or line.startswith(":"):
+                    continue
+                if not line.startswith("data:"):
+                    raise ValueError("invalid stream event")
+                payload = line[5:].strip()
+                if payload == "[DONE]":
+                    done = True
+                    break
+                chunk = json.loads(payload)
+                if not isinstance(chunk, dict):
+                    raise ValueError("invalid stream envelope")
+                incoming_usage = chunk.get("usage")
+                if incoming_usage is not None:
+                    if not isinstance(incoming_usage, dict):
+                        raise ValueError("invalid stream usage")
+                    usage = incoming_usage
+                choices = chunk.get("choices")
+                if not isinstance(choices, list) or len(choices) > 1:
+                    raise ValueError("invalid stream choices")
+                if not choices:
+                    continue
+                choice = choices[0]
+                if not isinstance(choice, dict) or choice.get("index") != 0:
+                    raise ValueError("invalid stream choice")
+                delta = choice.get("delta")
+                if (
+                    not isinstance(delta, dict)
+                    or delta.get("role", "assistant") != "assistant"
+                    or delta.get("tool_calls")
+                    or delta.get("function_call")
+                    or delta.get("refusal")
+                ):
+                    raise ValueError("invalid stream delta")
+                content = delta.get("content")
+                if content is not None:
+                    if not isinstance(content, str) or finish is not None:
+                        raise ValueError("invalid stream content")
+                    text.append(content)
+                    if content:
+                        sink(content)
+                reason = choice.get("finish_reason")
+                if reason is not None:
+                    if not isinstance(reason, str) or finish is not None:
+                        raise ValueError("invalid stream finish")
+                    finish = reason
+        if not done or finish is None:
+            raise ValueError("incomplete stream")
+        return self._normalize_response(
+            {
+                "usage": usage,
+                "choices": [
+                    {
+                        "finish_reason": finish,
+                        "message": {"role": "assistant", "content": "".join(text)},
+                    }
+                ],
+            }
+        )
 
     def status(self) -> ModelStatus:
         status = super().status()
