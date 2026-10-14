@@ -159,9 +159,7 @@ def _orders(anchor: datetime, platform: str, offset: int) -> list[dict[str, Any]
             index = day * 2 + slot
             sku, _, _, price_text, _ = CATALOG[(day * 3 + slot + offset) % len(CATALOG)]
             price = Decimal(price_text)
-            quantity = (
-                3 if index % 23 == 0 else 2 if index % 9 == 0 or index == 55 else 1
-            )
+            quantity = 3 if index % 23 == 0 else 2 if index % 9 == 0 or index == 55 else 1
             subtotal = price * quantity
             rate = Decimal("0.10") if index % 11 == 0 else Decimal("0.05")
             discount = (
@@ -184,9 +182,7 @@ def _orders(anchor: datetime, platform: str, offset: int) -> list[dict[str, Any]
             elif index == 55:
                 fulfillment = "partial"
             order_id = (
-                f"114-5083201-{1004001 + index:07d}"
-                if platform == "amazon"
-                else f"#{1041 + index}"
+                f"114-5083201-{1004001 + index:07d}" if platform == "amazon" else f"#{1041 + index}"
             )
             ordered_at = anchor - timedelta(
                 days=29 - day,
@@ -263,9 +259,7 @@ def _messages(
                 "sent_at": sent_at.isoformat(),
                 "body": body,
                 "language": "en",
-                "order_id": orders[order_index]["order_id"]
-                if order_index is not None
-                else "",
+                "order_id": orders[order_index]["order_id"] if order_index is not None else "",
                 "reply_status": "replied" if replied else "awaiting_reply",
                 "reply_updated_at": (
                     sent_at + timedelta(minutes=25) if replied else sent_at
@@ -294,7 +288,8 @@ def _policies(anchor: datetime, platform: str) -> list[dict[str, Any]]:
             (
                 "Paid orders are normally prepared within 2 business days. "
                 "Confirm dispatch and tracking details in the sales channel before quoting them. "
-                "Delivery dates depend on the carrier and destination; do not guarantee an arrival date."
+                "Delivery dates depend on the carrier and destination; "
+                "do not guarantee an arrival date."
             ),
         ),
         (
@@ -302,7 +297,8 @@ def _policies(anchor: datetime, platform: str) -> list[dict[str, Any]]:
             "退换货处理流程",
             (
                 "Invite the customer to request a return through the original sales channel. "
-                "A person must review the order, delivery date, item condition and applicable channel "
+                "A person must review the order, delivery date, item condition "
+                "and applicable channel "
                 "policy before confirming eligibility, a replacement or a refund amount. "
                 "For damage, request a product photo without personal details."
             ),
@@ -329,9 +325,7 @@ def _policies(anchor: datetime, platform: str) -> list[dict[str, Any]]:
 
 def _expected(orders: list[dict[str, Any]]) -> dict[str, Any]:
     included = [
-        row
-        for row in orders
-        if row["status"] in {"paid", "refunded", "partially_refunded"}
+        row for row in orders if row["status"] in {"paid", "refunded", "partially_refunded"}
     ]
     cost_lookup = {row[0]: Decimal(row[4]) for row in CATALOG}
     sales = cost = discount = refunds = subtotal = Decimal("0.00")
@@ -341,18 +335,14 @@ def _expected(orders: list[dict[str, Any]]) -> dict[str, Any]:
         for row in included:
             quantity = row["quantity"]
             line_subtotal = Decimal(row["unit_price"]) * quantity
-            line_sales = (
-                line_subtotal - Decimal(row["discount"]) - Decimal(row["refund"])
-            )
+            line_sales = line_subtotal - Decimal(row["discount"]) - Decimal(row["refund"])
             line_cost = cost_lookup[row["sku"]] * quantity
             subtotal += line_subtotal
             discount += Decimal(row["discount"])
             refunds += Decimal(row["refund"])
             sales += line_sales
             cost += line_cost
-            sku_total = sku_totals.setdefault(
-                row["sku"], {"sales": Decimal(0), "cost": Decimal(0)}
-            )
+            sku_total = sku_totals.setdefault(row["sku"], {"sales": Decimal(0), "cost": Decimal(0)})
             sku_total["sales"] += line_sales
             sku_total["cost"] += line_cost
         low_margin = sorted(
@@ -371,14 +361,10 @@ def _expected(orders: list[dict[str, Any]]) -> dict[str, Any]:
             "sales": _money(sales),
             "cost": _money(cost),
             "gross_profit": _money(sales - cost),
-            "margin_percent": str(
-                ((sales - cost) * 100 / sales).quantize(Decimal("0.01"))
-            ),
+            "margin_percent": str(((sales - cost) * 100 / sales).quantize(Decimal("0.01"))),
             "low_margin_skus": low_margin,
             "fulfillment_review_orders": [
-                row["order_id"]
-                for row in included
-                if row["fulfillment_status"] != "fulfilled"
+                row["order_id"] for row in included if row["fulfillment_status"] != "fulfilled"
             ],
             "status_counts": {
                 status: sum(row["status"] == status for row in orders)
@@ -428,9 +414,7 @@ def build_scenario(now: datetime) -> dict[str, Any]:
                 "snapshot_at": snapshot_at.isoformat(),
                 "safety_threshold": threshold,
             }
-            for product, stock, threshold in zip(
-                CATALOG, available, thresholds, strict=True
-            )
+            for product, stock, threshold in zip(CATALOG, available, thresholds, strict=True)
         ]
         messages = _messages(anchor, platform, orders)
         files = [
@@ -466,8 +450,7 @@ def build_scenario(now: datetime) -> dict[str, Any]:
                     [
                         row
                         for row in orders
-                        if datetime.fromisoformat(row["ordered_at"])
-                        >= anchor - timedelta(days=7)
+                        if datetime.fromisoformat(row["ordered_at"]) >= anchor - timedelta(days=7)
                     ]
                 ),
             }
