@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSession } from '@/composables/useSession'
 import { loadDemoScope } from '@/composables/demoScope'
@@ -20,6 +20,30 @@ const route = useRoute()
 const router = useRouter()
 const { session } = useSession()
 const workScope = ref<Record<string, string>>({})
+const operationsKey = computed(() =>
+  JSON.stringify(
+    [
+      'shop',
+      'task',
+      'run',
+      'identity',
+      'channel',
+      'start_at',
+      'end_at',
+      'timezone',
+      'currency',
+      'min_quantity',
+      'max_margin_percent',
+      'max_age_hours',
+    ].map((key) => route.query[key] ?? null),
+  ),
+)
+async function revealOperations(): Promise<void> {
+  if (loading.value || !status.value || route.hash !== '#operations') return
+  await nextTick()
+  document.getElementById('operations')?.scrollIntoView({ block: 'start' })
+}
+watch([() => route.hash, operationsKey], revealOperations)
 async function load(): Promise<void> {
   loading.value = true
   error.value = ''
@@ -34,10 +58,7 @@ async function load(): Promise<void> {
     error.value = errorMessage(cause)
   } finally {
     loading.value = false
-    if (status.value && route.hash === '#operations') {
-      await nextTick()
-      document.getElementById('operations')?.scrollIntoView({ block: 'start' })
-    }
+    await revealOperations()
   }
 }
 onMounted(load)
@@ -97,7 +118,7 @@ onMounted(load)
         </div>
       </section>
       <WorkInbox @scope-change="workScope = $event" />
-      <div id="operations"><OperationsInbox /></div>
+      <div id="operations"><OperationsInbox :key="operationsKey" /></div>
       <details class="section-block" :open="!status.profile_complete || !status.shop_count">
         <summary>经营资料与首次使用引导</summary>
         <section class="welcome-panel">
