@@ -235,7 +235,14 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
       <p v-if="products.length && !workspace" class="listing-ai-hint">
         AI Listing 会基于商品名称与参数准备候选文案。点击商品查看事实，或从上方进入 AI 流程。
       </p>
-      <div v-if="products.length" class="listing-products">
+      <div
+        v-if="products.length"
+        class="listing-products"
+        :style="{
+          '--catalog-columns': Math.min(products.length, 4),
+          '--catalog-tablet-columns': Math.min(products.length, 2),
+        }"
+      >
         <button
           v-for="product in products"
           :key="product.product_id"
@@ -401,12 +408,12 @@ onUnmounted(() => window.removeEventListener('focus', onFocus))
 }
 @media (min-width: 761px) {
   .page-listings .listing-products {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--catalog-tablet-columns), minmax(0, 1fr));
   }
 }
 @media (min-width: 1181px) {
   .page-listings .listing-products {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--catalog-columns), minmax(0, 1fr));
   }
 }
 @media (min-width: 1100px) {
