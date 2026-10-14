@@ -62,8 +62,6 @@ async function upload(page: Page, shop: number, file: SampleFile, revise = false
 }
 
 async function model(page: Page, goal: string, consent: RegExp): Promise<void> {
-  const advanced = page.getByRole('button', { name: '高级执行台', exact: true })
-  if (await advanced.isVisible()) await advanced.click()
   await page.getByLabel('运营目标').fill(goal)
   await page.getByText('数据窗口、规则与任务预算', { exact: true }).click()
   await page.getByLabel('模型预算（USD）', { exact: true }).fill('0.03')
@@ -221,6 +219,7 @@ for (const mobile of [false, true]) {
       '行退款 5.0000',
     )
     await page.getByRole('link', { name: '打开 AI 经营问数，确认范围与模型预算' }).click()
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await model(page, '哪些商品销量较高但已知毛利偏低，需要核对哪些数据？', /同意发送本次范围/)
     await expect(page.getByRole('region', { name: '经营问数解释' })).toContainText('SYN-CUP')
     await approveModel(page)
