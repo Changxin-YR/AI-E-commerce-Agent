@@ -281,6 +281,8 @@ for (const size of sizes) {
         await expanded(page, name, page.getByRole('region', { name: '客服草稿详情' }))
       }
       if (route === '/agent') {
+        await page.getByRole('button', { name: '高级执行台', exact: true }).click()
+        await page.getByLabel('执行流程').selectOption('daily')
         await page.getByRole('button', { name: '启动并运行', exact: true }).click()
         await expect(page.getByRole('region', { name: '任务执行详情' })).toContainText('等待审批')
         await expect(page.getByRole('button', { name: '启动并运行', exact: true })).toBeEnabled()

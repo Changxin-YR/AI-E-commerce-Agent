@@ -15,7 +15,14 @@ export type AgentTemplate =
   | 'daily_model'
   | 'margin_review'
 export type AgentAction =
-  'advance' | 'pause' | 'resume' | 'cancel' | 'approve' | 'reject' | 'use_authorization'
+  | 'advance'
+  | 'pause'
+  | 'resume'
+  | 'cancel'
+  | 'approve'
+  | 'reject'
+  | 'use_authorization'
+  | 'request_save'
 export interface AgentBudget {
   max_steps: number
   max_seconds: number
@@ -24,6 +31,9 @@ export interface AgentBudget {
 export interface AgentInput {
   authorization_id?: number | null
   request_id: string
+  response_mode?: 'workflow' | 'chat'
+  response_language?: string
+  previous_question?: string
   template: AgentTemplate
   margin_cost_mode?: 'current_estimate' | 'seller_history'
   scope: OperationScope

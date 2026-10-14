@@ -213,14 +213,14 @@ for (const width of [1440, 390]) {
     }
     await expect(review).toContainText('等待审批')
     await page.unroute(resumeUrl)
-    await page.getByLabel('任务店铺').selectOption(String(other.id))
+    await page.getByLabel('当前店铺').selectOption(String(other.id))
     await expect(review).toHaveCount(0)
-    await expect(page.getByLabel('任务店铺')).toBeEnabled()
+    await expect(page.getByLabel('当前店铺')).toBeEnabled()
     await page.goBack()
     await expect(review).toContainText('等待审批')
     await page.goForward()
-    await expect(page.getByLabel('任务店铺')).toHaveValue(String(other.id))
-    await expect(page.getByLabel('任务店铺')).toBeEnabled()
+    await expect(page.getByLabel('当前店铺')).toHaveValue(String(other.id))
+    await expect(page.getByLabel('当前店铺')).toBeEnabled()
     await page.goBack()
     await expect(page.getByRole('combobox', { name: '目标消息', exact: true })).toHaveValue(
       String(message.id),

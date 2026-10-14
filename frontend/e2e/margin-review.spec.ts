@@ -76,7 +76,7 @@ for (const width of [1440, 390]) {
       decision: 'approve',
       facts_confirmed: true,
     })
-    await page.goto(`/agent?shop=${shop.id}`)
+    await page.goto(`/agent?shop=${shop.id}&mode=margin_review`)
     await page.getByLabel('执行流程').selectOption('margin_review')
     await page.getByRole('combobox', { name: '数据身份', exact: true }).selectOption('synthetic')
     await page

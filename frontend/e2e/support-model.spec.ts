@@ -79,6 +79,7 @@ for (const mobile of [false, true]) {
     const messages = await (await page.request.get(`/api/shops/${shop}/support/messages`)).json()
     await page.goto(`/support?shop=${shop}&message=${messages[0].id}`)
     await page.getByRole('link', { name: '生成 AI 客服候选' }).click()
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await expect(page.getByLabel('执行流程')).toHaveValue('support_model')
     await expect(page.getByLabel('数据身份')).toHaveValue('synthetic')
     const data = page.getByLabel('将发送的客服数据')

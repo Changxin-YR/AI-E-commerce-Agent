@@ -85,6 +85,7 @@ for (const mobile of [false, true]) {
         'O-MODEL,1,MODEL-001,3,20,USD,2026-10-07 12:00:00,paid,0,0\n',
     )
     await page.goto(`/agent?shop=${shop}&mode=question`)
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await expect(page.getByLabel('执行流程')).toHaveValue('question')
     await expect(page.getByText('模型已配置：synthetic-evidence-model')).toBeVisible()
     await page.getByLabel('数据身份').selectOption('synthetic')

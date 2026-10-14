@@ -22,8 +22,7 @@ async function setup(page: Page): Promise<{ shop: number; headers: Record<string
   })
   expect(created.ok()).toBeTruthy()
   const shop = ((await created.json()) as { id: number }).id
-  await page.goto('/agent')
-  await page.getByLabel('任务店铺').selectOption(String(shop))
+  await page.goto(`/agent?shop=${shop}&mode=daily`)
   await page.getByLabel('数据身份').selectOption('synthetic')
   return { shop, headers }
 }
@@ -93,7 +92,7 @@ test('agent evidence approval budget resume verification replay and erasure', as
   expect(taskPage.items).toHaveLength(1)
   expect(taskPage.items[0]?.status).toBe('pending_approval')
   await page.reload()
-  await page.getByLabel('任务店铺').selectOption(String(shop))
+  await page.getByLabel('当前店铺').selectOption(String(shop))
   await expect(review).toContainText('已完成')
   const detail = (await (await page.request.get(`/api/imports/${batch}`)).json()) as {
     version: number
@@ -174,7 +173,7 @@ for (const mobile of [false, true]) {
     await panel.getByRole('button', { name: '撤销授权', exact: true }).click()
     await expect(panel).toContainText('已撤销')
     await page.reload()
-    await page.getByLabel('任务店铺').selectOption(String(shop))
+    await page.getByLabel('当前店铺').selectOption(String(shop))
     await expect(panel).toContainText('已用 2 / 2 次')
     await panel.locator('summary').click()
     await expect(panel).toContainText('已撤回新增候选')

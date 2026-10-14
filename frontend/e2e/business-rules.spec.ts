@@ -74,8 +74,7 @@ test('rules persist, apply to operations and Agent, restore history, reset and i
   await expect(
     result.getByRole('link', { name: `查看使用的经营规则 #${saved.version}` }),
   ).toBeVisible()
-  await page.goto('/agent')
-  await page.getByLabel('任务店铺').selectOption(String(shop))
+  await page.goto(`/agent?shop=${shop}&mode=daily`)
   await page.getByRole('combobox', { name: '数据身份', exact: true }).selectOption('synthetic')
   await expect(page.getByRole('complementary', { name: '本次经营规则' })).toContainText('最少 3 件')
   await page.getByRole('button', { name: '启动并运行' }).click()

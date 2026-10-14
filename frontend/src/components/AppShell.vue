@@ -168,6 +168,53 @@ async function signOut(): Promise<void> {
 </template>
 
 <style scoped>
+.app-layout:has(.chat-mode) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.app-layout:has(.chat-mode) .workspace {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.app-layout:has(.chat-mode) .topbar {
+  flex-shrink: 0;
+}
+.app-layout:has(.chat-mode) main#main-content {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+}
+.app-layout:has(.chat-mode) main :deep(.page-agent) {
+  flex: 1;
+  min-height: 0;
+}
+@media (max-width: 760px) {
+  .app-layout:has(.chat-mode) {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .app-layout:has(.chat-mode) .sidebar {
+    max-height: 40dvh;
+    padding: 10px 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .app-layout:has(.chat-mode) .sidebar > * {
+    flex-shrink: 0;
+  }
+  .app-layout:has(.chat-mode) .topbar {
+    display: none;
+  }
+  .app-layout:has(.chat-mode) main#main-content {
+    padding: 8px 12px;
+  }
+}
 .mobile-menu-toggle {
   display: none;
 }

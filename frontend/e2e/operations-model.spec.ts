@@ -69,6 +69,7 @@ for (const mobile of [false, true]) {
     const shop = ((await created.json()) as { id: number }).id
     const batch = await importOrders(page, shop, headers)
     await page.goto(`/agent?shop=${shop}&mode=daily_model`)
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await expect(page.getByLabel('执行流程')).toHaveValue('daily_model')
     await page.getByLabel('数据身份').selectOption('synthetic')
     await page.getByLabel('运营目标').fill('检查导入数据并列出需要核对的事项。')

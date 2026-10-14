@@ -415,3 +415,15 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 
 - [DeepSeek Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion/)：按官方 `stream`、`stream_options.include_usage`、`delta.content` 与 `[DONE]` 协议接收真实增量。只适配公开协议，不复制供应商实现；完整响应继续进入既有事实校验和费用结算。
 - [Starlette StreamingResponse](https://www.starlette.io/responses/#streamingresponse)：采用流式响应传输事件；业务 Session 在执行线程内独立创建与关闭，避免请求结束时提前释放会话。
+
+## 简洁问答（2026-10-14）
+
+参考 Vue 官方[表单输入绑定](https://cn.vuejs.org/guide/essentials/forms)及[条件渲染](https://vuejs.org/guide/essentials/conditional.html)：沿用 v-model 与条件组件，把问题、范围和详情分开呈现。Vue 文档仓库采用 MIT 许可；本次仅参考行为，未复制示例。Firecrawl 额度耗尽，改用官方站点检索。
+
+## 对话与确认交互（2026-10-14）
+
+选择区修复沿用下列 MDN overflow/视口参考和 Vue 条件渲染指导：可选的商品/消息字段采用顺序布局，避免固定网格行号与动态内容耦合；设置容器以聊天框为定位边界。未新增外部依赖或复制第三方实现。
+
+固定聊天框架参考 MDN [overflow-y](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/overflow-y) 与 [length](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length)：使用 `100dvh`、可收缩 flex 子项和内部 `overflow-y: auto`；设置浮层不参与输入区高度计算。MDN 文档采用 CC BY-SA 2.5，代码示例通常为 CC0；本实现仅参考属性行为，未复制文档或示例代码。
+
+沿用本页 Vue 官方表单和条件渲染参考：普通对话不挂载技术审阅组件；写入确认使用独立条件区域，避免隐藏区域中存在仍可触发的操作。后端沿用仓库已有技能副作用声明、来源校验和费用租约，新增只读结论阶段与显式保存请求，不引入外部依赖。

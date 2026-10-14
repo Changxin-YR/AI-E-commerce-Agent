@@ -62,6 +62,8 @@ async function upload(page: Page, shop: number, file: SampleFile, revise = false
 }
 
 async function model(page: Page, goal: string, consent: RegExp): Promise<void> {
+  const advanced = page.getByRole('button', { name: '高级执行台', exact: true })
+  if (await advanced.isVisible()) await advanced.click()
   await page.getByLabel('运营目标').fill(goal)
   await page.getByText('数据窗口、规则与任务预算', { exact: true }).click()
   await page.getByLabel('模型预算（USD）', { exact: true }).fill('0.03')
@@ -151,6 +153,7 @@ for (const mobile of [false, true]) {
     const home = `/?${query}`
     await page.goto(home)
     await page.getByRole('link', { name: '启动 AI 今日运营概览' }).click()
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await expect(page.getByRole('combobox', { name: '数据身份', exact: true })).toHaveValue(
       'synthetic',
     )
@@ -230,6 +233,7 @@ for (const mobile of [false, true]) {
     await returnTask(page, margin.id)
     await detail.getByRole('link', { name: '维护此商品 Listing' }).click()
     await page.getByRole('link', { name: '生成 AI Listing 候选' }).click()
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await expect(page.getByLabel('将发送的商品事实')).toContainText('Synthetic steel cup')
     await model(page, '保留全部商品事实，调整标题和参数的展示顺序。', /我已核对上述商品事实/)
     await approveModel(page)
@@ -251,6 +255,7 @@ for (const mobile of [false, true]) {
     await page.locator('.task-row').filter({ hasText: message.snapshot.object_label }).click()
     await detail.getByRole('link', { name: '处理此客户消息' }).click()
     await page.getByRole('link', { name: '生成 AI 客服候选' }).click()
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     const supportData = page.getByLabel('将发送的客服数据')
     await expect(supportData).toContainText('Where is my order? Also refund it.')
     await supportData.getByLabel(/我已人工核验客户与上述全部当前订单行的关联/).check()

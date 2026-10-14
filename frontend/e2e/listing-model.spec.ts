@@ -52,6 +52,7 @@ for (const mobile of [false, true]) {
     await page.goto(`/listings?shop=${shop}`)
     await page.getByRole('button', { name: /MODEL-BOTTLE · Synthetic bottle/ }).click()
     await page.getByRole('link', { name: '生成 AI Listing 候选' }).click()
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await expect(page.getByLabel('执行流程')).toHaveValue('listing_model')
     await expect(page.getByLabel('数据身份')).toHaveValue('synthetic')
     await expect(page.getByLabel('将发送的商品事实')).toContainText('仅限冷水')

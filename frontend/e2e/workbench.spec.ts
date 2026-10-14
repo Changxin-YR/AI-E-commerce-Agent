@@ -155,7 +155,7 @@ test('unified workbench opens exact cross-module records and original approvals'
   await expect(listing).toContainText('Synthetic cup')
   await listing.getByLabel('我已逐项核对商品事实、差异与影响范围').check()
   await listing.getByRole('button', { name: '批准并在本地生效' }).click()
-  await expect(listing).toContainText('本地生效')
+  await expect(listing).toContainText('本地已批准')
   await open('reply')
   const reply = page.getByRole('region', { name: '客服草稿详情' })
   await expect(reply).toContainText(`回复草稿 #${records.reply.id}`)
