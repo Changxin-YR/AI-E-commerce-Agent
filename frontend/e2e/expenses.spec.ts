@@ -1,3 +1,4 @@
+import { signIn } from './auth'
 import { fillExactTime } from './date-input'
 import { expect, test, type Page } from '@playwright/test'
 import path from 'node:path'
@@ -79,11 +80,7 @@ for (const mobile of [false, true]) {
     await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 })
     const errors: string[] = []
     page.on('pageerror', (error) => errors.push(error.message))
-    await page.goto('/expenses')
-    await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-    await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-    await page.getByRole('button', { name: '进入工作台' }).click()
-    await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+    await signIn(page, '/expenses')
     page.on('console', (msg) => {
       if (msg.type() === 'error') errors.push(msg.text())
     })

@@ -1,16 +1,14 @@
+import { signIn } from './auth'
 import { expect, test, type Page } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import type { AgentRun } from '../src/types/agent'
 import { fillExactTime } from './date-input'
+import { openNavigation } from './navigation'
 
 async function setup(page: Page, width: number, tag: string) {
   await page.setViewportSize({ width, height: 900 })
-  await page.goto('/login')
-  await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-  await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-  await page.getByRole('button', { name: '进入工作台' }).click()
-  await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+  await signIn(page, '/login')
   const session = await (await page.request.get('/api/auth/session')).json()
   const headers = { 'X-SoloOps-Client': 'web', 'X-CSRF-Token': session.csrf_token }
   async function post<T>(url: string, data: unknown): Promise<T> {
@@ -53,15 +51,19 @@ for (const width of [1440, 390]) {
       try {
         await page.goto(`/${view}?shop=${shop}`)
         await reading
-        const nav = page.getByRole('navigation', { name: '主导航' })
+        const nav = await openNavigation(page)
         await nav.getByRole('button', { name: '展开全部功能', exact: true }).click()
         await nav.getByRole('link', { name: '经营资料', exact: true }).click()
-        await expect(page).toHaveURL(/\/settings$/)
+        await expect(page).toHaveURL(
+          (url) => url.pathname === '/settings' && url.searchParams.get('shop') === String(shop),
+        )
         release()
         await done
         await expect(page.getByLabel('经营名称')).toBeVisible()
         await page.evaluate(() => new Promise(requestAnimationFrame))
-        await expect(page).toHaveURL(/\/settings$/)
+        await expect(page).toHaveURL(
+          (url) => url.pathname === '/settings' && url.searchParams.get('shop') === String(shop),
+        )
       } finally {
         release()
         await page.unroute(pattern)
@@ -200,7 +202,7 @@ for (const width of [1440, 390]) {
     try {
       await review.getByRole('button', { name: '确认预算并恢复' }).click()
       await resuming
-      const nav = page.getByRole('navigation', { name: '主导航' })
+      const nav = await openNavigation(page)
       await nav.getByRole('button', { name: '展开全部功能', exact: true }).click()
       await nav.getByRole('link', { name: '经营资料', exact: true }).click()
       await expect(page).toHaveURL(new RegExp(`/agent\\?shop=${shop}&execution=${run.id}$`))
@@ -211,14 +213,14 @@ for (const width of [1440, 390]) {
     }
     await expect(review).toContainText('等待审批')
     await page.unroute(resumeUrl)
-    await page.getByLabel('任务店铺').selectOption(String(other.id))
+    await page.getByLabel('当前店铺').selectOption(String(other.id))
     await expect(review).toHaveCount(0)
-    await expect(page.getByLabel('任务店铺')).toBeEnabled()
+    await expect(page.getByLabel('当前店铺')).toBeEnabled()
     await page.goBack()
     await expect(review).toContainText('等待审批')
     await page.goForward()
-    await expect(page.getByLabel('任务店铺')).toHaveValue(String(other.id))
-    await expect(page.getByLabel('任务店铺')).toBeEnabled()
+    await expect(page.getByLabel('当前店铺')).toHaveValue(String(other.id))
+    await expect(page.getByLabel('当前店铺')).toBeEnabled()
     await page.goBack()
     await expect(page.getByRole('combobox', { name: '目标消息', exact: true })).toHaveValue(
       String(message.id),
@@ -230,7 +232,8 @@ for (const width of [1440, 390]) {
     await expect(draft).toBeVisible()
     const firstUrl = page.url()
     await draft.getByLabel('回复正文（仅草稿）').fill('SYNTHETIC saved reply; no delivery.')
-    await page.getByRole('button', { name: '展开全部功能', exact: true }).click()
+    const nav = await openNavigation(page)
+    await nav.getByRole('button', { name: '展开全部功能', exact: true }).click()
     await page.getByRole('link', { name: '经营分析', exact: true }).click()
     await expect(page).toHaveURL(firstUrl)
     await expect(page.getByRole('alert')).toContainText('尚未保存')

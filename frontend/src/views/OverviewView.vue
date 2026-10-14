@@ -213,252 +213,254 @@ onUnmounted(() => {
 })
 </script>
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>看清每家店，再做下一步。</h1>
-      <p>跨店经营总览与日、周、月摘要。每个数字都能回到来源。</p>
+  <div class="solo-page page-overview">
+    <div class="page-heading">
+      <div>
+        <h1>看清每家店，再做下一步。</h1>
+        <p>跨店经营总览与日、周、月摘要。每个数字都能回到来源。</p>
+      </div>
+      <span class="outline-label">文件覆盖 · 本地规则</span>
     </div>
-    <span class="outline-label">文件覆盖 · 本地规则</span>
-  </div>
-  <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
-  <p v-if="!shops.length && !busy">
-    还没有店铺。请先<RouterLink to="/settings">添加经营资料</RouterLink>，再<RouterLink
-      to="/imports"
-      >导入数据</RouterLink
-    >。
-  </p>
-  <details
-    v-if="shops.length"
-    class="section-block overview-form"
-    :open="formOpen"
-    @toggle="formOpen = ($event.target as HTMLDetailsElement).open"
-  >
-    <summary>01 / 选择店铺与统计范围</summary>
-    <form @submit.prevent="run">
-      <fieldset :disabled="busy" class="analysis-fields">
-        <label
-          >平台筛选<select v-model="platform">
-            <option value="">所有已登记平台</option>
-            <option v-for="p in [...new Set(shops.map((s) => s.platform))]" :key="p" :value="p">
-              {{ p }}
-            </option>
-          </select></label
-        >
-        <label
-          >市场筛选<select v-model="market">
-            <option value="">所有已登记市场</option>
-            <option v-for="m in [...new Set(shops.map((s) => s.market))]" :key="m" :value="m">
-              {{ m }}
-            </option>
-          </select></label
-        >
-        <div class="full-width">
-          <p>选择店铺（最多 20 家）</p>
-          <div class="shop-options">
-            <label v-for="shop in available" :key="shop.id" class="check-label"
-              ><input v-model="scope.shop_ids" type="checkbox" :value="shop.id" />{{ shop.name }} ·
-              {{ shop.platform }} / {{ shop.market }}</label
-            >
-          </div>
-        </div>
-        <label
-          >数据身份<select v-model="scope.data_identity">
-            <option value="user_import">用户导入数据</option>
-            <option value="synthetic">合成测试数据</option>
-          </select></label
-        >
-        <label
-          >日期快捷范围<select v-model="preset">
-            <option value="1">前一完整日 · 日报</option>
-            <option value="7">最近 7 个完整日 · 周报</option>
-            <option value="30">最近 30 个完整日 · 月报</option>
-            <option value="custom">自选区间</option>
-          </select></label
-        >
-        <label
-          >统计时区<input v-model="scope.timezone" required placeholder="Asia/Shanghai"
-        /></label>
-        <label
-          >统计币种<select
-            :value="scope.currencies[0] ?? ''"
-            @change="
-              scope.currencies = ($event.target as HTMLSelectElement).value
-                ? [($event.target as HTMLSelectElement).value]
-                : []
-            "
-          >
-            <option value="">全部币种，分别汇总</option>
-            <option v-for="c in currencies" :key="c">{{ c }}</option>
-          </select></label
-        >
-        <label
-          >开始日期（计入）<input
-            v-model="scope.start_date"
-            type="date"
-            required
-            :disabled="preset !== 'custom'"
-        /></label>
-        <label
-          >结束日期（不计入）<input
-            v-model="scope.end_date"
-            type="date"
-            required
-            :disabled="preset !== 'custom'"
-        /></label>
-        <label class="check-label full-width"
-          ><input
-            v-model="customCompare"
-            type="checkbox"
-          />自选对比区间（默认对比此前相同日历天数）</label
-        >
-        <template v-if="customCompare"
-          ><label>对比开始日期<input v-model="scope.comparison_start" type="date" required /></label
-          ><label
-            >对比结束日期（不计入）<input
-              v-model="scope.comparison_end"
-              type="date"
-              required /></label
-        ></template>
-        <label
-          >库存有效小时<input
-            v-model.number="scope.max_age_hours"
-            type="number"
-            min="1"
-            max="720"
-            required
-        /></label>
-        <label
-          >低毛利最低购买件数<input
-            v-model.number="scope.min_quantity"
-            type="number"
-            min="1"
-            max="1000000"
-            required
-        /></label>
-        <label
-          >低毛利率上限（%）<input
-            v-model="scope.max_margin_percent"
-            type="text"
-            inputmode="decimal"
-            required
-        /></label>
-      </fieldset>
-      <p class="muted">
-        本页检查口径独立；经营规则页的约束用于今日运营与 Agent。空白数据保持未知。
-      </p>
-      <button class="button primary" :disabled="busy || !scope.shop_ids.length">
-        {{ busy ? '正在处理…' : '生成经营总览' }}
-      </button>
-    </form>
-  </details>
-  <section v-if="saved" class="data-note">
-    <h2>摘要 #{{ saved.id }} · {{ names[saved.status] }}</h2>
-    <p>保存于 {{ time(saved.created_at, saved.scope.timezone) }}</p>
-  </section>
-  <section v-if="result" id="overview-result" aria-label="经营总览结果">
-    <p v-if="stale" role="alert" class="analysis-answer">
-      历史来源或库存时效已变化，以下为保存时的结果；请重新生成后判断当前经营。
+    <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
+    <p v-if="!shops.length && !busy">
+      还没有店铺。请先<RouterLink to="/settings">添加经营资料</RouterLink>，再<RouterLink
+        to="/imports"
+        >导入数据</RouterLink
+      >。
     </p>
-    <div class="section-block">
-      <div class="section-title">
-        <h2>02 / 按币种核对经营</h2>
-        <span class="outline-label">{{
-          result.scope.data_identity === 'synthetic' ? '合成测试数据' : '用户导入数据'
-        }}</span>
-      </div>
-      <p>分析完成：{{ time(result.calculated_at, result.scope.timezone) }}</p>
-      <p>
-        本期 {{ result.scope.start_date }} → {{ result.scope.end_date }}；对比
-        {{ result.scope.comparison_start }} → {{ result.scope.comparison_end }}（终点均不含）
-      </p>
-      <p v-if="result.valid_until">
-        快照下一核验点：{{ time(result.valid_until, result.scope.timezone) }}。此后需重新生成。
-      </p>
-      <div class="overview-totals">
-        <article
-          v-for="total in result.totals"
-          :key="total.currency"
-          class="total-card"
-          :aria-label="`${total.currency} 汇总`"
-        >
-          <span class="eyebrow">{{ total.currency }} · 净销售额</span
-          ><strong>{{ total.sales ?? '未知 / 不完整' }}</strong>
-          <p>可验证子集 {{ total.known_sales }}</p>
-          <p>对比期 {{ total.comparison_sales ?? '未知 / 不完整' }}</p>
-          <p>
-            差额 {{ total.sales_change ?? '未知' }} ·
-            {{
-              total.sales_change_percent === null ? '变化率未知' : `${total.sales_change_percent}%`
-            }}
-          </p>
-          <p>已观察支付订单 {{ total.observed_orders }}</p>
-          <p>
-            已知商品毛利 {{ total.gross_profit ?? '未知 / 不完整' }}<br />已知子集
-            {{ total.known_gross_profit }}
-          </p>
-          <p>行退款 {{ total.refunds ?? '未知 / 不完整' }} · 已知子集 {{ total.known_refunds }}</p>
-          <details>
-            <summary>汇总覆盖说明</summary>
-            <p>计入店铺 ID：{{ total.shop_ids.join('、') }}</p>
-            <p v-for="warning in total.warnings" :key="warning">{{ warning }}</p>
-          </details>
-        </article>
-      </div>
-      <details>
-        <summary>口径与未获取项</summary>
-        <p v-for="item in result.limitations" :key="item">{{ item }}</p>
-      </details>
-    </div>
-    <section class="section-block">
-      <h2>03 / 当次经营摘要</h2>
-      <p v-for="line in result.summary" :key="line">{{ line }}</p>
-      <button v-if="!saved" class="button primary" :disabled="busy || stale" @click="save">
-        保存本地摘要
-      </button>
-      <p>保存时重新核验来源；摘要不会触发外发或创建待办。</p>
-    </section>
-    <OverviewShopCard
-      v-for="shop in result.shops"
-      :key="shop.shop_id"
-      :shop="shop"
-      :timezone="result.scope.timezone"
-    />
-  </section>
-  <section class="section-block">
-    <div class="section-title">
-      <h2>已保存的经营摘要</h2>
-      <button class="button secondary small" :disabled="busy" @click="refresh">
-        刷新摘要与来源状态
-      </button>
-    </div>
-    <p v-if="!history.length">尚未保存摘要。完成一次总览后可保存并回读。</p>
-    <div v-for="item in history" :key="item.id" class="batch-history">
-      <span
-        >#{{ item.id }} · {{ item.scope.start_date }} → {{ item.scope.end_date }} ·
-        {{ names[item.status] }}</span
-      ><button class="button secondary small" :disabled="busy" @click="show(item.id)">
-        查看摘要 #{{ item.id }}
-      </button>
-    </div>
-    <button
-      v-if="cursor"
-      class="button secondary small"
-      :disabled="busy"
-      @click="action(() => loadHistory(true))"
+    <details
+      v-if="shops.length"
+      class="section-block overview-form"
+      :open="formOpen"
+      @toggle="formOpen = ($event.target as HTMLDetailsElement).open"
     >
-      加载更早摘要
-    </button>
-    <div v-if="saved && saved.status !== 'cleared'" class="clear-report">
-      <label class="check-label"
-        ><input v-model="confirmClear" type="checkbox" :disabled="busy" />清除摘要 #{{
-          saved.id
-        }}
-        的正文，保留范围与审计</label
-      ><button class="button secondary small" :disabled="busy || !confirmClear" @click="clear">
-        清除所选摘要正文
+      <summary>01 / 选择店铺与统计范围</summary>
+      <form @submit.prevent="run">
+        <fieldset :disabled="busy" class="analysis-fields">
+          <label
+            >平台筛选<select v-model="platform">
+              <option value="">所有已登记平台</option>
+              <option v-for="p in [...new Set(shops.map((s) => s.platform))]" :key="p" :value="p">
+                {{ p }}
+              </option>
+            </select></label
+          >
+          <label
+            >市场筛选<select v-model="market">
+              <option value="">所有已登记市场</option>
+              <option v-for="m in [...new Set(shops.map((s) => s.market))]" :key="m" :value="m">
+                {{ m }}
+              </option>
+            </select></label
+          >
+          <div class="full-width">
+            <p>选择店铺（最多 20 家）</p>
+            <div class="shop-options">
+              <label v-for="shop in available" :key="shop.id" class="check-label"
+                ><input v-model="scope.shop_ids" type="checkbox" :value="shop.id" />{{ shop.name }} ·
+                {{ shop.platform }} / {{ shop.market }}</label
+              >
+            </div>
+          </div>
+          <label
+            >数据身份<select v-model="scope.data_identity">
+              <option value="user_import">经营资料</option>
+              <option value="synthetic">样例资料</option>
+            </select></label
+          >
+          <label
+            >日期快捷范围<select v-model="preset">
+              <option value="1">前一完整日 · 日报</option>
+              <option value="7">最近 7 个完整日 · 周报</option>
+              <option value="30">最近 30 个完整日 · 月报</option>
+              <option value="custom">自选区间</option>
+            </select></label
+          >
+          <label
+            >统计时区<input v-model="scope.timezone" required placeholder="Asia/Shanghai"
+          /></label>
+          <label
+            >统计币种<select
+              :value="scope.currencies[0] ?? ''"
+              @change="
+                scope.currencies = ($event.target as HTMLSelectElement).value
+                  ? [($event.target as HTMLSelectElement).value]
+                  : []
+              "
+            >
+              <option value="">全部币种，分别汇总</option>
+              <option v-for="c in currencies" :key="c">{{ c }}</option>
+            </select></label
+          >
+          <label
+            >开始日期（计入）<input
+              v-model="scope.start_date"
+              type="date"
+              required
+              :disabled="preset !== 'custom'"
+          /></label>
+          <label
+            >结束日期（不计入）<input
+              v-model="scope.end_date"
+              type="date"
+              required
+              :disabled="preset !== 'custom'"
+          /></label>
+          <label class="check-label full-width"
+            ><input
+              v-model="customCompare"
+              type="checkbox"
+            />自选对比区间（默认对比此前相同日历天数）</label
+          >
+          <template v-if="customCompare"
+            ><label>对比开始日期<input v-model="scope.comparison_start" type="date" required /></label
+            ><label
+              >对比结束日期（不计入）<input
+                v-model="scope.comparison_end"
+                type="date"
+                required /></label
+          ></template>
+          <label
+            >库存有效小时<input
+              v-model.number="scope.max_age_hours"
+              type="number"
+              min="1"
+              max="720"
+              required
+          /></label>
+          <label
+            >低毛利最低购买件数<input
+              v-model.number="scope.min_quantity"
+              type="number"
+              min="1"
+              max="1000000"
+              required
+          /></label>
+          <label
+            >低毛利率上限（%）<input
+              v-model="scope.max_margin_percent"
+              type="text"
+              inputmode="decimal"
+              required
+          /></label>
+        </fieldset>
+        <p class="muted">
+          本页检查口径独立；经营规则页的约束用于今日运营与 Agent。空白数据保持未知。
+        </p>
+        <button class="button primary" :disabled="busy || !scope.shop_ids.length">
+          {{ busy ? '正在处理…' : '生成经营总览' }}
+        </button>
+      </form>
+    </details>
+    <section v-if="saved" class="data-note">
+      <h2>摘要 #{{ saved.id }} · {{ names[saved.status] }}</h2>
+      <p>保存于 {{ time(saved.created_at, saved.scope.timezone) }}</p>
+    </section>
+    <section v-if="result" id="overview-result" aria-label="经营总览结果">
+      <p v-if="stale" role="alert" class="analysis-answer">
+        历史来源或库存时效已变化，以下为保存时的结果；请重新生成后判断当前经营。
+      </p>
+      <div class="section-block">
+        <div class="section-title">
+          <h2>02 / 按币种核对经营</h2>
+          <span class="outline-label">{{
+            result.scope.data_identity === 'synthetic' ? '样例资料' : '经营资料'
+          }}</span>
+        </div>
+        <p>分析完成：{{ time(result.calculated_at, result.scope.timezone) }}</p>
+        <p>
+          本期 {{ result.scope.start_date }} → {{ result.scope.end_date }}；对比
+          {{ result.scope.comparison_start }} → {{ result.scope.comparison_end }}（终点均不含）
+        </p>
+        <p v-if="result.valid_until">
+          快照下一核验点：{{ time(result.valid_until, result.scope.timezone) }}。此后需重新生成。
+        </p>
+        <div class="overview-totals">
+          <article
+            v-for="total in result.totals"
+            :key="total.currency"
+            class="total-card"
+            :aria-label="`${total.currency} 汇总`"
+          >
+            <span class="eyebrow">{{ total.currency }} · 净销售额</span
+            ><strong>{{ total.sales ?? '未知 / 不完整' }}</strong>
+            <p>可验证子集 {{ total.known_sales }}</p>
+            <p>对比期 {{ total.comparison_sales ?? '未知 / 不完整' }}</p>
+            <p>
+              差额 {{ total.sales_change ?? '未知' }} ·
+              {{
+                total.sales_change_percent === null ? '变化率未知' : `${total.sales_change_percent}%`
+              }}
+            </p>
+            <p>已观察支付订单 {{ total.observed_orders }}</p>
+            <p>
+              已知商品毛利 {{ total.gross_profit ?? '未知 / 不完整' }}<br />已知子集
+              {{ total.known_gross_profit }}
+            </p>
+            <p>行退款 {{ total.refunds ?? '未知 / 不完整' }} · 已知子集 {{ total.known_refunds }}</p>
+            <details>
+              <summary>汇总覆盖说明</summary>
+              <p>计入店铺 ID：{{ total.shop_ids.join('、') }}</p>
+              <p v-for="warning in total.warnings" :key="warning">{{ warning }}</p>
+            </details>
+          </article>
+        </div>
+        <details>
+          <summary>口径与未获取项</summary>
+          <p v-for="item in result.limitations" :key="item">{{ item }}</p>
+        </details>
+      </div>
+      <section class="section-block">
+        <h2>03 / 当次经营摘要</h2>
+        <p v-for="line in result.summary" :key="line">{{ line }}</p>
+        <button v-if="!saved" class="button primary" :disabled="busy || stale" @click="save">
+          保存本地摘要
+        </button>
+        <p>保存时重新核验来源；摘要不会触发外发或创建待办。</p>
+      </section>
+      <OverviewShopCard
+        v-for="shop in result.shops"
+        :key="shop.shop_id"
+        :shop="shop"
+        :timezone="result.scope.timezone"
+      />
+    </section>
+    <section class="section-block">
+      <div class="section-title">
+        <h2>已保存的经营摘要</h2>
+        <button class="button secondary small" :disabled="busy" @click="refresh">
+          刷新摘要与来源状态
+        </button>
+      </div>
+      <p v-if="!history.length">尚未保存摘要。完成一次总览后可保存并回读。</p>
+      <div v-for="item in history" :key="item.id" class="batch-history">
+        <span
+          >#{{ item.id }} · {{ item.scope.start_date }} → {{ item.scope.end_date }} ·
+          {{ names[item.status] }}</span
+        ><button class="button secondary small" :disabled="busy" @click="show(item.id)">
+          查看摘要 #{{ item.id }}
+        </button>
+      </div>
+      <button
+        v-if="cursor"
+        class="button secondary small"
+        :disabled="busy"
+        @click="action(() => loadHistory(true))"
+      >
+        加载更早摘要
       </button>
-    </div>
-  </section>
+      <div v-if="saved && saved.status !== 'cleared'" class="clear-report">
+        <label class="check-label"
+          ><input v-model="confirmClear" type="checkbox" :disabled="busy" />清除摘要 #{{
+            saved.id
+          }}
+          的正文，保留范围与审计</label
+        ><button class="button secondary small danger" :disabled="busy || !confirmClear" @click="clear">
+          清除所选摘要正文
+        </button>
+      </div>
+    </section>
+  </div>
 </template>
 <style scoped>
 .overview-form summary {

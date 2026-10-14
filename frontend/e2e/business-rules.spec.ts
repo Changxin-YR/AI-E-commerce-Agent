@@ -1,13 +1,10 @@
+import { signIn } from './auth'
 import { expect, test, type Page } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
 async function setup(page: Page): Promise<number> {
-  await page.goto('/rules')
-  await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-  await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-  await page.getByRole('button', { name: '进入工作台' }).click()
-  await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+  await signIn(page, '/rules')
   const session = (await (await page.request.get('/api/auth/session')).json()) as {
     csrf_token: string
   }
@@ -77,8 +74,7 @@ test('rules persist, apply to operations and Agent, restore history, reset and i
   await expect(
     result.getByRole('link', { name: `查看使用的经营规则 #${saved.version}` }),
   ).toBeVisible()
-  await page.goto('/agent')
-  await page.getByLabel('任务店铺').selectOption(String(shop))
+  await page.goto(`/agent?shop=${shop}&mode=daily`)
   await page.getByRole('combobox', { name: '数据身份', exact: true }).selectOption('synthetic')
   await expect(page.getByRole('complementary', { name: '本次经营规则' })).toContainText('最少 3 件')
   await page.getByRole('button', { name: '启动并运行' }).click()

@@ -115,7 +115,9 @@ class SupportSelection(InputModel):
         ],
         Field(min_length=1, max_length=8),
     ]
-    fact_ids: Annotated[list[str], Field(min_length=3, max_length=3)]
+    fact_ids: Annotated[
+        list[Literal["identity", "tracking", "permissions"]], Field(min_length=3, max_length=3)
+    ]
     policy_ids: Annotated[list[str], Field(max_length=10)]
     next_action: Literal["offer_draft", "handoff"]
 
@@ -125,7 +127,7 @@ class SupportCandidateInput(InputModel):
     context: GenerateReply
     preparation_hash: Annotated[str, Field(min_length=64, max_length=64)]
     selection: SupportSelection
-    engine: Literal["openai_responses", "dashscope_chat", "test_double"]
+    engine: Literal["openai_responses", "dashscope_chat", "deepseek_chat", "test_double"]
 
 
 class ReplyOutput(OutputModel):

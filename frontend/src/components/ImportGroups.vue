@@ -383,7 +383,7 @@ watch(selectedId, () => {
             上传此分片并核对
           </button>
           <button
-            class="button secondary"
+            class="button secondary danger"
             :disabled="disabled || working"
             @click="confirmRevoke = true"
           >
@@ -392,7 +392,7 @@ watch(selectedId, () => {
         </div>
         <div v-if="confirmRevoke" class="data-note">
           <p>将撤销本组所有分片及其衍生来源，按现有批次规则恢复其他有效版本。组外独立记录保留。</p>
-          <button class="button secondary" :disabled="disabled || working" @click="revoke">
+          <button class="button secondary danger" :disabled="disabled || working" @click="revoke">
             确认撤销整组
           </button>
           <button

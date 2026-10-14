@@ -9,7 +9,7 @@ defineProps<{ analysis: AnalysisResult; explanation?: AnalysisExplanation }>()
   <section class="section-block evidence-story" aria-label="经营问数解释">
     <h3>经营事实与核对建议</h3>
     <p>
-      {{ analysis.scope.data_identity === 'synthetic' ? '合成测试数据' : '用户导入数据' }} ·
+      {{ analysis.scope.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} ·
       {{ analysis.scope.currency }} · {{ analysis.scope.channel ?? '全部渠道' }} · 数据版本
       {{ analysis.source_revision }}
     </p>

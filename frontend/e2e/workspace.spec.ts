@@ -1,18 +1,18 @@
+import { signIn } from './auth'
 import { expect, test, type Page } from '@playwright/test'
+import { openNavigation } from './navigation'
 
 async function login(page: Page): Promise<void> {
-  await page.goto('/')
-  await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-  await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-  await page.getByRole('button', { name: '进入工作台' }).click()
-  await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+  await signIn(page, '/')
 }
 
 test('anonymous users must log in and invalid credentials remain on the login page', async ({
   page,
 }) => {
   await page.goto('/settings')
-  await expect(page).toHaveURL(/\/login$/)
+  await expect(page).toHaveURL(
+    (url) => url.pathname === '/login' && url.searchParams.get('redirect') === '/settings',
+  )
   await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
   await page.getByLabel('密码', { exact: true }).fill('incorrect-password')
   await page.getByRole('button', { name: '进入工作台' }).click()
@@ -44,20 +44,17 @@ test('seller can save a profile, add a store, reload and revoke the session', as
   await page.getByRole('button', { name: '退出' }).click()
   await expect(page).toHaveURL(/\/login$/)
   await page.goto('/settings')
-  await expect(page).toHaveURL(/\/login$/)
+  await expect(page).toHaveURL(
+    (url) => url.pathname === '/login' && url.searchParams.get('redirect') === '/settings',
+  )
 })
 
 test('mobile seller settings fit the viewport and preserve accessible inputs', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await login(page)
-  await page
-    .getByRole('navigation', { name: '主导航' })
-    .getByRole('button', { name: /自动化与设置/ })
-    .click()
-  await page
-    .getByRole('navigation', { name: '主导航' })
-    .getByRole('link', { name: /经营资料/ })
-    .click()
+  const nav = await openNavigation(page)
+  await nav.getByRole('button', { name: /自动化与设置/ }).click()
+  await nav.getByRole('link', { name: /经营资料/ }).click()
   await expect(page.getByLabel('经营名称')).toBeVisible()
   const overflows = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,

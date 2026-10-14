@@ -387,3 +387,43 @@ Firecrawl 402 限制仍适用，已检索阅读官方网页。消息复用已有
 - Vue Router官方[导航](https://router.vuejs.org/guide/essentials/navigation.html)与Vue官方[nextTick](https://vuejs.org/api/general.html#nexttick)（MIT）：参考显式query/hash和异步数据渲染后的定位。建店后只传shop编号到既有导入页；设置页等待店铺渲染再定位。入口不恢复权限、不自动提交业务。
 - MDN [autocomplete](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/autocomplete)（文档CC BY-SA）：保留username/current-password，继续支持浏览器密码管理；登录帮助说明向管理员领取网址/账号及求助，不把安装或数据库操作放入卖家步骤。
 - Firecrawl已知fetch failed，使用官方web读取作为回退。文档仅供接口/设计参考，代码自行实现，无新依赖；管理员正式CLI及安全门禁沿用原实现。
+
+## 马卡龙卖家工作台视觉优化（2026-10-14）
+
+- W3C [WCAG 2.2 Target Size (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)：参考控件可点击范围与间距原则，本项目主要控件采用44px，手机输入46px；实现自行编写。
+- MDN [prefers-reduced-motion](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion)（文档CC BY-SA）：参考系统减少动态效果偏好，主题使用条件过渡与减少动态效果覆盖；无新增依赖。
+- Firecrawl状态可读但余额不足，使用内置Web读取上述官方资料。设计规则与验收见[马卡龙设计记录](ui/macaron-design.md)。
+
+## 网页持久工作空间（2026-10-14）
+
+- MySQL 官方 [Initializing the Data Directory](https://dev.mysql.com/doc/refman/8.4/en/data-directory-initialization.html)：参考独立数据目录初始化和初始账号凭据设置，使用已安装服务端二进制建立本机隔离实例；没有改动原有服务目录。
+- SQLAlchemy 官方 [Transactions and Connection Management](https://docs.sqlalchemy.org/en/20/orm/session_transaction.html)：局部数据重建先核验固定数据库和外键依赖，再在事务中处理派生记录，业务写入继续走原API。未新增依赖或复制第三方实现。
+- Firecrawl提取遇到余额不足，使用内置Web读取官方文档作为回退。
+
+## DeepSeek 接入（2026-10-14）
+
+- 官方[首次调用](https://api-docs.deepseek.com/)与[JSON Output](https://api-docs.deepseek.com/guides/json_mode/)：采用固定 `api.deepseek.com/chat/completions`、`deepseek-flash`、`thinking.type=disabled`、`response_format.type=json_object`。JSON schema作为请求约束传入，响应语法及业务事实在本地校验；不使用未经官方说明的strict schema参数。
+- 官方[模型和价格](https://api-docs.deepseek.com/zh-cn/quick_start/pricing/)及[美元费率](https://api-docs.deepseek.com/quick_start/pricing/)：核实Flash峰时未命中缓存输入2/输出8元每百万tokens，美元输入0.3/输出1.2。本机保护与记录按峰时保守计算，实际账单独立核对。
+- Firecrawl developer检索完成但命中第三方资料，本次接口决定仅使用上述官方文档；没有复制第三方代码或新增依赖。
+
+## AI 入口与内容布局（2026-10-14）
+
+- Vue 官方 [Watchers](https://vuejs.org/guide/essentials/watchers.html)（MIT）：店铺变化时读取实际模型状态，使用清理回调丢弃旧请求结果。
+- MDN [Grid 自动布局](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout/Auto-placement)（文档 CC BY-SA）：未选择对象时列表占完整内容宽度，选中后才分栏；使用自适应卡片和有界列表。实现自行编写，不新增依赖。
+- Firecrawl 已确认额度不足，本轮使用官方网页读取作为回退。
+# 2026-10-14：DeepSeek 流式协议
+
+- [DeepSeek Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion/)：按官方 `stream`、`stream_options.include_usage`、`delta.content` 与 `[DONE]` 协议接收真实增量。只适配公开协议，不复制供应商实现；完整响应继续进入既有事实校验和费用结算。
+- [Starlette StreamingResponse](https://www.starlette.io/responses/#streamingresponse)：采用流式响应传输事件；业务 Session 在执行线程内独立创建与关闭，避免请求结束时提前释放会话。
+
+## 简洁问答（2026-10-14）
+
+参考 Vue 官方[表单输入绑定](https://cn.vuejs.org/guide/essentials/forms)及[条件渲染](https://vuejs.org/guide/essentials/conditional.html)：沿用 v-model 与条件组件，把问题、范围和详情分开呈现。Vue 文档仓库采用 MIT 许可；本次仅参考行为，未复制示例。Firecrawl 额度耗尽，改用官方站点检索。
+
+## 对话与确认交互（2026-10-14）
+
+选择区修复沿用下列 MDN overflow/视口参考和 Vue 条件渲染指导：可选的商品/消息字段采用顺序布局，避免固定网格行号与动态内容耦合；设置容器以聊天框为定位边界。未新增外部依赖或复制第三方实现。
+
+固定聊天框架参考 MDN [overflow-y](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/overflow-y) 与 [length](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length)：使用 `100dvh`、可收缩 flex 子项和内部 `overflow-y: auto`；设置浮层不参与输入区高度计算。MDN 文档采用 CC BY-SA 2.5，代码示例通常为 CC0；本实现仅参考属性行为，未复制文档或示例代码。
+
+沿用本页 Vue 官方表单和条件渲染参考：普通对话不挂载技术审阅组件；写入确认使用独立条件区域，避免隐藏区域中存在仍可触发的操作。后端沿用仓库已有技能副作用声明、来源校验和费用租约，新增只读结论阶段与显式保存请求，不引入外部依赖。

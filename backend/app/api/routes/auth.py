@@ -12,6 +12,13 @@ from app.services.auth import AuthService
 router = APIRouter(prefix="/auth", tags=["账号"])
 
 
+@router.get("/demo")
+def demo_account(settings: SettingsDependency) -> dict[str, str | bool]:
+    if not settings.demo_enabled:
+        return {"enabled": False}
+    return {"enabled": True, "username": "admin", "password": "qwer123"}
+
+
 @router.post("/login", response_model=SessionOutput)
 def login(
     data: LoginInput, response: Response, uow: UowDependency, settings: SettingsDependency

@@ -11,7 +11,7 @@ SHOPIFY_PRODUCTS = ImportPreset(
     reference_url="https://help.shopify.com/en/manual/products/import-export/using-csv",
     mapping={"sku": "SKU", "name": "Title", "price": "Price", "unit_cost": "Cost per item"},
     notes=[
-        "字段格式候选：请与本次导出说明核对。合成字段子集已测试，真实卖家文件兼容待验证。",
+        "字段格式候选：请与本次导出说明核对，确认列名、数据类型和字段含义适用于本次文件。",
         "销售币种和成本币种须按来源逐行补齐或手工映射；有金额但缺币种时不能提交。",
         "每行须有唯一 SKU 和完整商品名。空白变体名称请依据原商品补齐；"
         "纯图片行请在本地准备文件时移除，不会自动向下填充或跳过。",

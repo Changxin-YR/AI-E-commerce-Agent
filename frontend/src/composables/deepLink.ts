@@ -5,6 +5,16 @@ import type { AnalysisScope } from '@/types/analytics'
 type LinkedScope = Partial<AnalysisScope> & { max_age_hours?: number }
 const channels = ['generic', 'shopify', 'amazon', 'other']
 
+export function workspaceQuery(query: Record<string, unknown>): Record<string, string> {
+  const result: Record<string, string> = {}
+  if (typeof query.shop === 'string' && /^[1-9]\d*$/.test(query.shop)) result.shop = query.shop
+  if (query.identity === 'synthetic' || query.identity === 'user_import')
+    result.identity = query.identity
+  if (typeof query.channel === 'string' && channels.includes(query.channel))
+    result.channel = query.channel
+  return result
+}
+
 export function scopeQuery(scope: LinkedScope): Record<string, string> {
   const query: Record<string, string> = {}
   for (const key of [

@@ -240,7 +240,7 @@ def test_qq_recipient_approval_receipt_and_replay(logged_in, mailbox, status):
     mail = response.json()
     assert mail["id"] != own["id"] and mail["content_hash"] != own["content_hash"]
     assert mail["recipient"] == "synthetic-other@example.net"
-    assert "发往本人测试邮箱" not in mail["body"]
+    assert "发往本人邮箱" not in mail["body"]
     base = root(shop) + f"/messages/{mail['id']}"
     own_approved = approve(logged_in, own)
     assert (

@@ -159,7 +159,7 @@ docs/                     需求、设计、进度、测试、面试资料
 
 进入“任务执行台”，选择店铺、数据身份和流程。今日运营按已导入事实检查，有异常时展示依据，批准当前节点后保存候选并回读核验；到工作台逐项处理候选。Listing 流程生成本地事实模板，客服流程生成待人工核对草稿。执行记录展示当前节点、已完成步骤、来源和预算，支持暂停、取消及提高预算后恢复。刷新页面只读取记录。
 
-默认模型预算 0 USD，固定流程不需要模型。部署者在 `backend/.env` 设置 `SOLOOPS_MODEL_ENABLED=true`、`SOLOOPS_MODEL_PROVIDER`、`SOLOOPS_MODEL_API_KEY`、`SOLOOPS_MODEL_NAME` 和输入/输出 `SOLOOPS_MODEL_*_USD_PER_MILLION` 费率，重启 API 后由卖家勾选本次数据授权并设置预算。支持 `openai_responses` 和阿里云北京 `dashscope_chat`（`qwen3.7-flash` 系列）。界面展示实际供应商及 `SOLOOPS_MODEL_COST_NOTE` 的估算说明；密钥只保存本机。路由发送目标，问数另发送匿名聚合事实，Listing 另发送已同意的商品名和参数；客服另发送已同意的消息和政策原文；运营另发送范围及分支/候选聚合计数。
+默认模型预算 0 USD，固定流程不需要模型。部署者在 `backend/.env` 设置 `SOLOOPS_MODEL_ENABLED=true`、`SOLOOPS_MODEL_PROVIDER`、`SOLOOPS_MODEL_API_KEY`、`SOLOOPS_MODEL_NAME` 和输入/输出 `SOLOOPS_MODEL_*_USD_PER_MILLION` 费率，重启 API 后由卖家勾选本次数据授权并设置预算。支持 `openai_responses`、阿里云北京 `dashscope_chat`（`qwen3.7-flash` 系列）和 `deepseek_chat`（`deepseek-flash`、`deepseek-v4-pro`）。DeepSeek 使用官方固定接口、非思考 JSON mode，候选继续由业务服务校验事实及来源。界面展示实际供应商及 `SOLOOPS_MODEL_COST_NOTE` 的估算说明；密钥只保存本机。路由发送目标，问数另发送匿名聚合事实，Listing 另发送已同意的商品名和参数；客服另发送已同意的消息和政策原文；运营另发送范围及分支/候选聚合计数。
 
 2026-10-09 百炼官方端点鉴权、合成目标路由和 Listing 事实编排真实调用通过；两次生成的目录价估算合计 ¥0.0001108，实际账单另核对。当前本机按全输入档位最高价及保守折算设置 USD 预算费率，详细口径见开发文档第二十二节。合成冒烟不代替真实商品质量和完整业务验收。
 

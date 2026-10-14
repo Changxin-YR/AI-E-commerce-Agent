@@ -74,13 +74,13 @@ class OutboundChannels:
     def active(self, owner: int, shop: int) -> TestMailChannel:
         rows = self.repo.channels(owner, shop)
         if not rows or self.status(rows[0]) != "active":
-            raise ConflictError("请先连接并验证本人测试邮箱")
+            raise ConflictError("请先连接并验证本人邮箱")
         return rows[0]
 
     def connect(self, owner: int, shop: int) -> ChannelOutput:
         self.shop(owner, shop)
         if not configured(self.settings, owner, shop):
-            raise ConflictError("外发未配置；需部署者配置当前账号/店铺的自有发送地址与测试邮箱")
+            raise ConflictError("外发未配置；需部署者配置当前账号/店铺的自有发送地址与本人收件邮箱")
         rows = self.repo.channels(owner, shop)
         now = utc_now()
         if rows and self.status(rows[0]) in {"active", "verifying", "unknown"}:

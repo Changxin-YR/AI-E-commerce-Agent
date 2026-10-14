@@ -11,7 +11,7 @@ defineProps<{ result: StudyResult; timezone: string }>()
       <span class="status-tag">假设估算</span>
     </div>
     <p class="muted">
-      {{ result.input.data_identity === 'synthetic' ? '合成测试数据' : '手工假设' }} ·
+      {{ result.input.data_identity === 'synthetic' ? '样例资料' : '手工假设' }} ·
       {{ result.input.currency }} · {{ supportTime(result.calculated_at, timezone) }}
     </p>
     <p class="scope-note">{{ result.scope_note }}</p>

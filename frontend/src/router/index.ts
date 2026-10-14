@@ -41,7 +41,8 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const { session, initialize } = useSession()
   await initialize()
-  if (!session.value && to.name !== 'login') return { name: 'login' }
+  if (!session.value && to.name !== 'login')
+    return { name: 'login', query: to.fullPath === '/' ? {} : { redirect: to.fullPath } }
   if (session.value && to.name === 'login') return '/'
 })
 

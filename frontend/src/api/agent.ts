@@ -1,4 +1,4 @@
-import { request } from './client'
+import { request, requestStream, type StreamEvent } from './client'
 import type {
   AgentAction,
   AgentBudget,
@@ -15,6 +15,12 @@ export const agentApi = {
   get: (shop: number, id: number) => request<AgentRun>(`${root(shop)}/runs/${id}`),
   start: (shop: number, data: AgentInput) =>
     request<AgentRun>(`${root(shop)}/runs`, { method: 'POST', body: JSON.stringify(data) }),
+  advanceStream: (run: AgentRun, onEvent: (event: StreamEvent) => void) =>
+    requestStream<AgentRun>(
+      `${root(run.shop_id)}/runs/${run.id}/stream`,
+      { method: 'POST', body: JSON.stringify({ version: run.version, action: 'advance' }) },
+      onEvent,
+    ),
   act: (run: AgentRun, action: AgentAction, budget?: AgentBudget, authorizationId?: number) =>
     request<AgentRun>(`${root(run.shop_id)}/runs/${run.id}`, {
       method: 'POST',

@@ -1,3 +1,4 @@
+import { signIn } from './auth'
 import { fillExactTime } from './date-input'
 import { expect, test, type Page } from '@playwright/test'
 import { tmpdir } from 'node:os'
@@ -46,11 +47,7 @@ for (const mobile of [false, true]) {
 
   test(`operations model overview approval task reload and clear ${stage}`, async ({ page }) => {
     await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1280, height: 800 })
-    await page.goto('/agent')
-    await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-    await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-    await page.getByRole('button', { name: '进入工作台' }).click()
-    await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+    await signIn(page, '/agent')
     const errors: string[] = []
     page.on('pageerror', (error) => errors.push(error.message))
     const session = (await (await page.request.get('/api/auth/session')).json()) as {
@@ -72,6 +69,7 @@ for (const mobile of [false, true]) {
     const shop = ((await created.json()) as { id: number }).id
     const batch = await importOrders(page, shop, headers)
     await page.goto(`/agent?shop=${shop}&mode=daily_model`)
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await expect(page.getByLabel('执行流程')).toHaveValue('daily_model')
     await page.getByLabel('数据身份').selectOption('synthetic')
     await page.getByLabel('运营目标').fill('检查导入数据并列出需要核对的事项。')

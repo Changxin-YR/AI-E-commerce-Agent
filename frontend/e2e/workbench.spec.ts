@@ -1,3 +1,4 @@
+import { signIn } from './auth'
 import { expect, test, type Page } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -10,11 +11,7 @@ const scope = {
   data_identity: 'synthetic',
 }
 async function prepare(page: Page) {
-  await page.goto('/')
-  await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-  await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-  await page.getByRole('button', { name: '进入工作台' }).click()
-  await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+  await signIn(page, '/')
   const session = (await (await page.request.get('/api/auth/session')).json()) as {
     csrf_token: string
   }
@@ -158,7 +155,7 @@ test('unified workbench opens exact cross-module records and original approvals'
   await expect(listing).toContainText('Synthetic cup')
   await listing.getByLabel('我已逐项核对商品事实、差异与影响范围').check()
   await listing.getByRole('button', { name: '批准并在本地生效' }).click()
-  await expect(listing).toContainText('本地生效')
+  await expect(listing).toContainText('本地已批准')
   await open('reply')
   const reply = page.getByRole('region', { name: '客服草稿详情' })
   await expect(reply).toContainText(`回复草稿 #${records.reply.id}`)

@@ -146,7 +146,7 @@ async function change(grant: InternalAuthorization, useId?: number): Promise<voi
       </p>
       <p>
         店铺 #{{ shop }} · {{ run.input.scope.channel }} ·
-        {{ run.input.scope.data_identity === 'synthetic' ? '合成测试' : '用户导入' }} ·
+        {{ run.input.scope.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} ·
         {{ countFindings }} 项候选
       </p>
       <p>
@@ -187,7 +187,7 @@ async function change(grant: InternalAuthorization, useId?: number): Promise<voi
       </summary>
       <p>
         店铺 #{{ grant.shop_id }} · {{ grant.scope.channel }} ·
-        {{ grant.scope.data_identity === 'synthetic' ? '合成测试' : '用户导入' }} · 来源版本
+        {{ grant.scope.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} · 来源版本
         {{ grant.source_revision }} · 规则 #{{ grant.scope.rule_revision_id ?? 0 }}
       </p>
       <p>
@@ -234,7 +234,7 @@ async function change(grant: InternalAuthorization, useId?: number): Promise<voi
         </button>
         <button
           v-if="!grant.revoked_at"
-          class="button secondary"
+          class="button secondary danger"
           :disabled="busy || loading"
           @click="change(grant)"
         >
@@ -263,7 +263,7 @@ async function change(grant: InternalAuthorization, useId?: number): Promise<voi
             />将本次未处理的新增候选设为已拒绝；额度不返还</label
           >
           <button
-            class="button secondary"
+            class="button secondary danger"
             :disabled="busy || loading || !restoreConfirm[use.id]"
             @click="change(grant, use.id)"
           >

@@ -46,7 +46,7 @@ async function inspect(): Promise<void> {
       来源：{{ source.filename }} · 批次 {{ source.batch_id }} · 第 {{ source.row_number }} 行
     </summary>
     <p>
-      {{ source.data_identity === 'synthetic' ? '合成测试数据' : '用户导入数据' }} · 导出时间
+      {{ source.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} · 导出时间
       {{ source.exported_at ?? '未知' }}（UTC）
     </p>
     <p v-if="source.origin === 'manual_edit'">

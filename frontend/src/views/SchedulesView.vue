@@ -138,222 +138,224 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>定时运营</h1>
-      <p>安排运营巡检与日、周、月经营报表，每次结果都有记录可查。</p>
+  <div class="solo-page page-schedules">
+    <div class="page-heading">
+      <div>
+        <h1>定时运营</h1>
+        <p>安排运营巡检与日、周、月经营报表，每次结果都有记录可查。</p>
+      </div>
+      <span class="outline-label">本地规则 · 站内通知</span>
     </div>
-    <span class="outline-label">本地规则 · 站内通知</span>
-  </div>
-  <FeedbackBanner :message="error" />
-  <p v-if="info" role="status">{{ info }}</p>
-  <p v-if="!shops.length">请先在经营资料中添加店铺。</p>
-  <template v-else>
-    <section class="form-panel" aria-label="定时运营范围">
-      <div class="form-grid">
-        <div class="form-field">
-          <label for="schedule-shop">计划店铺</label
-          ><select id="schedule-shop" v-model="shopId" :disabled="busy" @change="load">
-            <option v-for="value in shops" :key="value.id" :value="value.id">
-              {{ value.name }} · {{ value.code }}
-            </option>
-          </select>
+    <FeedbackBanner :message="error" />
+    <p v-if="info" role="status">{{ info }}</p>
+    <p v-if="!shops.length">请先在经营资料中添加店铺。</p>
+    <template v-else>
+      <section class="form-panel" aria-label="定时运营范围">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="schedule-shop">计划店铺</label
+            ><select id="schedule-shop" v-model="shopId" :disabled="busy" @change="load">
+              <option v-for="value in shops" :key="value.id" :value="value.id">
+                {{ value.name }} · {{ value.code }}
+              </option>
+            </select>
+          </div>
         </div>
-      </div>
-      <ScheduleRuntime
-        v-if="worker !== null"
-        :worker="worker"
-        :latest="latestTimer"
-        :timezone="shop?.timezone ?? 'UTC'"
+        <ScheduleRuntime
+          v-if="worker !== null"
+          :worker="worker"
+          :latest="latestTimer"
+          :timezone="shop?.timezone ?? 'UTC'"
+        />
+        <p>
+          巡检可生成待审候选，报表可定期保存经营摘要。每次使用当时可用的导入数据，结果和依据从运行历史进入。
+        </p>
+        <div class="form-actions">
+          <button class="button" :disabled="busy" @click="edit(null)">新建计划</button
+          ><button class="button secondary" :disabled="busy" @click="perform(refresh)">
+            刷新计划与通知
+          </button>
+        </div>
+      </section>
+      <ScheduleEditor
+        v-if="showEditor && shop"
+        :key="`${shopId}-${editing?.id ?? 'new'}`"
+        :shop="shop"
+        :initial="editing?.config"
+        :busy="busy"
+        @save="save"
+        @cancel="showEditor = false"
       />
-      <p>
-        巡检可生成待审候选，报表可定期保存经营摘要。每次使用当时可用的导入数据，结果和依据从运行历史进入。
-      </p>
-      <div class="form-actions">
-        <button class="button" :disabled="busy" @click="edit(null)">新建计划</button
-        ><button class="button secondary" :disabled="busy" @click="perform(refresh)">
-          刷新计划与通知
-        </button>
-      </div>
-    </section>
-    <ScheduleEditor
-      v-if="showEditor && shop"
-      :key="`${shopId}-${editing?.id ?? 'new'}`"
-      :shop="shop"
-      :initial="editing?.config"
-      :busy="busy"
-      @save="save"
-      @cancel="showEditor = false"
-    />
-    <section class="section-block" aria-label="已保存计划">
-      <h2>运行计划</h2>
-      <p v-if="!plans.length">还没有定时计划。添加一个周期，开始积累可回读的运营检查。</p>
-      <article
-        v-for="row in plans"
-        :key="row.id"
-        class="form-panel section-block"
-        :aria-label="`计划 ${row.config.name}`"
-      >
-        <h3>
-          {{ row.config.name }}
-          <span class="outline-label">{{ labels[row.status] ?? row.status }}</span>
-        </h3>
-        <p>
-          #{{ row.id }} · 版本 {{ row.version }} · {{ labels[row.config.frequency] }}
-          {{ row.config.local_time }} {{ row.config.timezone
-          }}<template v-if="row.config.frequency === 'weekly'">
-            · 星期{{ ['一', '二', '三', '四', '五', '六', '日'][row.config.weekday] }}</template
-          ><template v-if="row.config.frequency === 'monthly'">
-            · 每月 {{ row.config.month_day }} 日</template
-          >
-        </p>
-        <p>
-          {{ row.config.data_identity === 'synthetic' ? '合成演示数据' : '用户导入数据' }} ·
-          <template v-if="row.config.task === 'report'"
-            >经营报表 · {{ row.config.report_currencies.join('、') || '全部币种分别统计' }} ·
-            上一完整{{
-              { daily: '自然日', weekly: '自然周', monthly: '自然月' }[row.config.frequency]
-            }}</template
-          >
-          <template v-else
-            >{{ row.config.channel }} · {{ row.config.currency }} · 回看
-            {{ row.config.lookback_days }} 天 · 规则 #{{ row.config.rule_revision_id }}
-          </template>
-        </p>
-        <p>下一次：{{ time(row.next_run_at, row.config.timezone) }}</p>
-        <p v-if="row.config.quiet_start !== null">
-          免打扰：{{ row.config.quiet_start }}:00–{{ row.config.quiet_end }}:00（{{
-            row.config.timezone
-          }}）
-        </p>
-        <div v-if="row.status !== 'revoked'" class="form-actions">
-          <button
-            v-if="row.status === 'active'"
-            class="button secondary small"
-            :disabled="busy"
-            @click="check(row)"
-          >
-            {{ row.config.task === 'report' ? '立即生成报表' : '立即检查一次' }}
-          </button>
-          <button
-            v-if="row.status === 'active'"
-            class="button secondary small"
-            :disabled="busy"
-            @click="act(row, 'pause')"
-          >
-            暂停
-          </button>
-          <button
-            v-else
-            class="button secondary small"
-            :disabled="busy"
-            @click="confirmAction = { row, action: 'resume' }"
-          >
-            恢复
-          </button>
-          <button class="button secondary small" :disabled="busy" @click="edit(row)">修改</button>
-          <button
-            class="button secondary small"
-            :disabled="busy"
-            @click="confirmAction = { row, action: 'revoke' }"
-          >
-            撤销
-          </button>
-        </div>
-        <div v-if="confirmAction?.row.id === row.id" class="data-note section-block">
+      <section class="section-block" aria-label="已保存计划">
+        <h2>运行计划</h2>
+        <p v-if="!plans.length">还没有定时计划。添加一个周期，开始积累可回读的运营检查。</p>
+        <article
+          v-for="row in plans"
+          :key="row.id"
+          class="form-panel section-block"
+          :aria-label="`计划 ${row.config.name}`"
+        >
+          <h3>
+            {{ row.config.name }}
+            <span class="outline-label">{{ labels[row.status] ?? row.status }}</span>
+          </h3>
           <p>
+            #{{ row.id }} · 版本 {{ row.version }} · {{ labels[row.config.frequency] }}
+            {{ row.config.local_time }} {{ row.config.timezone
+            }}<template v-if="row.config.frequency === 'weekly'">
+              · 星期{{ ['一', '二', '三', '四', '五', '六', '日'][row.config.weekday] }}</template
+            ><template v-if="row.config.frequency === 'monthly'">
+              · 每月 {{ row.config.month_day }} 日</template
+            >
+          </p>
+          <p>
+            {{ row.config.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} ·
+            <template v-if="row.config.task === 'report'"
+              >经营报表 · {{ row.config.report_currencies.join('、') || '全部币种分别统计' }} ·
+              上一完整{{
+                { daily: '自然日', weekly: '自然周', monthly: '自然月' }[row.config.frequency]
+              }}</template
+            >
+            <template v-else
+              >{{ row.config.channel }} · {{ row.config.currency }} · 回看
+              {{ row.config.lookback_days }} 天 · 规则 #{{ row.config.rule_revision_id }}
+            </template>
+          </p>
+          <p>下一次：{{ time(row.next_run_at, row.config.timezone) }}</p>
+          <p v-if="row.config.quiet_start !== null">
+            免打扰：{{ row.config.quiet_start }}:00–{{ row.config.quiet_end }}:00（{{
+              row.config.timezone
+            }}）
+          </p>
+          <div v-if="row.status !== 'revoked'" class="form-actions">
+            <button
+              v-if="row.status === 'active'"
+              class="button secondary small"
+              :disabled="busy"
+              @click="check(row)"
+            >
+              {{ row.config.task === 'report' ? '立即生成报表' : '立即检查一次' }}
+            </button>
+            <button
+              v-if="row.status === 'active'"
+              class="button secondary small"
+              :disabled="busy"
+              @click="act(row, 'pause')"
+            >
+              暂停
+            </button>
+            <button
+              v-else
+              class="button secondary small"
+              :disabled="busy"
+              @click="confirmAction = { row, action: 'resume' }"
+            >
+              恢复
+            </button>
+            <button class="button secondary small" :disabled="busy" @click="edit(row)">修改</button>
+            <button
+              class="button secondary small danger"
+              :disabled="busy"
+              @click="confirmAction = { row, action: 'revoke' }"
+            >
+              撤销
+            </button>
+          </div>
+          <div v-if="confirmAction?.row.id === row.id" class="data-note section-block">
+            <p>
+              {{
+                confirmAction.action === 'resume'
+                  ? '确认按卡片中的范围和规则恢复？从下一个周期开始，暂停期间不补跑。'
+                  : '确认永久撤销此计划？历史执行和已保存候选继续保留。'
+              }}
+            </p>
+            <button
+              class="button secondary small"
+              :disabled="busy"
+              @click="act(row, confirmAction.action)"
+            >
+              确认{{ confirmAction.action === 'resume' ? '恢复' : '撤销' }}
+            </button>
+            <button class="button secondary small" :disabled="busy" @click="confirmAction = null">
+              取消
+            </button>
+          </div>
+        </article>
+      </section>
+      <section class="section-block" aria-label="站内通知与运行历史">
+        <h2>站内通知与运行历史</h2>
+        <label class="check-label"
+          ><input
+            v-model="unread"
+            type="checkbox"
+            :disabled="busy"
+            @change="perform(refresh)"
+          />只看已到提醒时间的未读通知</label
+        >
+        <p>
+          显示周期结束时的状态；请进入对应的检查或报表查看当前进度与来源状态。免打扰期间的结果在完整历史中可见。
+        </p>
+        <p v-if="!history.length">{{ unread ? '当前没有到期的未读通知。' : '还没有运行记录。' }}</p>
+        <article
+          v-for="item in history"
+          :key="item.id"
+          class="form-panel section-block"
+          :aria-label="`周期记录 ${item.id}`"
+        >
+          <h3>
+            计划 #{{ item.schedule_id }} ·
             {{
-              confirmAction.action === 'resume'
-                ? '确认按卡片中的范围和规则恢复？从下一个周期开始，暂停期间不补跑。'
-                : '确认永久撤销此计划？历史执行和已保存候选继续保留。'
+              item.task === 'report' && item.status === 'succeeded'
+                ? '报表已保存'
+                : (labels[item.status] ?? item.status)
+            }}
+            <span v-if="!item.read_at" class="outline-label">未读</span>
+          </h3>
+          <p>
+            {{ item.trigger === 'timer' ? '定时周期' : '手动检查' }}：{{ time(item.scheduled_at) }} ·
+            保存：{{ time(item.created_at) }}
+          </p>
+          <p v-if="item.coalesced_from">
+            从 {{ time(item.coalesced_from) }} 起的错过周期已合并，本次只处理最近一期。
+          </p>
+          <p v-if="item.status === 'missed'">最近一期已超过 24 小时补跑窗口，等待下一周期。</p>
+          <p v-if="['blocked', 'paused', 'circuit_open'].includes(item.status)">
+            该周期运行受阻，计划当时已暂停。{{
+              reasons[item.reason] ?? '请查看原任务，核对条件后恢复计划。'
             }}
           </p>
-          <button
-            class="button secondary small"
-            :disabled="busy"
-            @click="act(row, confirmAction.action)"
-          >
-            确认{{ confirmAction.action === 'resume' ? '恢复' : '撤销' }}
-          </button>
-          <button class="button secondary small" :disabled="busy" @click="confirmAction = null">
-            取消
-          </button>
-        </div>
-      </article>
-    </section>
-    <section class="section-block" aria-label="站内通知与运行历史">
-      <h2>站内通知与运行历史</h2>
-      <label class="check-label"
-        ><input
-          v-model="unread"
-          type="checkbox"
+          <p>提醒时间：{{ time(item.notify_at) }}</p>
+          <div class="form-actions">
+            <RouterLink
+              v-if="item.report_id"
+              :to="{ path: '/overview', query: { report: item.report_id } }"
+              class="button secondary small"
+              >查看报表与依据</RouterLink
+            >
+            <RouterLink
+              v-if="item.execution_id"
+              :to="{ path: '/agent', query: { shop: shopId, execution: item.execution_id } }"
+              class="button secondary small"
+              >查看检查与审批</RouterLink
+            ><button
+              v-if="!item.read_at"
+              class="button secondary small"
+              :disabled="busy"
+              @click="read(item)"
+            >
+              标为已读
+            </button>
+          </div>
+        </article>
+        <button
+          v-if="history.length === 50"
+          class="button secondary small"
           :disabled="busy"
-          @change="perform(refresh)"
-        />只看已到提醒时间的未读通知</label
-      >
-      <p>
-        显示周期结束时的状态；请进入对应的检查或报表查看当前进度与来源状态。免打扰期间的结果在完整历史中可见。
-      </p>
-      <p v-if="!history.length">{{ unread ? '当前没有到期的未读通知。' : '还没有运行记录。' }}</p>
-      <article
-        v-for="item in history"
-        :key="item.id"
-        class="form-panel section-block"
-        :aria-label="`周期记录 ${item.id}`"
-      >
-        <h3>
-          计划 #{{ item.schedule_id }} ·
-          {{
-            item.task === 'report' && item.status === 'succeeded'
-              ? '报表已保存'
-              : (labels[item.status] ?? item.status)
-          }}
-          <span v-if="!item.read_at" class="outline-label">未读</span>
-        </h3>
-        <p>
-          {{ item.trigger === 'timer' ? '定时周期' : '手动检查' }}：{{ time(item.scheduled_at) }} ·
-          保存：{{ time(item.created_at) }}
-        </p>
-        <p v-if="item.coalesced_from">
-          从 {{ time(item.coalesced_from) }} 起的错过周期已合并，本次只处理最近一期。
-        </p>
-        <p v-if="item.status === 'missed'">最近一期已超过 24 小时补跑窗口，等待下一周期。</p>
-        <p v-if="['blocked', 'paused', 'circuit_open'].includes(item.status)">
-          该周期运行受阻，计划当时已暂停。{{
-            reasons[item.reason] ?? '请查看原任务，核对条件后恢复计划。'
-          }}
-        </p>
-        <p>提醒时间：{{ time(item.notify_at) }}</p>
-        <div class="form-actions">
-          <RouterLink
-            v-if="item.report_id"
-            :to="{ path: '/overview', query: { report: item.report_id } }"
-            class="button secondary small"
-            >查看报表与依据</RouterLink
-          >
-          <RouterLink
-            v-if="item.execution_id"
-            :to="{ path: '/agent', query: { shop: shopId, execution: item.execution_id } }"
-            class="button secondary small"
-            >查看检查与审批</RouterLink
-          ><button
-            v-if="!item.read_at"
-            class="button secondary small"
-            :disabled="busy"
-            @click="read(item)"
-          >
-            标为已读
-          </button>
-        </div>
-      </article>
-      <button
-        v-if="history.length === 50"
-        class="button secondary small"
-        :disabled="busy"
-        @click="older"
-      >
-        更早的记录
-      </button>
-    </section>
-  </template>
+          @click="older"
+        >
+          更早的记录
+        </button>
+      </section>
+    </template>
+  </div>
 </template>

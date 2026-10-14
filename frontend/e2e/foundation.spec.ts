@@ -1,3 +1,5 @@
+import { signIn } from './auth'
+import { openNavigation } from './navigation'
 import { fillExactTime } from './date-input'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
@@ -109,21 +111,18 @@ for (const mobile of [false, true]) {
     await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 })
     const errors: string[] = []
     page.on('pageerror', (error) => errors.push(error.message))
-    await page.goto('/')
-    await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-    await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-    await page.getByRole('button', { name: '进入工作台' }).click()
-    await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+    await signIn(page, '/')
     const session = (await (await page.request.get('/api/auth/session')).json()) as {
       csrf_token: string
     }
     const headers = { 'X-SoloOps-Client': 'web', 'X-CSRF-Token': session.csrf_token }
+    const runId = crypto.randomUUID().slice(0, 8)
     let shop = 0
     for (const suffix of ['decoy', 'main']) {
       const created = await page.request.post('/api/shops', {
         headers,
         data: {
-          code: `foundation-e2e-${stage}-${suffix}`,
+          code: `foundation-e2e-${stage}-${suffix}-${runId}`,
           name: `基础闭环合成店铺 ${suffix}`,
           platform: 'other',
           market: 'US',
@@ -152,6 +151,7 @@ for (const mobile of [false, true]) {
     const home = `/?${query}`
     await page.goto(home)
     await page.getByRole('link', { name: '启动 AI 今日运营概览' }).click()
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await expect(page.getByRole('combobox', { name: '数据身份', exact: true })).toHaveValue(
       'synthetic',
     )
@@ -219,6 +219,7 @@ for (const mobile of [false, true]) {
       '行退款 5.0000',
     )
     await page.getByRole('link', { name: '打开 AI 经营问数，确认范围与模型预算' }).click()
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await model(page, '哪些商品销量较高但已知毛利偏低，需要核对哪些数据？', /同意发送本次范围/)
     await expect(page.getByRole('region', { name: '经营问数解释' })).toContainText('SYN-CUP')
     await approveModel(page)
@@ -231,6 +232,7 @@ for (const mobile of [false, true]) {
     await returnTask(page, margin.id)
     await detail.getByRole('link', { name: '维护此商品 Listing' }).click()
     await page.getByRole('link', { name: '生成 AI Listing 候选' }).click()
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     await expect(page.getByLabel('将发送的商品事实')).toContainText('Synthetic steel cup')
     await model(page, '保留全部商品事实，调整标题和参数的展示顺序。', /我已核对上述商品事实/)
     await approveModel(page)
@@ -252,6 +254,7 @@ for (const mobile of [false, true]) {
     await page.locator('.task-row').filter({ hasText: message.snapshot.object_label }).click()
     await detail.getByRole('link', { name: '处理此客户消息' }).click()
     await page.getByRole('link', { name: '生成 AI 客服候选' }).click()
+    await page.getByRole('button', { name: '高级执行台', exact: true }).click()
     const supportData = page.getByLabel('将发送的客服数据')
     await expect(supportData).toContainText('Where is my order? Also refund it.')
     await supportData.getByLabel(/我已人工核验客户与上述全部当前订单行的关联/).check()
@@ -334,6 +337,7 @@ for (const mobile of [false, true]) {
     await detail.getByRole('link', { name: '查看同范围经营分析' }).click()
     await page.getByRole('button', { name: '计算并查看证据' }).click()
     await expect(analysis).toContainText('10.00')
+    await openNavigation(page)
     await page.getByRole('button', { name: '退出', exact: true }).click()
     await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
     await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')

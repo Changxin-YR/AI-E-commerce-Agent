@@ -255,206 +255,208 @@ onUnmounted(() => {
 })
 </script>
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>实际费用，每一笔有依据。</h1>
-      <p>记录已发生费用，保留修订历史，核对归属与来源。</p>
-    </div>
-    <RouterLink class="button secondary" :to="`/analytics?shop=${shopId}`">经营分析</RouterLink>
-  </div>
-  <FeedbackBanner :message="error" />
-  <section class="data-note">
-    <span class="note-symbol" aria-hidden="true">i</span>
-    <div>
-      <h3>人工费用台账 · 平台账单待核对</h3>
-      <p>
-        费用完整性未知。店铺费用尚未分摊，单条订单行费用全额归属；汇总仅代表当前已录入费用，无法确定净利润。
-      </p>
-    </div>
-  </section>
-  <section v-if="shops.length" class="form-panel section-block">
-    <fieldset :disabled="busy">
-      <legend>费用范围</legend>
-      <div class="form-grid">
-        <div class="form-field">
-          <label for="expense-shop">所属店铺</label
-          ><select id="expense-shop" v-model="shopId" @change="refresh">
-            <option v-for="shop in shops" :key="shop.id" :value="shop.id">
-              {{ shop.name }} · {{ shop.code }}
-            </option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label for="expense-identity">数据身份</label
-          ><select id="expense-identity" v-model="scope.data_identity" @change="refresh">
-            <option value="user_import">用户实际记录</option>
-            <option value="synthetic">合成测试数据</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label for="expense-channel">来源渠道</label
-          ><select id="expense-channel" v-model="scope.channel" @change="refresh">
-            <option v-for="(label, key) in qualityChannels" :key="key" :value="key">
-              {{ label }}
-            </option>
-          </select>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button class="button secondary" :disabled="!!pending || !!pendingControl" @click="refresh">
-          刷新费用</button
-        ><button
-          class="button primary"
-          :disabled="!!pending || !!pendingControl"
-          @click="begin(null)"
-        >
-          新增实际费用
-        </button>
-      </div>
-    </fieldset>
-  </section>
-  <p v-if="!shops.length && !busy">
-    请先在<RouterLink to="/settings">经营资料</RouterLink>添加店铺。
-  </p>
-  <p v-if="busy" role="status">正在读取或保存费用…</p>
-  <section v-if="!busy && (pending || pendingControl)" class="form-panel section-block">
-    <p>本次操作尚未确认结果。可使用原请求回查；若返回校验或版本冲突，请刷新后重新核对。</p>
-    <button v-if="pending" class="button secondary" @click="save()">回查原保存请求</button
-    ><button v-else class="button secondary" @click="control(true)">回查原处理请求</button
-    ><button class="button secondary" @click="abandon">刷新并重新核对</button>
-  </section>
-  <fieldset v-if="editor" :disabled="busy">
-    <ExpenseEditor
-      :key="`${shopId}-${scope.data_identity}-${scope.channel}-${editing?.id ?? 0}`"
-      :shop-id="shopId"
-      :scope="scope"
-      :existing="editing"
-      @save="save"
-      @cancel="editor = false"
-    />
-  </fieldset>
-  <section v-if="saved" class="form-panel section-block" aria-label="费用详情与版本">
-    <h2>费用 #{{ saved.id }} · {{ expenseStatuses[saved.status] }}</h2>
-    <p>当前版本 {{ saved.version }} · 创建于 {{ supportTime(saved.created_at, timezone) }}</p>
-    <RouterLink :to="`/expenses?shop=${shopId}&expense=${saved.id}`">费用固定链接</RouterLink>
-    <ExpenseEvidence v-if="saved.snapshot" :snapshot="saved.snapshot" :shop-id="shopId" />
-    <p v-if="saved.status === 'stale'" class="warning-text">
-      关联后店铺数据发生变化，本笔已从有效费用合计排除。请重新查找当前订单并核对，或更正为店铺费用后保存新版本。
-    </p>
-    <p v-if="saved.status === 'cleared'">费用正文、金额、发生时间及全部历史依据已清除。</p>
-    <button
-      v-if="saved.status === 'active' || saved.status === 'stale'"
-      class="button secondary"
-      :disabled="busy"
-      @click="begin(saved)"
-    >
-      修订费用
-    </button>
-    <details>
-      <summary>版本历史（{{ saved.history.length }}）</summary>
-      <article v-for="entry in saved.history" :key="entry.version" class="section-block">
-        <h3>版本 {{ entry.version }} · {{ revisionActions[entry.action] ?? entry.action }}</h3>
-        <p>{{ supportTime(entry.created_at, timezone) }} · 历史记录不重复计入费用</p>
-        <ExpenseEvidence v-if="entry.snapshot" :snapshot="entry.snapshot" :shop-id="shopId" />
-        <p v-else>无费用正文</p>
-      </article>
-    </details>
-    <details v-if="saved.status !== 'cleared'">
-      <summary>撤销或清除费用</summary>
-      <fieldset :disabled="busy">
-        <div class="form-field">
-          <label for="expense-action">处理方式</label
-          ><select id="expense-action" v-model="controlAction">
-            <option value="withdraw" :disabled="saved.status === 'withdrawn'">
-              撤销 · 保留历史，排除合计
-            </option>
-            <option value="clear">清除 · 擦除全部历史正文与依据</option>
-          </select>
-        </div>
-        <label class="check-label"
-          ><input v-model="confirmed" type="checkbox" />确认执行所选费用处理及全部版本影响</label
-        ><button class="button secondary" :disabled="!confirmed" @click="control()">
-          执行费用处理
-        </button>
-      </fieldset>
-    </details>
-  </section>
-  <section v-if="shopId" class="form-panel section-block" aria-label="费用核对">
-    <h2>按发生时间核对费用</h2>
-    <p>包含开始、不含结束，最多 366 天、1000 笔；按当前版本统计。</p>
-    <form @submit.prevent="summarize">
-      <fieldset :disabled="busy">
-        <div class="form-grid">
-          <BusinessDateRange
-            v-model:start="period.start_at"
-            v-model:end="period.end_at"
-            :timezone="period.timezone"
-            start-label="开始时间（含偏移）"
-            end-label="结束时间（含偏移）"
-          />
-          <div class="form-field">
-            <label for="expense-zone">核对显示时区（IANA）</label
-            ><input id="expense-zone" v-model="period.timezone" required />
-          </div>
-        </div>
-        <button class="button secondary">核对费用合计</button>
-      </fieldset>
-    </form>
-    <div v-if="summary" aria-label="费用合计结果">
-      <p>
-        {{ supportTime(summary.scope.start_at, summary.scope.timezone) }} 至
-        {{ supportTime(summary.scope.end_at, summary.scope.timezone) }}（不含结束）
-      </p>
-      <p>
-        有效 {{ summary.included_count }} 笔 · 待重核 {{ summary.stale_count }} 笔 · 已撤销
-        {{ summary.withdrawn_count }} 笔
-      </p>
-      <p v-if="!summary.totals.length">此范围没有可计入费用；不表示实际费用为零。</p>
-      <ul>
-        <li
-          v-for="item in summary.totals"
-          :key="`${item.currency}-${item.category}-${item.allocation}`"
-        >
-          {{ item.currency }} {{ item.amount }} · {{ expenseCategories[item.category] }} ·
-          {{ item.allocation === 'shop' ? '店铺未分摊' : '订单行直接归属' }} · {{ item.count }} 笔
-        </li>
-      </ul>
-      <ul>
-        <li v-for="check in summary.checks" :key="check">{{ check }}</li>
-      </ul>
-    </div>
-  </section>
-  <section v-if="shopId" class="form-panel section-block" aria-label="费用记录列表">
-    <h2>费用记录</h2>
-    <p>当前店铺、身份和渠道；包含已撤销、待重核及已清除记录。</p>
-    <p v-if="!rows.length && !busy">暂无已加载记录。</p>
-    <article v-for="row in rows" :key="row.id" class="expense-row">
+  <div class="solo-page page-expenses">
+    <div class="page-heading">
       <div>
-        <strong>#{{ row.id }} · {{ row.snapshot?.content.label ?? '正文已清除' }}</strong>
+        <h1>实际费用，每一笔有依据。</h1>
+        <p>记录已发生费用，保留修订历史，核对归属与来源。</p>
+      </div>
+      <RouterLink class="button secondary" :to="`/analytics?shop=${shopId}`">经营分析</RouterLink>
+    </div>
+    <FeedbackBanner :message="error" />
+    <section class="data-note">
+      <span class="note-symbol" aria-hidden="true">i</span>
+      <div>
+        <h3>人工费用台账 · 平台账单待核对</h3>
         <p>
-          {{ expenseStatuses[row.status] }} · 版本 {{ row.version
-          }}<span v-if="row.snapshot">
-            · {{ row.snapshot.content.currency }} {{ row.snapshot.content.amount }}</span
-          >
+          费用完整性未知。店铺费用尚未分摊，单条订单行费用全额归属；汇总仅代表当前已录入费用，无法确定净利润。
         </p>
       </div>
+    </section>
+    <section v-if="shops.length" class="form-panel section-block">
+      <fieldset :disabled="busy">
+        <legend>费用范围</legend>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="expense-shop">所属店铺</label
+            ><select id="expense-shop" v-model="shopId" @change="refresh">
+              <option v-for="shop in shops" :key="shop.id" :value="shop.id">
+                {{ shop.name }} · {{ shop.code }}
+              </option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="expense-identity">数据身份</label
+            ><select id="expense-identity" v-model="scope.data_identity" @change="refresh">
+              <option value="user_import">用户实际记录</option>
+              <option value="synthetic">样例资料</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="expense-channel">来源渠道</label
+            ><select id="expense-channel" v-model="scope.channel" @change="refresh">
+              <option v-for="(label, key) in qualityChannels" :key="key" :value="key">
+                {{ label }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="button secondary" :disabled="!!pending || !!pendingControl" @click="refresh">
+            刷新费用</button
+          ><button
+            class="button primary"
+            :disabled="!!pending || !!pendingControl"
+            @click="begin(null)"
+          >
+            新增实际费用
+          </button>
+        </div>
+      </fieldset>
+    </section>
+    <p v-if="!shops.length && !busy">
+      请先在<RouterLink to="/settings">经营资料</RouterLink>添加店铺。
+    </p>
+    <p v-if="busy" role="status">正在读取或保存费用…</p>
+    <section v-if="!busy && (pending || pendingControl)" class="form-panel section-block">
+      <p>本次操作尚未确认结果。可使用原请求回查；若返回校验或版本冲突，请刷新后重新核对。</p>
+      <button v-if="pending" class="button secondary" @click="save()">回查原保存请求</button
+      ><button v-else class="button secondary" @click="control(true)">回查原处理请求</button
+      ><button class="button secondary" @click="abandon">刷新并重新核对</button>
+    </section>
+    <fieldset v-if="editor" :disabled="busy">
+      <ExpenseEditor
+        :key="`${shopId}-${scope.data_identity}-${scope.channel}-${editing?.id ?? 0}`"
+        :shop-id="shopId"
+        :scope="scope"
+        :existing="editing"
+        @save="save"
+        @cancel="editor = false"
+      />
+    </fieldset>
+    <section v-if="saved" class="form-panel section-block" aria-label="费用详情与版本">
+      <h2>费用 #{{ saved.id }} · {{ expenseStatuses[saved.status] }}</h2>
+      <p>当前版本 {{ saved.version }} · 创建于 {{ supportTime(saved.created_at, timezone) }}</p>
+      <RouterLink :to="`/expenses?shop=${shopId}&expense=${saved.id}`">费用固定链接</RouterLink>
+      <ExpenseEvidence v-if="saved.snapshot" :snapshot="saved.snapshot" :shop-id="shopId" />
+      <p v-if="saved.status === 'stale'" class="warning-text">
+        关联后店铺数据发生变化，本笔已从有效费用合计排除。请重新查找当前订单并核对，或更正为店铺费用后保存新版本。
+      </p>
+      <p v-if="saved.status === 'cleared'">费用正文、金额、发生时间及全部历史依据已清除。</p>
       <button
+        v-if="saved.status === 'active' || saved.status === 'stale'"
         class="button secondary"
-        :disabled="busy || !!pending || !!pendingControl"
-        @click="show(row.id)"
+        :disabled="busy"
+        @click="begin(saved)"
       >
-        查看费用 #{{ row.id }}
+        修订费用
       </button>
-    </article>
-    <button
-      v-if="cursor"
-      class="button secondary"
-      :disabled="busy"
-      @click="action((valid) => list(valid, cursor ?? undefined))"
-    >
-      加载更早费用
-    </button>
-  </section>
+      <details>
+        <summary>版本历史（{{ saved.history.length }}）</summary>
+        <article v-for="entry in saved.history" :key="entry.version" class="section-block">
+          <h3>版本 {{ entry.version }} · {{ revisionActions[entry.action] ?? entry.action }}</h3>
+          <p>{{ supportTime(entry.created_at, timezone) }} · 历史记录不重复计入费用</p>
+          <ExpenseEvidence v-if="entry.snapshot" :snapshot="entry.snapshot" :shop-id="shopId" />
+          <p v-else>无费用正文</p>
+        </article>
+      </details>
+      <details v-if="saved.status !== 'cleared'">
+        <summary>撤销或清除费用</summary>
+        <fieldset :disabled="busy">
+          <div class="form-field">
+            <label for="expense-action">处理方式</label
+            ><select id="expense-action" v-model="controlAction">
+              <option value="withdraw" :disabled="saved.status === 'withdrawn'">
+                撤销 · 保留历史，排除合计
+              </option>
+              <option value="clear">清除 · 擦除全部历史正文与依据</option>
+            </select>
+          </div>
+          <label class="check-label"
+            ><input v-model="confirmed" type="checkbox" />确认执行所选费用处理及全部版本影响</label
+          ><button class="button secondary danger" :disabled="!confirmed" @click="control()">
+            执行费用处理
+          </button>
+        </fieldset>
+      </details>
+    </section>
+    <section v-if="shopId" class="form-panel section-block" aria-label="费用核对">
+      <h2>按发生时间核对费用</h2>
+      <p>包含开始、不含结束，最多 366 天、1000 笔；按当前版本统计。</p>
+      <form @submit.prevent="summarize">
+        <fieldset :disabled="busy">
+          <div class="form-grid">
+            <BusinessDateRange
+              v-model:start="period.start_at"
+              v-model:end="period.end_at"
+              :timezone="period.timezone"
+              start-label="开始时间（含偏移）"
+              end-label="结束时间（含偏移）"
+            />
+            <div class="form-field">
+              <label for="expense-zone">核对显示时区（IANA）</label
+              ><input id="expense-zone" v-model="period.timezone" required />
+            </div>
+          </div>
+          <button class="button secondary">核对费用合计</button>
+        </fieldset>
+      </form>
+      <div v-if="summary" aria-label="费用合计结果">
+        <p>
+          {{ supportTime(summary.scope.start_at, summary.scope.timezone) }} 至
+          {{ supportTime(summary.scope.end_at, summary.scope.timezone) }}（不含结束）
+        </p>
+        <p>
+          有效 {{ summary.included_count }} 笔 · 待重核 {{ summary.stale_count }} 笔 · 已撤销
+          {{ summary.withdrawn_count }} 笔
+        </p>
+        <p v-if="!summary.totals.length">此范围没有可计入费用；不表示实际费用为零。</p>
+        <ul>
+          <li
+            v-for="item in summary.totals"
+            :key="`${item.currency}-${item.category}-${item.allocation}`"
+          >
+            {{ item.currency }} {{ item.amount }} · {{ expenseCategories[item.category] }} ·
+            {{ item.allocation === 'shop' ? '店铺未分摊' : '订单行直接归属' }} · {{ item.count }} 笔
+          </li>
+        </ul>
+        <ul>
+          <li v-for="check in summary.checks" :key="check">{{ check }}</li>
+        </ul>
+      </div>
+    </section>
+    <section v-if="shopId" class="form-panel section-block" aria-label="费用记录列表">
+      <h2>费用记录</h2>
+      <p>当前店铺、身份和渠道；包含已撤销、待重核及已清除记录。</p>
+      <p v-if="!rows.length && !busy">暂无已加载记录。</p>
+      <article v-for="row in rows" :key="row.id" class="expense-row">
+        <div>
+          <strong>#{{ row.id }} · {{ row.snapshot?.content.label ?? '正文已清除' }}</strong>
+          <p>
+            {{ expenseStatuses[row.status] }} · 版本 {{ row.version
+            }}<span v-if="row.snapshot">
+              · {{ row.snapshot.content.currency }} {{ row.snapshot.content.amount }}</span
+            >
+          </p>
+        </div>
+        <button
+          class="button secondary"
+          :disabled="busy || !!pending || !!pendingControl"
+          @click="show(row.id)"
+        >
+          查看费用 #{{ row.id }}
+        </button>
+      </article>
+      <button
+        v-if="cursor"
+        class="button secondary"
+        :disabled="busy"
+        @click="action((valid) => list(valid, cursor ?? undefined))"
+      >
+        加载更早费用
+      </button>
+    </section>
+  </div>
 </template>
 <style scoped>
 fieldset {

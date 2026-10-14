@@ -10,6 +10,7 @@ import {
   applyLinkedScope,
 } from '@/composables/deepLink'
 import { identityApi } from '@/api/identity'
+import { loadImportedScope } from '@/composables/importedScope'
 import { operationsApi } from '@/api/operations'
 import { errorMessage } from '@/api/client'
 import type { Shop } from '@/types/identity'
@@ -174,6 +175,8 @@ onMounted(async () => {
       scope.timezone = currentShop.timezone
     }
     applyLinkedScope(scope, route.query)
+    const inferred = await loadImportedScope(shopId.value, route.query)
+    applyLinkedScope(scope, { ...inferred, ...route.query })
     await refresh(true)
     if (taskId) {
       await inspect(taskId, 'task')
@@ -239,8 +242,8 @@ onUnmounted(() => window.removeEventListener('focus', focus))
           <div class="form-field">
             <label for="ops-identity">数据身份</label
             ><select id="ops-identity" v-model="scope.data_identity" @change="refresh(true)">
-              <option value="user_import">用户导入文件</option>
-              <option value="synthetic">合成测试数据</option>
+              <option value="user_import">经营资料</option>
+              <option value="synthetic">样例资料</option>
             </select>
           </div>
           <div class="form-field">

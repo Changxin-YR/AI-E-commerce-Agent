@@ -34,6 +34,9 @@ class StartAgent(InputModel):
     request_id: UUID
     authorization_id: Annotated[int, Field(gt=0)] | None = None
     template: Template = "daily"
+    response_mode: Literal["workflow", "chat"] = "workflow"
+    response_language: Annotated[str, Field(min_length=1, max_length=60)] = "auto"
+    previous_question: Annotated[str, Field(max_length=500)] = ""
     margin_cost_mode: Literal["current_estimate", "seller_history"] = "seller_history"
     scope: OperationScope
     goal: Annotated[str, Field(max_length=500)] = ""
@@ -51,6 +54,15 @@ class StartAgent(InputModel):
 
     @model_validator(mode="after")
     def margin_window(self) -> Self:
+        if self.response_mode == "chat" and self.template not in {
+            "question",
+            "listing_model",
+            "support_model",
+            "daily_model",
+        }:
+            raise ValueError("对话模式仅支持问数、商品文案、客服和运营查询")
+        if self.response_mode == "chat" and self.authorization_id is not None:
+            raise ValueError("对话查询不能绑定自动写入授权")
         if (
             self.template == "margin_review"
             and self.scope.end_at - self.scope.start_at != timedelta(days=7)
@@ -62,7 +74,14 @@ class StartAgent(InputModel):
 class AgentAction(InputModel):
     version: Annotated[int, Field(ge=1)]
     action: Literal[
-        "advance", "pause", "resume", "cancel", "approve", "reject", "use_authorization"
+        "advance",
+        "pause",
+        "resume",
+        "cancel",
+        "approve",
+        "reject",
+        "use_authorization",
+        "request_save",
     ]
     authorization_id: Annotated[int, Field(gt=0)] | None = None
     budget: Budget | None = None

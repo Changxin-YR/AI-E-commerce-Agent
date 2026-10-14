@@ -377,6 +377,28 @@ def test_model_can_add_semantic_intent_but_cannot_grant_tools(
     assert run["external_status"] == "not_submitted"
 
 
+@pytest.mark.parametrize("with_policy", [True, False])
+def test_support_request_schema_names_exact_evidence_and_current_policy_ids(
+    logged_in: TestClient, with_policy: bool
+) -> None:
+    shop, _, message = setup(logged_in, FAQ)
+    ids = []
+    if with_policy:
+        ids.append(policy(logged_in, shop, code="faq", topic="faq", text="Wash by hand.")["id"])
+    prepared = act(logged_in, begin(logged_in, shop, message, policies=ids))["result"]
+    request = support_request("Answer the FAQ", SupportPreparation.model_validate(prepared))
+    properties = request["schema"]["properties"]
+    assert properties["fact_ids"]["items"]["enum"] == ["identity", "tracking", "permissions"]
+    assert properties["fact_ids"]["minItems"] == properties["fact_ids"]["maxItems"] == 3
+    assert properties["policy_ids"]["maxItems"] == len(ids)
+    if with_policy:
+        assert properties["policy_ids"]["items"]["enum"] == ["policy_1"]
+    else:
+        # An empty enum is invalid for some strict providers; maxItems=0 requires [].
+        assert "enum" not in properties["policy_ids"]["items"]
+    assert "mandatory safety-context IDs even for FAQ" in request["instructions"]
+
+
 @pytest.mark.parametrize("adapter_class", [OpenAIResponsesModel, DashScopeChatModel])
 def test_support_protocol_uses_only_authorized_payload(
     logged_in: TestClient, adapter_class: type[OpenAIResponsesModel]

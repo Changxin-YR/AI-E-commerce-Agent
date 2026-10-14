@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="SOLOOPS_", env_file=".env", extra="ignore")
 
     database_url: SecretStr
+    demo_enabled: bool = False
     scheduler_enabled: bool = True
     outbound_enabled: bool = False
     outbound_provider: Literal["resend", "qq_smtp"] = "resend"
@@ -21,7 +22,9 @@ class Settings(BaseSettings):
     outbound_test_recipient: str = ""
     outbound_domain_id: UUID | None = None
     model_enabled: bool = False
-    model_provider: Literal["openai_responses", "dashscope_chat"] = "openai_responses"
+    model_provider: Literal["openai_responses", "dashscope_chat", "deepseek_chat"] = (
+        "openai_responses"
+    )
     model_api_key: SecretStr | None = None
     model_name: str = ""
     model_input_usd_per_million: Decimal | None = Field(default=None, gt=0, le=1000)

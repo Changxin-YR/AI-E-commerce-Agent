@@ -40,9 +40,11 @@ from app.services.analysis_explanation import (
     explanation_request,
     question_request,
 )
+from app.services.analysis_explanation import catalog as analysis_catalog
 from app.services.analytics import AnalyticsService
 from app.services.authorizations import AuthorizationsService
 from app.services.business_rules import BusinessRulesService
+from app.services.concise_answer import answer_request, validate_answer
 from app.services.listing_composition import compose_listing, listing_request
 from app.services.listings import ListingService, digest
 from app.services.margin_review import MarginReviewService
@@ -262,6 +264,12 @@ class AgentService:
             canonical.pop("allow_operation_data")
         if canonical["expected_operation_hash"] is None:
             canonical.pop("expected_operation_hash")
+        if canonical["response_mode"] == "workflow":
+            canonical.pop("response_mode")
+        if canonical["response_language"] == "auto":
+            canonical.pop("response_language")
+        if not canonical["previous_question"]:
+            canonical.pop("previous_question")
         key = digest([shop_id, canonical])
         prior = self.repo.by_request(owner, str(data.request_id))
         if prior:
@@ -317,6 +325,30 @@ class AgentService:
             if run.status != "ready":
                 return self._finish(run)
             return self._advance(run)
+        if data.action == "request_save":
+            if (
+                run.status != "succeeded"
+                or run.reason != "chat_answered"
+                or run.source_status != "current"
+                or not run.result
+                or not run.input
+                or run.input.get("response_mode") != "chat"
+            ):
+                raise ConflictError("请从当前有效回答发起保存")
+            nodes = {
+                "question": "analysis_todo",
+                "listing_model": "listing_candidate",
+                "support_model": "support_candidate",
+                "daily_model": "propose_tasks",
+            }
+            if run.template == "daily_model" and not run.result.get("check", {}).get("findings"):
+                raise ConflictError("本次没有需要保存的运营事项")
+            self._answer_request(run, StartAgent.model_validate(run.input))
+            run.next_node = nodes[run.template]
+            run.status, run.reason = "waiting_approval", "save_requested"
+            run.version += 1
+            self._event(run, "request_save", run.status)
+            return self._finish(run)
         if run.status in TERMINAL:
             raise ConflictError("任务已结束或被阻断，请核对原因后新建任务")
         if data.action == "use_authorization":
@@ -383,6 +415,7 @@ class AgentService:
             if run.next_node == "plan":
                 return self._plan(run)
             if run.next_node in {
+                "answer",
                 "question_plan",
                 "explain_analysis",
                 "compose_listing",
@@ -735,7 +768,32 @@ class AgentService:
         self.uow.commit()
         return lease
 
+    def _answer_request(self, run: AgentExecution, data: StartAgent) -> dict[str, Any]:
+        result = run.result or {}
+        if run.template == "question":
+            payload = explanation_request(
+                data.goal, AnalysisResult.model_validate(result["analysis"])
+            )["payload"]
+        elif run.template == "listing_model":
+            prepared = ListingPreparation.model_validate(result["preparation"])
+            self._current_listing(run, prepared)
+            payload = listing_request(data.goal, prepared.product)["payload"]
+        elif run.template == "support_model":
+            support = SupportPreparation.model_validate(result["preparation"])
+            self._current_support(run, support)
+            payload = support_request(data.goal, support)["payload"]
+            payload["review_reasons"] = result["candidate"]["reasons"]
+        else:
+            check = CheckPreview.model_validate(result["check"])
+            self._current_operations(run, check)
+            payload = operation_request(data.goal, data.scope, check)["payload"]
+        request = answer_request(data.goal, data.response_language, run.template, payload)
+        request["payload"]["previous_question"] = data.previous_question
+        return request
+
     def _generation_request(self, run: AgentExecution, data: StartAgent) -> dict[str, Any]:
+        if run.next_node == "answer":
+            return self._answer_request(run, data)
         if run.next_node == "explain_operations":
             check = CheckPreview.model_validate(run.result)
             self._current_operations(run, check)
@@ -747,9 +805,23 @@ class AgentService:
         if run.next_node == "compose_listing":
             prepared = ListingPreparation.model_validate(run.result)
             self._current_listing(run, prepared)
-            return listing_request(data.goal, prepared.product)
+            request = listing_request(data.goal, prepared.product)
+            if data.response_mode == "chat":
+                request["instructions"] += (
+                    " This stage only selects source IDs. Pure translation or response-language "
+                    "requests are supported by a later presentation stage; they do not require "
+                    "needs_review here. Preserve original facts in this stage."
+                )
+            return request
         if run.next_node == "question_plan":
-            return question_request(data.goal, data.scope.model_dump(mode="json"))
+            request = question_request(data.goal, data.scope.model_dump(mode="json"))
+            request["payload"]["previous_question"] = data.previous_question
+            request["instructions"] += (
+                " Resolve short follow-up questions using previous_question only for intent, "
+                "never as evidence or permissions. Language requests are supported and do "
+                "not change the data scope."
+            )
+            return request
         return explanation_request(data.goal, AnalysisResult.model_validate(run.result))
 
     def _current_operations(self, run: AgentExecution, prepared: CheckPreview) -> None:
@@ -785,9 +857,15 @@ class AgentService:
     def _generate_content(self, run: AgentExecution) -> AgentOutput:
         data = StartAgent.model_validate(run.input)
         status = self.model.status()
-        listing = run.next_node == "compose_listing"
-        support = run.next_node == "compose_support"
-        operations = run.next_node == "explain_operations"
+        listing = run.next_node == "compose_listing" or (
+            run.next_node == "answer" and run.template == "listing_model"
+        )
+        support = run.next_node == "compose_support" or (
+            run.next_node == "answer" and run.template == "support_model"
+        )
+        operations = run.next_node == "explain_operations" or (
+            run.next_node == "answer" and run.template == "daily_model"
+        )
         consent = (
             data.allow_operation_data
             if operations
@@ -882,6 +960,23 @@ class AgentService:
                     if reply.content is None:
                         raise ValueError("no valid content")
                     output = self._accept_generation(run, reply.content, reply.engine)
+                    if (
+                        run.input
+                        and run.input.get("response_mode") == "chat"
+                        and step.node
+                        in {
+                            "explain_analysis",
+                            "compose_listing",
+                            "compose_support",
+                            "explain_operations",
+                        }
+                        and run.status in {"waiting_approval", "succeeded"}
+                    ):
+                        run.status, run.reason, run.next_node = (
+                            "ready",
+                            "preparing_answer",
+                            "answer",
+                        )
                     step.output = {**(step.output or {}), **output}
                 except BusinessError as error:
                     run.status, run.reason = "blocked", error.code
@@ -904,6 +999,20 @@ class AgentService:
     def _accept_generation(
         self, run: AgentExecution, content: dict[str, Any], engine: str
     ) -> dict[str, Any]:
+        if run.next_node == "answer":
+            data = StartAgent.model_validate(run.input)
+            request = self._answer_request(run, data)
+            answer = validate_answer(content, request["payload"])
+            if run.template == "question":
+                facts = analysis_catalog(
+                    AnalysisResult.model_validate((run.result or {})["analysis"])
+                )
+                for key, fact in facts.items():
+                    if fact["sku"]:
+                        answer = answer.replace(f"[{key}]", str(fact["sku"]))
+            run.result = {**(run.result or {}), "chat_answer": answer}
+            run.status, run.reason, run.next_node = "succeeded", "chat_answered", "end"
+            return {"chat_answer": answer}
         if run.next_node == "explain_operations":
             check = CheckPreview.model_validate(run.result)
             self._current_operations(run, check)
@@ -927,7 +1036,7 @@ class AgentService:
             self._current_support(run, support)
             selection = SupportSelection.model_validate(content)
             snapshot = compose_support(support, selection)
-            if engine not in {"openai_responses", "dashscope_chat", "test_double"}:
+            if engine not in {"openai_responses", "dashscope_chat", "deepseek_chat", "test_double"}:
                 raise ValueError("Unknown composition engine")
             output = {
                 "preparation": support.model_dump(mode="json"),
@@ -949,7 +1058,7 @@ class AgentService:
             if candidate is None:
                 run.status, run.reason = "waiting_input", "listing_needs_review"
                 return {"next_action": "needs_review"}
-            if engine not in {"openai_responses", "dashscope_chat", "test_double"}:
+            if engine not in {"openai_responses", "dashscope_chat", "deepseek_chat", "test_double"}:
                 raise ValueError("Unknown composition engine")
             output = {
                 "preparation": prepared.model_dump(mode="json"),
