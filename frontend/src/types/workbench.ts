@@ -44,7 +44,7 @@ export const workKinds: Record<string, string> = {
   analysis: '分析报告',
   overview: '经营摘要',
   authorization: 'R1 预授权',
-  outbound: 'R2 测试邮件',
+  outbound: 'R2 经营邮件',
 }
 export const workBuckets: Record<string, string> = {
   pending: '待处理',

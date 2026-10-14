@@ -162,8 +162,8 @@ onMounted(() => load())
           <div class="form-field">
             <label for="policy-identity">政策数据身份</label
             ><select id="policy-identity" v-model="form.data_identity">
-              <option value="user_import">用户录入资料</option>
-              <option value="synthetic">合成测试资料</option>
+              <option value="user_import">经营资料</option>
+              <option value="synthetic">样例资料</option>
             </select>
           </div>
           <div class="form-field">
@@ -216,7 +216,7 @@ onMounted(() => load())
         ><p>
           {{ policy.data.code }} · {{ policy.data.market }} / {{ policy.data.channel }} /
           {{ policy.data.language }} ·
-          {{ policy.data.data_identity === 'synthetic' ? '合成测试资料' : '用户录入资料' }}
+          {{ policy.data.data_identity === 'synthetic' ? '样例资料' : '经营资料' }}
         </p>
         <p>
           出处 {{ policy.data.source }} · 来源版本 {{ policy.data.source_version }} ·
@@ -236,7 +236,7 @@ onMounted(() => load())
           >
             编辑并另存新版本</button
           ><button
-            class="button secondary"
+            class="button secondary danger"
             :disabled="busy || disabled"
             @click="clearing = policy.id"
           >
@@ -245,7 +245,7 @@ onMounted(() => load())
         </div>
         <div v-if="clearing === policy.id" role="alert">
           <p>将擦除此版本原文，以及所有引用它的草稿正文与证据快照。此操作不能恢复。</p>
-          <button class="button secondary" :disabled="busy || disabled" @click="clear(policy.id)">
+          <button class="button secondary danger" :disabled="busy || disabled" @click="clear(policy.id)">
             确认清除政策及关联草稿</button
           ><button class="button secondary" :disabled="busy" @click="clearing = null">
             取消清除

@@ -248,7 +248,59 @@ class OpenAIResponsesModel:
             ) from error
 
 
-class DashScopeChatModel(OpenAIResponsesModel):
+class ChatCompletionsModel(OpenAIResponsesModel):
+    """Shared bounded chat protocol; each provider owns its request format."""
+
+    def _chat_body(self, body: dict[str, Any]) -> dict[str, Any]:
+        raise NotImplementedError
+
+    def _body(self, goal: str) -> dict[str, Any]:
+        return self._chat_body(super()._body(goal))
+
+    def _generation_body(self, request: dict[str, Any]) -> dict[str, Any]:
+        return self._chat_body(super()._generation_body(request))
+
+    def _normalize_response(self, data: Any) -> dict[str, Any]:
+        data = super()._normalize_response(data)
+        usage = data.get("usage")
+        if not isinstance(usage, dict):
+            raise ValueError("unconfirmed usage")
+        result: dict[str, Any] = {
+            "usage": {
+                "input_tokens": usage.get("prompt_tokens"),
+                "output_tokens": usage.get("completion_tokens"),
+            },
+            "status": "incomplete",
+            "output": [],
+        }
+        choices = data.get("choices")
+        if not isinstance(choices, list) or len(choices) != 1 or not isinstance(choices[0], dict):
+            return result
+        choice = choices[0]
+        message = choice.get("message")
+        if (
+            choice.get("finish_reason") != "stop"
+            or not isinstance(message, dict)
+            or message.get("role") != "assistant"
+            or message.get("refusal")
+            or message.get("tool_calls")
+            or message.get("function_call")
+            or not isinstance(message.get("content"), str)
+        ):
+            return result
+        result.update(
+            status="completed",
+            output=[
+                {
+                    "type": "message",
+                    "content": [{"type": "output_text", "text": message["content"]}],
+                }
+            ],
+        )
+        return result
+
+
+class DashScopeChatModel(ChatCompletionsModel):
     """Beijing Chat Completions adapter with a verified structured-output model family."""
 
     provider = "dashscope_chat"
@@ -282,46 +334,50 @@ class DashScopeChatModel(OpenAIResponsesModel):
             raise BusinessError("model_input_too_large", "模型事实范围过大，请缩小时间窗", 422)
         return result
 
-    def _body(self, goal: str) -> dict[str, Any]:
-        return self._chat_body(super()._body(goal))
 
-    def _generation_body(self, request: dict[str, Any]) -> dict[str, Any]:
-        return self._chat_body(super()._generation_body(request))
+class DeepSeekChatModel(ChatCompletionsModel):
+    """Official DeepSeek chat endpoint in non-thinking JSON-object mode."""
 
-    def _normalize_response(self, data: Any) -> dict[str, Any]:
-        data = super()._normalize_response(data)
-        usage = data.get("usage")
-        if not isinstance(usage, dict):
-            raise ValueError("unconfirmed usage")
-        result: dict[str, Any] = {
-            "usage": {
-                "input_tokens": usage.get("prompt_tokens"),
-                "output_tokens": usage.get("completion_tokens"),
-            },
-            "status": "incomplete",
-            "output": [],
-        }
-        choices = data.get("choices")
-        if not isinstance(choices, list) or len(choices) != 1 or not isinstance(choices[0], dict):
-            return result
-        choice = choices[0]
-        message = choice.get("message")
-        if (
-            choice.get("finish_reason") != "stop"
-            or not isinstance(message, dict)
-            or message.get("role") != "assistant"
-            or message.get("refusal")
-            or message.get("tool_calls")
-            or not isinstance(message.get("content"), str)
-        ):
-            return result
-        result.update(
-            status="completed",
-            output=[
-                {
-                    "type": "message",
-                    "content": [{"type": "output_text", "text": message["content"]}],
+    provider = "deepseek_chat"
+    endpoint = "https://api.deepseek.com/chat/completions"
+
+    def status(self) -> ModelStatus:
+        status = super().status()
+        if self.settings.model_name not in {
+            "deepseek-flash",
+            "deepseek-v4-pro",
+            "deepseek-v4-flash",
+        }:
+            return status.model_copy(
+                update={
+                    "status": "not_configured",
+                    "reason": "DeepSeek 适配器需配置 deepseek-flash 或 deepseek-v4 系列",
                 }
+            )
+        return status
+
+    def _chat_body(self, body: dict[str, Any]) -> dict[str, Any]:
+        # JSON mode guarantees syntax only; the existing business validators enforce facts.
+        schema = json.dumps(body["text"]["format"]["schema"], ensure_ascii=False)
+        result = {
+            "model": body["model"],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        body["instructions"]
+                        + "\nReturn exactly one JSON object matching this JSON Schema: "
+                        + schema
+                        + "\nDo not add explanations, Markdown, or properties outside the schema."
+                    ),
+                },
+                {"role": "user", "content": body["input"]},
             ],
-        )
+            "thinking": {"type": "disabled"},
+            "max_tokens": body["max_output_tokens"],
+            "response_format": {"type": "json_object"},
+            "stream": False,
+        }
+        if len(json.dumps(result).encode("utf-8")) > 60000:
+            raise BusinessError("model_input_too_large", "模型事实范围过大，请缩小时间窗", 422)
         return result

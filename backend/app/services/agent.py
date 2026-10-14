@@ -927,7 +927,7 @@ class AgentService:
             self._current_support(run, support)
             selection = SupportSelection.model_validate(content)
             snapshot = compose_support(support, selection)
-            if engine not in {"openai_responses", "dashscope_chat", "test_double"}:
+            if engine not in {"openai_responses", "dashscope_chat", "deepseek_chat", "test_double"}:
                 raise ValueError("Unknown composition engine")
             output = {
                 "preparation": support.model_dump(mode="json"),
@@ -949,7 +949,7 @@ class AgentService:
             if candidate is None:
                 run.status, run.reason = "waiting_input", "listing_needs_review"
                 return {"next_action": "needs_review"}
-            if engine not in {"openai_responses", "dashscope_chat", "test_double"}:
+            if engine not in {"openai_responses", "dashscope_chat", "deepseek_chat", "test_double"}:
                 raise ValueError("Unknown composition engine")
             output = {
                 "preparation": prepared.model_dump(mode="json"),

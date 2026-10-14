@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { openNavigation } from './navigation'
 
 for (const width of [1440, 390]) {
   test(`seller can reach all 19 grouped routes with keyboard at ${width}px`, async ({ page }) => {
@@ -10,7 +11,7 @@ for (const width of [1440, 390]) {
     await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
     await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
     await page.getByRole('button', { name: '进入工作台' }).click()
-    const nav = page.getByRole('navigation', { name: '主导航' })
+    const nav = await openNavigation(page)
     await expect(nav.getByRole('button', { name: /今日 AI 运营/ })).toHaveAttribute(
       'aria-expanded',
       'true',
@@ -28,6 +29,7 @@ for (const width of [1440, 390]) {
       await nav.getByRole('link', { name: link.label, exact: true }).click()
       await expect(page).toHaveURL((url) => url.pathname === link.href)
       await expect(page.locator('main h1')).toBeVisible()
+      await openNavigation(page)
       await expect(nav.getByRole('link', { name: link.label, exact: true })).toHaveAttribute(
         'aria-current',
         'page',
@@ -43,6 +45,7 @@ for (const width of [1440, 390]) {
     await page.keyboard.press('Space')
     await expect(nav.getByRole('link', { name: '订单销售与退款核对' })).toBeVisible()
     await page.reload()
+    await openNavigation(page)
     await expect(nav.getByRole('button', { name: /自动化与设置/ })).toHaveAttribute(
       'aria-expanded',
       'true',

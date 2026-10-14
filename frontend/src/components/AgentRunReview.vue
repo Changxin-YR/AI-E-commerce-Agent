@@ -156,7 +156,7 @@ const actionLabels: Record<string, string> = {
     </p>
     <p v-if="run.input" aria-label="任务保存范围">
       保存范围：店铺 #{{ run.shop_id }} ·
-      {{ run.input.scope.data_identity === 'synthetic' ? '合成测试' : '用户导入' }} ·
+      {{ run.input.scope.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} ·
       {{ run.input.scope.channel }} · {{ run.input.scope.currency }} ·
       {{ supportTime(run.input.scope.start_at, run.input.scope.timezone) }} 至
       {{ supportTime(run.input.scope.end_at, run.input.scope.timezone) }}（不含终点）。 商品 #{{
@@ -256,7 +256,7 @@ const actionLabels: Record<string, string> = {
         >
           批准当前节点
         </button>
-        <button class="button secondary" :disabled="busy" @click="emit('action', 'reject')">
+        <button class="button secondary danger" :disabled="busy" @click="emit('action', 'reject')">
           拒绝当前节点
         </button>
       </div>
@@ -286,7 +286,7 @@ const actionLabels: Record<string, string> = {
       >
         暂停任务
       </button>
-      <button v-if="stoppable" class="button secondary" @click="emit('action', 'cancel')">
+      <button v-if="stoppable" class="button secondary danger" @click="emit('action', 'cancel')">
         取消任务
       </button>
       <RouterLink

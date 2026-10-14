@@ -203,140 +203,142 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>商品资料，逐项核对。</h1>
-      <p>从已导入的名称、参数与金额出发，保留每个核对项的依据。</p>
-    </div>
-    <RouterLink class="button secondary" :to="`/product-edits?shop=${shopId}`"
-      >批量修订商品</RouterLink
-    >
-  </div>
-  <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
-  <section class="data-note">
-    <span class="note-symbol" aria-hidden="true">i</span>
-    <div>
-      <h3>本地商品检查</h3>
-      <p>
-        检查后可保存报告。名称与参数可进入批量修订，保存差异草稿后审批本地生效；品牌、编码、图片和平台刊登要求仍需另外核验。
-      </p>
-    </div>
-  </section>
-  <section v-if="shops.length" class="form-panel section-block">
-    <form @submit.prevent="run">
-      <fieldset :disabled="busy" class="quality-fields">
-        <legend>商品检查范围</legend>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="quality-shop">所属店铺</label
-            ><select id="quality-shop" v-model="shopId" @change="refresh">
-              <option v-for="shop in shops" :key="shop.id" :value="shop.id">
-                {{ shop.name }} · {{ shop.code }}
-              </option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="quality-identity">数据身份</label
-            ><select id="quality-identity" v-model="scope.data_identity">
-              <option value="user_import">用户导入文件</option>
-              <option value="synthetic">合成测试数据</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="quality-channel">来源渠道</label
-            ><select id="quality-channel" v-model="scope.channel">
-              <option :value="null">全部导入渠道</option>
-              <option v-for="(label, value) in qualityChannels" :key="value" :value="value">
-                {{ label }}
-              </option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="quality-prefix">SKU 前缀（可选）</label
-            ><input id="quality-prefix" v-model="scope.sku_prefix" maxlength="120" /><small
-              >按原始 SKU 前缀筛选，区分大小写；每次最多 1000 个商品。</small
-            >
-          </div>
-        </div>
-        <div class="form-actions">
-          <span>仅检查当前导入主档。</span><button class="button primary">检查商品信息</button>
-        </div>
-      </fieldset>
-    </form>
-  </section>
-  <p v-if="busy" role="status">正在核对商品与来源…</p>
-  <section v-if="!shops.length && !busy" class="form-panel section-block empty-state">
-    <h2>先添加店铺记录</h2>
-    <RouterLink class="button secondary" to="/settings">经营资料</RouterLink>
-  </section>
-  <section v-if="saved" class="form-panel section-block" aria-label="报告存档状态">
-    <h2>质量报告 #{{ saved.id }}</h2>
-    <p role="status">{{ qualityStatus[saved.status] }}</p>
-    <p v-if="saved.status === 'stale'">以下为当时的检查记录，不能代表当前商品资料。请重新检查。</p>
-    <RouterLink :to="`/product-quality?shop=${saved.shop_id}&report=${saved.id}`"
-      >报告固定链接</RouterLink
-    >
-  </section>
-  <ProductQualityResult
-    v-if="result"
-    :key="`${saved?.id ?? 'preview'}-${result.preview_hash}`"
-    :result="result"
-    :timezone="timezone"
-  />
-  <section v-if="result && !saved" class="form-panel section-block">
-    <label class="quality-confirm"
-      ><input
-        v-model="confirmed"
-        type="checkbox"
-        :disabled="busy"
-      />我已查看范围与未检查项，确认保存本次本地检查报告</label
-    >
-    <div class="form-actions">
-      <span>保存时重新核验全部来源。</span
-      ><button class="button primary" :disabled="busy || !confirmed" @click="save">
-        保存检查报告
-      </button>
-    </div>
-  </section>
-  <section v-if="saved && saved.status !== 'cleared'" class="form-panel section-block">
-    <label class="quality-confirm"
-      ><input
-        v-model="confirmClear"
-        type="checkbox"
-        :disabled="busy"
-      />确认清除这份报告正文与来源依赖</label
-    ><button class="button secondary" :disabled="busy || !confirmClear" @click="clear">
-      清除报告正文
-    </button>
-  </section>
-  <section v-if="shopId" class="form-panel section-block" aria-label="质量报告历史">
-    <div class="section-title">
-      <h2>本店历史报告</h2>
-      <button class="button secondary" :disabled="busy" @click="refresh">刷新报告与来源</button>
-    </div>
-    <p v-if="!history.length">此店暂无已保存的检查报告。</p>
-    <article v-for="item in history" :key="item.id" class="history-row">
+  <div class="solo-page page-product-quality">
+    <div class="page-heading">
       <div>
-        <strong>#{{ item.id }} · {{ qualityStatus[item.status] }}</strong>
+        <h1>商品资料，逐项核对。</h1>
+        <p>从已导入的名称、参数与金额出发，保留每个核对项的依据。</p>
+      </div>
+      <RouterLink class="button secondary" :to="`/product-edits?shop=${shopId}`"
+        >批量修订商品</RouterLink
+      >
+    </div>
+    <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
+    <section class="data-note">
+      <span class="note-symbol" aria-hidden="true">i</span>
+      <div>
+        <h3>本地商品检查</h3>
         <p>
-          {{ supportTime(item.created_at, timezone) }} ·
-          {{ item.scope.data_identity === 'synthetic' ? '合成测试数据' : '用户导入文件' }} ·
-          {{ item.scope.channel ? qualityChannels[item.scope.channel] : '全部导入渠道' }}
+          检查后可保存报告。名称与参数可进入批量修订，保存差异草稿后审批本地生效；品牌、编码、图片和平台刊登要求仍需另外核验。
         </p>
       </div>
-      <button class="button secondary" :disabled="busy" @click="show(item.id)">
-        查看报告 #{{ item.id }}
+    </section>
+    <section v-if="shops.length" class="form-panel section-block">
+      <form @submit.prevent="run">
+        <fieldset :disabled="busy" class="quality-fields">
+          <legend>商品检查范围</legend>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="quality-shop">所属店铺</label
+              ><select id="quality-shop" v-model="shopId" @change="refresh">
+                <option v-for="shop in shops" :key="shop.id" :value="shop.id">
+                  {{ shop.name }} · {{ shop.code }}
+                </option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="quality-identity">数据身份</label
+              ><select id="quality-identity" v-model="scope.data_identity">
+                <option value="user_import">经营资料</option>
+                <option value="synthetic">样例资料</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="quality-channel">来源渠道</label
+              ><select id="quality-channel" v-model="scope.channel">
+                <option :value="null">全部导入渠道</option>
+                <option v-for="(label, value) in qualityChannels" :key="value" :value="value">
+                  {{ label }}
+                </option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="quality-prefix">SKU 前缀（可选）</label
+              ><input id="quality-prefix" v-model="scope.sku_prefix" maxlength="120" /><small
+                >按原始 SKU 前缀筛选，区分大小写；每次最多 1000 个商品。</small
+              >
+            </div>
+          </div>
+          <div class="form-actions">
+            <span>仅检查当前导入主档。</span><button class="button primary">检查商品信息</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+    <p v-if="busy" role="status">正在核对商品与来源…</p>
+    <section v-if="!shops.length && !busy" class="form-panel section-block empty-state">
+      <h2>先添加店铺记录</h2>
+      <RouterLink class="button secondary" to="/settings">经营资料</RouterLink>
+    </section>
+    <section v-if="saved" class="form-panel section-block" aria-label="报告存档状态">
+      <h2>质量报告 #{{ saved.id }}</h2>
+      <p role="status">{{ qualityStatus[saved.status] }}</p>
+      <p v-if="saved.status === 'stale'">以下为当时的检查记录，不能代表当前商品资料。请重新检查。</p>
+      <RouterLink :to="`/product-quality?shop=${saved.shop_id}&report=${saved.id}`"
+        >报告固定链接</RouterLink
+      >
+    </section>
+    <ProductQualityResult
+      v-if="result"
+      :key="`${saved?.id ?? 'preview'}-${result.preview_hash}`"
+      :result="result"
+      :timezone="timezone"
+    />
+    <section v-if="result && !saved" class="form-panel section-block">
+      <label class="quality-confirm"
+        ><input
+          v-model="confirmed"
+          type="checkbox"
+          :disabled="busy"
+        />我已查看范围与未检查项，确认保存本次本地检查报告</label
+      >
+      <div class="form-actions">
+        <span>保存时重新核验全部来源。</span
+        ><button class="button primary" :disabled="busy || !confirmed" @click="save">
+          保存检查报告
+        </button>
+      </div>
+    </section>
+    <section v-if="saved && saved.status !== 'cleared'" class="form-panel section-block">
+      <label class="quality-confirm"
+        ><input
+          v-model="confirmClear"
+          type="checkbox"
+          :disabled="busy"
+        />确认清除这份报告正文与来源依赖</label
+      ><button class="button secondary danger" :disabled="busy || !confirmClear" @click="clear">
+        清除报告正文
       </button>
-    </article>
-    <button
-      v-if="cursor"
-      class="button secondary"
-      :disabled="busy"
-      @click="action((valid) => loadHistory(valid, true))"
-    >
-      加载更早报告
-    </button>
-  </section>
+    </section>
+    <section v-if="shopId" class="form-panel section-block" aria-label="质量报告历史">
+      <div class="section-title">
+        <h2>本店历史报告</h2>
+        <button class="button secondary" :disabled="busy" @click="refresh">刷新报告与来源</button>
+      </div>
+      <p v-if="!history.length">此店暂无已保存的检查报告。</p>
+      <article v-for="item in history" :key="item.id" class="history-row">
+        <div>
+          <strong>#{{ item.id }} · {{ qualityStatus[item.status] }}</strong>
+          <p>
+            {{ supportTime(item.created_at, timezone) }} ·
+            {{ item.scope.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} ·
+            {{ item.scope.channel ? qualityChannels[item.scope.channel] : '全部导入渠道' }}
+          </p>
+        </div>
+        <button class="button secondary" :disabled="busy" @click="show(item.id)">
+          查看报告 #{{ item.id }}
+        </button>
+      </article>
+      <button
+        v-if="cursor"
+        class="button secondary"
+        :disabled="busy"
+        @click="action((valid) => loadHistory(valid, true))"
+      >
+        加载更早报告
+      </button>
+    </section>
+  </div>
 </template>
 
 <style scoped>

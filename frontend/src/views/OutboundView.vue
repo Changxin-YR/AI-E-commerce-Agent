@@ -138,174 +138,176 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>测试外发</h1>
-      <p>审阅经营摘要，核对收件地址，再批准发送。</p>
+  <div class="solo-page page-outbound">
+    <div class="page-heading">
+      <div>
+        <h1>邮件外发</h1>
+        <p>审阅经营摘要，核对收件地址，再批准发送。</p>
+      </div>
+      <span class="outline-label">独立 R2 审批</span>
     </div>
-    <span class="outline-label">独立 R2 审批</span>
-  </div>
-  <FeedbackBanner :message="error" />
-  <p v-if="!shops.length">请先在经营资料中添加店铺。</p>
-  <template v-else>
-    <section class="form-panel" aria-label="测试外发范围">
-      <fieldset :disabled="busy">
-        <legend>选择店铺与检查范围</legend>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="mail-shop">外发店铺</label
-            ><select id="mail-shop" v-model="shop" @change="load">
-              <option v-for="s in shops" :key="s.id" :value="s.id">
-                {{ s.name }} · {{ s.code }}
-              </option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="mail-identity">摘要数据身份</label
-            ><select id="mail-identity" v-model="identity" @change="load">
-              <option value="user_import">用户导入文件</option>
-              <option value="synthetic">合成测试数据</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="mail-channel">摘要来源渠道</label
-            ><select id="mail-channel" v-model="sourceChannel" @change="load">
-              <option value="generic">通用 / 自建表</option>
-              <option value="shopify">Shopify</option>
-              <option value="amazon">Amazon</option>
-              <option value="other">其他来源</option>
-            </select>
-          </div>
-        </div>
-        <button class="button secondary small" @click="load">刷新通道与记录</button>
-      </fieldset>
-    </section>
-    <section
-      v-if="channel"
-      class="form-panel section-block connection-panel"
-      aria-label="本人测试邮箱连接"
-    >
-      <h2>本人测试邮箱 · {{ label(channel.status) }}</h2>
-      <p v-if="!channel.configured">
-        尚未配置此店铺的外发通道。QQ 邮箱需配置发件地址、客户端授权码和本人验证邮箱；Resend
-        需配置密钥和已验证域名。完成配置后可在此验证邮箱。
-      </p>
-      <template v-else
-        ><p>
-          {{ channel.provider === 'qq_smtp' ? 'QQ 邮箱' : 'Resend' }} · {{ channel.sender }} →
-          {{ channel.recipient }}
-        </p>
-        <p>
-          验证邮件发送到以上本人邮箱，不含业务数据。账号 24 小时最多提交 10 份经营摘要，间隔至少 60
-          秒。
-        </p>
+    <FeedbackBanner :message="error" />
+    <p v-if="!shops.length">请先在经营资料中添加店铺。</p>
+    <template v-else>
+      <section class="form-panel" aria-label="邮件外发范围">
         <fieldset :disabled="busy">
-          <template v-if="!['active', 'verifying', 'unknown'].includes(channel.status)">
-            <p>验证邮件主题：{{ channel.verification_subject }}</p>
-            <p>{{ channel.verification_template }}</p>
-            <label class="check-label"
-              ><input v-model="confirmed" type="checkbox" />我控制以上账号与测试邮箱，批准发送 1
-              封验证邮件，理解邮件不可撤回及可能产生通道费用</label
-            ><button
-              class="button primary"
-              :disabled="!confirmed"
-              @click="connectAction('connect')"
-            >
-              连接并发送验证邮件
-            </button>
-          </template>
-          <form
-            v-if="['verifying', 'unknown'].includes(channel.status)"
-            class="verify-form"
-            @submit.prevent="connectAction('verify')"
-          >
-            <p>
-              请从本人测试收件箱读取 8 位验证码，15 分钟有效，最多 5
-              次尝试。重复连接不会再发同一验证邮件。
-            </p>
-            <label for="mail-code">邮箱验证码</label
-            ><input
-              id="mail-code"
-              v-model="code"
-              inputmode="numeric"
-              pattern="[0-9]{8}"
-              maxlength="8"
-              required
-              autocomplete="one-time-code"
-            /><button class="button primary">验证本人测试邮箱</button>
-          </form>
-          <button
-            v-if="channel.id && channel.status !== 'revoked'"
-            class="button secondary small"
-            @click="connectAction('disconnect')"
-          >
-            撤销此通道连接
-          </button>
+          <legend>选择店铺与检查范围</legend>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="mail-shop">外发店铺</label
+              ><select id="mail-shop" v-model="shop" @change="load">
+                <option v-for="s in shops" :key="s.id" :value="s.id">
+                  {{ s.name }} · {{ s.code }}
+                </option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="mail-identity">摘要数据身份</label
+              ><select id="mail-identity" v-model="identity" @change="load">
+                <option value="user_import">经营资料</option>
+                <option value="synthetic">样例资料</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="mail-channel">摘要来源渠道</label
+              ><select id="mail-channel" v-model="sourceChannel" @change="load">
+                <option value="generic">通用 / 自建表</option>
+                <option value="shopify">Shopify</option>
+                <option value="amazon">Amazon</option>
+                <option value="other">其他来源</option>
+              </select>
+            </div>
+          </div>
+          <button class="button secondary small" @click="load">刷新通道与记录</button>
         </fieldset>
-      </template>
-    </section>
-    <section class="form-panel section-block" aria-label="准备经营摘要">
-      <h2>准备待审摘要</h2>
-      <div v-if="channel?.provider === 'qq_smtp'" class="form-field">
-        <label for="mail-recipient">收件邮箱</label>
-        <input
-          id="mail-recipient"
-          v-model="recipient"
-          type="email"
-          required
-          maxlength="254"
-          :disabled="busy"
-        />
-        <p>默认发到本人邮箱。可填写其他收件地址，生成预览后核对地址和全文，单独批准一次。</p>
-      </div>
-      <p>
-        正文来自已保存的今日运营检查，可修改后重新审阅。<RouterLink to="/agent"
-          >前往任务执行台</RouterLink
-        >完成检查与保存。
-      </p>
-      <div class="form-field">
-        <label for="mail-run">关联运营检查</label
-        ><select id="mail-run" v-model="runId" :disabled="busy">
-          <option :value="0">{{ runs.length ? '选择当前检查' : '当前范围暂无已保存检查' }}</option>
-          <option v-for="run in runs" :key="run.id" :value="run.id">
-            检查 #{{ run.id }} ·
-            {{ new Date(run.created_at).toLocaleString('zh-CN', { timeZone: timezone }) }}
-          </option>
-        </select>
-      </div>
-      <button
-        class="button primary"
-        :disabled="busy || !runId || channel?.status !== 'active'"
-        @click="create"
+      </section>
+      <section
+        v-if="channel"
+        class="form-panel section-block connection-panel"
+        aria-label="本人验证邮箱连接"
       >
-        生成外发预览
-      </button>
-    </section>
-    <section v-if="messages.length" class="form-panel section-block">
-      <h2>外发记录</h2>
-      <div class="button-row">
+        <h2>本人验证邮箱 · {{ label(channel.status) }}</h2>
+        <p v-if="!channel.configured">
+          尚未配置此店铺的外发通道。QQ 邮箱需配置发件地址、客户端授权码和本人验证邮箱；Resend
+          需配置密钥和已验证域名。完成配置后可在此验证邮箱。
+        </p>
+        <template v-else
+          ><p>
+            {{ channel.provider === 'qq_smtp' ? 'QQ 邮箱' : 'Resend' }} · {{ channel.sender }} →
+            {{ channel.recipient }}
+          </p>
+          <p>
+            验证邮件发送到以上本人邮箱，不含业务数据。账号 24 小时最多提交 10 份经营摘要，间隔至少 60
+            秒。
+          </p>
+          <fieldset :disabled="busy">
+            <template v-if="!['active', 'verifying', 'unknown'].includes(channel.status)">
+              <p>验证邮件主题：{{ channel.verification_subject }}</p>
+              <p>{{ channel.verification_template }}</p>
+              <label class="check-label"
+                ><input v-model="confirmed" type="checkbox" />我控制以上账号与本人邮箱，批准发送 1
+                封验证邮件，理解邮件不可撤回及可能产生通道费用</label
+              ><button
+                class="button primary"
+                :disabled="!confirmed"
+                @click="connectAction('connect')"
+              >
+                连接并发送验证邮件
+              </button>
+            </template>
+            <form
+              v-if="['verifying', 'unknown'].includes(channel.status)"
+              class="verify-form"
+              @submit.prevent="connectAction('verify')"
+            >
+              <p>
+                请从本人收件箱读取 8 位验证码，15 分钟有效，最多 5
+                次尝试。重复连接不会再发同一验证邮件。
+              </p>
+              <label for="mail-code">邮箱验证码</label
+              ><input
+                id="mail-code"
+                v-model="code"
+                inputmode="numeric"
+                pattern="[0-9]{8}"
+                maxlength="8"
+                required
+                autocomplete="one-time-code"
+              /><button class="button primary">验证本人验证邮箱</button>
+            </form>
+            <button
+              v-if="channel.id && channel.status !== 'revoked'"
+              class="button secondary small danger"
+              @click="connectAction('disconnect')"
+            >
+              撤销此通道连接
+            </button>
+          </fieldset>
+        </template>
+      </section>
+      <section class="form-panel section-block" aria-label="准备经营摘要">
+        <h2>准备待审摘要</h2>
+        <div v-if="channel?.provider === 'qq_smtp'" class="form-field">
+          <label for="mail-recipient">收件邮箱</label>
+          <input
+            id="mail-recipient"
+            v-model="recipient"
+            type="email"
+            required
+            maxlength="254"
+            :disabled="busy"
+          />
+          <p>默认发到本人邮箱。可填写其他收件地址，生成预览后核对地址和全文，单独批准一次。</p>
+        </div>
+        <p>
+          正文来自已保存的今日运营检查，可修改后重新审阅。<RouterLink to="/agent"
+            >前往任务执行台</RouterLink
+          >完成检查与保存。
+        </p>
+        <div class="form-field">
+          <label for="mail-run">关联运营检查</label
+          ><select id="mail-run" v-model="runId" :disabled="busy">
+            <option :value="0">{{ runs.length ? '选择当前检查' : '当前范围暂无已保存检查' }}</option>
+            <option v-for="run in runs" :key="run.id" :value="run.id">
+              检查 #{{ run.id }} ·
+              {{ new Date(run.created_at).toLocaleString('zh-CN', { timeZone: timezone }) }}
+            </option>
+          </select>
+        </div>
         <button
-          v-for="mail in messages"
-          :key="mail.id"
-          class="button secondary small"
-          :disabled="busy"
-          @click="selected = mail"
+          class="button primary"
+          :disabled="busy || !runId || channel?.status !== 'active'"
+          @click="create"
         >
-          摘要 #{{ mail.id }} · {{ label(mail.status) }}</button
-        ><button v-if="before" class="button secondary small" :disabled="busy" @click="more">
-          加载更早记录
+          生成外发预览
         </button>
-      </div>
-    </section>
-    <OutboundMailReview
-      id="linked-mail"
-      v-if="selected"
-      :key="`${shop}-${selected.id}`"
-      :mail="selected"
-      :timezone="timezone"
-      @updated="updated"
-    />
-  </template>
+      </section>
+      <section v-if="messages.length" class="form-panel section-block">
+        <h2>外发记录</h2>
+        <div class="button-row">
+          <button
+            v-for="mail in messages"
+            :key="mail.id"
+            class="button secondary small"
+            :disabled="busy"
+            @click="selected = mail"
+          >
+            摘要 #{{ mail.id }} · {{ label(mail.status) }}</button
+          ><button v-if="before" class="button secondary small" :disabled="busy" @click="more">
+            加载更早记录
+          </button>
+        </div>
+      </section>
+      <OutboundMailReview
+        id="linked-mail"
+        v-if="selected"
+        :key="`${shop}-${selected.id}`"
+        :mail="selected"
+        :timezone="timezone"
+        @updated="updated"
+      />
+    </template>
+  </div>
 </template>
 <style scoped>
 fieldset {

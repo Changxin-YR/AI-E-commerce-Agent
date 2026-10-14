@@ -110,8 +110,8 @@ async function save(): Promise<void> {
           <div class="form-field">
             <label for="message-identity">消息数据身份</label
             ><select id="message-identity" v-model="form.identity">
-              <option value="user_import">用户导入数据</option>
-              <option value="synthetic">合成测试数据</option>
+              <option value="user_import">经营资料</option>
+              <option value="synthetic">样例资料</option>
             </select>
           </div>
           <div class="form-field">

@@ -37,7 +37,7 @@ watch(control, () => {
     <p v-if="['failed', 'stale'].includes(edit.status)">请重新加载当前商品，核对后建立新草稿。</p>
     <template v-if="edit.snapshot">
       <p>
-        {{ edit.snapshot.data_identity === 'synthetic' ? '合成测试数据' : '用户导入数据' }} ·
+        {{ edit.snapshot.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} ·
         {{ qualityChannels[edit.snapshot.channel] }}
       </p>
       <p class="preserve-text">修订依据：{{ edit.snapshot.reason }}</p>

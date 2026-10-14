@@ -198,7 +198,8 @@ export const agentLabels: Record<string, string> = {
   not_configured: '模型待配置',
   openai_responses: 'OpenAI Responses',
   dashscope_chat: '阿里云百炼（北京）',
-  test_double: '测试替身',
+  deepseek_chat: 'DeepSeek',
+  test_double: '模拟生成器',
 }
 export const agentReasons: Record<string, string> = {
   margin_missing_orders: '没有符合范围的已支付订单。补录或核对范围后，请新建任务。',

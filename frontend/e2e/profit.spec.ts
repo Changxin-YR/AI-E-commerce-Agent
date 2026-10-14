@@ -1,3 +1,4 @@
+import { signIn } from './auth'
 import { expect, test, type Page } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -15,11 +16,7 @@ const labels = [
 ]
 
 async function setup(page: Page): Promise<number> {
-  await page.goto('/profit')
-  await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-  await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-  await page.getByRole('button', { name: '进入工作台' }).click()
-  await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+  await signIn(page, '/profit')
   const session = (await (await page.request.get('/api/auth/session')).json()) as {
     csrf_token: string
   }

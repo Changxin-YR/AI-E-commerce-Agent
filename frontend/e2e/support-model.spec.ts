@@ -1,3 +1,4 @@
+import { signIn } from './auth'
 import { expect, test } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -9,11 +10,7 @@ for (const mobile of [false, true]) {
     page,
   }) => {
     await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1280, height: 800 })
-    await page.goto('/support')
-    await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-    await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-    await page.getByRole('button', { name: '进入工作台' }).click()
-    await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+    await signIn(page, '/support')
     const errors: string[] = []
     page.on('pageerror', (e) => errors.push(e.message))
     const session = await (await page.request.get('/api/auth/session')).json()
@@ -126,7 +123,7 @@ for (const mobile of [false, true]) {
     await link.click()
     await expect(page).toHaveURL(/\/support\?shop=.*draft=/)
     const draft = page.getByRole('region', { name: '客服草稿详情' })
-    await expect(draft).toContainText('测试替身')
+    await expect(draft).toContainText('模拟生成器')
     await expect(draft).toContainText('外部未提交')
     await draft.getByLabel('回复正文（仅草稿）').fill('Your request is under manual review.')
     await draft.getByRole('button', { name: '保存修改' }).click()

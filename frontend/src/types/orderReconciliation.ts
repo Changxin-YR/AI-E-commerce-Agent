@@ -18,7 +18,7 @@ export const orderComparisonReasons: Record<string, string> = {
   multiple_statement_lines: '同订单包含多笔同类型账单，须核实拆分、重复或调整关系。',
   outside_window: '存在窗口外关联来源；保留依据，请核实跨期关系。',
   currency_mismatch: '两侧币种不一致，缺少已确认的换汇依据。',
-  order_status_uncomparable: '存在未付款、取消或测试订单，当前状态不支持销售金额比较。',
+  order_status_uncomparable: '订单未满足经营分析的状态条件，暂不比较销售金额。',
   refund_transaction_unknown:
     '行退款为累计值，缺逐笔编号、发生时间、金额组成及支付状态；退款差额未知。',
   refund_amount_unknown: '订单行退款金额未知，请补充原始退款依据。',

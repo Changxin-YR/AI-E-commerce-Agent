@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { applyLinkedScope, linkedShop } from '@/composables/deepLink'
+import { loadImportedScope } from '@/composables/importedScope'
 import { identityApi } from '@/api/identity'
 import { workbenchApi } from '@/api/workbench'
 import { errorMessage } from '@/api/client'
@@ -14,9 +15,13 @@ import { replyStatus, supportTime } from '@/types/support'
 import { mailLabels } from '@/types/outbound'
 import { authorizationLabels } from '@/api/authorizations'
 import FeedbackBanner from './FeedbackBanner.vue'
+import AppIcon from './AppIcon.vue'
+
+const emit = defineEmits<{ 'scope-change': [query: Record<string, string>] }>()
 
 const shops = ref<Shop[]>([])
 const route = useRoute()
+const router = useRouter()
 const filters = reactive({
   shop_id: '',
   data_identity: 'user_import',
@@ -34,6 +39,7 @@ const quickQuery = computed(() => {
   if (filters.channel) query.channel = filters.channel
   return query
 })
+watch(quickQuery, (query) => emit('scope-change', query), { immediate: true })
 const timezone = computed(
   () => shops.value.find((shop) => String(shop.id) === filters.shop_id)?.timezone ?? 'UTC',
 )
@@ -118,8 +124,16 @@ async function initialize(): Promise<void> {
     filters.shop_id = String(linkedShop(loaded, route.query.shop) || '')
     const scope: Partial<OperationScope> = { data_identity: 'user_import' }
     applyLinkedScope(scope, route.query)
+    const inferred = await loadImportedScope(Number(filters.shop_id), route.query)
+    if (!alive) return
+    const query = { ...inferred, ...route.query }
+    applyLinkedScope(scope, query)
     filters.data_identity = scope.data_identity ?? 'user_import'
     filters.channel = scope.channel ?? ''
+    if (Object.keys(inferred).some((key) => route.query[key] === undefined)) {
+      await router.replace({ query: { ...query, shop: filters.shop_id }, hash: route.hash })
+      if (!alive) return
+    }
     initialized.value = true
     await load()
   } catch (cause) {
@@ -141,21 +155,37 @@ onUnmounted(() => {
   <section class="work-inbox" aria-label="统一工作收件箱">
     <div class="inbox-heading">
       <div>
-        <span class="inbox-eyebrow">YOUR NEXT MOVE</span>
         <h2>把下一步，放在一起。</h2>
         <p>先处理需要你决定的事，再查看执行结果与数据更新。</p>
       </div>
       <div class="button-row">
-        <RouterLink class="button primary" :to="{ path: '/imports', query: quickQuery }"
-          >导入文件</RouterLink
+        <RouterLink class="button secondary" :to="{ path: '/imports', query: quickQuery }"
+          ><AppIcon name="upload" :size="16" />导入文件</RouterLink
         >
         <RouterLink
           class="button secondary"
           :to="{ path: '/', query: quickQuery, hash: '#operations' }"
-          >运行今日检查</RouterLink
+          ><AppIcon name="play" :size="16" />运行今日检查</RouterLink
         >
         <button class="button secondary" @click="continueApproval">继续审批</button>
       </div>
+    </div>
+    <div class="inbox-counts seller-views" role="group" aria-label="卖家工作视图">
+      <button
+        v-for="(name, key) in workViews"
+        :key="key"
+        type="button"
+        class="inbox-count"
+        :aria-pressed="filters.view === key"
+        @click="chooseView(key)"
+      >
+        <AppIcon
+          :name="key === 'attention' ? 'clock' : key === 'ai_completed' ? 'check' : 'refresh'"
+          :size="22"
+        />
+        <span>{{ name }}</span
+        ><strong>{{ data ? (data.view_counts[key] ?? 0) : '—' }}</strong>
+      </button>
     </div>
     <form class="inbox-filters" aria-label="收件箱筛选" @submit.prevent="load()">
       <label
@@ -169,8 +199,8 @@ onUnmounted(() => {
       <label
         >筛选身份<select v-model="filters.data_identity" @change="load()">
           <option value="">全部身份</option>
-          <option value="user_import">用户导入</option>
-          <option value="synthetic">合成数据</option>
+          <option value="user_import">经营资料</option>
+          <option value="synthetic">样例资料</option>
         </select></label
       >
       <label
@@ -190,19 +220,6 @@ onUnmounted(() => {
       >
     </form>
     <FeedbackBanner :message="error" />
-    <div class="inbox-counts seller-views" role="group" aria-label="卖家工作视图">
-      <button
-        v-for="(name, key) in workViews"
-        :key="key"
-        type="button"
-        class="inbox-count"
-        :aria-pressed="filters.view === key"
-        @click="chooseView(key)"
-      >
-        <span>{{ name }}</span
-        ><strong>{{ data ? (data.view_counts[key] ?? 0) : '—' }}</strong>
-      </button>
-    </div>
     <p class="inbox-scope-note">
       AI 已完成表示受控任务已执行并核验内部结果。人工核对、已解决事项及其他存档可在全部与历史查看。
     </p>
@@ -271,6 +288,7 @@ onUnmounted(() => {
         </div>
       </details>
       <div v-if="!data.items.length" class="inbox-empty">
+        <AppIcon name="inbox" :size="34" />
         <h3>
           {{
             Object.values(data.counts).some(Boolean) ? '此状态下暂无事项' : '当前范围还没有工作记录'
@@ -303,9 +321,9 @@ onUnmounted(() => {
             {{ item.shop_name }} ·
             {{
               item.data_identity === 'synthetic'
-                ? '合成数据'
+                ? '样例资料'
                 : item.data_identity === 'user_import'
-                  ? '用户导入'
+                  ? '经营资料'
                   : '身份不可追溯'
             }}
             · {{ channelLabel(item.channel) }}

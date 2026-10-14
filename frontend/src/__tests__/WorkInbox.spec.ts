@@ -4,15 +4,21 @@ import WorkInbox from '@/components/WorkInbox.vue'
 import { workbenchApi } from '@/api/workbench'
 import type { WorkItem, WorkPage } from '@/types/workbench'
 import { identityApi } from '@/api/identity'
+import { importsApi } from '@/api/imports'
 import type { Shop } from '@/types/identity'
+import type { BatchSummary } from '@/types/imports'
 
 const route = vi.hoisted(() => ({ query: {} as Record<string, string> }))
-vi.mock('vue-router', () => ({ useRoute: () => route }))
+const replace = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+vi.mock('vue-router', () => ({ useRoute: () => route, useRouter: () => ({ replace }) }))
 vi.mock('@/api/workbench', () => ({ workbenchApi: { list: vi.fn() } }))
 vi.mock('@/api/identity', () => ({ identityApi: { shops: vi.fn().mockResolvedValue([]) } }))
+vi.mock('@/api/imports', () => ({ importsApi: { list: vi.fn().mockResolvedValue([]) } }))
 beforeEach(() => {
   route.query = {}
+  replace.mockClear()
   vi.mocked(identityApi.shops).mockResolvedValue([])
+  vi.mocked(importsApi.list).mockResolvedValue([])
 })
 const result = (label: string): WorkPage => ({
   items: [
@@ -105,6 +111,14 @@ it('defaults to an existing shop and explicit identity, keeps scoped links and s
     path: '/imports',
     query: { shop: '2', identity: 'synthetic', channel: 'generic' },
   })
+  expect(wrapper.emitted('scope-change')?.slice(-1)[0]).toEqual([
+    { shop: '2', identity: 'synthetic', channel: 'generic' },
+  ])
+  await wrapper.findAll('select')[1]!.setValue('user_import')
+  await flushPromises()
+  expect(wrapper.emitted('scope-change')?.slice(-1)[0]).toEqual([
+    { shop: '2', identity: 'user_import', channel: 'generic' },
+  ])
   wrapper.unmount()
 })
 
@@ -115,6 +129,39 @@ it('rejects an inaccessible linked shop without loading another scope', async ()
   await flushPromises()
   expect(wrapper.text()).toContain('店铺不存在或无权访问')
   expect(workbenchApi.list).not.toHaveBeenCalled()
+  wrapper.unmount()
+})
+
+it('resolves a bare shop link before loading work records and completes the URL once', async () => {
+  route.query = { shop: '3' }
+  vi.mocked(identityApi.shops).mockResolvedValue([
+    { id: 3, name: '栖居生活', timezone: 'UTC' } as Shop,
+  ])
+  vi.mocked(importsApi.list).mockResolvedValue([
+    {
+      shop_id: 3,
+      status: 'committed',
+      data_identity: 'synthetic',
+      source_channel: 'amazon',
+    } as BatchSummary,
+  ])
+  vi.mocked(workbenchApi.list).mockClear().mockResolvedValue(result('current source'))
+  const wrapper = mount(WorkInbox, { global: { stubs: { RouterLink: RouterLinkStub } } })
+  await flushPromises()
+  expect(workbenchApi.list).toHaveBeenCalledTimes(1)
+  expect(workbenchApi.list).toHaveBeenCalledWith(
+    expect.objectContaining({ shop_id: '3', data_identity: 'synthetic', channel: 'amazon' }),
+    undefined,
+  )
+  expect(replace).toHaveBeenCalledTimes(1)
+  expect(replace).toHaveBeenCalledWith(
+    expect.objectContaining({
+      query: { shop: '3', identity: 'synthetic', channel: 'amazon' },
+    }),
+  )
+  expect(wrapper.emitted('scope-change')?.slice(-1)[0]).toEqual([
+    { shop: '3', identity: 'synthetic', channel: 'amazon' },
+  ])
   wrapper.unmount()
 })
 

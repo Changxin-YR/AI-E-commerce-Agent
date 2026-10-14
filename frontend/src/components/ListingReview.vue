@@ -55,9 +55,10 @@ const engine = computed(
     ({
       local_template: '本地事实模板',
       manual: '人工编辑',
-      test_double: '测试替身',
+      test_double: '模拟生成器',
       openai_responses: 'OpenAI · 事实文案候选',
       dashscope_chat: '阿里云百炼 · 事实文案候选',
+      deepseek_chat: 'DeepSeek · 事实文案候选',
     })[props.item.engine] ?? props.item.engine,
 )
 const time = (value: string) =>
@@ -102,8 +103,8 @@ async function inspect(): Promise<void> {
       <p>
         数据身份：{{
           item.snapshot.product.source.data_identity === 'synthetic'
-            ? '合成测试数据'
-            : '用户导入数据'
+            ? '样例资料'
+            : '经营资料'
         }}
       </p>
       <div class="listing-diff">
@@ -211,7 +212,7 @@ async function inspect(): Promise<void> {
             批准并在本地生效
           </button>
           <button
-            class="button secondary"
+            class="button secondary danger"
             :disabled="busy || dirty"
             @click="emit('decide', 'reject', false)"
           >

@@ -518,378 +518,380 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>受控任务，一步一步有据可查。</h1>
-      <p>选择流程，查看依据和分支，批准内部写入，随时查看执行记录。</p>
-    </div>
-    <span class="outline-label">Agent 执行台</span>
-  </div>
-  <FeedbackBanner :message="error" />
-  <p v-if="!shops.length">先在经营资料中添加店铺，再导入商品、订单或消息。</p>
-  <template v-else>
-    <label class="agent-shop"
-      >任务店铺<select v-model.number="shopId" :disabled="busy || controlling" @change="changeShop">
-        <option v-for="shop in shops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
-      </select></label
-    >
-    <section class="section-block">
-      <div class="section-title">
-        <h2>启动任务</h2>
-        <span>{{
-          model?.status === 'configured'
-            ? `模型已配置：${model.model}`
-            : '模型待配置 · 固定流程可用'
-        }}</span>
+  <div class="solo-page page-agent">
+    <div class="page-heading">
+      <div>
+        <h1>受控任务，一步一步有据可查。</h1>
+        <p>选择流程，查看依据和分支，批准内部写入，随时查看执行记录。</p>
       </div>
-      <p v-if="selected">
-        已定位任务 #{{
-          selected.id
-        }}。下方表单用于新任务；历史授权不自动沿用，请重新核对范围、预算和数据许可。原任务可在执行记录中继续处理。
-      </p>
-      <form @submit.prevent="start">
-        <AppliedRules
-          :key="rulesKey"
-          :shop="shopId"
-          :scope="form.scope"
-          @loaded="rulesLoaded"
-          @pending="rulesPending = $event"
-        />
-        <fieldset class="analysis-fields" :disabled="busy || controlling">
-          <label
-            >执行流程<select v-model="form.template">
-              <option value="daily">今日运营：检查 → 异常候选 → 核验</option>
-              <option value="daily_model">AI 今日运营：检查 → 概览解释 → 审批候选</option>
-              <option value="analysis">销售与已知毛利（所选身份与渠道）</option>
-              <option value="margin_review">最近7天低毛利：核对依据 → 分别审批 → 内部结果</option>
-              <option value="question">AI 经营问数：理解 → 计算 → 解释 → 核对待办</option>
-              <option value="listing">商品事实 → Listing 模板草稿</option>
-              <option value="listing_model">AI Listing：事实 → 模型候选 → 审批保存</option>
-              <option value="support">消息 → 人工接管草稿</option>
-              <option value="support_model">AI 客服：诉求与依据 → 候选 → 审批保存</option>
-              <option value="natural">自然语言目标（需要模型）</option>
-            </select></label
-          >
-          <label
-            >数据身份<select v-model="form.scope.data_identity">
-              <option value="user_import">用户导入</option>
-              <option value="synthetic">合成测试</option>
-            </select></label
-          >
-          <label
-            >检查渠道<select v-model="form.scope.channel">
-              <option value="generic">通用</option>
-              <option value="amazon">Amazon</option>
-              <option value="shopify">Shopify</option>
-              <option value="other">其他来源</option>
-            </select></label
-          >
-          <label>币种<input v-model="form.scope.currency" required maxlength="3" /></label>
-          <template v-if="form.template === 'margin_review'">
-            <label
-              >复核成本口径<select v-model="form.margin_cost_mode">
-                <option value="seller_history">卖家确认的订单行历史成本</option>
-                <option value="current_estimate">当前商品成本回推估算</option>
-              </select></label
-            >
-            <p class="full-width">
-              截至下方结束时间的最近7天：{{
-                marginStart ? supportTime(marginStart, form.scope.timezone) : '请填写有效结束时间'
-              }}
-              至
-              {{
-                marginStart ? supportTime(form.scope.end_at, form.scope.timezone) : '待填写'
-              }}（结束不含，{{
-                form.scope.timezone
-              }}）。按数据完整性选择核对分析；可选一个商品核对独立内容遗漏。各内部写入分别审批，使用本地计算。
-            </p>
-          </template>
-          <template
-            v-if="
-              [
-                'listing',
-                'listing_model',
-                'support',
-                'support_model',
-                'natural',
-                'margin_review',
-              ].includes(form.template)
-            "
-          >
-            <label
-              >查找商品或消息<input
-                v-model="query"
-                placeholder="关键词，最多显示 50 项"
-                @change="readOptions"
-            /></label>
-            <label v-if="!['support', 'support_model'].includes(form.template)"
-              >目标商品<select v-model="form.product_id">
-                <option :value="null">未选择</option>
-                <option
-                  v-for="product in productOptions"
-                  :key="product.product_id"
-                  :value="product.product_id"
-                >
-                  {{ product.sku }} · {{ product.name }}
-                </option>
-              </select></label
-            >
-            <label v-if="!['listing', 'listing_model', 'margin_review'].includes(form.template)"
-              >目标消息<select v-model="form.message_id">
-                <option :value="null">未选择</option>
-                <option v-for="message in messageOptions" :key="message.id" :value="message.id">
-                  {{ message.message_id }} · {{ message.body.slice(0, 60) }}
-                </option>
-              </select></label
-            >
-          </template>
-          <template
-            v-if="
-              ['natural', 'question', 'listing_model', 'support_model', 'daily_model'].includes(
-                form.template,
-              )
-            "
-          >
-            <label class="full-width"
-              >运营目标<textarea
-                v-model="form.goal"
-                maxlength="500"
-                required
-                placeholder="例如：检查已导入订单，找出需要核对的事项"
-              />
-            </label>
-            <p v-if="form.template === 'question'" class="full-width">
-              支持销售汇总、原购买数量前五、销量高但已知毛利低。使用下方时间、币种及阈值，
-              按所选身份、订单渠道和时间窗统计；商品成本使用本店同身份的当前主档。
-              问题要求的范围若不同，请先修改表单。
-            </p>
-            <label class="full-width"
-              ><span
-                ><input v-model="form.allow_model" type="checkbox" /> 同意将本次目标文本发送至配置的
-                {{ agentLabels[model?.provider ?? ''] ?? '供应商' }}
-                模型，并使用下方美元预算</span
-              ></label
-            >
-            <label v-if="form.template === 'question'" class="full-width">
-              <span
-                ><input v-model="form.allow_analysis_data" type="checkbox" />
-                同意发送本次范围、匿名聚合指标与费用缺口，用于组织证据解释</span
-              >
-            </label>
-            <p v-if="form.template === 'question'" class="full-width">
-              正常流程需要两次模型请求。事实包包含统计时间、币种、阈值、汇总及最多 20 项匿名 SKU
-              指标； 原始订单号、SKU
-              名称、文件名和买家消息留在本地。问题正文会原样发送，请核对其中内容。
-              返回内容只可选择已有事实和核对建议，内部保存仍须审批。
-            </p>
-            <template v-if="form.template === 'daily_model'">
-              <OperationModelContext
-                v-if="!rulesPending"
-                class="full-width"
-                :shop="shopId"
-                :scope="form.scope"
-                :disabled="busy || controlling"
-                @change="form.expected_operation_hash = $event"
-              />
-              <label class="full-width"
-                ><span>
-                  <input
-                    v-model="form.allow_operation_data"
-                    type="checkbox"
-                    :disabled="rulesPending || !form.expected_operation_hash"
-                  />
-                  我已核对运营范围，同意发送上述聚合检查数据用于概览解释
-                </span></label
-              >
-            </template>
-            <template v-if="form.template === 'support_model'">
-              <SupportModelContext
-                class="full-width"
-                :shop="shopId"
-                :message="form.message_id"
-                :identity="form.scope.data_identity"
-                :channel="form.scope.channel"
-                :disabled="busy || controlling"
-                @change="form.support_context = $event"
-              />
-              <label class="full-width">
-                <span
-                  ><input
-                    v-model="form.allow_support_data"
-                    type="checkbox"
-                    :disabled="!form.support_context"
-                  />
-                  我已核对上述消息原文和选中政策，同意将这些客服数据发送至配置的模型
-                </span>
-              </label>
-            </template>
-            <div
-              v-if="form.template === 'listing_model'"
-              class="full-width data-note"
-              aria-label="将发送的商品事实"
-            >
-              <h3>核对本次商品事实</h3>
-              <template v-if="selectedProduct">
-                <p>商品名：{{ selectedProduct.name }}</p>
-                <p class="preserve-text">
-                  {{ selectedProduct.facts || '缺少参数，请先补充商品来源。' }}
-                </p>
-                <p>
-                  本地来源：批次 {{ selectedProduct.source.batch_id }} · 行
-                  {{ selectedProduct.source.row_number }}
-                </p>
-              </template>
-              <p v-else>请先选择目标商品。</p>
-              <p>
-                一次模型请求会发送上方商品名、完整参数与目标文本。SKU、成本、文件名和订单留在本地。模型选择标题参数并调整描述顺序，描述保留全部参数。品牌偏好仅供人工参考。
-              </p>
-              <label
-                ><input
-                  v-model="form.allow_listing_data"
-                  type="checkbox"
-                  :disabled="!selectedProduct?.facts.trim()"
-                />我已核对上述商品事实，同意发送这些原文用于 Listing 候选</label
-              >
-            </div>
-          </template>
-        </fieldset>
-        <details>
-          <summary>数据窗口、规则与任务预算</summary>
-          <fieldset class="analysis-fields" :disabled="busy || controlling">
-            <label>业务时区（IANA）<input v-model="form.scope.timezone" required /></label>
-            <BusinessDateRange
-              v-model:start="form.scope.start_at"
-              v-model:end="form.scope.end_at"
-              :timezone="form.scope.timezone"
-              start-label="订单起始时间（含时区）"
-              end-label="订单结束时间（不包含）"
-              :fixed-days="form.template === 'margin_review' ? 7 : undefined"
-            />
-            <label
-              >库存时效（小时）<input
-                v-model.number="form.scope.max_age_hours"
-                :disabled="activeRule || rulesPending"
-                type="number"
-                min="1"
-                max="720"
-                required
-            /></label>
-            <label
-              >低毛利率上限（%）<input
-                v-model="form.scope.max_margin_percent"
-                :disabled="activeRule || rulesPending"
-                type="number"
-                min="-1000"
-                max="100"
-                step="0.01"
-                required
-            /></label>
-            <label
-              >执行步数上限<input
-                v-model.number="form.budget.max_steps"
-                type="number"
-                min="1"
-                max="100"
-                required /></label
-            ><label
-              >累计执行秒数上限<input
-                v-model.number="form.budget.max_seconds"
-                type="number"
-                min="1"
-                max="3600"
-                required
-            /></label>
-            <label
-              >模型预算（USD）<input
-                v-model="form.budget.max_cost_usd"
-                type="number"
-                min="0"
-                max="10"
-                step="0.000001"
-                required
-            /></label>
-          </fieldset>
-        </details>
-        <p>
-          固定流程使用本地规则或事实模板，模型费用为 0。自然语言目标用于路由；AI
-          经营问数根据确定性结果组织证据解释，AI Listing 根据商品原文组织候选，AI
-          客服按消息和政策组织回复候选与接管摘要。
-        </p>
-        <p v-if="model?.status === 'configured'">
-          {{ agentLabels[model.provider] ?? model.provider }} · {{ model.model }} · 每百万输入 /
-          输出 tokens 的配置费率： {{ model.input_usd_per_million ?? '未知' }} /
-          {{ model.output_usd_per_million ?? '未知' }} USD。
-          每次调用前预留费用；实际用量按此费率记账，供应商账单须另核对。
-          {{ model.cost_note }}
-        </p>
-        <button
-          class="button primary"
-          :disabled="
-            busy ||
-            !shopId ||
-            controlling ||
-            rulesPending ||
-            (form.template === 'support_model' &&
-              (!form.support_context || !form.allow_model || !form.allow_support_data)) ||
-            (form.template === 'listing_model' &&
-              (!selectedProduct || !form.allow_model || !form.allow_listing_data))
-          "
-        >
-          {{ busy ? '正在执行…' : '启动并运行' }}
-        </button>
-      </form>
-    </section>
-    <div class="section-title">
-      <h2>执行记录</h2>
-      <button class="button secondary" :disabled="controlling" @click="refresh">刷新任务</button>
+      <span class="outline-label">Agent 执行台</span>
     </div>
-    <div class="button-row">
-      <button
-        v-for="run in runs"
-        :key="run.id"
-        class="button secondary small"
-        :disabled="busy || controlling"
-        @click="inspect(run.id)"
+    <FeedbackBanner :message="error" />
+    <p v-if="!shops.length">先在经营资料中添加店铺，再导入商品、订单或消息。</p>
+    <template v-else>
+      <label class="agent-shop"
+        >任务店铺<select v-model.number="shopId" :disabled="busy || controlling" @change="changeShop">
+          <option v-for="shop in shops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
+        </select></label
       >
-        #{{ run.id }} · {{ agentLabels[run.template] }} · {{ agentLabels[run.status] }}
-      </button>
-    </div>
-    <p v-if="!runs.length">尚未运行任务。启动后，实际结果会保存在这里。</p>
-    <AgentRunReview
-      :return-context="Number(route.query.shop) === shopId ? returnTaskQuery(route.query) : {}"
-      id="linked-agent"
-      v-if="selected"
-      :run="selected"
-      :busy="busy || controlling"
-      @action="act"
-    />
-    <InternalAuthorizations
-      :focus-id="focusShop === shopId ? focusGrant : undefined"
-      :shop="shopId"
-      :run="selected"
-      :busy="busy || controlling"
-      @use="act('use_authorization', undefined, $event)"
-      @start="startAuthorized"
-      @inspect="inspect"
-    />
-    <details class="section-block">
-      <summary>内置技能与权限（{{ skills.length }} 项）</summary>
-      <article v-for="skill in skills" :key="skill.name" class="analysis-line">
-        <h3>{{ skill.purpose }}</h3>
-        <p>
-          {{ skill.name }} v{{ skill.version }} · {{ skill.risk }} ·
-          {{ skill.side_effects ? '内部写入需审批' : '只读' }}
+      <section class="section-block">
+        <div class="section-title">
+          <h2>启动任务</h2>
+          <span>{{
+            model?.status === 'configured'
+              ? `模型已配置：${model.model}`
+              : '模型待配置 · 固定流程可用'
+          }}</span>
+        </div>
+        <p v-if="selected">
+          已定位任务 #{{
+            selected.id
+          }}。下方表单用于新任务；历史授权不自动沿用，请重新核对范围、预算和数据许可。原任务可在执行记录中继续处理。
         </p>
-        <p>{{ skill.read_scope }}；{{ skill.write_scope }}</p>
-        <p>{{ skill.failure_policy }}</p>
-        <p>{{ skill.confirmation }}</p>
-        <details>
-          <summary>完整输入、输出与权限声明</summary>
-          <pre class="agent-contract">{{ JSON.stringify(skill, null, 2) }}</pre>
-        </details>
-      </article>
-    </details>
-  </template>
+        <form @submit.prevent="start">
+          <AppliedRules
+            :key="rulesKey"
+            :shop="shopId"
+            :scope="form.scope"
+            @loaded="rulesLoaded"
+            @pending="rulesPending = $event"
+          />
+          <fieldset class="analysis-fields" :disabled="busy || controlling">
+            <label
+              >执行流程<select v-model="form.template">
+                <option value="daily">今日运营：检查 → 异常候选 → 核验</option>
+                <option value="daily_model">AI 今日运营：检查 → 概览解释 → 审批候选</option>
+                <option value="analysis">销售与已知毛利（所选身份与渠道）</option>
+                <option value="margin_review">最近7天低毛利：核对依据 → 分别审批 → 内部结果</option>
+                <option value="question">AI 经营问数：理解 → 计算 → 解释 → 核对待办</option>
+                <option value="listing">商品事实 → Listing 模板草稿</option>
+                <option value="listing_model">AI Listing：事实 → 模型候选 → 审批保存</option>
+                <option value="support">消息 → 人工接管草稿</option>
+                <option value="support_model">AI 客服：诉求与依据 → 候选 → 审批保存</option>
+                <option value="natural">自然语言目标（需要模型）</option>
+              </select></label
+            >
+            <label
+              >数据身份<select v-model="form.scope.data_identity">
+                <option value="user_import">经营资料</option>
+                <option value="synthetic">样例资料</option>
+              </select></label
+            >
+            <label
+              >检查渠道<select v-model="form.scope.channel">
+                <option value="generic">通用</option>
+                <option value="amazon">Amazon</option>
+                <option value="shopify">Shopify</option>
+                <option value="other">其他来源</option>
+              </select></label
+            >
+            <label>币种<input v-model="form.scope.currency" required maxlength="3" /></label>
+            <template v-if="form.template === 'margin_review'">
+              <label
+                >复核成本口径<select v-model="form.margin_cost_mode">
+                  <option value="seller_history">卖家确认的订单行历史成本</option>
+                  <option value="current_estimate">当前商品成本回推估算</option>
+                </select></label
+              >
+              <p class="full-width">
+                截至下方结束时间的最近7天：{{
+                  marginStart ? supportTime(marginStart, form.scope.timezone) : '请填写有效结束时间'
+                }}
+                至
+                {{
+                  marginStart ? supportTime(form.scope.end_at, form.scope.timezone) : '待填写'
+                }}（结束不含，{{
+                  form.scope.timezone
+                }}）。按数据完整性选择核对分析；可选一个商品核对独立内容遗漏。各内部写入分别审批，使用本地计算。
+              </p>
+            </template>
+            <template
+              v-if="
+                [
+                  'listing',
+                  'listing_model',
+                  'support',
+                  'support_model',
+                  'natural',
+                  'margin_review',
+                ].includes(form.template)
+              "
+            >
+              <label
+                >查找商品或消息<input
+                  v-model="query"
+                  placeholder="关键词，最多显示 50 项"
+                  @change="readOptions"
+              /></label>
+              <label v-if="!['support', 'support_model'].includes(form.template)"
+                >目标商品<select v-model="form.product_id">
+                  <option :value="null">未选择</option>
+                  <option
+                    v-for="product in productOptions"
+                    :key="product.product_id"
+                    :value="product.product_id"
+                  >
+                    {{ product.sku }} · {{ product.name }}
+                  </option>
+                </select></label
+              >
+              <label v-if="!['listing', 'listing_model', 'margin_review'].includes(form.template)"
+                >目标消息<select v-model="form.message_id">
+                  <option :value="null">未选择</option>
+                  <option v-for="message in messageOptions" :key="message.id" :value="message.id">
+                    {{ message.message_id }} · {{ message.body.slice(0, 60) }}
+                  </option>
+                </select></label
+              >
+            </template>
+            <template
+              v-if="
+                ['natural', 'question', 'listing_model', 'support_model', 'daily_model'].includes(
+                  form.template,
+                )
+              "
+            >
+              <label class="full-width"
+                >运营目标<textarea
+                  v-model="form.goal"
+                  maxlength="500"
+                  required
+                  placeholder="例如：检查已导入订单，找出需要核对的事项"
+                />
+              </label>
+              <p v-if="form.template === 'question'" class="full-width">
+                支持销售汇总、原购买数量前五、销量高但已知毛利低。使用下方时间、币种及阈值，
+                按所选身份、订单渠道和时间窗统计；商品成本使用本店同身份的当前主档。
+                问题要求的范围若不同，请先修改表单。
+              </p>
+              <label class="full-width"
+                ><span
+                  ><input v-model="form.allow_model" type="checkbox" /> 同意将本次目标文本发送至配置的
+                  {{ agentLabels[model?.provider ?? ''] ?? '供应商' }}
+                  模型，并使用下方美元预算</span
+                ></label
+              >
+              <label v-if="form.template === 'question'" class="full-width">
+                <span
+                  ><input v-model="form.allow_analysis_data" type="checkbox" />
+                  同意发送本次范围、匿名聚合指标与费用缺口，用于组织证据解释</span
+                >
+              </label>
+              <p v-if="form.template === 'question'" class="full-width">
+                正常流程需要两次模型请求。事实包包含统计时间、币种、阈值、汇总及最多 20 项匿名 SKU
+                指标； 原始订单号、SKU
+                名称、文件名和买家消息留在本地。问题正文会原样发送，请核对其中内容。
+                返回内容只可选择已有事实和核对建议，内部保存仍须审批。
+              </p>
+              <template v-if="form.template === 'daily_model'">
+                <OperationModelContext
+                  v-if="!rulesPending"
+                  class="full-width"
+                  :shop="shopId"
+                  :scope="form.scope"
+                  :disabled="busy || controlling"
+                  @change="form.expected_operation_hash = $event"
+                />
+                <label class="full-width"
+                  ><span>
+                    <input
+                      v-model="form.allow_operation_data"
+                      type="checkbox"
+                      :disabled="rulesPending || !form.expected_operation_hash"
+                    />
+                    我已核对运营范围，同意发送上述聚合检查数据用于概览解释
+                  </span></label
+                >
+              </template>
+              <template v-if="form.template === 'support_model'">
+                <SupportModelContext
+                  class="full-width"
+                  :shop="shopId"
+                  :message="form.message_id"
+                  :identity="form.scope.data_identity"
+                  :channel="form.scope.channel"
+                  :disabled="busy || controlling"
+                  @change="form.support_context = $event"
+                />
+                <label class="full-width">
+                  <span
+                    ><input
+                      v-model="form.allow_support_data"
+                      type="checkbox"
+                      :disabled="!form.support_context"
+                    />
+                    我已核对上述消息原文和选中政策，同意将这些客服数据发送至配置的模型
+                  </span>
+                </label>
+              </template>
+              <div
+                v-if="form.template === 'listing_model'"
+                class="full-width data-note"
+                aria-label="将发送的商品事实"
+              >
+                <h3>核对本次商品事实</h3>
+                <template v-if="selectedProduct">
+                  <p>商品名：{{ selectedProduct.name }}</p>
+                  <p class="preserve-text">
+                    {{ selectedProduct.facts || '缺少参数，请先补充商品来源。' }}
+                  </p>
+                  <p>
+                    本地来源：批次 {{ selectedProduct.source.batch_id }} · 行
+                    {{ selectedProduct.source.row_number }}
+                  </p>
+                </template>
+                <p v-else>请先选择目标商品。</p>
+                <p>
+                  一次模型请求会发送上方商品名、完整参数与目标文本。SKU、成本、文件名和订单留在本地。模型选择标题参数并调整描述顺序，描述保留全部参数。品牌偏好仅供人工参考。
+                </p>
+                <label
+                  ><input
+                    v-model="form.allow_listing_data"
+                    type="checkbox"
+                    :disabled="!selectedProduct?.facts.trim()"
+                  />我已核对上述商品事实，同意发送这些原文用于 Listing 候选</label
+                >
+              </div>
+            </template>
+          </fieldset>
+          <details>
+            <summary>数据窗口、规则与任务预算</summary>
+            <fieldset class="analysis-fields" :disabled="busy || controlling">
+              <label>业务时区（IANA）<input v-model="form.scope.timezone" required /></label>
+              <BusinessDateRange
+                v-model:start="form.scope.start_at"
+                v-model:end="form.scope.end_at"
+                :timezone="form.scope.timezone"
+                start-label="订单起始时间（含时区）"
+                end-label="订单结束时间（不包含）"
+                :fixed-days="form.template === 'margin_review' ? 7 : undefined"
+              />
+              <label
+                >库存时效（小时）<input
+                  v-model.number="form.scope.max_age_hours"
+                  :disabled="activeRule || rulesPending"
+                  type="number"
+                  min="1"
+                  max="720"
+                  required
+              /></label>
+              <label
+                >低毛利率上限（%）<input
+                  v-model="form.scope.max_margin_percent"
+                  :disabled="activeRule || rulesPending"
+                  type="number"
+                  min="-1000"
+                  max="100"
+                  step="0.01"
+                  required
+              /></label>
+              <label
+                >执行步数上限<input
+                  v-model.number="form.budget.max_steps"
+                  type="number"
+                  min="1"
+                  max="100"
+                  required /></label
+              ><label
+                >累计执行秒数上限<input
+                  v-model.number="form.budget.max_seconds"
+                  type="number"
+                  min="1"
+                  max="3600"
+                  required
+              /></label>
+              <label
+                >模型预算（USD）<input
+                  v-model="form.budget.max_cost_usd"
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.000001"
+                  required
+              /></label>
+            </fieldset>
+          </details>
+          <p>
+            固定流程使用本地规则或事实模板，模型费用为 0。自然语言目标用于路由；AI
+            经营问数根据确定性结果组织证据解释，AI Listing 根据商品原文组织候选，AI
+            客服按消息和政策组织回复候选与接管摘要。
+          </p>
+          <p v-if="model?.status === 'configured'">
+            {{ agentLabels[model.provider] ?? model.provider }} · {{ model.model }} · 每百万输入 /
+            输出 tokens 的配置费率： {{ model.input_usd_per_million ?? '未知' }} /
+            {{ model.output_usd_per_million ?? '未知' }} USD。
+            每次调用前预留费用；实际用量按此费率记账，供应商账单须另核对。
+            {{ model.cost_note }}
+          </p>
+          <button
+            class="button primary"
+            :disabled="
+              busy ||
+              !shopId ||
+              controlling ||
+              rulesPending ||
+              (form.template === 'support_model' &&
+                (!form.support_context || !form.allow_model || !form.allow_support_data)) ||
+              (form.template === 'listing_model' &&
+                (!selectedProduct || !form.allow_model || !form.allow_listing_data))
+            "
+          >
+            {{ busy ? '正在执行…' : '启动并运行' }}
+          </button>
+        </form>
+      </section>
+      <div class="section-title">
+        <h2>执行记录</h2>
+        <button class="button secondary" :disabled="controlling" @click="refresh">刷新任务</button>
+      </div>
+      <div class="button-row">
+        <button
+          v-for="run in runs"
+          :key="run.id"
+          class="button secondary small"
+          :disabled="busy || controlling"
+          @click="inspect(run.id)"
+        >
+          #{{ run.id }} · {{ agentLabels[run.template] }} · {{ agentLabels[run.status] }}
+        </button>
+      </div>
+      <p v-if="!runs.length">尚未运行任务。启动后，实际结果会保存在这里。</p>
+      <AgentRunReview
+        :return-context="Number(route.query.shop) === shopId ? returnTaskQuery(route.query) : {}"
+        id="linked-agent"
+        v-if="selected"
+        :run="selected"
+        :busy="busy || controlling"
+        @action="act"
+      />
+      <InternalAuthorizations
+        :focus-id="focusShop === shopId ? focusGrant : undefined"
+        :shop="shopId"
+        :run="selected"
+        :busy="busy || controlling"
+        @use="act('use_authorization', undefined, $event)"
+        @start="startAuthorized"
+        @inspect="inspect"
+      />
+      <details class="section-block">
+        <summary>内置技能与权限（{{ skills.length }} 项）</summary>
+        <article v-for="skill in skills" :key="skill.name" class="analysis-line">
+          <h3>{{ skill.purpose }}</h3>
+          <p>
+            {{ skill.name }} v{{ skill.version }} · {{ skill.risk }} ·
+            {{ skill.side_effects ? '内部写入需审批' : '只读' }}
+          </p>
+          <p>{{ skill.read_scope }}；{{ skill.write_scope }}</p>
+          <p>{{ skill.failure_policy }}</p>
+          <p>{{ skill.confirmation }}</p>
+          <details>
+            <summary>完整输入、输出与权限声明</summary>
+            <pre class="agent-contract">{{ JSON.stringify(skill, null, 2) }}</pre>
+          </details>
+        </article>
+      </details>
+    </template>
+  </div>
 </template>
 <style scoped>
 .analysis-fields > * {

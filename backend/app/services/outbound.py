@@ -144,7 +144,7 @@ class OutboundService:
         channel = self.channels.active(owner, shop)
         recipient = recipient or channel.recipient
         if channel.provider != "qq_smtp" and recipient != channel.recipient:
-            raise ConflictError("此通道仅支持已验证的本人测试收件人")
+            raise ConflictError("此通道仅支持已验证的本人收件邮箱")
         # Approval, content edits and credential rotation cannot create a second effect.
         key = digest([owner, shop, run_id, channel.sender, recipient, "daily-summary-v1"])
         prior = self.repo.by_key(owner, key)
@@ -162,10 +162,10 @@ class OutboundService:
         ):
             raise ConflictError("请先运行并保存当前来源的今日运营检查")
         scope, snapshot = run.scope, run.snapshot
-        title = f"SoloOps 测试经营摘要 · 检查 #{run.id}"
+        title = f"SoloOps 经营摘要 · 检查 #{run.id}"
         body = "\n".join(
             [
-                "这是一份发往本人测试邮箱的经营检查摘要。"
+                "这是一份发往本人邮箱的经营检查摘要。"
                 if recipient == channel.recipient
                 else "这是一份经营检查摘要。",
                 f"店铺 #{shop}；检查 #{run.id}；数据身份 {scope.data_identity}；"
@@ -325,7 +325,7 @@ class OutboundService:
         now = utc_now()
         recent = self.repo.recent_dispatches(owner, now - timedelta(days=1))
         if len(recent) >= 10 or any(t > now - timedelta(seconds=60) for t in recent):
-            raise ConflictError("测试外发间隔至少 60 秒，每账号 24 小时最多 10 次提交")
+            raise ConflictError("邮件外发间隔至少 60 秒，每账号 24 小时最多 10 次提交")
         envelope = self._envelope(item)
         item.status, item.dispatch_at, item.version = "sending", now, item.version + 1
         grant.used_at = now

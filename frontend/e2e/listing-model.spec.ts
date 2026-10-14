@@ -1,3 +1,4 @@
+import { signIn } from './auth'
 import { expect, test } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -7,11 +8,7 @@ for (const mobile of [false, true]) {
 
   test(`model listing consent candidate approval and erase ${stage}`, async ({ page }) => {
     await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1280, height: 800 })
-    await page.goto('/listings')
-    await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-    await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-    await page.getByRole('button', { name: '进入工作台' }).click()
-    await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+    await signIn(page, '/listings')
     const errors: string[] = []
     page.on('pageerror', (error) => errors.push(error.message))
     const session = await (await page.request.get('/api/auth/session')).json()
@@ -94,7 +91,7 @@ for (const mobile of [false, true]) {
     await link.click()
     await expect(page).toHaveURL(/\/listings\?shop=.*listing=/)
     const listing = page.getByRole('region', { name: 'Listing 审批详情' })
-    await expect(listing).toContainText('测试替身')
+    await expect(listing).toContainText('模拟生成器')
     await expect(listing.getByRole('button', { name: '批准并在本地生效' })).toBeDisabled()
     await listing.getByLabel('我已逐项核对商品事实、差异与影响范围').check()
     await listing.getByRole('button', { name: '批准并在本地生效' }).click()

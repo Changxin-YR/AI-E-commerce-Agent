@@ -155,8 +155,8 @@ function save(): void {
         <div class="form-field">
           <label for="schedule-identity">检查数据身份</label
           ><select id="schedule-identity" v-model="form.data_identity">
-            <option value="user_import">用户导入数据</option>
-            <option value="synthetic">合成演示数据</option>
+            <option value="user_import">经营资料</option>
+            <option value="synthetic">样例资料</option>
           </select>
         </div>
         <div v-if="form.task === 'operations'" class="form-field">

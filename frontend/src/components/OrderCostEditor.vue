@@ -106,7 +106,7 @@ async function save(action: 'upsert' | 'revoke'): Promise<void> {
       <h3>{{ page.order_id }} / {{ page.line_id }} · {{ page.sku }} · 历史单位成本</h3>
       <p>
         批次 {{ page.source_batch_id }} · {{ page.channel }} ·
-        {{ page.data_identity === 'synthetic' ? '合成测试数据' : '用户导入数据' }} · 订单币种
+        {{ page.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} · 订单币种
         {{ page.currency }}
       </p>
       <p>
@@ -165,7 +165,7 @@ async function save(action: 'upsert' | 'revoke'): Promise<void> {
             <button
               v-if="page.history.length && page.history[0]?.status !== 'revoked'"
               type="button"
-              class="button secondary small"
+              class="button secondary small danger"
               :disabled="!confirmed"
               @click="save('revoke')"
             >

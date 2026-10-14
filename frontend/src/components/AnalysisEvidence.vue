@@ -62,7 +62,7 @@ async function inspect(ref: SourceReference): Promise<void> {
           : '商品成本取此店铺同身份的当前主档，回推历史订单为估算。'
       }}
     </p>
-    <p>共 {{ result.lines.length }} 行；取消、未付款、测试和其他币种的行显示排除原因。</p>
+    <p>共 {{ result.lines.length }} 行；未计入本次分析的订单行均显示具体排除原因。</p>
     <details v-for="line in rows" :key="line.source.row_id" class="analysis-line">
       <summary>
         {{ line.order_id }} / {{ line.line_id }} · {{ line.sku }} ·
@@ -148,7 +148,7 @@ async function inspect(ref: SourceReference): Promise<void> {
       </p>
       <p>
         导入时间：{{ time(source.reference.imported_at) }} ·
-        {{ source.reference.data_identity === 'synthetic' ? '合成测试数据' : '用户导入数据' }}
+        {{ source.reference.data_identity === 'synthetic' ? '样例资料' : '经营资料' }}
       </p>
       <h4>原始单元格</h4>
       <pre>{{ JSON.stringify(source.raw, null, 2) }}</pre>

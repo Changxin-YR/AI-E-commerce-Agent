@@ -33,10 +33,10 @@ class ChannelOutput(OutputModel):
     receipt_id: str | None = None
     verified_at: str | None = None
     verification_expires_at: str | None = None
-    verification_subject: str = "SoloOps 测试邮箱验证"
+    verification_subject: str = "SoloOps 邮箱验证"
     verification_template: str = (
-        "SoloOps 测试邮箱验证。验证码：{8 位随机码}。15 分钟内有效。"
-        "此邮件仅验证本人测试邮箱，不含经营数据。"
+        "SoloOps 邮箱验证。验证码：{8 位随机码}。15 分钟内有效。"
+        "此邮件用于验证本人邮箱，不含经营数据。"
     )
 
 

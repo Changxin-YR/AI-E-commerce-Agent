@@ -190,318 +190,332 @@ function time(value: string, timezone: string): string {
 }
 </script>
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>让每笔毛利，有据可查。</h1>
-      <p>单店铺、单币种与明确时间窗，从订单行核对经营判断。</p>
-    </div>
-    <span class="outline-label">经营分析</span>
-  </div>
-  <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
-  <p v-if="shopId">
-    <RouterLink
-      v-if="scope.channel && scope.cost_mode !== 'seller_history'"
-      :to="{
-        path: '/agent',
-        query: {
-          shop: shopId,
-          mode: 'question',
-          ...scopeQuery(scope),
-          ...returnTaskQuery(route.query, shopId),
-        },
-      }"
-    >
-      打开 AI 经营问数，确认范围与模型预算
-    </RouterLink>
-    <span v-else-if="scope.cost_mode === 'seller_history'"
-      >历史成本在本页按凭据计算；AI 经营问数和今日运营使用当前成本估算口径。</span
-    >
-    <span v-else>使用 AI 问数前，请先选择明确的订单来源渠道。</span>
-  </p>
-  <p v-if="!shops.length && !busy">
-    还没有店铺，请先<RouterLink to="/settings">添加经营资料</RouterLink>，再<RouterLink
-      to="/imports"
-      >导入商品和订单</RouterLink
-    >。
-  </p>
-  <form v-else class="section-block" @submit.prevent="run">
-    <h2>01 / 确认统计范围</h2>
-    <fieldset :disabled="busy" class="analysis-fields">
-      <label class="full-width"
-        >采购成本口径<select v-model="scope.cost_mode">
-          <option value="current_estimate">当前成本回推估算</option>
-          <option value="seller_history">卖家确认的订单行历史成本</option>
-        </select></label
-      >
-      <label
-        >分析店铺<select v-model="shopId" @change="selectShop">
-          <option v-for="shop in shops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
-        </select></label
-      >
-      <label
-        >数据身份<select v-model="scope.data_identity">
-          <option value="user_import">用户导入数据</option>
-          <option value="synthetic">合成测试数据</option>
-        </select></label
-      >
-      <label
-        >订单来源渠道<select v-model="scope.channel">
-          <option :value="null">全部渠道</option>
-          <option value="generic">通用文件</option>
-          <option value="shopify">Shopify</option>
-          <option value="amazon">Amazon</option>
-          <option value="other">其他</option>
-        </select></label
-      >
-      <label
-        >统计币种<select v-model="scope.currency">
-          <option
-            v-for="currency in ['USD', 'CNY', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'HKD', 'SGD']"
-            :key="currency"
-          >
-            {{ currency }}
-          </option>
-        </select></label
-      >
-      <label>显示时区<input v-model="scope.timezone" required placeholder="Asia/Shanghai" /></label>
-      <BusinessDateRange
-        v-model:start="scope.start_at"
-        v-model:end="scope.end_at"
-        :timezone="scope.timezone"
-        start-label="起点（含时区，计入）"
-        end-label="终点（含时区，不计入）"
-      />
-      <label class="full-width"
-        >受控问题<input
-          v-model="question"
-          list="supported-questions"
-          required
-          maxlength="200" /><datalist id="supported-questions">
-          <option v-for="item in questions" :key="item" :value="item" /></datalist
-      ></label>
-      <div class="button-row full-width">
-        <button
-          v-for="item in questions"
-          :key="item"
-          class="button secondary small"
-          type="button"
-          @click="question = item"
-        >
-          {{ item }}
-        </button>
+  <div class="solo-page page-analytics">
+    <div class="page-heading">
+      <div>
+        <h1>让每笔毛利，有据可查。</h1>
+        <p>单店铺、单币种与明确时间窗，从订单行核对经营判断。</p>
       </div>
-      <label
-        >低毛利筛选：最低购买数量<input
-          v-model.number="scope.min_quantity"
-          type="number"
-          min="1"
-          max="1000000"
-          required
-      /></label>
-      <label
-        >低毛利筛选：毛利率上限 %<input
-          v-model="scope.max_margin_percent"
-          type="number"
-          min="-1000"
-          max="100"
-          step="0.01"
-          required
-      /></label>
-    </fieldset>
-    <p>
-      使用日期控件选择业务时间；高级输入支持 ISO 8601 的 Z 或明确偏移。最长 366 天、最多 10000
-      行。本页快捷计算支持上方三个问题；自由表述请使用 AI 经营问数。
+      <span class="outline-label">经营分析</span>
+    </div>
+    <FeedbackBanner :message="error" /><FeedbackBanner :message="success" kind="success" />
+    <p v-if="shopId">
+      <RouterLink
+        v-if="scope.channel && scope.cost_mode !== 'seller_history'"
+        class="button primary"
+        :to="{
+          path: '/agent',
+          query: {
+            shop: shopId,
+            mode: 'question',
+            ...scopeQuery(scope),
+            ...returnTaskQuery(route.query, shopId),
+          },
+        }"
+      >
+        打开 AI 经营问数，确认范围与模型预算
+      </RouterLink>
+      <span v-else-if="scope.cost_mode === 'seller_history'"
+        >历史成本在本页按凭据计算；AI 经营问数和今日运营使用当前成本估算口径。</span
+      >
+      <span v-else>使用 AI 问数前，请先选择明确的订单来源渠道。</span>
     </p>
-    <button class="button primary" :disabled="busy || !shopId">
-      {{ busy ? '处理中…' : '计算并查看证据' }}
-    </button>
-  </form>
-  <template v-if="result">
-    <section class="section-block" aria-label="分析结果">
-      <div class="section-title">
-        <h2>02 / 销售与已知商品毛利</h2>
-        <button class="button secondary" :disabled="busy || !!stale" @click="save">保存分析</button>
-      </div>
-      <p v-if="stale" role="alert" class="feedback error">
-        此分析需重新计算，以下仅为历史快照，不能作为现值。
-      </p>
-      <p>
-        {{ result.scope.data_identity === 'synthetic' ? '合成测试数据' : '用户导入数据' }} ·
-        {{ result.scope.currency }} · 数据版本 {{ result.source_revision }}
-      </p>
-      <p>
-        {{ time(result.scope.start_at, result.scope.timezone) }} 至
-        {{ time(result.scope.end_at, result.scope.timezone) }}（不含终点）
-      </p>
-      <p>
-        计算完成：{{
-          time(result.calculated_at, result.scope.timezone)
-        }}；数据截至时间请查看各来源导出时间，未知时无法推断。
-      </p>
-      <div class="analysis-metrics">
-        <div>
-          <span>原购买数量</span><strong>{{ result.summary.purchased_quantity }}</strong
-          ><small>{{ result.summary.line_count }} 行已支付 / 含退款</small>
-        </div>
-        <div>
-          <span>可确认净销售额</span><strong>{{ money(result.summary.sales) }}</strong
-          ><small
-            >可核对子集 {{ result.summary.known_sales_subtotal }} ·
-            {{ result.summary.sales_known_lines }} 行</small
-          >
-        </div>
-        <div>
-          <span>{{
-            result.scope.cost_mode === 'seller_history' ? '卖家确认历史采购成本' : '估算采购成本'
-          }}</span
-          ><strong>{{ money(result.summary.cost) }}</strong
-          ><small
-            >可核对子集 {{ result.summary.known_cost_subtotal }} ·
-            {{ result.summary.cost_known_lines }} 行</small
-          >
-        </div>
-        <div>
-          <span>{{
-            result.scope.cost_mode === 'seller_history'
-              ? '按卖家确认历史成本计算的商品毛利'
-              : '当前成本估算的商品毛利'
-          }}</span
-          ><strong>{{ money(result.summary.gross_profit) }}</strong
-          ><small
-            >配对完整子集 {{ result.summary.known_gross_subtotal }} ·
-            {{ result.summary.gross_known_lines }} 行</small
-          >
-        </div>
-      </div>
-      <p class="analysis-answer">{{ result.answer }}</p>
-      <p v-if="result.candidates.length">符合当前问题：{{ result.candidates.join('、') }}</p>
-      <p>{{ result.formula }}</p>
-      <p>{{ result.cost_basis }}</p>
-      <p>计算口径版本 {{ result.calculation_version ?? 1 }} · 尚无法核实净利润。</p>
-      <p>费用缺口：{{ result.fee_gaps.join('、') }}。</p>
-      <p>
-        费用待核，商品毛利未自动扣除人工费用或平台账单；请先核对重复凭据及归属。<RouterLink
-          :to="{ path: '/expenses', query: { shop: shopId, ...scopeQuery(result.scope) } }"
-          >核对人工费用</RouterLink
+    <p v-if="!shops.length && !busy">
+      还没有店铺，请先<RouterLink to="/settings">添加经营资料</RouterLink>，再<RouterLink
+        to="/imports"
+        >导入商品和订单</RouterLink
+      >。
+    </p>
+    <form v-else class="section-block" @submit.prevent="run">
+      <h2>01 / 确认统计范围</h2>
+      <fieldset :disabled="busy" class="analysis-fields">
+        <label class="full-width"
+          >采购成本口径<select v-model="scope.cost_mode">
+            <option value="current_estimate">当前成本回推估算</option>
+            <option value="seller_history">卖家确认的订单行历史成本</option>
+          </select></label
         >
-        ·
-        <RouterLink
-          :to="{ path: '/statements', query: { shop: shopId, ...scopeQuery(result.scope) } }"
-          >核对渠道账单</RouterLink
+        <label
+          >分析店铺<select v-model="shopId" @change="selectShop">
+            <option v-for="shop in shops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
+          </select></label
         >
-      </p>
-      <ul>
-        <li v-for="warning in result.warnings" :key="warning">{{ warning }}</li>
-      </ul>
-      <div class="table-scroll">
-        <table>
-          <caption>
-            SKU 汇总 ·
-            {{
-              result.scope.currency
-            }}
-            · 按 SKU 展示
-          </caption>
-          <thead>
-            <tr>
-              <th>SKU</th>
-              <th>原购买数量</th>
-              <th>净销售额</th>
-              <th>
-                {{ result.scope.cost_mode === 'seller_history' ? '历史采购成本' : '估算采购成本' }}
-              </th>
-              <th>已知毛利</th>
-              <th>毛利率</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in result.skus" :key="item.sku!">
-              <td>{{ item.sku }}</td>
-              <td>{{ item.purchased_quantity }}</td>
-              <td>{{ money(item.sales) }}</td>
-              <td>{{ money(item.cost) }}</td>
-              <td>{{ money(item.gross_profit) }}</td>
-              <td>
-                {{ item.margin_percent === null ? '未知 / 不适用' : `${item.margin_percent}%` }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-    <section v-if="selectedSaved" id="linked-analysis" class="data-note" aria-label="分析核对待办">
-      <div>
-        <h3>分析 #{{ selectedSaved.id }}</h3>
-        <p v-if="selectedSaved.todo">
-          待办 #{{ selectedSaved.todo.id }} · {{ stateNames[selectedSaved.todo.status] }} · 版本
-          {{ selectedSaved.todo.version }}
-        </p>
-        <div v-if="selectedSaved.todo && selectedSaved.status === 'current'" class="button-row">
+        <label
+          >数据身份<select v-model="scope.data_identity">
+            <option value="user_import">经营资料</option>
+            <option value="synthetic">样例资料</option>
+          </select></label
+        >
+        <label
+          >订单来源渠道<select v-model="scope.channel">
+            <option :value="null">全部渠道</option>
+            <option value="generic">通用文件</option>
+            <option value="shopify">Shopify</option>
+            <option value="amazon">Amazon</option>
+            <option value="other">其他</option>
+          </select></label
+        >
+        <label
+          >统计币种<select v-model="scope.currency">
+            <option
+              v-for="currency in ['USD', 'CNY', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'HKD', 'SGD']"
+              :key="currency"
+            >
+              {{ currency }}
+            </option>
+          </select></label
+        >
+        <label
+          >显示时区<input v-model="scope.timezone" required placeholder="Asia/Shanghai"
+        /></label>
+        <BusinessDateRange
+          v-model:start="scope.start_at"
+          v-model:end="scope.end_at"
+          :timezone="scope.timezone"
+          start-label="起点（含时区，计入）"
+          end-label="终点（含时区，不计入）"
+        />
+        <label class="full-width"
+          >受控问题<input
+            v-model="question"
+            list="supported-questions"
+            required
+            maxlength="200" /><datalist id="supported-questions">
+            <option v-for="item in questions" :key="item" :value="item" /></datalist
+        ></label>
+        <div class="button-row full-width">
           <button
-            v-if="selectedSaved.todo.status === 'open'"
-            class="button secondary"
-            :disabled="busy || stale"
-            @click="changeTodo('complete')"
+            v-for="item in questions"
+            :key="item"
+            class="button secondary small"
+            type="button"
+            @click="question = item"
           >
-            标记核对完成
-          </button>
-          <button
-            v-if="selectedSaved.todo.status === 'completed'"
-            class="button secondary"
-            :disabled="busy || stale"
-            @click="changeTodo('reopen')"
-          >
-            重新打开核对待办
+            {{ item }}
           </button>
         </div>
-      </div>
-    </section>
-    <AnalysisEvidence
-      :result="result"
-      :shop-id="shopId"
-      edit-costs
-      :stale="stale || busy"
-      @costs-changed="costsChanged"
-      @costs-working="costsWorking = $event"
-    />
-  </template>
-  <section v-if="shopId" class="section-block">
-    <div class="section-title">
-      <h2>03 / 已保存分析与待办 · 最近 50 条</h2>
-      <button class="button secondary small" :disabled="busy" @click="refreshHistory">
-        刷新保存记录
+        <label
+          >低毛利筛选：最低购买数量<input
+            v-model.number="scope.min_quantity"
+            type="number"
+            min="1"
+            max="1000000"
+            required
+        /></label>
+        <label
+          >低毛利筛选：毛利率上限 %<input
+            v-model="scope.max_margin_percent"
+            type="number"
+            min="-1000"
+            max="100"
+            step="0.01"
+            required
+        /></label>
+      </fieldset>
+      <p>
+        使用日期控件选择业务时间；高级输入支持 ISO 8601 的 Z 或明确偏移。最长 366 天、最多 10000
+        行。本页快捷计算支持上方三个问题；自由表述请使用 AI 经营问数。
+      </p>
+      <button class="button primary" :disabled="busy || !shopId">
+        {{ busy ? '处理中…' : '计算并查看证据' }}
       </button>
-    </div>
-    <p v-if="!history.length">尚未保存分析。计算后可保存来源和统计口径，再创建核对待办。</p>
-    <article v-for="item in history" :key="item.id" class="batch-history">
-      <div>
-        <h3>分析 #{{ item.id }} · {{ stateNames[item.status] }}</h3>
+    </form>
+    <template v-if="result">
+      <section class="section-block" aria-label="分析结果">
+        <div class="section-title">
+          <h2>02 / 销售与已知商品毛利</h2>
+          <button class="button secondary" :disabled="busy || !!stale" @click="save">
+            保存分析
+          </button>
+        </div>
+        <p v-if="stale" role="alert" class="feedback error">
+          此分析需重新计算，以下仅为历史快照，不能作为现值。
+        </p>
         <p>
-          {{ time(item.created_at, item.scope.timezone) }} · {{ item.scope.currency }} ·
-          {{ item.scope.data_identity === 'synthetic' ? '合成测试数据' : '用户导入数据' }}
+          {{ result.scope.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} ·
+          {{ result.scope.currency }} · 数据版本 {{ result.source_revision }}
         </p>
-        <p v-if="item.todo">
-          待办 #{{ item.todo.id }} · {{ item.todo.title }} · {{ stateNames[item.todo.status] }}
+        <p>
+          {{ time(result.scope.start_at, result.scope.timezone) }} 至
+          {{ time(result.scope.end_at, result.scope.timezone) }}（不含终点）
         </p>
-      </div>
-      <div class="button-row">
-        <button class="button secondary small" :disabled="busy" @click="rerun(item)">
-          按此范围重算
+        <p>
+          计算完成：{{
+            time(result.calculated_at, result.scope.timezone)
+          }}；数据截至时间请查看各来源导出时间，未知时无法推断。
+        </p>
+        <div class="analysis-metrics">
+          <div>
+            <span>原购买数量</span><strong>{{ result.summary.purchased_quantity }}</strong
+            ><small>{{ result.summary.line_count }} 行已支付 / 含退款</small>
+          </div>
+          <div>
+            <span>可确认净销售额</span><strong>{{ money(result.summary.sales) }}</strong
+            ><small
+              >可核对子集 {{ result.summary.known_sales_subtotal }} ·
+              {{ result.summary.sales_known_lines }} 行</small
+            >
+          </div>
+          <div>
+            <span>{{
+              result.scope.cost_mode === 'seller_history' ? '卖家确认历史采购成本' : '估算采购成本'
+            }}</span
+            ><strong>{{ money(result.summary.cost) }}</strong
+            ><small
+              >可核对子集 {{ result.summary.known_cost_subtotal }} ·
+              {{ result.summary.cost_known_lines }} 行</small
+            >
+          </div>
+          <div>
+            <span>{{
+              result.scope.cost_mode === 'seller_history'
+                ? '按卖家确认历史成本计算的商品毛利'
+                : '当前成本估算的商品毛利'
+            }}</span
+            ><strong>{{ money(result.summary.gross_profit) }}</strong
+            ><small
+              >配对完整子集 {{ result.summary.known_gross_subtotal }} ·
+              {{ result.summary.gross_known_lines }} 行</small
+            >
+          </div>
+        </div>
+        <p class="analysis-answer">{{ result.answer }}</p>
+        <p v-if="result.candidates.length">符合当前问题：{{ result.candidates.join('、') }}</p>
+        <p>{{ result.formula }}</p>
+        <p>{{ result.cost_basis }}</p>
+        <p>计算口径版本 {{ result.calculation_version ?? 1 }} · 尚无法核实净利润。</p>
+        <p>费用缺口：{{ result.fee_gaps.join('、') }}。</p>
+        <p>
+          费用待核，商品毛利未自动扣除人工费用或平台账单；请先核对重复凭据及归属。<RouterLink
+            :to="{ path: '/expenses', query: { shop: shopId, ...scopeQuery(result.scope) } }"
+            >核对人工费用</RouterLink
+          >
+          ·
+          <RouterLink
+            :to="{ path: '/statements', query: { shop: shopId, ...scopeQuery(result.scope) } }"
+            >核对渠道账单</RouterLink
+          >
+        </p>
+        <ul>
+          <li v-for="warning in result.warnings" :key="warning">{{ warning }}</li>
+        </ul>
+        <div class="table-scroll">
+          <table>
+            <caption>
+              SKU 汇总 ·
+              {{
+                result.scope.currency
+              }}
+              · 按 SKU 展示
+            </caption>
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>原购买数量</th>
+                <th>净销售额</th>
+                <th>
+                  {{
+                    result.scope.cost_mode === 'seller_history' ? '历史采购成本' : '估算采购成本'
+                  }}
+                </th>
+                <th>已知毛利</th>
+                <th>毛利率</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in result.skus" :key="item.sku!">
+                <td>{{ item.sku }}</td>
+                <td>{{ item.purchased_quantity }}</td>
+                <td>{{ money(item.sales) }}</td>
+                <td>{{ money(item.cost) }}</td>
+                <td>{{ money(item.gross_profit) }}</td>
+                <td>
+                  {{ item.margin_percent === null ? '未知 / 不适用' : `${item.margin_percent}%` }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section
+        v-if="selectedSaved"
+        id="linked-analysis"
+        class="data-note"
+        aria-label="分析核对待办"
+      >
+        <div>
+          <h3>分析 #{{ selectedSaved.id }}</h3>
+          <p v-if="selectedSaved.todo">
+            待办 #{{ selectedSaved.todo.id }} · {{ stateNames[selectedSaved.todo.status] }} · 版本
+            {{ selectedSaved.todo.version }}
+          </p>
+          <div v-if="selectedSaved.todo && selectedSaved.status === 'current'" class="button-row">
+            <button
+              v-if="selectedSaved.todo.status === 'open'"
+              class="button secondary"
+              :disabled="busy || stale"
+              @click="changeTodo('complete')"
+            >
+              标记核对完成
+            </button>
+            <button
+              v-if="selectedSaved.todo.status === 'completed'"
+              class="button secondary"
+              :disabled="busy || stale"
+              @click="changeTodo('reopen')"
+            >
+              重新打开核对待办
+            </button>
+          </div>
+        </div>
+      </section>
+      <AnalysisEvidence
+        :result="result"
+        :shop-id="shopId"
+        edit-costs
+        :stale="stale || busy"
+        @costs-changed="costsChanged"
+        @costs-working="costsWorking = $event"
+      />
+    </template>
+    <section v-if="shopId" class="section-block">
+      <div class="section-title">
+        <h2>03 / 已保存分析与待办 · 最近 50 条</h2>
+        <button class="button secondary small" :disabled="busy" @click="refreshHistory">
+          刷新保存记录
         </button>
-        <button
-          class="button secondary small"
-          :disabled="busy || item.status === 'cleared'"
-          @click="show(item)"
-        >
-          查看分析 #{{ item.id }}</button
-        ><button
-          class="button secondary small"
-          :disabled="busy || item.status !== 'current' || !!item.todo"
-          @click="todo(item)"
-        >
-          创建核对待办
-        </button>
       </div>
-    </article>
-  </section>
+      <p v-if="!history.length">尚未保存分析。计算后可保存来源和统计口径，再创建核对待办。</p>
+      <article v-for="item in history" :key="item.id" class="batch-history">
+        <div>
+          <h3>分析 #{{ item.id }} · {{ stateNames[item.status] }}</h3>
+          <p>
+            {{ time(item.created_at, item.scope.timezone) }} · {{ item.scope.currency }} ·
+            {{ item.scope.data_identity === 'synthetic' ? '样例资料' : '经营资料' }}
+          </p>
+          <p v-if="item.todo">
+            待办 #{{ item.todo.id }} · {{ item.todo.title }} · {{ stateNames[item.todo.status] }}
+          </p>
+        </div>
+        <div class="button-row">
+          <button class="button secondary small" :disabled="busy" @click="rerun(item)">
+            按此范围重算
+          </button>
+          <button
+            class="button secondary small"
+            :disabled="busy || item.status === 'cleared'"
+            @click="show(item)"
+          >
+            查看分析 #{{ item.id }}</button
+          ><button
+            class="button secondary small"
+            :disabled="busy || item.status !== 'current' || !!item.todo"
+            @click="todo(item)"
+          >
+            创建核对待办
+          </button>
+        </div>
+      </article>
+    </section>
+  </div>
 </template>

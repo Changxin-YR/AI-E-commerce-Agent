@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useSession } from '@/composables/useSession'
 import { errorMessage } from '@/api/client'
 import FeedbackBanner from '@/components/FeedbackBanner.vue'
 import FormField from '@/components/FormField.vue'
+import AppIcon from '@/components/AppIcon.vue'
 
 const router = useRouter()
+const route = useRoute()
 const { login, connectionError } = useSession()
 const username = ref('')
 const password = ref('')
@@ -19,7 +21,12 @@ async function submit(): Promise<void> {
   try {
     await login(username.value, password.value)
     password.value = ''
-    await router.push('/')
+    const target = route.query.redirect
+    await router.replace(
+      typeof target === 'string' && target.startsWith('/') && !target.startsWith('//')
+        ? target
+        : '/',
+    )
   } catch (cause) {
     error.value = errorMessage(cause)
     password.value = ''
@@ -29,14 +36,29 @@ async function submit(): Promise<void> {
 }
 </script>
 <template>
-  <main class="login-layout">
+  <main class="login-layout page-login">
     <section class="login-story">
       <div class="wordmark">
-        <span class="brand-mark" aria-hidden="true"></span>SoloOps<span class="brand-dot">.</span>
+        <span class="brand-mark" aria-hidden="true"><AppIcon name="leaf" :size="28" /></span
+        >SoloOps<span class="brand-dot">.</span>
       </div>
       <div>
         <h1>经营有方向，<br />每一步都有依据。</h1>
         <p>为独立跨境卖家准备的运营工作台。<br />整理数据、理解业务，把想法变成可追踪的行动。</p>
+        <div class="login-workflow" aria-label="经营工作流程">
+          <div>
+            <AppIcon name="upload" :size="24" /><strong>整理你的数据</strong
+            ><small>商品、订单与成本</small>
+          </div>
+          <div>
+            <AppIcon name="chart" :size="24" /><strong>看清经营状况</strong
+            ><small>每个结论有据可查</small>
+          </div>
+          <div>
+            <AppIcon name="check" :size="24" /><strong>推进下一步</strong
+            ><small>审阅、处理与回读</small>
+          </div>
+        </div>
       </div>
       <div class="story-footer">
         <span>一个人的生意，也可以井然有序。</span><span>SO / 01</span>

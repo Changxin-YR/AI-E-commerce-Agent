@@ -77,7 +77,7 @@ def calculate_line(
     unit_cost = None
     history = None
     if order.status not in PAID_STATUSES:
-        gaps.append("取消、未付款或测试订单不计入已支付销售")
+        gaps.append("订单状态不满足已支付销售统计条件")
     if order.currency != scope.currency:
         gaps.append("非所选币种，不加总且未换汇")
     if included:

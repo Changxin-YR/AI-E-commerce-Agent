@@ -37,7 +37,7 @@ watch([filter, search, () => props.result], () => {
     </div>
     <p class="muted">
       {{ supportTime(result.checked_at, timezone) }} ·
-      {{ result.scope.data_identity === 'synthetic' ? '合成测试数据' : '用户导入文件' }} ·
+      {{ result.scope.data_identity === 'synthetic' ? '样例资料' : '经营资料' }} ·
       {{ result.scope.channel ? qualityChannels[result.scope.channel] : '全部导入渠道' }} · SKU 前缀
       {{ result.scope.sku_prefix || '不限' }}
     </p>

@@ -21,7 +21,9 @@ class Settings(BaseSettings):
     outbound_test_recipient: str = ""
     outbound_domain_id: UUID | None = None
     model_enabled: bool = False
-    model_provider: Literal["openai_responses", "dashscope_chat"] = "openai_responses"
+    model_provider: Literal["openai_responses", "dashscope_chat", "deepseek_chat"] = (
+        "openai_responses"
+    )
     model_api_key: SecretStr | None = None
     model_name: str = ""
     model_input_usd_per_million: Decimal | None = Field(default=None, gt=0, le=1000)

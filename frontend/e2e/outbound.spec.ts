@@ -1,3 +1,4 @@
+import { signIn } from './auth'
 import { expect, test } from '@playwright/test'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -5,11 +6,7 @@ import path from 'node:path'
 test('R2 verified test mailbox preview authorization unknown lookup receipt and replay', async ({
   page,
 }) => {
-  await page.goto('/outbound')
-  await page.getByLabel('账号', { exact: true }).fill('e2e_seller')
-  await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-  await page.getByRole('button', { name: '进入工作台' }).click()
-  await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+  await signIn(page, '/outbound')
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   page.on('console', (message) => {
@@ -44,7 +41,7 @@ test('R2 verified test mailbox preview authorization unknown lookup receipt and 
   await expect(page).toHaveTitle(/SoloOps/)
   await expect(page.locator('vite-error-overlay')).toHaveCount(0)
   await page.screenshot({ path: path.join(tmpdir(), 'soloops-outbound-first-desktop.png') })
-  const connection = page.getByRole('region', { name: '本人测试邮箱连接' })
+  const connection = page.getByRole('region', { name: '本人验证邮箱连接' })
   await expect(connection).toContainText('sender@example.invalid')
   await connection.getByRole('checkbox').check()
   await connection.getByRole('button', { name: '连接并发送验证邮件' }).click()
@@ -54,7 +51,7 @@ test('R2 verified test mailbox preview authorization unknown lookup receipt and 
   }[]
   const code = inbox[0]!.body.match(/\d{8}/)![0]
   await page.getByLabel('邮箱验证码').fill(code)
-  await page.getByRole('button', { name: '验证本人测试邮箱' }).click()
+  await page.getByRole('button', { name: '验证本人验证邮箱' }).click()
   await expect(connection).toContainText('已验证 / 有效')
   await page.getByRole('button', { name: '生成外发预览' }).click()
   const review = page.getByRole('region', { name: 'R2 外发预览' })
@@ -118,11 +115,7 @@ test('R2 verified test mailbox preview authorization unknown lookup receipt and 
 test('QQ mail previews a chosen recipient and preserves unknown submission after receipt evidence', async ({
   page,
 }) => {
-  await page.goto('/outbound')
-  await page.getByLabel('账号', { exact: true }).fill('e2e_qq_seller')
-  await page.getByLabel('密码', { exact: true }).fill('Synthetic-E2E-Password-2026!')
-  await page.getByRole('button', { name: '进入工作台' }).click()
-  await expect(page.getByRole('heading', { name: '今日经营，从事实出发。' })).toBeVisible()
+  await signIn(page, '/outbound', 'e2e_qq_seller')
   const shops = (await (await page.request.get('/api/shops')).json()) as {
     id: number
     code: string
@@ -147,7 +140,7 @@ test('QQ mail previews a chosen recipient and preserves unknown submission after
   expect(report.ok()).toBeTruthy()
   await page.goto(`/outbound?shop=${shop}`)
   await page.getByLabel('摘要数据身份').selectOption('synthetic')
-  const connection = page.getByRole('region', { name: '本人测试邮箱连接' })
+  const connection = page.getByRole('region', { name: '本人验证邮箱连接' })
   await expect(connection).toContainText('QQ 邮箱')
   await connection.getByRole('checkbox').check()
   await connection.getByRole('button', { name: '连接并发送验证邮件' }).click()
@@ -156,7 +149,7 @@ test('QQ mail previews a chosen recipient and preserves unknown submission after
     body: string
   }[]
   await page.getByLabel('邮箱验证码').fill(inbox[0]!.body.match(/\d{8}/)![0])
-  await page.getByRole('button', { name: '验证本人测试邮箱' }).click()
+  await page.getByRole('button', { name: '验证本人验证邮箱' }).click()
   await expect(connection).toContainText('已验证 / 有效')
   await expect(page.getByLabel('收件邮箱', { exact: true })).toHaveValue('synthetic-owner@qq.com')
   await page.getByLabel('收件邮箱', { exact: true }).fill('synthetic-recipient@example.net')
